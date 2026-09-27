@@ -1,0 +1,87 @@
+import type { Metadata } from "next";
+import { redirect } from "next/navigation";
+import BackLink from "../../components/detail/BackLink";
+import SmartPlannerApp from "../../components/smart-planner/SmartPlannerApp";
+import GuideIncludedNote from "../../components/GuideIncludedNote";
+import ProductAccessDenied from "../../components/guide/ProductAccessDenied";
+import { barcelonaGuide } from "../../lib/barcelona-guide";
+import { hasProductAccess } from "../../lib/entitlements";
+import { createClient } from "../../../utils/supabase/server";
+
+/**
+ * Smart Planner V2 Production Launch: this is the LEGACY V1 planner, relocated here verbatim
+ * (byte-for-byte the same component/logic/entitlement-gate code that used to live at
+ * /smart-planner/barcelona) so it stays available as a manual rollback path -- no homepage
+ * link, no public CTA, but still fully functional if V2 ever needs to be rolled back. See
+ * app/smart-planner/barcelona/page.tsx (now V2, the production route) for the switch itself.
+ *
+ * Deliberately NOT linked from the homepage or any product card -- reachable only by typing
+ * this URL directly (rollback/testing use), matching the task's own "no homepage link, no
+ * public CTA, accessible manually" requirement.
+ */
+
+const guide = barcelonaGuide;
+
+// TEMPORARY DEVELOPMENT BYPASS
+// Re-enable Smart Planner entitlement checks before production launch. Anonymous generation
+// must keep working in dev regardless -- this only gates the entitlement check, not auth
+// itself (saving a plan always requires being logged in, independent of this flag).
+const TEMP_DISABLE_BARCELONA_SMART_PLANNER_ACCESS_GATE = true;
+
+export const metadata: Metadata = {
+  title: "المخطط الذكي (V1 - احتياطي) — برشلونة | Travel Smarter",
+  description: "اختار اهتماماتك وخلينا نرتبلك خطة رحلة كاملة لبرشلونة خلال ثواني.",
+};
+
+export default async function SmartPlannerBarcelonaV1Page() {
+  // Independent entitlement gate for "barcelona-smart-planner" -- separate from
+  // "barcelona-guide" and "barcelona-ready-plan". Owning one does not grant the others.
+  if (!TEMP_DISABLE_BARCELONA_SMART_PLANNER_ACCESS_GATE) {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      redirect("/login?next=/smart-planner/barcelona-v1");
+    }
+
+    const hasAccess = await hasProductAccess("barcelona-smart-planner", user.id);
+    if (!hasAccess) {
+      return <ProductAccessDenied productName="المخطط الذكي لبرشلونة" mailSubject="استفسار عن المخطط الذكي لبرشلونة" />;
+    }
+  }
+
+  return (
+    <main className="pb-10">
+      {/* V1.1 polish: a narrower, centered max-width than the shared Container (which is
+          sized for wide multi-column guide/package pages) — this flow is a single linear
+          questionnaire + result column, so it shouldn't stretch to 1280px on tablet/desktop.
+          Padding classes are kept IDENTICAL to Container's own (px-5 sm:px-8 lg:px-10) so
+          SmartPlannerResult's sticky day-tabs bar (which cancels this exact padding with a
+          matching negative margin for its edge-to-edge bleed effect) keeps working unchanged.
+          At <768px this max-width never engages, so mobile is pixel-identical to before. */}
+      <div className="mx-auto w-full max-w-3xl px-5 pt-4 sm:px-8 lg:px-10">
+        <BackLink href="/guides/barcelona" label="دليل Barcelona" />
+        {/* This product bundles Guide access -- see lib/entitlements.ts GUIDE_BUNDLE_PRODUCT_SLUGS. */}
+        <div className="mt-3">
+          <GuideIncludedNote />
+        </div>
+        <div className="mt-4">
+          <SmartPlannerApp
+            guide={{
+              attractions: guide.attractions,
+              foodPlaces: guide.foodPlaces,
+              experiences: guide.experiences,
+              areas: guide.areas,
+              nightlifeVenues: guide.nightlifeVenues,
+              beaches: guide.beaches,
+              shoppingAreas: guide.shoppingAreas,
+            }}
+            guideSlug={guide.slug}
+          />
+        </div>
+      </div>
+    </main>
+  );
+}

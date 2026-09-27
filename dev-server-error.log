@@ -1,0 +1,524 @@
+⚠ Warning: Next.js ignored package-lock.json in C:\Users\user because it would include your home directory (C:\Users\user).
+ To use this directory, set `turbopack.root` in your Next.js config.
+
+⨯ upstream image response failed for https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Lascar_La_Rambla_street_%284469806880%29.jpg/1280px-Lascar_La_Rambla_street_%284469806880%29.jpg 429
+Error: "url" parameter is valid but upstream response is invalid
+    at ignore-listed frames {
+  statusCode: 429
+}
+⨯ upstream image response failed for https://upload.wikimedia.org/wikipedia/commons/thumb/9/96/Barcelona_-_Mercat_de_Sant_Josep_%28la_Boqueria%29_-_Entrance.jpg/1280px-Barcelona_-_Mercat_de_Sant_Josep_%28la_Boqueria%29_-_Entrance.jpg 429
+Error: "url" parameter is valid but upstream response is invalid
+    at ignore-listed frames {
+  statusCode: 429
+}
+⨯ upstream image response failed for https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/22_11_01_Palau_DSCF2611_52502512616_cc1e7db845_k.jpg/1280px-22_11_01_Palau_DSCF2611_52502512616_cc1e7db845_k.jpg 429
+Error: "url" parameter is valid but upstream response is invalid
+    at ignore-listed frames {
+  statusCode: 429
+}
+⨯ upstream image response failed for https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Hospital_Sant_Pau%2C_main_facade.jpg/1280px-Hospital_Sant_Pau%2C_main_facade.jpg 429
+Error: "url" parameter is valid but upstream response is invalid
+    at ignore-listed frames {
+  statusCode: 429
+}
+⨯ upstream image response failed for https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/Arc_de_Triomf%2C_Barcelona_2716.jpg/1280px-Arc_de_Triomf%2C_Barcelona_2716.jpg 429
+Error: "url" parameter is valid but upstream response is invalid
+    at ignore-listed frames {
+  statusCode: 429
+}
+⨯ upstream image response failed for https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Ciutadella_Park_fountain.jpg/1280px-Ciutadella_Park_fountain.jpg 429
+Error: "url" parameter is valid but upstream response is invalid
+    at ignore-listed frames {
+  statusCode: 429
+}
+⨯ upstream image response failed for https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Fale_-_Spain_-_Barcelona_-_8.jpg/1280px-Fale_-_Spain_-_Barcelona_-_8.jpg 429
+Error: "url" parameter is valid but upstream response is invalid
+    at ignore-listed frames {
+  statusCode: 429
+}
+⨯ upstream image response failed for https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Beach%2C_Barcelona_%28P1170713%29.jpg/1280px-Beach%2C_Barcelona_%28P1170713%29.jpg 429
+Error: "url" parameter is valid but upstream response is invalid
+    at ignore-listed frames {
+  statusCode: 429
+}
+⨯ upstream image response failed for https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Tur%C3%B3_Rovira.jpg/1280px-Tur%C3%B3_Rovira.jpg 429
+Error: "url" parameter is valid but upstream response is invalid
+    at ignore-listed frames {
+  statusCode: 429
+}
+⨯ upstream image response failed for https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Catalunya_Barcelona1_tango7174.jpg/1280px-Catalunya_Barcelona1_tango7174.jpg 429
+Error: "url" parameter is valid but upstream response is invalid
+    at ignore-listed frames {
+  statusCode: 429
+}
+⨯ upstream image response failed for https://upload.wikimedia.org/wikipedia/commons/thumb/f/ff/Barcellona_Pla%C3%A7a_Reial.jpg/1280px-Barcellona_Pla%C3%A7a_Reial.jpg 429
+Error: "url" parameter is valid but upstream response is invalid
+    at ignore-listed frames {
+  statusCode: 429
+}
+⨯ upstream image response failed for https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Temple_del_Sagrat_Cor_vist_des_de_la_Talaia_del_Tibidabo.JPG/1280px-Temple_del_Sagrat_Cor_vist_des_de_la_Talaia_del_Tibidabo.JPG 429
+Error: "url" parameter is valid but upstream response is invalid
+    at ignore-listed frames {
+  statusCode: 429
+}
+⨯ upstream image response failed for https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/Sharm_El_Sheikh_-_panoramio_%2815%29.jpg/1280px-Sharm_El_Sheikh_-_panoramio_%2815%29.jpg 429
+⨯ upstream image response failed for https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/View_from_Gell%C3%A9rt_Hill_to_the_Danube%2C_Hungary_-_Budapest_%2828493220635%29.jpg/1280px-View_from_Gell%C3%A9rt_Hill_to_the_Danube%2C_Hungary_-_Budapest_%2828493220635%29.jpg 429
+Error: "url" parameter is valid but upstream response is invalid
+    at ignore-listed frames {
+  statusCode: 429
+}
+⨯ upstream image response failed for https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Schoenbrunn_philharmoniker_2012.jpg/1280px-Schoenbrunn_philharmoniker_2012.jpg 429
+⨯ upstream image response failed for https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Prague_%286365119737%29.jpg/1280px-Prague_%286365119737%29.jpg 429
+⨯ upstream image response failed for https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/La_Tour_Eiffel_vue_de_la_Tour_Saint-Jacques%2C_Paris_ao%C3%BBt_2014_%282%29.jpg/1280px-La_Tour_Eiffel_vue_de_la_Tour_Saint-Jacques%2C_Paris_ao%C3%BBt_2014_%282%29.jpg 429
+⨯ upstream image response failed for https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Trevi_Fountain%2C_Rome%2C_Italy_2_-_May_2007.jpg/1280px-Trevi_Fountain%2C_Rome%2C_Italy_2_-_May_2007.jpg 429
+Error: "url" parameter is valid but upstream response is invalid
+    at ignore-listed frames {
+  statusCode: 429
+}
+⨯ upstream image response failed for https://upload.wikimedia.org/wikipedia/commons/thumb/6/67/London_Skyline_%28125508655%29.jpeg/1280px-London_Skyline_%28125508655%29.jpeg 429
+Error: "url" parameter is valid but upstream response is invalid
+    at ignore-listed frames {
+  statusCode: 429
+}
+Error: "url" parameter is valid but upstream response is invalid
+    at ignore-listed frames {
+  statusCode: 429
+}
+Error: "url" parameter is valid but upstream response is invalid
+    at ignore-listed frames {
+  statusCode: 429
+}
+Error: "url" parameter is valid but upstream response is invalid
+    at ignore-listed frames {
+  statusCode: 429
+}
+Error: "url" parameter is valid but upstream response is invalid
+    at ignore-listed frames {
+  statusCode: 429
+}
+⨯ upstream image response failed for https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/113_Centenari_dels_4_Gats%2C_c._Montsi%C3%B3.jpg/1280px-113_Centenari_dels_4_Gats%2C_c._Montsi%C3%B3.jpg 429
+Error: "url" parameter is valid but upstream response is invalid
+    at ignore-listed frames {
+  statusCode: 429
+}
+⨯ upstream image response failed for https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Barcelona_%28La_Barceloneta%29._Restaurant_%E2%80%9CCan_Sol%C3%A9%E2%80%9D._Wall_painting-_fisherwomen_and_fishermen._1949._Alexandre_Cirici%2C_painter_%2830250710881%29.jpg/1280px-Barcelona_%28La_Barceloneta%29._Restaurant_%E2%80%9CCan_Sol%C3%A9%E2%80%9D._Wall_painting-_fisherwomen_and_fishermen._1949._Alexandre_Cirici%2C_painter_%2830250710881%29.jpg 429
+Error: "url" parameter is valid but upstream response is invalid
+    at ignore-listed frames {
+  statusCode: 429
+}
+⨯ upstream image response failed for https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Evening_light_over_Barcelona.jpg/1280px-Evening_light_over_Barcelona.jpg 429
+Error: "url" parameter is valid but upstream response is invalid
+    at ignore-listed frames {
+  statusCode: 429
+}
+[browser] Image with src "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Tur%C3%B3_Rovira.jpg/1280px-Tur%C3%B3_Rovira.jpg" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
+[browser] Image with src "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Tur%C3%B3_Rovira.jpg/1280px-Tur%C3%B3_Rovira.jpg" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
+[browser] Image with src "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Tur%C3%B3_Rovira.jpg/1280px-Tur%C3%B3_Rovira.jpg" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
+[browser] Image with src "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Tur%C3%B3_Rovira.jpg/1280px-Tur%C3%B3_Rovira.jpg" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
+[browser] Image with src "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Tur%C3%B3_Rovira.jpg/1280px-Tur%C3%B3_Rovira.jpg" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
+[browser] Image with src "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Tur%C3%B3_Rovira.jpg/1280px-Tur%C3%B3_Rovira.jpg" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
+[browser] Image with src "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Tur%C3%B3_Rovira.jpg/1280px-Tur%C3%B3_Rovira.jpg" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
+[browser] Image with src "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Tur%C3%B3_Rovira.jpg/1280px-Tur%C3%B3_Rovira.jpg" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
+[browser] Image with src "https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/Parc_guell_-_panoramio.jpg/1280px-Parc_guell_-_panoramio.jpg" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
+[browser] Image with src "/images-barcelona/bunkers-del-carmel.jpg" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
+[browser] Image with src "/images-barcelona/bunkers-del-carmel.jpg" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
+[browser] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+https://react.dev/link/hydration-mismatch
+
+  ...
+    <ErrorBoundary errorComponent={undefined} errorStyles={undefined} errorScripts={undefined}>
+      <LoadingBoundary name="barcelona/" loading={null}>
+        <HTTPAccessFallbackBoundary notFound={undefined} forbidden={undefined} unauthorized={undefined}>
+          <RedirectBoundary>
+            <RedirectErrorBoundary router={{...}}>
+              <InnerLayoutRouter url="/guides/ba..." tree={[...]} params={{}} cacheNode={{rsc:{...}, ...}} ...>
+                <SegmentViewNode type="page" pagePath="guides/bar...">
+                  <SegmentTrieNode>
+                  <BarcelonaGuidePage>
+                    <main className="pb-10">
+                      <Container>
+                        <div className="mx-auto w-...">
+                          <LinkComponent>
+                          <h1>
+                          <CategoryContent>
+                            <AttractionsExplorer guideSlug="barcelona" attractions={[...]} areas={[...]}>
+                              <div>
+                                <div className="relative">
+                                  <IconSearch>
+                                  <input
+                                    type="text"
+                                    value=""
+                                    onChange={function onChange}
+                                    placeholder="شو بتدور عليه في Barcelona؟"
+                                    className="w-full rounded-full border border-slate-200 bg-white py-3 pe-11 ps-4 te..."
+-                                   __gcruniqueid="1"
+                                  >
+                                ...
+                    ...
+                ...
+              ...
+ 
+[browser] Failed to fetch RSC payload for http://10.0.0.27:3000/guides/barcelona?s=shopping. Falling back to browser navigation. TypeError: Load failed
+[browser] Failed to fetch RSC payload for http://10.0.0.27:3000/guides/barcelona?s=shopping. Falling back to browser navigation. TypeError: Load failed
+[browser] Failed to fetch RSC payload for http://10.0.0.27:3000/guides/barcelona?s=attractions. Falling back to browser navigation. TypeError: Load failed
+[browser] Failed to fetch RSC payload for http://10.0.0.27:3000/guides/barcelona?s=shopping. Falling back to browser navigation. TypeError: Load failed
+[browser] Failed to fetch RSC payload for http://10.0.0.27:3000/guides/barcelona?s=attractions. Falling back to browser navigation. TypeError: Load failed
+[browser] Failed to fetch RSC payload for http://10.0.0.27:3000/guides/barcelona?s=shopping. Falling back to browser navigation. TypeError: Load failed
+[browser] Failed to fetch RSC payload for http://10.0.0.27:3000/guides/barcelona?s=shopping. Falling back to browser navigation. TypeError: Load failed
+[browser] Failed to fetch RSC payload for http://10.0.0.27:3000/guides/barcelona?s=shopping. Falling back to browser navigation. TypeError: Load failed
+[browser] Failed to fetch RSC payload for http://10.0.0.27:3000/guides/barcelona?s=attractions. Falling back to browser navigation. TypeError: Load failed
+[browser] Image with src "/images-barcelona/sagrada-familia.jpg" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
+[browser] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+https://react.dev/link/hydration-mismatch
+
+  ...
+    <ErrorBoundary errorComponent={undefined} errorStyles={undefined} errorScripts={undefined}>
+      <LoadingBoundary name="barcelona/" loading={null}>
+        <HTTPAccessFallbackBoundary notFound={undefined} forbidden={undefined} unauthorized={undefined}>
+          <RedirectBoundary>
+            <RedirectErrorBoundary router={{...}}>
+              <InnerLayoutRouter url="/guides/ba..." tree={[...]} params={{}} cacheNode={{rsc:{...}, ...}} ...>
+                <SegmentViewNode type="page" pagePath="guides/bar...">
+                  <SegmentTrieNode>
+                  <BarcelonaGuidePage>
+                    <main className="pb-10">
+                      <Container>
+                        <div className="mx-auto w-...">
+                          <LinkComponent>
+                          <h1>
+                          <CategoryContent>
+                            <AttractionsExplorer guideSlug="barcelona" attractions={[...]} areas={[...]}>
+                              <div>
+                                <div className="relative">
+                                  <IconSearch>
+                                  <input
+                                    type="text"
+                                    value=""
+                                    onChange={function onChange}
+                                    placeholder="شو بتدور عليه في Barcelona؟"
+                                    className="w-full rounded-full border border-slate-200 bg-white py-3 pe-11 ps-4 te..."
+-                                   __gcruniqueid="1"
+                                  >
+                                ...
+                    ...
+                ...
+              ...
+ 
+⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[browser] Image with src "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Desayuno_con_dos_caf%C3%A9s%2C_bollo_y_tortilla.jpg/1280px-Desayuno_con_dos_caf%C3%A9s%2C_bollo_y_tortilla.jpg" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
+[browser] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+https://react.dev/link/hydration-mismatch
+
+  ...
+    <ErrorBoundary errorComponent={undefined} errorStyles={undefined} errorScripts={undefined}>
+      <LoadingBoundary name="barcelona/" loading={null}>
+        <HTTPAccessFallbackBoundary notFound={undefined} forbidden={undefined} unauthorized={undefined}>
+          <RedirectBoundary>
+            <RedirectErrorBoundary router={{...}}>
+              <InnerLayoutRouter url={"/guides/..."} tree={[...]} params={{}} cacheNode={{rsc:{...}, ...}} ...>
+                <SegmentViewNode type="page" pagePath="guides/bar...">
+                  <SegmentTrieNode>
+                  <BarcelonaGuidePage>
+                    <main className="pb-10">
+                      <Container>
+                        <div className="mx-auto w-...">
+                          <LinkComponent>
+                          <h1>
+                          <CategoryContent>
+                            <FoodCategoryView guideSlug="barcelona" category={{id:"breakfast", ...}} places={[...]} ...>
+                              <div>
+                                <LinkComponent>
+                                <p>
+                                <div className="relative mt-4">
+                                  <IconSearch>
+                                  <input
+                                    type="text"
+                                    value=""
+                                    onChange={function onChange}
+                                    placeholder="دور على مطعم أو منطقة..."
+                                    className="w-full rounded-full border border-slate-200 bg-white py-2.5 pe-10 ps-4 ..."
+-                                   __gcruniqueid="1"
+                                  >
+                                ...
+                    ...
+                ...
+              ...
+ 
+⨯ upstream image response failed for https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/Arc_de_Triomf%2C_Barcelona_2716.jpg/1280px-Arc_de_Triomf%2C_Barcelona_2716.jpg 429
+Error: "url" parameter is valid but upstream response is invalid
+    at ignore-listed frames {
+  statusCode: 429
+}
+[browser] Image with src "/images-barcelona/sagrada-familia.jpg" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
+[browser] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+https://react.dev/link/hydration-mismatch
+
+  ...
+    <ErrorBoundary errorComponent={undefined} errorStyles={undefined} errorScripts={undefined}>
+      <LoadingBoundary name="barcelona/" loading={null}>
+        <HTTPAccessFallbackBoundary notFound={undefined} forbidden={undefined} unauthorized={undefined}>
+          <RedirectBoundary>
+            <RedirectErrorBoundary router={{...}}>
+              <InnerLayoutRouter url="/guides/ba..." tree={[...]} params={{}} cacheNode={{rsc:{...}, ...}} ...>
+                <SegmentViewNode type="page" pagePath="guides/bar...">
+                  <SegmentTrieNode>
+                  <BarcelonaGuidePage>
+                    <main className="pb-10">
+                      <Container>
+                        <div className="mx-auto w-...">
+                          <LinkComponent>
+                          <h1>
+                          <CategoryContent>
+                            <AttractionsExplorer guideSlug="barcelona" attractions={[...]} areas={[...]}>
+                              <div>
+                                <div className="relative">
+                                  <IconSearch>
+                                  <input
+                                    type="text"
+                                    value=""
+                                    onChange={function onChange}
+                                    placeholder="شو بتدور عليه في Barcelona؟"
+                                    className="w-full rounded-full border border-slate-200 bg-white py-3 pe-11 ps-4 te..."
+-                                   __gcruniqueid="1"
+                                  >
+                                ...
+                    ...
+                ...
+              ...
+ 
+[browser] Image with src "/images-barcelona/sagrada-familia.jpg" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
+[browser] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+https://react.dev/link/hydration-mismatch
+
+  ...
+    <ErrorBoundary errorComponent={undefined} errorStyles={undefined} errorScripts={undefined}>
+      <LoadingBoundary name="barcelona/" loading={null}>
+        <HTTPAccessFallbackBoundary notFound={undefined} forbidden={undefined} unauthorized={undefined}>
+          <RedirectBoundary>
+            <RedirectErrorBoundary router={{...}}>
+              <InnerLayoutRouter url="/guides/ba..." tree={[...]} params={{}} cacheNode={{rsc:{...}, ...}} ...>
+                <SegmentViewNode type="page" pagePath="guides/bar...">
+                  <SegmentTrieNode>
+                  <BarcelonaGuidePage>
+                    <main className="pb-10">
+                      <Container>
+                        <div className="mx-auto w-...">
+                          <LinkComponent>
+                          <h1>
+                          <CategoryContent>
+                            <AttractionsExplorer guideSlug="barcelona" attractions={[...]} areas={[...]}>
+                              <div>
+                                <div className="relative">
+                                  <IconSearch>
+                                  <input
+                                    type="text"
+                                    value=""
+                                    onChange={function onChange}
+                                    placeholder="شو بتدور عليه في Barcelona؟"
+                                    className="w-full rounded-full border border-slate-200 bg-white py-3 pe-11 ps-4 te..."
+-                                   __gcruniqueid="1"
+                                  >
+                                ...
+                    ...
+                ...
+              ...
+ 
+[browser] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+https://react.dev/link/hydration-mismatch
+
+  ...
+    <ErrorBoundary errorComponent={undefined} errorStyles={undefined} errorScripts={undefined}>
+      <LoadingBoundary name="barcelona/" loading={null}>
+        <HTTPAccessFallbackBoundary notFound={undefined} forbidden={undefined} unauthorized={undefined}>
+          <RedirectBoundary>
+            <RedirectErrorBoundary router={{...}}>
+              <InnerLayoutRouter url="/guides/ba..." tree={[...]} params={{}} cacheNode={{rsc:{...}, ...}} ...>
+                <SegmentViewNode type="page" pagePath="guides/bar...">
+                  <SegmentTrieNode>
+                  <BarcelonaGuidePage>
+                    <main className="pb-10">
+                      <Container>
+                        <div className="mx-auto w-...">
+                          <LinkComponent>
+                          <h1>
+                          <CategoryContent>
+                            <AttractionsExplorer guideSlug="barcelona" attractions={[...]} areas={[...]}>
+                              <div>
+                                <div className="relative">
+                                  <IconSearch>
+                                  <input
+                                    type="text"
+                                    value=""
+                                    onChange={function onChange}
+                                    placeholder="شو بتدور عليه في Barcelona؟"
+                                    className="w-full rounded-full border border-slate-200 bg-white py-3 pe-11 ps-4 te..."
+-                                   __gcruniqueid="1"
+                                  >
+                                ...
+                    ...
+                ...
+              ...
+ 
+[browser] Image with src "/images-barcelona/sagrada-familia.jpg" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
+[browser] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+https://react.dev/link/hydration-mismatch
+
+  ...
+    <ErrorBoundary errorComponent={undefined} errorStyles={undefined} errorScripts={undefined}>
+      <LoadingBoundary name="barcelona/" loading={null}>
+        <HTTPAccessFallbackBoundary notFound={undefined} forbidden={undefined} unauthorized={undefined}>
+          <RedirectBoundary>
+            <RedirectErrorBoundary router={{...}}>
+              <InnerLayoutRouter url="/guides/ba..." tree={[...]} params={{}} cacheNode={{rsc:{...}, ...}} ...>
+                <SegmentViewNode type="page" pagePath="guides/bar...">
+                  <SegmentTrieNode>
+                  <BarcelonaGuidePage>
+                    <main className="pb-10">
+                      <Container>
+                        <div className="mx-auto w-...">
+                          <LinkComponent>
+                          <h1>
+                          <CategoryContent>
+                            <AttractionsExplorer guideSlug="barcelona" attractions={[...]} areas={[...]}>
+                              <div>
+                                <div className="relative">
+                                  <IconSearch>
+                                  <input
+                                    type="text"
+                                    value=""
+                                    onChange={function onChange}
+                                    placeholder="شو بتدور عليه في Barcelona؟"
+                                    className="w-full rounded-full border border-slate-200 bg-white py-3 pe-11 ps-4 te..."
+-                                   __gcruniqueid="1"
+                                  >
+                                ...
+                    ...
+                ...
+              ...
+ 
+[browser] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+https://react.dev/link/hydration-mismatch
+
+  ...
+    <ErrorBoundary errorComponent={undefined} errorStyles={undefined} errorScripts={undefined}>
+      <LoadingBoundary name="barcelona/" loading={null}>
+        <HTTPAccessFallbackBoundary notFound={undefined} forbidden={undefined} unauthorized={undefined}>
+          <RedirectBoundary>
+            <RedirectErrorBoundary router={{...}}>
+              <InnerLayoutRouter url="/guides/ba..." tree={[...]} params={{}} cacheNode={{rsc:{...}, ...}} ...>
+                <SegmentViewNode type="page" pagePath="guides/bar...">
+                  <SegmentTrieNode>
+                  <BarcelonaGuidePage>
+                    <main className="pb-10">
+                      <Container>
+                        <div className="mx-auto w-...">
+                          <LinkComponent>
+                          <h1>
+                          <CategoryContent>
+                            <AttractionsExplorer guideSlug="barcelona" attractions={[...]} areas={[...]}>
+                              <div>
+                                <div className="relative">
+                                  <IconSearch>
+                                  <input
+                                    type="text"
+                                    value=""
+                                    onChange={function onChange}
+                                    placeholder="شو بتدور عليه في Barcelona؟"
+                                    className="w-full rounded-full border border-slate-200 bg-white py-3 pe-11 ps-4 te..."
+-                                   __gcruniqueid="1"
+                                  >
+                                ...
+                    ...
+                ...
+              ...
+ 
+[browser] Image with src "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/Arc_de_Triomf%2C_Barcelona_2716.jpg/1280px-Arc_de_Triomf%2C_Barcelona_2716.jpg" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
