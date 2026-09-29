@@ -8,8 +8,8 @@ import { createClient as createSupabaseClient } from "@supabase/supabase-js";
  * `supabase.auth.getUser()` on the normal session-bound client from utils/supabase/server.ts).
  *
  * Reserved for genuinely trusted, backend-only operations that a real user session cannot
- * perform under RLS -- today that's exactly `create_pending_order` (see app/lib/orders.ts);
- * later, a payment webhook and entitlement-granting will use it too. It is never a shortcut
+ * perform under RLS -- `create_pending_order` (see app/lib/orders.ts) and the Allpay webhook
+ * fulfillment path. It is never a shortcut
  * for "make development easier" -- see the Commerce Foundation V1 task's explicit rule against
  * permissive client-write policies, which this client exists to avoid ever needing.
  *

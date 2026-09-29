@@ -7,7 +7,15 @@ import Button from "../Button";
  * so each product's own page supplies its own name/contact subject — no product-specific
  * copy lives here.
  */
-export default function ProductAccessDenied({ productName, mailSubject }: { productName: string; mailSubject: string }) {
+export default function ProductAccessDenied({
+  productName,
+  mailSubject,
+  productSlug,
+}: {
+  productName: string;
+  mailSubject: string;
+  productSlug?: string;
+}) {
   return (
     <main className="flex min-h-[calc(100vh-4rem)] items-center py-12">
       <Container className="max-w-md">
@@ -17,7 +25,10 @@ export default function ProductAccessDenied({ productName, mailSubject }: { prod
           <p className="mt-2 text-sm leading-6 text-slate-600">{productName} متاح للحسابات اللي اشترته.</p>
 
           <div className="mt-6 flex flex-col gap-2.5">
-            <Button href="/account">العودة لحسابي</Button>
+            {productSlug && <Button href={`/checkout?product=${encodeURIComponent(productSlug)}`}>إتمام الشراء</Button>}
+            <Button href="/account" variant={productSlug ? "secondary" : "primary"}>
+              العودة لحسابي
+            </Button>
             <Button href={`mailto:travelsmarter501@gmail.com?subject=${encodeURIComponent(mailSubject)}`} variant="secondary">
               تواصل معنا للشراء
             </Button>

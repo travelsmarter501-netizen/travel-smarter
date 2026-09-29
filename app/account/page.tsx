@@ -22,6 +22,7 @@ const PRODUCT_ROUTES: Record<string, string> = {
   "barcelona-ready-plan-1day": "/ready-plans/barcelona/1-day",
   "barcelona-ready-plan-3day": "/ready-plans/barcelona/3-days",
   "barcelona-ready-plan": "/ready-plans/barcelona",
+  "travel-smarter-personalized-plan": "/planner",
 };
 
 const DESTINATION_LABELS: Record<string, string> = {
@@ -240,7 +241,9 @@ export default async function AccountPage() {
                       <span className="shrink-0 rounded-full bg-teal-50 px-3 py-1.5 text-xs font-bold text-teal-700">
                         {CUSTOM_PLAN_REQUEST_STATUS_LABELS[request.status]}
                       </span>
-                      {request.status === "draft" && <CustomPlanCheckoutButton requestId={request.id} />}
+                      {(request.status === "draft" || request.status === "pending_payment") && (
+                        <CustomPlanCheckoutButton requestId={request.id} />
+                      )}
                       {request.status === "delivered" && (
                         <Button href={`/account/custom-plans/${request.id}`} size="md">
                           افتح خطتك

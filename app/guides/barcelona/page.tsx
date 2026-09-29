@@ -170,7 +170,7 @@ export default async function BarcelonaGuidePage(props: PageProps<"/guides/barce
 
     const hasAccess = await hasProductAccess("barcelona-guide", user.id);
     if (!hasAccess) {
-      return <ProductAccessDenied productName="دليل Barcelona الكامل" mailSubject="استفسار عن دليل Barcelona" />;
+      return <ProductAccessDenied productName="دليل Barcelona الكامل" mailSubject="استفسار عن دليل Barcelona" productSlug="barcelona-guide" />;
     }
   }
 

@@ -118,7 +118,7 @@ export default function CartWidget() {
                   </span>
                 </div>
                 <Link
-                  href="/#contact"
+                  href="/checkout"
                   onClick={() => setOpen(false)}
                   className="mt-4 flex w-full items-center justify-center rounded-full bg-teal-700 px-5 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-teal-800"
                 >

@@ -48,7 +48,7 @@ export default async function SmartPlannerBarcelonaV1Page() {
 
     const hasAccess = await hasProductAccess("barcelona-smart-planner", user.id);
     if (!hasAccess) {
-      return <ProductAccessDenied productName="المخطط الذكي لبرشلونة" mailSubject="استفسار عن المخطط الذكي لبرشلونة" />;
+      return <ProductAccessDenied productName="المخطط الذكي لبرشلونة" mailSubject="استفسار عن المخطط الذكي لبرشلونة" productSlug="barcelona-smart-planner" />;
     }
   }
 

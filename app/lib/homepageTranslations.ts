@@ -399,7 +399,7 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
       empty: "Your cart is empty",
       remove: "Remove",
       subtotal: "Subtotal",
-      continueCta: "Continue",
+      continueCta: "Checkout",
       clear: "Clear cart",
       alreadyInCart: "This product is already in your cart",
       close: "Close cart",

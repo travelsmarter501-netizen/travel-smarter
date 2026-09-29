@@ -16,7 +16,8 @@ import {
 } from "../../lib/customPlanRequest";
 import { inclusiveDayCount } from "../../lib/planner/dateOnly";
 import { readPendingCustomPlanRequest, writePendingCustomPlanRequest, clearPendingCustomPlanRequest } from "../../lib/customPlanRequestDraft";
-import { submitCustomPlanRequest, requestCustomPlanCheckout } from "../../custom-plan/barcelona/actions";
+import { submitCustomPlanRequest } from "../../custom-plan/barcelona/actions";
+import { startCustomPlanAllpayCheckout } from "../../checkout/actions";
 import type { V2PlannerInterest } from "../../lib/planner/v2PlannerTypes";
 
 /**
@@ -175,7 +176,7 @@ export default function CustomPlanRequestForm({ initialEmail = "", isLoggedIn }:
     if (!savedRequestId) return;
     setCheckoutLoading(true);
     setCheckoutError(null);
-    const result = await requestCustomPlanCheckout(savedRequestId);
+    const result = await startCustomPlanAllpayCheckout(savedRequestId);
     setCheckoutLoading(false);
 
     if (!result.ok) {
@@ -183,7 +184,8 @@ export default function CustomPlanRequestForm({ initialEmail = "", isLoggedIn }:
       return;
     }
 
-    setCheckoutOrderId(result.data.orderId);
+    setCheckoutOrderId(result.orderId);
+    window.location.href = result.paymentUrl;
   }
 
   if (savedRequestId) {

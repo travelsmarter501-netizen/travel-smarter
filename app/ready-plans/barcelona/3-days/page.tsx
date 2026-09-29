@@ -40,7 +40,7 @@ export default async function BarcelonaReadyPlan3DayPage() {
 
     const hasAccess = await hasProductAccess("barcelona-ready-plan-3day", user.id);
     if (!hasAccess) {
-      return <ProductAccessDenied productName="برشلونة — خطة 3 أيام" mailSubject="استفسار عن خطة برشلونة 3 أيام" />;
+      return <ProductAccessDenied productName="برشلونة — خطة 3 أيام" mailSubject="استفسار عن خطة برشلونة 3 أيام" productSlug="barcelona-ready-plan-3day" />;
     }
   }
 

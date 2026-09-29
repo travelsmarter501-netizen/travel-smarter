@@ -38,7 +38,7 @@ export default async function BarcelonaReadyPlan1DayPage() {
 
     const hasAccess = await hasProductAccess("barcelona-ready-plan-1day", user.id);
     if (!hasAccess) {
-      return <ProductAccessDenied productName="برشلونة بيوم واحد" mailSubject="استفسار عن رزمة برشلونة بيوم واحد" />;
+      return <ProductAccessDenied productName="برشلونة بيوم واحد" mailSubject="استفسار عن رزمة برشلونة بيوم واحد" productSlug="barcelona-ready-plan-1day" />;
     }
   }
 

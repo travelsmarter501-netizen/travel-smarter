@@ -6,10 +6,8 @@ import { hasProductAccess, GUIDE_BUNDLE_PRODUCT_SLUGS } from "./entitlements";
 /**
  * Commerce Foundation V1 -- order domain helpers.
  *
- * No payment provider is wired up yet. This module only ever creates `pending` orders (zero
- * product access on their own -- see the orders table's own migration comment) and reads a
- * user's own orders back. Nothing here grants a user_entitlements row; that will only ever
- * happen later, from a verified payment webhook.
+ * Creates `pending` orders (zero product access on their own) and reads a user's own orders.
+ * Entitlements are granted only from the verified Allpay webhook (app/api/allpay/webhook).
  *
  * Every read/write here derives the current user from the verified session
  * (`supabase.auth.getUser()`), never from a caller-supplied id -- the same trust boundary

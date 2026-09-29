@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { requestCustomPlanCheckout } from "../../custom-plan/barcelona/actions";
+import { startCustomPlanAllpayCheckout } from "../../checkout/actions";
 
 /**
  * "متابعة للدفع" for a `draft` Custom Plan request already saved in /account. Calls the same
@@ -20,15 +20,19 @@ export default function CustomPlanCheckoutButton({ requestId }: { requestId: str
   async function handleClick() {
     setLoading(true);
     setError(null);
-    const result = await requestCustomPlanCheckout(requestId);
+    const result = await startCustomPlanAllpayCheckout(requestId);
     setLoading(false);
 
     if (!result.ok) {
+      if (result.requiresLogin) {
+        router.push("/login?next=/account");
+        return;
+      }
       setError(result.error);
       return;
     }
 
-    router.refresh();
+    window.location.href = result.paymentUrl;
   }
 
   return (

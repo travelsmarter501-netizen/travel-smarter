@@ -38,7 +38,7 @@ export default async function BarcelonaReadyPlanPage() {
 
     const hasAccess = await hasProductAccess("barcelona-ready-plan", user.id);
     if (!hasAccess) {
-      return <ProductAccessDenied productName="خطة Barcelona الجاهزة" mailSubject="استفسار عن خطة Barcelona الجاهزة" />;
+      return <ProductAccessDenied productName="خطة Barcelona الجاهزة" mailSubject="استفسار عن خطة Barcelona الجاهزة" productSlug="barcelona-ready-plan" />;
     }
   }
 
