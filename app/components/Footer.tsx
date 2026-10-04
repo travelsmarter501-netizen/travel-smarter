@@ -1,15 +1,17 @@
 "use client";
 
+import type { ReactNode } from "react";
 import Link from "next/link";
 import Container from "./Container";
 import CurrencySwitcher from "./CurrencySwitcher";
 import Logo from "./Logo";
 import { useLanguage } from "../lib/language";
+import { BUSINESS_CONTACT } from "../lib/businessInfo";
 
 export default function Footer() {
   const { t } = useLanguage();
 
-  const columns = [
+  const columns: { title: string; links: { label: string; href: string }[]; extra?: ReactNode[] }[] = [
     {
       title: t.footer.productsHeading,
       links: [
@@ -28,7 +30,12 @@ export default function Footer() {
     },
     {
       title: t.footer.contactHeading,
-      links: [{ label: "travelsmarter501@gmail.com", href: "mailto:travelsmarter501@gmail.com" }],
+      links: [{ label: BUSINESS_CONTACT.email, href: `mailto:${BUSINESS_CONTACT.email}` }],
+      extra: [
+        <span key="phone">
+          {t.footer.phoneLabel}: <span dir="ltr">{BUSINESS_CONTACT.phone}</span>
+        </span>,
+      ],
     },
   ];
 
@@ -41,6 +48,12 @@ export default function Footer() {
               <Logo light />
             </Link>
             <p className="mt-4 max-w-xs text-sm leading-6">{t.footer.brandLine}</p>
+            <p className="mt-2 max-w-xs text-sm leading-6 text-slate-500">{t.footer.descriptor}</p>
+            {t.footer.descriptorSecondary && (
+              <p dir="ltr" className="mt-1 max-w-xs text-sm leading-6 text-slate-500 rtl:text-right">
+                {t.footer.descriptorSecondary}
+              </p>
+            )}
             <div className="mt-4">
               <CurrencySwitcher />
             </div>
@@ -57,13 +70,26 @@ export default function Footer() {
                     </a>
                   </li>
                 ))}
+                {column.extra?.map((line, index) => (
+                  <li key={`extra-${index}`} className="text-sm">
+                    {line}
+                  </li>
+                ))}
               </ul>
             </div>
           ))}
         </div>
 
-        <div className="mt-10 border-t border-slate-800 pt-6 text-sm">
+        <div className="mt-10 flex flex-col gap-3 border-t border-slate-800 pt-6 text-sm sm:flex-row sm:items-center sm:justify-between">
           <p>{t.footer.rights}</p>
+          <nav aria-label="Legal" className="flex flex-wrap gap-x-6 gap-y-2">
+            <Link href="/privacy-policy" className="transition-colors hover:text-white">
+              {t.footer.privacyLabel}
+            </Link>
+            <Link href="/terms-of-service" className="transition-colors hover:text-white">
+              {t.footer.termsLabel}
+            </Link>
+          </nav>
         </div>
       </Container>
     </footer>
