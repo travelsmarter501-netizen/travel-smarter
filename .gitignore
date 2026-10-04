@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local-only tooling files (do not track)
+.claude/settings.local.json
+supabase/.temp/
