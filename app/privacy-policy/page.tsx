@@ -170,15 +170,15 @@ export default function PrivacyPolicyPage() {
 
       <LegalSection title="11. Children">
         <p>
-          The website is not directed to children under 16 and we do not knowingly collect personal data from them. If you
-          believe a child has given us personal data, please contact us and we will delete it.
+          We do not knowingly collect personal data in violation of applicable law. If you believe personal data has been
+          provided to us in a way that requires parental or guardian consent under applicable law, please contact us.
         </p>
       </LegalSection>
 
       <LegalSection title="12. Changes to this policy">
         <p>
-          We may update this policy from time to time. The “Last updated” date at the top shows the latest version.
-          Continued use of the website after an update means you accept the updated policy.
+          We may update this Privacy Policy from time to time. The updated version will be posted on this page with a
+          revised “Last updated” date.
         </p>
       </LegalSection>
 

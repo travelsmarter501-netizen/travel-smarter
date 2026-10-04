@@ -43,7 +43,6 @@ export default function TermsOfServicePage() {
             dates, interests and accommodation you provide.
           </li>
         </LegalList>
-        <p>Barcelona is currently the available destination; more destinations may be added over time.</p>
         <p>
           <strong>Travel Smarter is not a travel agency.</strong> We do not sell, book or arrange flights, hotels,
           transport, tours or travel packages, and we are not a party to any booking you make with a third party. Mentions
