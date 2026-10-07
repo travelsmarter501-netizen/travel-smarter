@@ -1,17 +1,26 @@
 import "server-only";
 
+export type AllpayMode = "test" | "live";
+
 /**
- * Test-mode-only Allpay config. Live charges are refused in code even if the dashboard
- * were switched — Allpay also requires Test Mode on the integration itself
- * (Settings → Integrations). There is no live Create Payment path in this app.
+ * The single, explicit switch for the Allpay integration: ALLPAY_MODE must be exactly "test" or
+ * "live". Anything else (unset, misspelled) fails closed -- no payment session is ever created.
+ *
+ * "live" is additionally restricted to the Vercel *Production* environment
+ * (VERCEL_ENV === "production"). A laptop, a Preview deployment, or an env file copied somewhere
+ * else can therefore never create real charges, even if ALLPAY_MODE=live ends up set there.
+ * Local development and Preview deployments run in "test".
  */
-export function assertAllpayTestMode(): void {
-  if (process.env.ALLPAY_LIVE_PAYMENTS === "true") {
-    throw new Error("Live Allpay payments are disabled in this app.");
+export function getAllpayMode(): AllpayMode {
+  const mode = (process.env.ALLPAY_MODE ?? "").trim();
+  if (mode === "test") return "test";
+  if (mode === "live") {
+    if (process.env.VERCEL_ENV !== "production") {
+      throw new Error("ALLPAY_MODE=live is only allowed on the Vercel Production environment.");
+    }
+    return "live";
   }
-  if (process.env.ALLPAY_TEST_MODE !== "true") {
-    throw new Error("Allpay checkout is test-mode only. Set ALLPAY_TEST_MODE=true.");
-  }
+  throw new Error('ALLPAY_MODE must be set to "test" or "live".');
 }
 
 export function getAllpayCredentials(): { login: string; apiKey: string } {
@@ -22,11 +31,26 @@ export function getAllpayCredentials(): { login: string; apiKey: string } {
   return { login, apiKey };
 }
 
-export function getPublicBaseUrl(): string {
+export function getPublicBaseUrl(mode: AllpayMode): string {
   const explicit = process.env.ALLPAY_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_SITE_URL;
-  if (explicit) return explicit.replace(/\/$/, "");
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL.replace(/\/$/, "")}`;
-  throw new Error("ALLPAY_PUBLIC_BASE_URL (or NEXT_PUBLIC_SITE_URL) is required for Allpay redirect URLs.");
+  let base: string;
+  if (explicit) {
+    base = explicit.trim().replace(/\/$/, "");
+  } else if (process.env.VERCEL_URL) {
+    base = `https://${process.env.VERCEL_URL.replace(/\/$/, "")}`;
+  } else {
+    throw new Error("ALLPAY_PUBLIC_BASE_URL (or NEXT_PUBLIC_SITE_URL) is required for Allpay redirect URLs.");
+  }
+
+  // Live redirect/webhook URLs must be real, public https addresses -- Allpay's servers have to
+  // be able to reach the webhook, and customers return to success/cancel pages on this origin.
+  if (mode === "live") {
+    const url = new URL(base);
+    if (url.protocol !== "https:" || url.hostname === "localhost" || url.hostname === "127.0.0.1") {
+      throw new Error("Live Allpay payments require a public https base URL.");
+    }
+  }
+  return base;
 }
 
 /** Current Allpay API (docs: POST JSON, show/mode in the query string only — not signed). */

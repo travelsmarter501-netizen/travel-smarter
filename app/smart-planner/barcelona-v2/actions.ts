@@ -21,6 +21,8 @@ import { buildBarcelonaV2PlaceSelectionBonus, buildBarcelonaV2ShoppingCoverageGo
 import { applyBeachTimingGuard } from "../../lib/planner/plannerBeachTimingGuard";
 import { resolvePlannerPlace } from "../../lib/readyPlan";
 import { barcelonaGuide } from "../../lib/barcelona-guide";
+import { hasProductAccess } from "../../lib/entitlements";
+import { PRODUCT_SLUGS } from "../../lib/commerce/catalog";
 
 /** Places gated behind the customer explicitly signaling interest in experiences/entertainment
  * (the "🎟️ تجارب وترفيه" UI group, which maps to the footballExperiences + nightlife V2 keys --
@@ -82,6 +84,13 @@ const MIN_SUPPORTED_DAYS = 1;
 
 export async function generateBarcelonaPlanV2Action(input: GenerateBarcelonaPlanV2Input): Promise<GenerateBarcelonaPlanV2Result> {
   try {
+    // Entitlement gate. A Server Action is its own POST endpoint, callable without ever loading the
+    // /planner page, so the page gate alone is not enough. hasProductAccess reads the user from the
+    // verified session (never from `input`) and is false for signed-out users.
+    if (!(await hasProductAccess(PRODUCT_SLUGS.personalizedPlan))) {
+      return { ok: false, error: "لازم تسجّل الدخول وتشتري الخطة المخصصة عشان تبني خطتك." };
+    }
+
     if (!input || typeof input !== "object") {
       return { ok: false, error: "طلب غير صالح." };
     }

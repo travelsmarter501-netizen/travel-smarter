@@ -33,15 +33,12 @@ import ProductAccessDenied from "../../components/guide/ProductAccessDenied";
 import { destinations } from "../../lib/content";
 import { barcelonaGuide } from "../../lib/barcelona-guide";
 import { hasProductAccess } from "../../lib/entitlements";
+import { PRODUCT_SLUGS } from "../../lib/commerce/catalog";
 import { createClient } from "../../../utils/supabase/server";
 
 const destination = destinations.find((item) => item.slug === "barcelona")!;
 const guide = barcelonaGuide;
 const basePath = "/guides/barcelona";
-
-// TEMPORARY DEVELOPMENT BYPASS
-// Re-enable authentication and entitlement checks before production launch.
-const TEMP_DISABLE_BARCELONA_ACCESS_GATE = true;
 
 export const metadata: Metadata = {
   title: "دليل Barcelona الذكي | Travel Smarter",
@@ -158,20 +155,18 @@ function CategoryContent({
 export default async function BarcelonaGuidePage(props: PageProps<"/guides/barcelona">) {
   // Server-side entitlement gate — runs before any guide content (including every
   // ?s=... internal state) is read or rendered, so no query param can bypass it.
-  if (!TEMP_DISABLE_BARCELONA_ACCESS_GATE) {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-    if (!user) {
-      redirect("/login?next=/guides/barcelona");
-    }
+  if (!user) {
+    redirect("/login?next=/guides/barcelona");
+  }
 
-    const hasAccess = await hasProductAccess("barcelona-guide", user.id);
-    if (!hasAccess) {
-      return <ProductAccessDenied productName="دليل Barcelona الكامل" mailSubject="استفسار عن دليل Barcelona" productSlug="barcelona-guide" />;
-    }
+  const hasAccess = await hasProductAccess(PRODUCT_SLUGS.guide, user.id);
+  if (!hasAccess) {
+    return <ProductAccessDenied productName="دليل Barcelona الكامل" mailSubject="استفسار عن دليل Barcelona" productSlug={PRODUCT_SLUGS.guide} />;
   }
 
   const searchParams = await props.searchParams;

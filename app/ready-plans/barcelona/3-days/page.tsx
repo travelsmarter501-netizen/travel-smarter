@@ -9,13 +9,10 @@ import BarcelonaReadyPlan from "../../../components/guide/BarcelonaReadyPlan";
 import { barcelonaGuide } from "../../../lib/barcelona-guide";
 import { barcelonaReadyPlan3Day } from "../../../lib/barcelona-ready-plan-3day";
 import { hasProductAccess } from "../../../lib/entitlements";
+import { PRODUCT_SLUGS } from "../../../lib/commerce/catalog";
 import { createClient } from "../../../../utils/supabase/server";
 
 const guide = barcelonaGuide;
-
-// TEMPORARY DEVELOPMENT BYPASS
-// Re-enable Ready Plan entitlement checks before production launch.
-const TEMP_DISABLE_BARCELONA_READY_PLAN_3DAY_ACCESS_GATE = true;
 
 export const metadata: Metadata = {
   title: "برشلونة — خطة 3 أيام | Travel Smarter",
@@ -28,20 +25,18 @@ export default async function BarcelonaReadyPlan3DayPage() {
   // "barcelona-guide". This product also bundles Guide access (see
   // lib/entitlements.ts GUIDE_BUNDLE_PRODUCT_SLUGS) -- owning it grants "barcelona-guide"
   // access too, without a separate fake purchase row.
-  if (!TEMP_DISABLE_BARCELONA_READY_PLAN_3DAY_ACCESS_GATE) {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-    if (!user) {
-      redirect("/login?next=/ready-plans/barcelona/3-days");
-    }
+  if (!user) {
+    redirect("/login?next=/ready-plans/barcelona/3-days");
+  }
 
-    const hasAccess = await hasProductAccess("barcelona-ready-plan-3day", user.id);
-    if (!hasAccess) {
-      return <ProductAccessDenied productName="برشلونة — خطة 3 أيام" mailSubject="استفسار عن خطة برشلونة 3 أيام" productSlug="barcelona-ready-plan-3day" />;
-    }
+  const hasAccess = await hasProductAccess(PRODUCT_SLUGS.readyPlan3Day, user.id);
+  if (!hasAccess) {
+    return <ProductAccessDenied productName="برشلونة — خطة 3 أيام" mailSubject="استفسار عن خطة برشلونة 3 أيام" productSlug={PRODUCT_SLUGS.readyPlan3Day} />;
   }
 
   return (

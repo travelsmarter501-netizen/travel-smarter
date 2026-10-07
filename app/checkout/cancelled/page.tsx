@@ -10,7 +10,7 @@ export default function CheckoutCancelledPage() {
           <p className="text-4xl">↩️</p>
           <h1 className="mt-3 text-2xl font-bold text-slate-900">رجعت بدون إتمام الدفع</h1>
           <p className="mt-2 text-sm leading-6 text-slate-600">
-            ما تم خصم شيء ولم يُفتح أي منتج. تقدر ترجع للسلة وتكمّل الدفع التجريبي متى ما بدك.
+            ما تم خصم شيء ولم يُفتح أي منتج. تقدر ترجع للسلة وتكمّل الدفع متى ما بدك.
           </p>
           <div className="mt-6 flex flex-col gap-2.5">
             <Button href="/checkout">العودة لإتمام الشراء</Button>

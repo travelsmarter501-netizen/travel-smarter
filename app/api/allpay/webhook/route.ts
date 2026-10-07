@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { assertAllpayTestMode, getAllpayCredentials } from "../../../lib/allpay/config";
+import { getAllpayCredentials, getAllpayMode } from "../../../lib/allpay/config";
 import { allpaySign, allpaySignaturesMatch } from "../../../lib/allpay/sign";
 import { fulfillPaidAllpayOrder } from "../../../lib/commerce/fulfillPaidOrder";
 
@@ -38,7 +38,7 @@ function webhookStatusIsPaid(status: unknown): boolean {
  */
 export async function POST(request: Request) {
   try {
-    assertAllpayTestMode();
+    getAllpayMode();
     const { apiKey } = getAllpayCredentials();
     const payload = await readWebhookPayload(request);
     if (!payload) {
@@ -47,6 +47,7 @@ export async function POST(request: Request) {
 
     const expected = allpaySign(payload, apiKey);
     if (!allpaySignaturesMatch(expected, payload.sign)) {
+      console.warn("[allpay] webhook rejected: invalid signature");
       return NextResponse.json({ error: "invalid_signature" }, { status: 400 });
     }
 
@@ -66,6 +67,7 @@ export async function POST(request: Request) {
     });
 
     if (!result.ok) {
+      console.error("[allpay] webhook could not fulfill order", orderId, "->", result.error);
       if (result.error === "order_not_found" || result.error === "amount_mismatch" || result.error === "currency_mismatch") {
         return new NextResponse("OK", { status: 200 });
       }
@@ -73,7 +75,8 @@ export async function POST(request: Request) {
     }
 
     return new NextResponse("OK", { status: 200 });
-  } catch {
+  } catch (error) {
+    console.error("[allpay] webhook error:", error instanceof Error ? error.message : "unknown error");
     return NextResponse.json({ error: "webhook_error" }, { status: 500 });
   }
 }

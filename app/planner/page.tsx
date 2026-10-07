@@ -1,7 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import SmartPlannerV2App from "../components/smart-planner-v2/SmartPlannerV2App";
+import ProductAccessDenied from "../components/guide/ProductAccessDenied";
 import { isAvailablePlannerDestinationId, DEFAULT_PLANNER_DESTINATION_ID } from "../lib/planner/plannerDestinations";
+import { hasProductAccess } from "../lib/entitlements";
+import { PRODUCT_SLUGS } from "../lib/commerce/catalog";
+import { createClient } from "../../utils/supabase/server";
 
 /**
  * Unified Personalized Plan -- "خطة مخصصة إلك ✨", the ONE customer-facing product route,
@@ -11,8 +16,10 @@ import { isAvailablePlannerDestinationId, DEFAULT_PLANNER_DESTINATION_ID } from 
  * generation-capable destination today -- see plannerDestinations.ts's own header comment on
  * why that alone doesn't "add" a destination to the actual engine.
  *
- * No auth/entitlement gate -- matches the pre-merge Smart Planner V2 behavior exactly (this
- * merge is product positioning only, not an access-gate change).
+ * Paid product: requires a signed-in user who owns "travel-smarter-personalized-plan" (the same
+ * slug the checkout sells -- see PRODUCT_SLUGS in lib/commerce/catalog.ts). The plan-generation
+ * Server Action (barcelona-v2/actions.ts) enforces the same entitlement on its own, because a
+ * Server Action can be called without ever loading this page.
  */
 export const metadata: Metadata = {
   title: "خطة مخصصة إلك ✨ | Travel Smarter",
@@ -22,6 +29,29 @@ export const metadata: Metadata = {
 
 export default async function PlannerPage({ searchParams }: { searchParams: Promise<{ destination?: string }> }) {
   const { destination } = await searchParams;
+
+  // Server-side entitlement gate -- runs before anything else is rendered.
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    const next = destination ? `/planner?destination=${encodeURIComponent(destination)}` : "/planner";
+    redirect(`/login?next=${encodeURIComponent(next)}`);
+  }
+
+  const hasAccess = await hasProductAccess(PRODUCT_SLUGS.personalizedPlan, user.id);
+  if (!hasAccess) {
+    return (
+      <ProductAccessDenied
+        productName="خطة مخصصة إلك"
+        mailSubject="استفسار عن الخطة المخصصة"
+        productSlug={PRODUCT_SLUGS.personalizedPlan}
+      />
+    );
+  }
+
   const initialDestinationId = isAvailablePlannerDestinationId(destination) ? (destination as string) : DEFAULT_PLANNER_DESTINATION_ID;
 
   return (

@@ -8,13 +8,10 @@ import BarcelonaReadyPlan from "../../../components/guide/BarcelonaReadyPlan";
 import { barcelonaGuide } from "../../../lib/barcelona-guide";
 import { barcelonaReadyPlan1Day } from "../../../lib/barcelona-ready-plan-1day";
 import { hasProductAccess } from "../../../lib/entitlements";
+import { PRODUCT_SLUGS } from "../../../lib/commerce/catalog";
 import { createClient } from "../../../../utils/supabase/server";
 
 const guide = barcelonaGuide;
-
-// TEMPORARY DEVELOPMENT BYPASS
-// Re-enable Ready Plan entitlement checks before production launch.
-const TEMP_DISABLE_BARCELONA_READY_PLAN_1DAY_ACCESS_GATE = true;
 
 export const metadata: Metadata = {
   title: "برشلونة بيوم واحد | Travel Smarter",
@@ -26,20 +23,18 @@ export default async function BarcelonaReadyPlan1DayPage() {
   // product slug from both "barcelona-ready-plan" (the 5-day package) and "barcelona-guide",
   // so all three can be priced/gated independently. See barcelona-ready-plan-1day.ts header
   // comment for where pricing should be decided and added.
-  if (!TEMP_DISABLE_BARCELONA_READY_PLAN_1DAY_ACCESS_GATE) {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-    if (!user) {
-      redirect("/login?next=/ready-plans/barcelona/1-day");
-    }
+  if (!user) {
+    redirect("/login?next=/ready-plans/barcelona/1-day");
+  }
 
-    const hasAccess = await hasProductAccess("barcelona-ready-plan-1day", user.id);
-    if (!hasAccess) {
-      return <ProductAccessDenied productName="برشلونة بيوم واحد" mailSubject="استفسار عن رزمة برشلونة بيوم واحد" productSlug="barcelona-ready-plan-1day" />;
-    }
+  const hasAccess = await hasProductAccess(PRODUCT_SLUGS.readyPlan1Day, user.id);
+  if (!hasAccess) {
+    return <ProductAccessDenied productName="برشلونة بيوم واحد" mailSubject="استفسار عن رزمة برشلونة بيوم واحد" productSlug={PRODUCT_SLUGS.readyPlan1Day} />;
   }
 
   return (

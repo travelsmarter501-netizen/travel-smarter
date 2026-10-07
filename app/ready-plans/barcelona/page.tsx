@@ -9,13 +9,10 @@ import GuideIncludedNote from "../../components/GuideIncludedNote";
 import { barcelonaGuide } from "../../lib/barcelona-guide";
 import { barcelonaReadyPlan } from "../../lib/barcelona-ready-plan";
 import { hasProductAccess } from "../../lib/entitlements";
+import { PRODUCT_SLUGS } from "../../lib/commerce/catalog";
 import { createClient } from "../../../utils/supabase/server";
 
 const guide = barcelonaGuide;
-
-// TEMPORARY DEVELOPMENT BYPASS
-// Re-enable Ready Plan entitlement checks before production launch.
-const TEMP_DISABLE_BARCELONA_READY_PLAN_ACCESS_GATE = true;
 
 export const metadata: Metadata = {
   title: "خطة Barcelona الجاهزة | Travel Smarter",
@@ -26,20 +23,18 @@ export default async function BarcelonaReadyPlanPage() {
   // Independent entitlement gate for the "barcelona-ready-plan" product — separate from
   // "barcelona-guide". Owning the Guide does NOT automatically grant this product, and
   // vice versa; a future bundle product can grant both at once.
-  if (!TEMP_DISABLE_BARCELONA_READY_PLAN_ACCESS_GATE) {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-    if (!user) {
-      redirect("/login?next=/ready-plans/barcelona");
-    }
+  if (!user) {
+    redirect("/login?next=/ready-plans/barcelona");
+  }
 
-    const hasAccess = await hasProductAccess("barcelona-ready-plan", user.id);
-    if (!hasAccess) {
-      return <ProductAccessDenied productName="خطة Barcelona الجاهزة" mailSubject="استفسار عن خطة Barcelona الجاهزة" productSlug="barcelona-ready-plan" />;
-    }
+  const hasAccess = await hasProductAccess(PRODUCT_SLUGS.readyPlan5Day, user.id);
+  if (!hasAccess) {
+    return <ProductAccessDenied productName="خطة Barcelona الجاهزة" mailSubject="استفسار عن خطة Barcelona الجاهزة" productSlug={PRODUCT_SLUGS.readyPlan5Day} />;
   }
 
   return (

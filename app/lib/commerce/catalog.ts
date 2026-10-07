@@ -1,13 +1,27 @@
 /**
+ * The ONE place that names each paid product's `public.products.slug`. Both sides import these:
+ * checkout (CART_ID_TO_PRODUCT_SLUG below -> orders -> user_entitlements.product_id) and every
+ * protected page / server action (hasProductAccess). Because they share the same constant, a
+ * product can never be sold under one identifier and gated under another.
+ */
+export const PRODUCT_SLUGS = {
+  guide: "barcelona-guide",
+  readyPlan1Day: "barcelona-ready-plan-1day",
+  readyPlan3Day: "barcelona-ready-plan-3day",
+  readyPlan5Day: "barcelona-ready-plan",
+  personalizedPlan: "travel-smarter-personalized-plan",
+} as const;
+
+/**
  * Maps storefront cart ids (homepage / localStorage) to `public.products.slug`.
  * Checkout never trusts client-supplied prices — only these slugs are sent to createPendingOrder.
  */
 export const CART_ID_TO_PRODUCT_SLUG: Record<string, string> = {
-  "personalized-trip-plan": "travel-smarter-personalized-plan",
-  "barcelona-1day": "barcelona-ready-plan-1day",
-  "barcelona-guide": "barcelona-guide",
-  "barcelona-3day": "barcelona-ready-plan-3day",
-  "barcelona-5day": "barcelona-ready-plan",
+  "personalized-trip-plan": PRODUCT_SLUGS.personalizedPlan,
+  "barcelona-1day": PRODUCT_SLUGS.readyPlan1Day,
+  "barcelona-guide": PRODUCT_SLUGS.guide,
+  "barcelona-3day": PRODUCT_SLUGS.readyPlan3Day,
+  "barcelona-5day": PRODUCT_SLUGS.readyPlan5Day,
 };
 
 const PRODUCT_SLUG_SET = new Set([

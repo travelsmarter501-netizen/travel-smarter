@@ -6,6 +6,7 @@ import GuideIncludedNote from "../../components/GuideIncludedNote";
 import ProductAccessDenied from "../../components/guide/ProductAccessDenied";
 import { barcelonaGuide } from "../../lib/barcelona-guide";
 import { hasProductAccess } from "../../lib/entitlements";
+import { PRODUCT_SLUGS } from "../../lib/commerce/catalog";
 import { createClient } from "../../../utils/supabase/server";
 
 /**
@@ -22,34 +23,27 @@ import { createClient } from "../../../utils/supabase/server";
 
 const guide = barcelonaGuide;
 
-// TEMPORARY DEVELOPMENT BYPASS
-// Re-enable Smart Planner entitlement checks before production launch. Anonymous generation
-// must keep working in dev regardless -- this only gates the entitlement check, not auth
-// itself (saving a plan always requires being logged in, independent of this flag).
-const TEMP_DISABLE_BARCELONA_SMART_PLANNER_ACCESS_GATE = true;
-
 export const metadata: Metadata = {
   title: "المخطط الذكي (V1 - احتياطي) — برشلونة | Travel Smarter",
   description: "اختار اهتماماتك وخلينا نرتبلك خطة رحلة كاملة لبرشلونة خلال ثواني.",
 };
 
 export default async function SmartPlannerBarcelonaV1Page() {
-  // Independent entitlement gate for "barcelona-smart-planner" -- separate from
-  // "barcelona-guide" and "barcelona-ready-plan". Owning one does not grant the others.
-  if (!TEMP_DISABLE_BARCELONA_SMART_PLANNER_ACCESS_GATE) {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+  // Entitlement gate. This legacy V1 planner is the rollback UI for the same paid product as
+  // /planner ("travel-smarter-personalized-plan"). The older "barcelona-smart-planner" product is
+  // deactivated, so gating on it would permanently lock every customer out.
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-    if (!user) {
-      redirect("/login?next=/smart-planner/barcelona-v1");
-    }
+  if (!user) {
+    redirect("/login?next=/smart-planner/barcelona-v1");
+  }
 
-    const hasAccess = await hasProductAccess("barcelona-smart-planner", user.id);
-    if (!hasAccess) {
-      return <ProductAccessDenied productName="المخطط الذكي لبرشلونة" mailSubject="استفسار عن المخطط الذكي لبرشلونة" productSlug="barcelona-smart-planner" />;
-    }
+  const hasAccess = await hasProductAccess(PRODUCT_SLUGS.personalizedPlan, user.id);
+  if (!hasAccess) {
+    return <ProductAccessDenied productName="المخطط الذكي لبرشلونة" mailSubject="استفسار عن المخطط الذكي لبرشلونة" productSlug={PRODUCT_SLUGS.personalizedPlan} />;
   }
 
   return (

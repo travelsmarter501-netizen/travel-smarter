@@ -7,7 +7,7 @@ import { useLanguage } from "../lib/language";
 import { formatPrice, useCurrency } from "../lib/currency";
 import { startCartCheckout } from "./actions";
 
-export default function CheckoutClient({ extraProductSlug }: { extraProductSlug?: string }) {
+export default function CheckoutClient({ extraProductSlug, testMode = false }: { extraProductSlug?: string; testMode?: boolean }) {
   const { items, removeItem, getPriceILS, totalILS } = useCart();
   const { language, t } = useLanguage();
   const { currency } = useCurrency();
@@ -40,7 +40,9 @@ export default function CheckoutClient({ extraProductSlug }: { extraProductSlug?
 
   return (
     <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-      <p className="inline-flex rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-amber-800">وضع اختبار Allpay — بدون دفع حقيقي</p>
+      {testMode && (
+        <p className="inline-flex rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-amber-800">وضع اختبار Allpay — بدون دفع حقيقي</p>
+      )}
       <h1 className="mt-4 text-2xl font-bold text-slate-900">إتمام الشراء</h1>
       <p className="mt-2 text-sm leading-6 text-slate-600">
         السعر النهائي يتأكد على الخادم من كتالوج المنتجات. بعد التأكيد رح نحولك لصفحة الدفع الآمنة لدى Allpay.
@@ -88,7 +90,7 @@ export default function CheckoutClient({ extraProductSlug }: { extraProductSlug?
             disabled={loading || empty}
             className="mt-6 flex w-full items-center justify-center rounded-full bg-teal-700 px-5 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-teal-800 disabled:opacity-60"
           >
-            {loading ? "جاري التحويل للدفع..." : "الدفع عبر Allpay (تجريبي)"}
+            {loading ? "جاري التحويل للدفع..." : testMode ? "الدفع عبر Allpay (تجريبي)" : "الدفع عبر Allpay"}
           </button>
         </>
       )}

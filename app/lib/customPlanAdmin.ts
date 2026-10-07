@@ -244,13 +244,13 @@ export async function getCustomPlanDraftForAdmin(requestId: string): Promise<Cus
 }
 
 /** Dev/testing-only override of the "paid or in_progress" eligibility gate for draft
- * generation -- defaults ON (per the task's own "default true if needed" instruction) so this
- * can be exercised before real payment webhooks exist. Never changes any *other* production
- * rule (price authority, ownership, RLS) -- it only widens which request statuses are
- * generation-eligible. Set TEMP_ADMIN_ALLOW_UNPAID_DRAFT=false to enforce the real paid/
- * in_progress-only rule. */
+ * generation. Fail-CLOSED: it is OFF unless TEMP_ADMIN_ALLOW_UNPAID_DRAFT is exactly "true", and
+ * it can never be on in the Vercel Production environment, whatever the variable says. Never
+ * changes any *other* rule (price authority, ownership, RLS) -- it only widens which request
+ * statuses are generation-eligible. */
 export function isTempUnpaidDraftAllowed(): boolean {
-  return process.env.TEMP_ADMIN_ALLOW_UNPAID_DRAFT !== "false";
+  if (process.env.VERCEL_ENV === "production") return false;
+  return process.env.TEMP_ADMIN_ALLOW_UNPAID_DRAFT === "true";
 }
 
 export function isDraftGenerationEligible(status: CustomPlanRequestStatus): boolean {
