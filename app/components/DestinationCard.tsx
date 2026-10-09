@@ -22,6 +22,10 @@ export default function DestinationCard({
 
   const isComingSoon = status === "coming-soon";
 
+  // Barcelona (the only available destination) sells through the homepage products section;
+  // its gated content routes are for owners only, so no card links straight to them.
+  const isBarcelona = slug === "barcelona";
+
   const productLinks = [
     {
       key: "customPlanPrice",
@@ -30,7 +34,7 @@ export default function DestinationCard({
       // that's Barcelona alone, so this resolves to /smart-planner/barcelona. Same fix as the
       // homepage's "خطة سفر مخصصة" card: it used to self-reference "/#custom-plan" instead of
       // opening the real product.
-      href: `/smart-planner/${slug}`,
+      href: isBarcelona ? "/#products" : `/smart-planner/${slug}`,
       icon: IconSparkles,
     },
     {
@@ -39,13 +43,13 @@ export default function DestinationCard({
       // Barcelona has a real, rich 5-day Ready Package at /ready-plans/barcelona -- other
       // destinations (currently all "coming-soon") have no such page yet, so they keep the
       // generic /packages/${slug} route.
-      href: slug === "barcelona" ? "/ready-plans/barcelona" : `/packages/${slug}`,
+      href: isBarcelona ? "/#products" : `/packages/${slug}`,
       icon: IconPackage,
     },
     {
       key: "guidePrice",
       label: "دليل سياحي",
-      href: `/guides/${slug}`,
+      href: isBarcelona ? "/#products" : `/guides/${slug}`,
       icon: IconBook,
     },
   ] as const;

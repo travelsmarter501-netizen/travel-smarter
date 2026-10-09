@@ -47,7 +47,7 @@ export default function ReadyPackages() {
               <p className="mt-3 flex-1 text-sm leading-6 text-slate-600">{barcelonaReadyPlan.subtitle}</p>
 
               <Price ils={barcelonaReadyPlan.priceILS} className="mt-4 text-lg font-bold text-slate-900" />
-              <Button href="/ready-plans/barcelona" variant="primary" size="md" className="mt-4 w-full">
+              <Button href="/#products" variant="primary" size="md" className="mt-4 w-full">
                 افتح الخطة
               </Button>
             </div>

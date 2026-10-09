@@ -241,10 +241,9 @@ export const productCategories: ProductCategory[] = [
     description: "اختار شو بتحب والأماكن اللي بدك تزورها، وإحنا بنرتبلك الأيام بأذكى مسار.",
     priceFrom: 59,
     ctaLabel: "ابنِ خطتك",
-    // Opens the real Barcelona Smart Planner product directly -- this card IS the "custom
-    // plan" product, so its own CTA must not point back at the section it's already inside
-    // (that was the bug: "/#custom-plan" self-referenced this card's own containing section).
-    ctaHref: "/smart-planner/barcelona",
+    // Sales entry point: the homepage products section (where "Buy now" lives). Never the
+    // entitlement-gated content route -- that is for people who already bought.
+    ctaHref: "/#products",
     featured: true,
   },
   {
@@ -254,9 +253,8 @@ export const productCategories: ProductCategory[] = [
     description: "برنامج يوم بيوم جاهز للتحميل والاستخدام",
     priceFrom: 39,
     ctaLabel: "تصفح الرزم",
-    // Points directly at Barcelona's Ready Plan -- the homepage section this used to scroll
-    // to ("/#packages") was removed as part of shortening the homepage (see app/page.tsx).
-    ctaHref: "/ready-plans/barcelona",
+    // Sales entry point (see above): the products section, not the gated Ready Plan route.
+    ctaHref: "/#products",
   },
   {
     id: "guides",
@@ -265,17 +263,16 @@ export const productCategories: ProductCategory[] = [
     description: "كل ما تحتاج معرفته عن وجهتك في دليل واحد",
     priceFrom: 29,
     ctaLabel: "تصفح الأدلة",
-    // Points directly at the Barcelona guide -- same reasoning as "ready-packages" above
-    // ("/#guides" no longer has a homepage section to scroll to).
-    ctaHref: "/guides/barcelona",
+    // Sales entry point (see above): the products section, not the gated Guide route.
+    ctaHref: "/#products",
   },
 ];
 
 export const navLinks = [
   { label: "الرئيسية", href: "/#hero" },
   { label: "الوجهات", href: "/#destinations" },
-  { label: "الرزم الجاهزة", href: "/ready-plans/barcelona" },
-  { label: "الدلائل السياحية", href: "/guides/barcelona" },
+  { label: "الرزم الجاهزة", href: "/#products" },
+  { label: "الدلائل السياحية", href: "/#products" },
   { label: "خطط رحلتك", href: "/#custom-plan" },
   { label: "كيف يعمل", href: "/#how-it-works" },
 ];

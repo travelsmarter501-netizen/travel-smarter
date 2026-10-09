@@ -15,10 +15,10 @@ export default function Footer() {
     {
       title: t.footer.productsHeading,
       links: [
-        { label: t.products.items[0].title, href: t.products.items[0].route },
-        { label: t.products.items[1].title, href: t.products.items[1].route },
-        { label: t.products.items[2].title, href: t.products.items[2].route },
-        { label: t.products.items[3].title, href: t.products.items[3].route },
+        { label: t.products.items[0].title, href: "/#products" },
+        { label: t.products.items[1].title, href: "/#products" },
+        { label: t.products.items[2].title, href: "/#products" },
+        { label: t.products.items[3].title, href: "/#products" },
       ],
     },
     {

@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Container from "./Container";
 import SectionHeading from "./SectionHeading";
 import Price from "./Price";
@@ -13,16 +13,36 @@ import { destinations } from "../lib/content";
 const barcelonaImage = destinations.find((destination) => destination.slug === "barcelona")?.image ?? "";
 
 /**
- * The homepage's primary sales section -- 5 real, working Barcelona products: 1-day, Guide,
- * 3-day, 5-day, and Smart Planner Ready Plans (routes: /ready-plans/barcelona/1-day,
- * /guides/barcelona, /ready-plans/barcelona/3-days, /ready-plans/barcelona,
- * /smart-planner/barcelona). The 3-day product was rebuilt as its own standalone product in
- * the "Restore the 3-Day Plan" task -- see that task's final report for what was genuinely
- * recovered vs. newly designed.
+ * The homepage's primary sales section -- 5 real Barcelona products: personalized plan, 1-day,
+ * Guide, 3-day and 5-day. The primary button is "Buy now" (add to cart if needed, then /checkout);
+ * "Add to cart" is the secondary action. The cards deliberately do NOT link to the paid content
+ * routes (/guides/barcelona, /ready-plans/..., /planner): those are entitlement-gated content, not
+ * sales pages, and buyers reach them from their account after purchase.
  */
 export default function Products() {
   const { t } = useLanguage();
   const { addItem, isInCart } = useCart();
+  const router = useRouter();
+
+  // Same cart item the "Add to cart" button creates (prices/titles are display-only: checkout
+  // sends only the cart ids and the server prices them from the database).
+  function addProductToCart(product: (typeof t.products.items)[number]) {
+    const arTitle = homepageTranslations.ar.products.items.find((item) => item.id === product.id)?.title ?? product.title;
+    const enTitle = homepageTranslations.en.products.items.find((item) => item.id === product.id)?.title ?? product.title;
+    addItem({
+      id: product.id,
+      titleAr: arTitle,
+      titleEn: enTitle,
+      priceILS: product.priceILS,
+      route: product.route,
+    });
+  }
+
+  // "Buy now": normal shoppers never open the protected content route -- they go product -> checkout.
+  function buyNow(product: (typeof t.products.items)[number]) {
+    if (!isInCart(product.id)) addProductToCart(product);
+    router.push("/checkout");
+  }
 
   return (
     <section id="products" className="scroll-mt-20 py-16 sm:py-20">
@@ -77,12 +97,13 @@ export default function Products() {
                     <Price ils={product.priceILS} className="text-lg font-bold text-slate-900" />
                   </p>
 
-                  <Link
-                    href={product.route}
+                  <button
+                    type="button"
+                    onClick={() => buyNow(product)}
                     className="mt-3 flex items-center justify-center rounded-full bg-teal-700 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-teal-800"
                   >
                     {product.ctaLabel}
-                  </Link>
+                  </button>
                   {product.comparisonHint && (
                     <p dir="auto" className="mt-1.5 text-center text-[11px] leading-4 text-slate-400">
                       {product.comparisonHint}
@@ -91,17 +112,7 @@ export default function Products() {
                   {product.addToCartLabel && (
                     <button
                       type="button"
-                      onClick={() => {
-                        const arTitle = homepageTranslations.ar.products.items.find((item) => item.id === product.id)?.title ?? product.title;
-                        const enTitle = homepageTranslations.en.products.items.find((item) => item.id === product.id)?.title ?? product.title;
-                        addItem({
-                          id: product.id,
-                          titleAr: arTitle,
-                          titleEn: enTitle,
-                          priceILS: product.priceILS,
-                          route: product.route,
-                        });
-                      }}
+                      onClick={() => addProductToCart(product)}
                       disabled={inCart}
                       className="mt-2 flex items-center justify-center rounded-full border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:border-slate-400 hover:bg-slate-50 disabled:cursor-default disabled:border-teal-200 disabled:bg-teal-50 disabled:text-teal-700"
                     >
