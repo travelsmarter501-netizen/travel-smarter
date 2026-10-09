@@ -2,6 +2,7 @@ import "server-only";
 import { createClient } from "../../utils/supabase/server";
 import { createServiceRoleClient } from "../../utils/supabase/service-role";
 import { hasProductAccess, GUIDE_BUNDLE_PRODUCT_SLUGS } from "./entitlements";
+import { hashClaimToken } from "./commerce/claimToken";
 
 /**
  * Commerce Foundation V1 -- order domain helpers.
@@ -18,7 +19,8 @@ export type OrderStatus = "pending" | "paid" | "failed" | "cancelled" | "refunde
 
 export type Order = {
   id: string;
-  userId: string;
+  /** null only for an unclaimed guest order -- those are never returned by the user-scoped readers. */
+  userId: string | null;
   status: OrderStatus;
   totalIls: number;
   currency: string;
@@ -40,7 +42,7 @@ export type OrderWithItems = Order & { items: OrderItem[] };
 
 type OrderRow = {
   id: string;
-  user_id: string;
+  user_id: string | null;
   status: OrderStatus;
   total_ils: number;
   currency: string;
@@ -155,6 +157,37 @@ export async function getOrderWithItems(orderId: string): Promise<OrderWithItems
 
 export type CreatePendingOrderResult = { ok: true; data: OrderWithItems } | { ok: false; error: string };
 
+/** Dedupe + trim the requested slugs. */
+function dedupeSlugs(productSlugs: string[]): string[] {
+  return [...new Set((productSlugs ?? []).map((slug) => slug?.trim()).filter((slug): slug is string => !!slug))];
+}
+
+/**
+ * Rule 1 (shared by logged-in and guest checkout): if the request includes a product that already
+ * bundles the Guide, the separate Guide line is dropped so nobody pays twice for it.
+ */
+function dropRedundantGuide(slugs: string[]): string[] {
+  const requestsBundleProduct = slugs.some((slug) => (GUIDE_BUNDLE_PRODUCT_SLUGS as readonly string[]).includes(slug));
+  return slugs.filter((slug) => !(slug === "barcelona-guide" && requestsBundleProduct));
+}
+
+async function loadCreatedOrder(
+  serviceRole: ReturnType<typeof createServiceRoleClient>,
+  orderRow: OrderRow
+): Promise<CreatePendingOrderResult> {
+  const { data: itemRows, error: itemsError } = await serviceRole
+    .from("order_items")
+    .select("*")
+    .eq("order_id", orderRow.id)
+    .returns<OrderItemRow[]>();
+
+  if (itemsError || !itemRows) {
+    return { ok: false, error: "تعذّر تحميل تفاصيل الطلب بعد إنشائه." };
+  }
+
+  return { ok: true, data: { ...mapOrder(orderRow), items: itemRows.map(mapOrderItem) } };
+}
+
 /**
  * Server-only, authoritative order creation. NOT a public browser-side "createOrder" -- this
  * is meant to be called from trusted Next.js server code only (a future Server Action/Route
@@ -187,14 +220,13 @@ export async function createPendingOrder(productSlugs: string[]): Promise<Create
     return { ok: false, error: "يجب تسجيل الدخول لإتمام عملية الشراء." };
   }
 
-  const deduped = [...new Set((productSlugs ?? []).map((slug) => slug?.trim()).filter((slug): slug is string => !!slug))];
+  const deduped = dedupeSlugs(productSlugs);
   if (deduped.length === 0) {
     return { ok: false, error: "لم يتم تحديد أي منتج للشراء." };
   }
 
   // Rule 1: redundant Guide removal.
-  const requestsBundleProduct = deduped.some((slug) => (GUIDE_BUNDLE_PRODUCT_SLUGS as readonly string[]).includes(slug));
-  const afterGuideNormalization = deduped.filter((slug) => !(slug === "barcelona-guide" && requestsBundleProduct));
+  const afterGuideNormalization = dropRedundantGuide(deduped);
 
   // Rule 2: already-owned exclusion (direct ownership OR inherited Guide access both handled
   // by hasProductAccess itself -- see its own bundle-expansion logic in entitlements.ts).
@@ -219,15 +251,43 @@ export async function createPendingOrder(productSlugs: string[]): Promise<Create
     return { ok: false, error: "تعذّر إنشاء الطلب. حاول مرة أخرى." };
   }
 
-  const { data: itemRows, error: itemsError } = await serviceRole
-    .from("order_items")
-    .select("*")
-    .eq("order_id", orderRow.id)
-    .returns<OrderItemRow[]>();
+  return loadCreatedOrder(serviceRole, orderRow);
+}
 
-  if (itemsError || !itemRows) {
-    return { ok: false, error: "تعذّر تحميل تفاصيل الطلب بعد إنشائه." };
+/**
+ * Guest checkout: creates a `pending` order with NO owner. Called only from the checkout Server
+ * Action, which has already (a) confirmed there is no signed-in user and (b) validated the email.
+ *
+ * - Prices still come only from the database (the RPC sums products.price_ils itself).
+ * - Only the SHA-256 hash of the claim token is persisted (the caller keeps the plaintext for the
+ *   Allpay success URL). The order grants nothing and is unclaimable until the verified webhook marks
+ *   it paid.
+ * - No already-owned exclusion: a guest has no verified identity yet. Duplicates are harmless at
+ *   claim time (entitlements are inserted ON CONFLICT DO NOTHING).
+ */
+export async function createGuestPendingOrder(
+  productSlugs: string[],
+  guestEmail: string,
+  claimToken: string
+): Promise<CreatePendingOrderResult> {
+  const finalSlugs = dropRedundantGuide(dedupeSlugs(productSlugs));
+  if (finalSlugs.length === 0) {
+    return { ok: false, error: "لم يتم تحديد أي منتج للشراء." };
   }
 
-  return { ok: true, data: { ...mapOrder(orderRow), items: itemRows.map(mapOrderItem) } };
+  const serviceRole = createServiceRoleClient();
+  const { data: orderRow, error: rpcError } = await serviceRole
+    .rpc("create_pending_order", {
+      p_user_id: null,
+      p_product_slugs: finalSlugs,
+      p_claim_token_hash: hashClaimToken(claimToken),
+      p_guest_email: guestEmail,
+    })
+    .single<OrderRow>();
+
+  if (rpcError || !orderRow) {
+    return { ok: false, error: "تعذّر إنشاء الطلب. حاول مرة أخرى." };
+  }
+
+  return loadCreatedOrder(serviceRole, orderRow);
 }

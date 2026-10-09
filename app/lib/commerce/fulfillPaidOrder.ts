@@ -1,9 +1,11 @@
 import "server-only";
 import { createServiceRoleClient } from "../../../utils/supabase/service-role";
+import { CLAIM_WINDOW_DAYS } from "./claimToken";
 
 type OrderRow = {
   id: string;
-  user_id: string;
+  /** null = guest order that has not been claimed yet. */
+  user_id: string | null;
   status: string;
   total_ils: number;
   currency: string;
@@ -18,6 +20,11 @@ function amountsMatch(webhookAmount: unknown, orderTotal: number): boolean {
 /**
  * Grants entitlements only after a verified Allpay webhook (status == 1).
  * Duplicate deliveries are no-ops: a paid order is never fulfilled twice.
+ *
+ * Guest orders (user_id null): the order is marked paid (with a claim deadline) but NO entitlement
+ * is granted -- there is no user to grant it to. The buyer receives it by claiming the order after
+ * signing in (see claim_guest_order in the guest-checkout migration). Logged-in orders behave
+ * exactly as before.
  */
 export async function fulfillPaidAllpayOrder(params: {
   orderId: string;
@@ -54,9 +61,20 @@ export async function fulfillPaidAllpayOrder(params: {
     return { ok: false, error: "amount_mismatch" };
   }
 
+  const paidUpdate: Record<string, unknown> = {
+    status: "paid",
+    provider: "allpay",
+    provider_order_id: order.id,
+    paid_at: new Date().toISOString(),
+  };
+  if (order.user_id === null) {
+    // Claim window starts at payment. (claim_guest_order enforces it; support can re-issue.)
+    paidUpdate.claim_expires_at = new Date(Date.now() + CLAIM_WINDOW_DAYS * 24 * 60 * 60 * 1000).toISOString();
+  }
+
   const { data: paidRows, error: updateError } = await serviceRole
     .from("orders")
-    .update({ status: "paid", provider: "allpay", provider_order_id: order.id })
+    .update(paidUpdate)
     .eq("id", order.id)
     .eq("status", "pending")
     .select("id")
@@ -87,6 +105,10 @@ async function grantOrderEntitlements(
   serviceRole: ReturnType<typeof createServiceRoleClient>,
   order: OrderRow
 ): Promise<boolean> {
+  // Guest order: nothing to grant until it is claimed by an authenticated user. Never write a
+  // null user_id (and never guess an owner from an email).
+  if (order.user_id === null) return true;
+
   const { data: items, error: itemsError } = await serviceRole
     .from("order_items")
     .select("product_id")

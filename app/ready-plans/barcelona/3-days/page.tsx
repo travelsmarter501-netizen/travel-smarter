@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import Container from "../../../components/Container";
 import BackLink from "../../../components/detail/BackLink";
 import GuideIncludedNote from "../../../components/GuideIncludedNote";
@@ -30,13 +29,9 @@ export default async function BarcelonaReadyPlan3DayPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) {
-    redirect("/login?next=/ready-plans/barcelona/3-days");
-  }
-
-  const hasAccess = await hasProductAccess(PRODUCT_SLUGS.readyPlan3Day, user.id);
+  const hasAccess = user ? await hasProductAccess(PRODUCT_SLUGS.readyPlan3Day, user.id) : false;
   if (!hasAccess) {
-    return <ProductAccessDenied productName="برشلونة — خطة 3 أيام" mailSubject="استفسار عن خطة برشلونة 3 أيام" productSlug={PRODUCT_SLUGS.readyPlan3Day} />;
+    return <ProductAccessDenied productName="برشلونة — خطة 3 أيام" mailSubject="استفسار عن خطة برشلونة 3 أيام" productSlug={PRODUCT_SLUGS.readyPlan3Day} signedOut={!user} signInNext="/ready-plans/barcelona/3-days" />;
   }
 
   return (

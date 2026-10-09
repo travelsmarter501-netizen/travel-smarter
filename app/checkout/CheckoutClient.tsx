@@ -1,17 +1,24 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useCart } from "../lib/cart";
 import { useLanguage } from "../lib/language";
 import { formatPrice, useCurrency } from "../lib/currency";
 import { startCartCheckout } from "./actions";
 
-export default function CheckoutClient({ extraProductSlug, testMode = false }: { extraProductSlug?: string; testMode?: boolean }) {
+export default function CheckoutClient({
+  extraProductSlug,
+  testMode = false,
+  signedIn = false,
+}: {
+  extraProductSlug?: string;
+  testMode?: boolean;
+  signedIn?: boolean;
+}) {
   const { items, removeItem, getPriceILS, totalILS } = useCart();
   const { language, t } = useLanguage();
   const { currency } = useCurrency();
-  const router = useRouter();
+  const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -23,14 +30,12 @@ export default function CheckoutClient({ extraProductSlug, testMode = false }: {
     const result = await startCartCheckout({
       cartIds: items.map((item) => item.id),
       productSlugs: extraProductSlug ? [extraProductSlug] : undefined,
+      // Only meaningful for guests; the server ignores it for a signed-in customer.
+      email: signedIn ? undefined : email,
     });
     setLoading(false);
 
     if (!result.ok) {
-      if (result.requiresLogin) {
-        router.push("/login?next=/checkout");
-        return;
-      }
       setError(result.error);
       return;
     }
@@ -82,12 +87,37 @@ export default function CheckoutClient({ extraProductSlug, testMode = false }: {
             </div>
           )}
 
+          {!signedIn && (
+            <div className="mt-6">
+              <label htmlFor="checkout-email" className="mb-1.5 block text-sm font-semibold text-slate-800">
+                {language === "ar" ? "البريد الإلكتروني" : "Email"}
+              </label>
+              <input
+                id="checkout-email"
+                type="email"
+                inputMode="email"
+                autoComplete="email"
+                dir="ltr"
+                required
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                placeholder="example@email.com"
+                className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm text-slate-900 outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100"
+              />
+              <p className="mt-2 text-xs leading-5 text-slate-500">
+                {language === "ar"
+                  ? "ما بدك حساب عشان تدفع. بعد الدفع بتسجّل دخولك أو بتنشئ حساب لتفعيل مشترياتك."
+                  : "No account needed to pay. After payment you'll sign in or create an account to access your purchase."}
+              </p>
+            </div>
+          )}
+
           {error && <p className="mt-4 text-sm font-semibold text-rose-600">{error}</p>}
 
           <button
             type="button"
             onClick={handlePay}
-            disabled={loading || empty}
+            disabled={loading || empty || (!signedIn && email.trim().length === 0)}
             className="mt-6 flex w-full items-center justify-center rounded-full bg-teal-700 px-5 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-teal-800 disabled:opacity-60"
           >
             {loading ? "جاري التحويل للدفع..." : testMode ? "الدفع عبر Allpay (تجريبي)" : "الدفع عبر Allpay"}

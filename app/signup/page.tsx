@@ -1,14 +1,23 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { Suspense, useState, type FormEvent } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Container from "../components/Container";
 import GoogleAuthButton from "../components/auth/GoogleAuthButton";
 import { createClient } from "../../utils/supabase/client";
 
-export default function SignupPage() {
+// Only allow redirecting back to a relative in-app path -- never an absolute/external URL (open redirect).
+function safeNextPath(value: string | null): string {
+  if (value && value.startsWith("/") && !value.startsWith("//") && !value.includes("\\")) return value;
+  return "/account";
+}
+
+function SignupForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const next = safeNextPath(searchParams.get("next"));
+  const nextQuery = next === "/account" ? "" : `?next=${encodeURIComponent(next)}`;
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -27,7 +36,8 @@ export default function SignupPage() {
       password,
       options: {
         data: { full_name: name },
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        // The callback honors `next`, so a claim-purchase link survives email confirmation.
+        emailRedirectTo: `${window.location.origin}/auth/callback${nextQuery}`,
       },
     });
 
@@ -40,7 +50,7 @@ export default function SignupPage() {
     // If email confirmation is enabled in the Supabase project, signUp succeeds but
     // returns no session until the visitor confirms via email — show that state instead of redirecting.
     if (data.session) {
-      router.push("/account");
+      router.push(next);
       router.refresh();
       return;
     }
@@ -58,7 +68,7 @@ export default function SignupPage() {
             <p className="mt-2 text-sm leading-6 text-slate-600">
               أرسلنا رابط تأكيد إلى <span dir="ltr">{email}</span>. افتح الرابط لتفعيل حسابك ثم سجّل دخولك.
             </p>
-            <Link href="/login" className="mt-6 inline-block text-sm font-semibold text-teal-700 hover:text-teal-800">
+            <Link href={`/login${nextQuery}`} className="mt-6 inline-block text-sm font-semibold text-teal-700 hover:text-teal-800">
               الذهاب لتسجيل الدخول
             </Link>
           </div>
@@ -145,16 +155,24 @@ export default function SignupPage() {
             <div className="h-px flex-1 bg-slate-200" />
           </div>
 
-          <GoogleAuthButton label="التسجيل عبر Google" />
+          <GoogleAuthButton label="التسجيل عبر Google" next={next} />
 
           <p className="mt-6 text-center text-sm text-slate-600">
             لديك حساب بالفعل؟{" "}
-            <Link href="/login" className="font-semibold text-teal-700 hover:text-teal-800">
+            <Link href={`/login${nextQuery}`} className="font-semibold text-teal-700 hover:text-teal-800">
               تسجيل الدخول
             </Link>
           </p>
         </div>
       </Container>
     </main>
+  );
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense fallback={null}>
+      <SignupForm />
+    </Suspense>
   );
 }

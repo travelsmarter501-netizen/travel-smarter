@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import SmartPlannerV2App from "../components/smart-planner-v2/SmartPlannerV2App";
 import ProductAccessDenied from "../components/guide/ProductAccessDenied";
 import { isAvailablePlannerDestinationId, DEFAULT_PLANNER_DESTINATION_ID } from "../lib/planner/plannerDestinations";
@@ -36,18 +35,17 @@ export default async function PlannerPage({ searchParams }: { searchParams: Prom
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) {
-    const next = destination ? `/planner?destination=${encodeURIComponent(destination)}` : "/planner";
-    redirect(`/login?next=${encodeURIComponent(next)}`);
-  }
-
-  const hasAccess = await hasProductAccess(PRODUCT_SLUGS.personalizedPlan, user.id);
+  // Signed-out visitors get the purchase screen (Buy / "already bought -> sign in"), never the planner.
+  const hasAccess = user ? await hasProductAccess(PRODUCT_SLUGS.personalizedPlan, user.id) : false;
   if (!hasAccess) {
+    const signInNext = destination ? `/planner?destination=${encodeURIComponent(destination)}` : "/planner";
     return (
       <ProductAccessDenied
         productName="خطة مخصصة إلك"
         mailSubject="استفسار عن الخطة المخصصة"
         productSlug={PRODUCT_SLUGS.personalizedPlan}
+        signedOut={!user}
+        signInNext={signInNext}
       />
     );
   }

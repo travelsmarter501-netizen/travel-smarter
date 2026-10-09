@@ -1,7 +1,8 @@
 "use server";
 
 import { createClient } from "../../utils/supabase/server";
-import { createPendingOrder } from "../lib/orders";
+import { createPendingOrder, createGuestPendingOrder } from "../lib/orders";
+import { generateClaimToken, normalizeGuestEmail } from "../lib/commerce/claimToken";
 import { createCustomPlanPendingOrder } from "../lib/customPlanCommerce";
 import { createAllpayRedirectCheckout } from "../lib/allpay/createPayment";
 import { resolveCheckoutProductSlugs } from "../lib/commerce/catalog";
@@ -15,15 +16,23 @@ function clientProfile(user: { email?: string | null; user_metadata?: Record<str
   return { name, email: user.email ?? null };
 }
 
-export async function startCartCheckout(input: { cartIds?: string[]; productSlugs?: string[] }): Promise<StartCheckoutResult> {
+/**
+ * Checkout works for guests AND signed-in customers.
+ *
+ * - Signed in (verified session): exactly the previous flow -- the order is owned by that user from
+ *   the start and the verified webhook grants the entitlement directly. `input.email` is ignored.
+ * - Guest: an email is required (receipt/contact only -- never proof of ownership). The order has no
+ *   owner; a one-time claim token is generated here, only its hash is stored, and the buyer returns
+ *   from Allpay to /claim-purchase?token=... to attach the paid order to an account.
+ *
+ * Prices and product metadata are never read from the browser: only cart ids / known slugs come in,
+ * and the database computes the total.
+ */
+export async function startCartCheckout(input: { cartIds?: string[]; productSlugs?: string[]; email?: string }): Promise<StartCheckoutResult> {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
-  if (!user) {
-    return { ok: false, error: "لازم تسجل الدخول لإتمام الدفع.", requiresLogin: true };
-  }
 
   let slugs: string[];
   try {
@@ -36,12 +45,28 @@ export async function startCartCheckout(input: { cartIds?: string[]; productSlug
     return { ok: false, error: "السلة فارغة." };
   }
 
-  const order = await createPendingOrder(slugs);
+  if (user) {
+    const order = await createPendingOrder(slugs);
+    if (!order.ok) {
+      return { ok: false, error: order.error };
+    }
+
+    return createAllpayRedirectCheckout(order.data.id, clientProfile(user));
+  }
+
+  // ---- Guest checkout ----
+  const email = normalizeGuestEmail(input.email);
+  if (!email) {
+    return { ok: false, error: "أدخل بريدًا إلكترونيًا صحيحًا — بنرسل عليه تأكيد الدفع." };
+  }
+
+  const claimToken = generateClaimToken();
+  const order = await createGuestPendingOrder(slugs, email, claimToken);
   if (!order.ok) {
     return { ok: false, error: order.error };
   }
 
-  return createAllpayRedirectCheckout(order.data.id, clientProfile(user));
+  return createAllpayRedirectCheckout(order.data.id, { email }, { claimToken });
 }
 
 export async function startCustomPlanAllpayCheckout(requestId: string): Promise<StartCheckoutResult> {

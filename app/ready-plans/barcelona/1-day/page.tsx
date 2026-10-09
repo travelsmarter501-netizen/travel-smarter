@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import Container from "../../../components/Container";
 import BackLink from "../../../components/detail/BackLink";
 import ProductAccessDenied from "../../../components/guide/ProductAccessDenied";
@@ -28,13 +27,9 @@ export default async function BarcelonaReadyPlan1DayPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) {
-    redirect("/login?next=/ready-plans/barcelona/1-day");
-  }
-
-  const hasAccess = await hasProductAccess(PRODUCT_SLUGS.readyPlan1Day, user.id);
+  const hasAccess = user ? await hasProductAccess(PRODUCT_SLUGS.readyPlan1Day, user.id) : false;
   if (!hasAccess) {
-    return <ProductAccessDenied productName="برشلونة بيوم واحد" mailSubject="استفسار عن رزمة برشلونة بيوم واحد" productSlug={PRODUCT_SLUGS.readyPlan1Day} />;
+    return <ProductAccessDenied productName="برشلونة بيوم واحد" mailSubject="استفسار عن رزمة برشلونة بيوم واحد" productSlug={PRODUCT_SLUGS.readyPlan1Day} signedOut={!user} signInNext="/ready-plans/barcelona/1-day" />;
   }
 
   return (

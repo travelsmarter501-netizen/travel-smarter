@@ -10,7 +10,7 @@ import { createClient } from "../../utils/supabase/client";
 // Only allow redirecting back to a relative in-app path — never an absolute/external
 // URL — so `next` can't be abused as an open redirect.
 function safeNextPath(value: string | null): string {
-  if (value && value.startsWith("/") && !value.startsWith("//")) return value;
+  if (value && value.startsWith("/") && !value.startsWith("//") && !value.includes("\\")) return value;
   return "/account";
 }
 
@@ -106,7 +106,7 @@ function LoginForm() {
 
           <p className="mt-6 text-center text-sm text-slate-600">
             ليس لديك حساب؟{" "}
-            <Link href="/signup" className="font-semibold text-teal-700 hover:text-teal-800">
+            <Link href={next === "/account" ? "/signup" : `/signup?next=${encodeURIComponent(next)}`} className="font-semibold text-teal-700 hover:text-teal-800">
               إنشاء حساب جديد
             </Link>
           </p>

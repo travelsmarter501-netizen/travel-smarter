@@ -8,7 +8,7 @@ export async function GET(request: Request) {
   const code = searchParams.get("code");
   const rawNext = searchParams.get("next");
   // Only allow a relative in-app path — never an absolute/external URL — so `next` can't be abused as an open redirect.
-  const next = rawNext && rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : "/account";
+  const next = rawNext && rawNext.startsWith("/") && !rawNext.startsWith("//") && !rawNext.includes("\\") ? rawNext : "/account";
 
   if (code) {
     const supabase = await createClient();

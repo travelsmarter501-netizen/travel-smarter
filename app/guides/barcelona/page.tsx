@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { redirect } from "next/navigation";
 import Container from "../../components/Container";
 import BackLink from "../../components/detail/BackLink";
 import BackToGuide from "../../components/guide/BackToGuide";
@@ -160,13 +159,9 @@ export default async function BarcelonaGuidePage(props: PageProps<"/guides/barce
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) {
-    redirect("/login?next=/guides/barcelona");
-  }
-
-  const hasAccess = await hasProductAccess(PRODUCT_SLUGS.guide, user.id);
+  const hasAccess = user ? await hasProductAccess(PRODUCT_SLUGS.guide, user.id) : false;
   if (!hasAccess) {
-    return <ProductAccessDenied productName="دليل Barcelona الكامل" mailSubject="استفسار عن دليل Barcelona" productSlug={PRODUCT_SLUGS.guide} />;
+    return <ProductAccessDenied productName="دليل Barcelona الكامل" mailSubject="استفسار عن دليل Barcelona" productSlug={PRODUCT_SLUGS.guide} signedOut={!user} signInNext="/guides/barcelona" />;
   }
 
   const searchParams = await props.searchParams;

@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
 import BackLink from "../../components/detail/BackLink";
 import SmartPlannerApp from "../../components/smart-planner/SmartPlannerApp";
 import GuideIncludedNote from "../../components/GuideIncludedNote";
@@ -37,13 +36,9 @@ export default async function SmartPlannerBarcelonaV1Page() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) {
-    redirect("/login?next=/smart-planner/barcelona-v1");
-  }
-
-  const hasAccess = await hasProductAccess(PRODUCT_SLUGS.personalizedPlan, user.id);
+  const hasAccess = user ? await hasProductAccess(PRODUCT_SLUGS.personalizedPlan, user.id) : false;
   if (!hasAccess) {
-    return <ProductAccessDenied productName="المخطط الذكي لبرشلونة" mailSubject="استفسار عن المخطط الذكي لبرشلونة" productSlug={PRODUCT_SLUGS.personalizedPlan} />;
+    return <ProductAccessDenied productName="المخطط الذكي لبرشلونة" mailSubject="استفسار عن المخطط الذكي لبرشلونة" productSlug={PRODUCT_SLUGS.personalizedPlan} signedOut={!user} signInNext="/smart-planner/barcelona-v1" />;
   }
 
   return (

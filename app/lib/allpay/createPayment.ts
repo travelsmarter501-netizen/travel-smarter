@@ -19,8 +19,16 @@ export type CreateAllpayCheckoutResult = { ok: true; paymentUrl: string; orderId
 /**
  * Creates an Allpay Redirect Checkout session for an existing pending order.
  * Prices come from snapshotted order_items, never from the browser.
+ *
+ * Guest orders pass `claimToken`: the buyer returns to /claim-purchase?token=... instead of the
+ * logged-in success page. The token is only a URL parameter on the buyer's own redirect (it is
+ * never logged, and claiming still requires the order to be webhook-verified as paid).
  */
-export async function createAllpayRedirectCheckout(orderId: string, client: { name?: string | null; email?: string | null }): Promise<CreateAllpayCheckoutResult> {
+export async function createAllpayRedirectCheckout(
+  orderId: string,
+  client: { name?: string | null; email?: string | null },
+  options: { claimToken?: string } = {}
+): Promise<CreateAllpayCheckoutResult> {
   try {
     const mode = getAllpayMode();
     const { login, apiKey } = getAllpayCredentials();
@@ -65,7 +73,9 @@ export async function createAllpayRedirectCheckout(orderId: string, client: { na
       currency: order.currency || "ILS",
       lang: "AR",
       webhook_url: `${baseUrl}/api/allpay/webhook`,
-      success_url: `${baseUrl}/checkout/success?order_id=${encodeURIComponent(order.id)}`,
+      success_url: options.claimToken
+        ? `${baseUrl}/claim-purchase?token=${encodeURIComponent(options.claimToken)}`
+        : `${baseUrl}/checkout/success?order_id=${encodeURIComponent(order.id)}`,
       backlink_url: `${baseUrl}/checkout/cancelled?order_id=${encodeURIComponent(order.id)}`,
       client_tehudat: "000000000",
       // Sent explicitly in BOTH modes so ALLPAY_MODE (this app's own setting) is the single source

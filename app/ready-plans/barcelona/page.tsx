@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import Container from "../../components/Container";
 import BackLink from "../../components/detail/BackLink";
 import ProductAccessDenied from "../../components/guide/ProductAccessDenied";
@@ -28,13 +27,9 @@ export default async function BarcelonaReadyPlanPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) {
-    redirect("/login?next=/ready-plans/barcelona");
-  }
-
-  const hasAccess = await hasProductAccess(PRODUCT_SLUGS.readyPlan5Day, user.id);
+  const hasAccess = user ? await hasProductAccess(PRODUCT_SLUGS.readyPlan5Day, user.id) : false;
   if (!hasAccess) {
-    return <ProductAccessDenied productName="خطة Barcelona الجاهزة" mailSubject="استفسار عن خطة Barcelona الجاهزة" productSlug={PRODUCT_SLUGS.readyPlan5Day} />;
+    return <ProductAccessDenied productName="خطة Barcelona الجاهزة" mailSubject="استفسار عن خطة Barcelona الجاهزة" productSlug={PRODUCT_SLUGS.readyPlan5Day} signedOut={!user} signInNext="/ready-plans/barcelona" />;
   }
 
   return (
