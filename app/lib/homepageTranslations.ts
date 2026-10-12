@@ -5,6 +5,8 @@
  * homepage redesign task's final report for which pages still need a translation pass.
  */
 
+import type { CheckoutErrorCode } from "./commerce/checkoutErrors";
+
 export type Language = "ar" | "en";
 
 type Product = {
@@ -104,6 +106,20 @@ export type HomepageCopy = {
     clear: string;
     alreadyInCart: string;
     close: string;
+  };
+  /** Checkout page chrome (title, pay button, Allpay test-mode wording). */
+  checkout: {
+    title: string;
+    payButton: string;
+    /** Shown instead of payButton while ALLPAY_MODE=test. */
+    payButtonTest: string;
+    testBadge: string;
+    /** Pay-button text while the payment page is being opened. */
+    redirecting: string;
+    /** Row label for a direct single-product checkout (/checkout?product=...). */
+    selectedProduct: string;
+    /** Customer-facing checkout errors, keyed by the code the checkout actions return. */
+    errors: Record<CheckoutErrorCode, string>;
   };
   /** Small note used on the 5-day Ready Plan and Smart Planner pages -- not shown on the 1-day plan. */
   productPage: {
@@ -268,6 +284,29 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
       alreadyInCart: "هذا المنتج موجود بالسلة",
       close: "إغلاق السلة",
     },
+    checkout: {
+      title: "إتمام الشراء",
+      payButton: "الدفع عبر Allpay",
+      payButtonTest: "الدفع عبر Allpay (تجريبي)",
+      testBadge: "وضع اختبار Allpay — بدون دفع حقيقي",
+      redirecting: "جاري التحويل للدفع...",
+      selectedProduct: "منتج محدد للدفع",
+      errors: {
+        invalid_product: "منتج غير صالح في السلة.",
+        empty_cart: "السلة فارغة.",
+        invalid_email: "أدخل بريدًا إلكترونيًا صحيحًا — بنرسل عليه تأكيد الدفع.",
+        no_product_selected: "لم يتم تحديد أي منتج للشراء.",
+        already_owned: "كل المنتجات المطلوبة إما مملوكة لديك مسبقًا أو متضمنة ضمن منتج تملكه.",
+        login_required: "يجب تسجيل الدخول لإتمام عملية الشراء.",
+        order_create_failed: "تعذّر إنشاء الطلب. حاول مرة أخرى.",
+        order_load_failed: "تعذّر تحميل تفاصيل الطلب بعد إنشائه.",
+        order_not_found: "الطلب غير موجود.",
+        order_not_pending: "هذا الطلب لم يعد بانتظار الدفع.",
+        order_items_failed: "تعذّر تحميل منتجات الطلب.",
+        payment_page_failed: "تعذّر فتح صفحة الدفع. حاول مرة أخرى.",
+        payment_setup_failed: "تعذّر تجهيز الدفع حاليًا. حاول مرة أخرى بعد قليل، وإذا استمرت المشكلة تواصل معنا.",
+      },
+    },
     productPage: {
       guideIncluded: "يشمل دليل برشلونة",
     },
@@ -422,6 +461,29 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
       clear: "Clear cart",
       alreadyInCart: "This product is already in your cart",
       close: "Close cart",
+    },
+    checkout: {
+      title: "Checkout",
+      payButton: "Pay with Allpay",
+      payButtonTest: "Pay with Allpay (Test)",
+      testBadge: "Allpay test mode — no real payment",
+      redirecting: "Redirecting to payment...",
+      selectedProduct: "Selected product",
+      errors: {
+        invalid_product: "Invalid product in your cart.",
+        empty_cart: "Your cart is empty.",
+        invalid_email: "Enter a valid email address — we’ll send your payment confirmation there.",
+        no_product_selected: "No product was selected for purchase.",
+        already_owned: "All the requested products are already yours or included in a product you own.",
+        login_required: "Please sign in to complete this purchase.",
+        order_create_failed: "We couldn’t create your order. Please try again.",
+        order_load_failed: "We couldn’t load your order details after creating it.",
+        order_not_found: "Order not found.",
+        order_not_pending: "This order is no longer awaiting payment.",
+        order_items_failed: "We couldn’t load the products in your order.",
+        payment_page_failed: "We couldn’t open the payment page. Please try again.",
+        payment_setup_failed: "We couldn’t set up the payment right now. Please try again in a moment, and contact us if the problem continues.",
+      },
     },
     productPage: {
       guideIncluded: "Barcelona Guide included",

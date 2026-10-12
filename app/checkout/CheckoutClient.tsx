@@ -5,6 +5,7 @@ import { useCart } from "../lib/cart";
 import { useLanguage } from "../lib/language";
 import { formatPrice, useCurrency } from "../lib/currency";
 import { startCartCheckout } from "./actions";
+import type { CheckoutErrorCode } from "../lib/commerce/checkoutErrors";
 
 export default function CheckoutClient({
   extraProductSlug,
@@ -20,7 +21,8 @@ export default function CheckoutClient({
   const { currency } = useCurrency();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  // Kept as {code, message} (not a string) so the text follows the language if it is switched after an error.
+  const [error, setError] = useState<{ code?: CheckoutErrorCode; message: string } | null>(null);
 
   const empty = items.length === 0 && !extraProductSlug;
 
@@ -36,7 +38,7 @@ export default function CheckoutClient({
     setLoading(false);
 
     if (!result.ok) {
-      setError(result.error);
+      setError({ code: result.code, message: result.error });
       return;
     }
 
@@ -46,12 +48,9 @@ export default function CheckoutClient({
   return (
     <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
       {testMode && (
-        <p className="inline-flex rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-amber-800">وضع اختبار Allpay — بدون دفع حقيقي</p>
+        <p className="inline-flex rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-amber-800">{t.checkout.testBadge}</p>
       )}
-      <h1 className="mt-4 text-2xl font-bold text-slate-900">إتمام الشراء</h1>
-      <p className="mt-2 text-sm leading-6 text-slate-600">
-        السعر النهائي يتأكد على الخادم من كتالوج المنتجات. بعد التأكيد رح نحولك لصفحة الدفع الآمنة لدى Allpay.
-      </p>
+      <h1 className="mt-4 text-2xl font-bold text-slate-900">{t.checkout.title}</h1>
 
       {empty ? (
         <p className="mt-8 text-center text-sm text-slate-500">{t.cart.empty}</p>
@@ -59,7 +58,7 @@ export default function CheckoutClient({
         <>
           <ul className="mt-6 space-y-3">
             {extraProductSlug && items.length === 0 && (
-              <li className="rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-900">منتج محدد للدفع</li>
+              <li className="rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-900">{t.checkout.selectedProduct}</li>
             )}
             {items.map((item) => (
               <li key={item.id} className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 px-4 py-3">
@@ -105,14 +104,16 @@ export default function CheckoutClient({
                 className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm text-slate-900 outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100"
               />
               <p className="mt-2 text-xs leading-5 text-slate-500">
-                {language === "ar"
-                  ? "ما بدك حساب عشان تدفع. بعد الدفع بتسجّل دخولك أو بتنشئ حساب لتفعيل مشترياتك."
-                  : "No account needed to pay. After payment you'll sign in or create an account to access your purchase."}
+                {language === "ar" ? "سنستخدم بريدك لإرسال تفاصيل الطلب." : "We’ll use your email to send your order details."}
               </p>
             </div>
           )}
 
-          {error && <p className="mt-4 text-sm font-semibold text-rose-600">{error}</p>}
+          {error && (
+            <p role="alert" className="mt-4 text-sm font-semibold text-rose-600">
+              {error.code ? t.checkout.errors[error.code] : error.message}
+            </p>
+          )}
 
           <button
             type="button"
@@ -120,7 +121,7 @@ export default function CheckoutClient({
             disabled={loading || empty || (!signedIn && email.trim().length === 0)}
             className="mt-6 flex w-full items-center justify-center rounded-full bg-teal-700 px-5 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-teal-800 disabled:opacity-60"
           >
-            {loading ? "جاري التحويل للدفع..." : testMode ? "الدفع عبر Allpay (تجريبي)" : "الدفع عبر Allpay"}
+            {loading ? t.checkout.redirecting : testMode ? t.checkout.payButtonTest : t.checkout.payButton}
           </button>
         </>
       )}

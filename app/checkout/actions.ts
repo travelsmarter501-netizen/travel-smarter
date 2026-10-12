@@ -6,10 +6,11 @@ import { generateClaimToken, normalizeGuestEmail } from "../lib/commerce/claimTo
 import { createCustomPlanPendingOrder } from "../lib/customPlanCommerce";
 import { createAllpayRedirectCheckout } from "../lib/allpay/createPayment";
 import { resolveCheckoutProductSlugs } from "../lib/commerce/catalog";
+import type { CheckoutErrorCode } from "../lib/commerce/checkoutErrors";
 
 export type StartCheckoutResult =
   | { ok: true; paymentUrl: string; orderId: string }
-  | { ok: false; error: string; requiresLogin?: boolean };
+  | { ok: false; error: string; /** Stable code the page maps to the visitor's language; `error` stays as the Arabic fallback. */ code?: CheckoutErrorCode; requiresLogin?: boolean };
 
 function clientProfile(user: { email?: string | null; user_metadata?: Record<string, unknown> }) {
   const name = typeof user.user_metadata?.full_name === "string" ? user.user_metadata.full_name : null;
@@ -38,17 +39,17 @@ export async function startCartCheckout(input: { cartIds?: string[]; productSlug
   try {
     slugs = resolveCheckoutProductSlugs(input);
   } catch {
-    return { ok: false, error: "منتج غير صالح في السلة." };
+    return { ok: false, error: "منتج غير صالح في السلة.", code: "invalid_product" };
   }
 
   if (slugs.length === 0) {
-    return { ok: false, error: "السلة فارغة." };
+    return { ok: false, error: "السلة فارغة.", code: "empty_cart" };
   }
 
   if (user) {
     const order = await createPendingOrder(slugs);
     if (!order.ok) {
-      return { ok: false, error: order.error };
+      return { ok: false, error: order.error, code: order.code };
     }
 
     return createAllpayRedirectCheckout(order.data.id, clientProfile(user));
@@ -57,13 +58,13 @@ export async function startCartCheckout(input: { cartIds?: string[]; productSlug
   // ---- Guest checkout ----
   const email = normalizeGuestEmail(input.email);
   if (!email) {
-    return { ok: false, error: "أدخل بريدًا إلكترونيًا صحيحًا — بنرسل عليه تأكيد الدفع." };
+    return { ok: false, error: "أدخل بريدًا إلكترونيًا صحيحًا — بنرسل عليه تأكيد الدفع.", code: "invalid_email" };
   }
 
   const claimToken = generateClaimToken();
   const order = await createGuestPendingOrder(slugs, email, claimToken);
   if (!order.ok) {
-    return { ok: false, error: order.error };
+    return { ok: false, error: order.error, code: order.code };
   }
 
   return createAllpayRedirectCheckout(order.data.id, { email }, { claimToken });

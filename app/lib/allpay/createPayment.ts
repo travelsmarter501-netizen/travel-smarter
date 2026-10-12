@@ -2,6 +2,7 @@ import "server-only";
 import { ALLPAY_CREATE_PAYMENT_URL, getAllpayCredentials, getAllpayMode, getPublicBaseUrl } from "./config";
 import { allpaySign } from "./sign";
 import { createServiceRoleClient } from "../../../utils/supabase/service-role";
+import type { CheckoutErrorCode } from "../commerce/checkoutErrors";
 
 type OrderItemWithProduct = {
   price_ils_at_purchase: number;
@@ -14,7 +15,7 @@ function productName(row: OrderItemWithProduct): string {
   return products?.name ?? "Travel Smarter";
 }
 
-export type CreateAllpayCheckoutResult = { ok: true; paymentUrl: string; orderId: string } | { ok: false; error: string };
+export type CreateAllpayCheckoutResult = { ok: true; paymentUrl: string; orderId: string } | { ok: false; error: string; code: CheckoutErrorCode };
 
 /**
  * Creates an Allpay Redirect Checkout session for an existing pending order.
@@ -42,10 +43,10 @@ export async function createAllpayRedirectCheckout(
       .maybeSingle<{ id: string; status: string; total_ils: number; currency: string }>();
 
     if (orderError || !order) {
-      return { ok: false, error: "الطلب غير موجود." };
+      return { ok: false, error: "الطلب غير موجود.", code: "order_not_found" };
     }
     if (order.status !== "pending") {
-      return { ok: false, error: "هذا الطلب لم يعد بانتظار الدفع." };
+      return { ok: false, error: "هذا الطلب لم يعد بانتظار الدفع.", code: "order_not_pending" };
     }
 
     const { data: itemRows, error: itemsError } = await serviceRole
@@ -55,7 +56,7 @@ export async function createAllpayRedirectCheckout(
       .returns<OrderItemWithProduct[]>();
 
     if (itemsError || !itemRows || itemRows.length === 0) {
-      return { ok: false, error: "تعذّر تحميل منتجات الطلب." };
+      return { ok: false, error: "تعذّر تحميل منتجات الطلب.", code: "order_items_failed" };
     }
 
     const items = itemRows.map((row) => ({
@@ -100,7 +101,7 @@ export async function createAllpayRedirectCheckout(
 
     if (!data.payment_url) {
       console.error("[allpay] Create Payment was rejected:", data.error_code, data.error_msg);
-      return { ok: false, error: "تعذّر فتح صفحة الدفع. حاول مرة أخرى." };
+      return { ok: false, error: "تعذّر فتح صفحة الدفع. حاول مرة أخرى.", code: "payment_page_failed" };
     }
 
     await serviceRole.from("orders").update({ provider: "allpay", provider_order_id: order.id }).eq("id", order.id).eq("status", "pending");
@@ -108,6 +109,6 @@ export async function createAllpayRedirectCheckout(
     return { ok: true, paymentUrl: data.payment_url, orderId: order.id };
   } catch (error) {
     console.error("[allpay] Could not create the payment session:", error instanceof Error ? error.message : "unknown error");
-    return { ok: false, error: "تعذّر تجهيز الدفع حاليًا. حاول مرة أخرى بعد قليل، وإذا استمرت المشكلة تواصل معنا." };
+    return { ok: false, error: "تعذّر تجهيز الدفع حاليًا. حاول مرة أخرى بعد قليل، وإذا استمرت المشكلة تواصل معنا.", code: "payment_setup_failed" };
   }
 }

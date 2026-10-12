@@ -3,6 +3,7 @@ import { createClient } from "../../utils/supabase/server";
 import { createServiceRoleClient } from "../../utils/supabase/service-role";
 import { hasProductAccess, GUIDE_BUNDLE_PRODUCT_SLUGS } from "./entitlements";
 import { hashClaimToken } from "./commerce/claimToken";
+import type { CheckoutErrorCode } from "./commerce/checkoutErrors";
 
 /**
  * Commerce Foundation V1 -- order domain helpers.
@@ -155,7 +156,7 @@ export async function getOrderWithItems(orderId: string): Promise<OrderWithItems
   return { ...mapOrder(orderRow), items: itemRows.map(mapOrderItem) };
 }
 
-export type CreatePendingOrderResult = { ok: true; data: OrderWithItems } | { ok: false; error: string };
+export type CreatePendingOrderResult = { ok: true; data: OrderWithItems } | { ok: false; error: string; code: CheckoutErrorCode };
 
 /** Dedupe + trim the requested slugs. */
 function dedupeSlugs(productSlugs: string[]): string[] {
@@ -182,7 +183,7 @@ async function loadCreatedOrder(
     .returns<OrderItemRow[]>();
 
   if (itemsError || !itemRows) {
-    return { ok: false, error: "تعذّر تحميل تفاصيل الطلب بعد إنشائه." };
+    return { ok: false, error: "تعذّر تحميل تفاصيل الطلب بعد إنشائه.", code: "order_load_failed" };
   }
 
   return { ok: true, data: { ...mapOrder(orderRow), items: itemRows.map(mapOrderItem) } };
@@ -217,12 +218,12 @@ export async function createPendingOrder(productSlugs: string[]): Promise<Create
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return { ok: false, error: "يجب تسجيل الدخول لإتمام عملية الشراء." };
+    return { ok: false, error: "يجب تسجيل الدخول لإتمام عملية الشراء.", code: "login_required" };
   }
 
   const deduped = dedupeSlugs(productSlugs);
   if (deduped.length === 0) {
-    return { ok: false, error: "لم يتم تحديد أي منتج للشراء." };
+    return { ok: false, error: "لم يتم تحديد أي منتج للشراء.", code: "no_product_selected" };
   }
 
   // Rule 1: redundant Guide removal.
@@ -236,7 +237,7 @@ export async function createPendingOrder(productSlugs: string[]): Promise<Create
   const finalSlugs = ownershipChecks.filter((check) => !check.owned).map((check) => check.slug);
 
   if (finalSlugs.length === 0) {
-    return { ok: false, error: "كل المنتجات المطلوبة إما مملوكة لديك مسبقًا أو متضمنة ضمن منتج تملكه." };
+    return { ok: false, error: "كل المنتجات المطلوبة إما مملوكة لديك مسبقًا أو متضمنة ضمن منتج تملكه.", code: "already_owned" };
   }
 
   // The RPC is service_role-only by design (see its own migration comment) -- this is the one
@@ -248,7 +249,7 @@ export async function createPendingOrder(productSlugs: string[]): Promise<Create
     .single<OrderRow>();
 
   if (rpcError || !orderRow) {
-    return { ok: false, error: "تعذّر إنشاء الطلب. حاول مرة أخرى." };
+    return { ok: false, error: "تعذّر إنشاء الطلب. حاول مرة أخرى.", code: "order_create_failed" };
   }
 
   return loadCreatedOrder(serviceRole, orderRow);
@@ -272,7 +273,7 @@ export async function createGuestPendingOrder(
 ): Promise<CreatePendingOrderResult> {
   const finalSlugs = dropRedundantGuide(dedupeSlugs(productSlugs));
   if (finalSlugs.length === 0) {
-    return { ok: false, error: "لم يتم تحديد أي منتج للشراء." };
+    return { ok: false, error: "لم يتم تحديد أي منتج للشراء.", code: "no_product_selected" };
   }
 
   const serviceRole = createServiceRoleClient();
@@ -286,7 +287,7 @@ export async function createGuestPendingOrder(
     .single<OrderRow>();
 
   if (rpcError || !orderRow) {
-    return { ok: false, error: "تعذّر إنشاء الطلب. حاول مرة أخرى." };
+    return { ok: false, error: "تعذّر إنشاء الطلب. حاول مرة أخرى.", code: "order_create_failed" };
   }
 
   return loadCreatedOrder(serviceRole, orderRow);
