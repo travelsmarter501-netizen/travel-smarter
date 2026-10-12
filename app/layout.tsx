@@ -14,6 +14,12 @@ const cairo = Cairo({
 });
 
 export const metadata: Metadata = {
+  // The custom domain is the one public origin. "./" resolves against each route's own pathname, so every
+  // page gets <link rel="canonical" href="https://travelsmarters.com/<its path>"> (no query string, so a
+  // claim token in a URL never appears in a canonical). The same page served from another host (the
+  // *.vercel.app domain) therefore points search engines back to the custom domain.
+  metadataBase: new URL("https://travelsmarters.com"),
+  alternates: { canonical: "./" },
   title: "Travel Smarter | تخطيط سفر ذكي — خطط برشلونة ودليل برشلونة",
   description: "خطط سفر جاهزة ومخصصة لبرشلونة: دليل سياحي، رزمة يوم واحد، رزمة 5 أيام، وخطة مخصصة بالذكاء. سافر أكثر، خطّط أقل.",
 };
