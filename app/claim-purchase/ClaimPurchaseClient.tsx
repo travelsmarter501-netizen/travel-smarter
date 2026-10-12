@@ -18,9 +18,10 @@ const SUPPORT_EMAIL = "travelsmarter501@gmail.com";
 const copy = {
   ar: {
     pendingTitle: "جاري تأكيد الدفع",
-    pendingBody: "لا تغلق هذه الصفحة. بنحدّثها تلقائيًا أول ما يوصلنا تأكيد الدفع من Allpay.",
+    pendingBody: "سيتم تأكيد دفعتك خلال لحظات.",
     paidTitle: "تمت عملية الدفع بنجاح",
-    signinBody: "سجّل الدخول أو أنشئ حسابًا للوصول إلى مشترياتك.",
+    signinTitle: "تم تأكيد الدفع بنجاح",
+    signinBody: "سجّل دخولك أو أنشئ حسابًا للوصول إلى مشترياتك.",
     signIn: "تسجيل الدخول",
     signUp: "إنشاء حساب جديد",
     readyBody: "أضف مشترياتك إلى حسابك الآن.",
@@ -35,13 +36,13 @@ const copy = {
     contact: "تواصل معنا",
     notYet: "ما وصلنا تأكيد الدفع بعد. انتظر لحظات وحاول مرة ثانية.",
     failed: "تعذّرت إضافة المشتريات. جرّب مرة ثانية، وإذا استمرت المشكلة تواصل معنا.",
-    save: "احتفظ بهذه الصفحة حتى تتم إضافة مشترياتك إلى حسابك.",
   },
   en: {
-    pendingTitle: "Confirming your payment",
-    pendingBody: "Please keep this page open. It updates automatically as soon as Allpay confirms the payment.",
+    pendingTitle: "Confirming payment",
+    pendingBody: "Your payment will be confirmed in a few moments.",
     paidTitle: "Payment successful",
-    signinBody: "Your payment was successful. Sign in or create an account to access your purchase.",
+    signinTitle: "Payment confirmed successfully",
+    signinBody: "Sign in or create an account to access your purchase.",
     signIn: "Sign in",
     signUp: "Create an account",
     readyBody: "Add your purchase to your account now.",
@@ -56,12 +57,8 @@ const copy = {
     contact: "Contact us",
     notYet: "We haven't received the payment confirmation yet. Wait a moment and try again.",
     failed: "We couldn't add your purchase. Please try again, and contact us if it keeps failing.",
-    save: "Save this page until your purchase is added to your account.",
   },
 } as const;
-
-/** Arabic is the site's primary language; the success sentence is also shown in English as the brief requires. */
-const SUCCESS_SENTENCE_EN = "Your payment was successful. Sign in or create an account to access your purchase.";
 
 export default function ClaimPurchaseClient({
   state,
@@ -131,8 +128,6 @@ export default function ClaimPurchaseClient({
     setClaiming(false);
   }
 
-  const showSaveNotice = (state === "pending" || state === "signin" || state === "ready") && !claimed;
-
   return (
     <main className="py-10">
       <Container className="max-w-lg">
@@ -166,20 +161,15 @@ export default function ClaimPurchaseClient({
               <p className="text-4xl">⏳</p>
               <h1 className="mt-3 text-2xl font-bold text-slate-900">{c.pendingTitle}</h1>
               <p className="mt-2 text-sm leading-6 text-slate-600">{c.pendingBody}</p>
-              <SuccessRefresh />
+              <SuccessRefresh showNote={false} />
             </>
           ) : (
             <>
               <p className="text-4xl">✅</p>
-              <h1 className="mt-3 text-2xl font-bold text-slate-900">{c.paidTitle}</h1>
+              <h1 className="mt-3 text-2xl font-bold text-slate-900">{state === "signin" ? c.signinTitle : c.paidTitle}</h1>
               {state === "signin" ? (
                 <>
                   <p className="mt-2 text-sm leading-6 text-slate-600">{c.signinBody}</p>
-                  {language !== "en" && (
-                    <p dir="ltr" className="mt-1 text-xs leading-5 text-slate-400">
-                      {SUCCESS_SENTENCE_EN}
-                    </p>
-                  )}
                   <div className="mt-6 flex flex-col gap-2.5">
                     <Link
                       href={loginHref(claimNext)}
@@ -219,15 +209,6 @@ export default function ClaimPurchaseClient({
                 </>
               )}
             </>
-          )}
-
-          {showSaveNotice && (
-            <div className="mt-6 rounded-2xl bg-amber-50 px-4 py-3 text-xs font-semibold leading-5 text-amber-900">
-              <p>{copy.ar.save}</p>
-              <p dir="ltr" className="mt-1">
-                {copy.en.save}
-              </p>
-            </div>
           )}
         </div>
       </Container>
