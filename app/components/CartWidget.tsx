@@ -2,15 +2,25 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { createPortal } from "react-dom";
 import { useCart } from "../lib/cart";
 import { useLanguage } from "../lib/language";
 import { formatPrice, useCurrency } from "../lib/currency";
 import { IconClose, IconShoppingBag } from "./icons";
 
 /**
- * Cart icon + count badge (always visible in the header) plus the slide-over drawer it opens.
+ * Cart icon + count badge (always visible in the header) plus the drawer it opens.
  * Kept as one client component so the open/close state and the button that triggers it stay
  * together -- Header only needs to render <CartWidget />.
+ *
+ * The drawer is rendered through a portal on <body>, NOT inside the header. The header uses
+ * `backdrop-filter`, and a CSS backdrop-filter makes its element the containing block for
+ * `position: fixed` descendants -- which is what used to squash the "full-screen" cart into the
+ * 64px header, letting its contents spill over the page. Outside the header, `fixed inset-0` really is
+ * the viewport.
+ *
+ * Phones (< 640px): an opaque bottom sheet (max 85% of the viewport height, scrolls inside) over a dark
+ * backdrop. >= 640px: the original right-hand side drawer.
  */
 export default function CartWidget() {
   const { items, removeItem, clearCart, totalILS, getPriceILS } = useCart();
@@ -27,12 +37,36 @@ export default function CartWidget() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [open]);
 
+  // Stop the page behind the cart from scrolling while it is open. On phones (iOS Safari ignores
+  // overflow:hidden on <body> for touch scrolling) the body is pinned in place and the scroll position
+  // is restored on close; on larger screens the original overflow lock is kept.
   useEffect(() => {
     if (!open) return;
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    const body = document.body;
+    const html = document.documentElement;
+    const scrollY = window.scrollY;
+    const pinBody = window.matchMedia("(max-width: 639px)").matches;
+    const previous = {
+      bodyOverflow: body.style.overflow,
+      htmlOverflow: html.style.overflow,
+      position: body.style.position,
+      top: body.style.top,
+      width: body.style.width,
+    };
+    body.style.overflow = "hidden";
+    html.style.overflow = "hidden";
+    if (pinBody) {
+      body.style.position = "fixed";
+      body.style.top = `-${scrollY}px`;
+      body.style.width = "100%";
+    }
     return () => {
-      document.body.style.overflow = previousOverflow;
+      body.style.overflow = previous.bodyOverflow;
+      html.style.overflow = previous.htmlOverflow;
+      body.style.position = previous.position;
+      body.style.top = previous.top;
+      body.style.width = previous.width;
+      if (pinBody) window.scrollTo(0, scrollY);
     };
   }, [open]);
 
@@ -52,21 +86,22 @@ export default function CartWidget() {
         )}
       </button>
 
-      {open && (
-        <div className="fixed inset-0 z-[60]">
+      {open &&
+        createPortal(
+        <div className="fixed inset-0 z-[100]">
           <button
             type="button"
             aria-label={t.cart.close}
             onClick={() => setOpen(false)}
-            className="absolute inset-0 bg-slate-900/40"
+            className="absolute inset-0 bg-slate-900/60"
           />
           <div
             role="dialog"
             aria-modal="true"
             aria-label={t.cart.title}
-            className="absolute inset-y-0 end-0 flex w-full max-w-sm flex-col bg-white shadow-2xl"
+            className="absolute inset-x-0 bottom-0 flex max-h-[85dvh] w-full flex-col overflow-hidden rounded-t-3xl bg-white shadow-2xl sm:inset-y-0 sm:start-auto sm:end-0 sm:max-h-none sm:max-w-sm sm:rounded-none"
           >
-            <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+            <div className="flex shrink-0 items-center justify-between border-b border-slate-200 px-5 py-4">
               <h2 className="text-base font-bold text-slate-900">{t.cart.title}</h2>
               <button
                 type="button"
@@ -78,7 +113,7 @@ export default function CartWidget() {
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto px-5 py-4">
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-4">
               {items.length === 0 ? (
                 <p className="py-10 text-center text-sm text-slate-500">{t.cart.empty}</p>
               ) : (
@@ -88,7 +123,7 @@ export default function CartWidget() {
                       key={item.id}
                       className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 p-3"
                     >
-                      <div className="min-w-0">
+                      <div className="min-w-0 flex-1">
                         <p dir="auto" className="truncate text-sm font-semibold text-slate-900">
                           {language === "ar" ? item.titleAr : item.titleEn}
                         </p>
@@ -110,7 +145,7 @@ export default function CartWidget() {
             </div>
 
             {items.length > 0 && (
-              <div className="border-t border-slate-200 px-5 py-4">
+              <div className="shrink-0 border-t border-slate-200 bg-white px-5 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
                 <div className="flex items-center justify-between text-sm">
                   <span className="font-semibold text-slate-600">{t.cart.subtotal}</span>
                   <span dir="ltr" className="text-lg font-bold text-slate-900">
@@ -134,7 +169,8 @@ export default function CartWidget() {
               </div>
             )}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );

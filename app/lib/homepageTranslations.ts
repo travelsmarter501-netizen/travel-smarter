@@ -58,6 +58,9 @@ export type HomepageCopy = {
     faq: string;
     contact: string;
     ctaPlanTrip: string;
+    /** Header account entry: shown when signed out / signed in. */
+    signIn: string;
+    account: string;
   };
   languageSwitcher: { ar: string; en: string; ariaLabel: string };
   cartButton: { ariaLabel: string };
@@ -139,6 +142,8 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
       faq: "الأسئلة الشائعة",
       contact: "تواصل معنا",
       ctaPlanTrip: "اختار خطتك",
+      signIn: "تسجيل الدخول",
+      account: "حسابي",
     },
     languageSwitcher: { ar: "العربية", en: "EN", ariaLabel: "اختيار اللغة" },
     cartButton: { ariaLabel: "السلة" },
@@ -295,6 +300,8 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
       faq: "FAQ",
       contact: "Contact",
       ctaPlanTrip: "Choose Your Plan",
+      signIn: "Sign in",
+      account: "My Account",
     },
     languageSwitcher: { ar: "عربي", en: "EN", ariaLabel: "Select language" },
     cartButton: { ariaLabel: "Cart" },

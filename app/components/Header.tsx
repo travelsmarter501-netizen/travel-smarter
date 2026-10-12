@@ -5,6 +5,7 @@ import Link from "next/link";
 import Container from "./Container";
 import Button from "./Button";
 import CartWidget from "./CartWidget";
+import AccountNavLink from "./AccountNavLink";
 import LanguageSwitcher from "./LanguageSwitcher";
 import Logo from "./Logo";
 import { IconClose, IconMenu } from "./icons";
@@ -43,6 +44,7 @@ export default function Header() {
 
         <div className="hidden items-center gap-3 lg:flex">
           <LanguageSwitcher />
+          <AccountNavLink />
           <CartWidget />
           <Button href="/#products">{t.nav.ctaPlanTrip}</Button>
         </div>
@@ -77,6 +79,9 @@ export default function Header() {
             ))}
             <div className="mt-3 flex items-center justify-between gap-3">
               <LanguageSwitcher />
+            </div>
+            <div className="mt-2">
+              <AccountNavLink variant="menu" onNavigate={() => setMenuOpen(false)} />
             </div>
             <Button href="/#products" className="mt-2 w-full">
               {t.nav.ctaPlanTrip}
