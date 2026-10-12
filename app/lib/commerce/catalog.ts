@@ -13,6 +13,21 @@ export const PRODUCT_SLUGS = {
 } as const;
 
 /**
+ * Where each owned product opens (the entitlement-gated content route). /account links owners here;
+ * normal shoppers never are -- the storefront sells through /#products + /checkout. Keyed by the same
+ * PRODUCT_SLUGS the checkout and the page gates use, so a product cannot be sold under one slug and
+ * listed under another. (Legacy slugs are kept only so old entitlement rows still resolve to a page.)
+ */
+export const PRODUCT_CONTENT_ROUTES: Record<string, string> = {
+  [PRODUCT_SLUGS.guide]: "/guides/barcelona",
+  [PRODUCT_SLUGS.readyPlan1Day]: "/ready-plans/barcelona/1-day",
+  [PRODUCT_SLUGS.readyPlan3Day]: "/ready-plans/barcelona/3-days",
+  [PRODUCT_SLUGS.readyPlan5Day]: "/ready-plans/barcelona",
+  [PRODUCT_SLUGS.personalizedPlan]: "/planner",
+  "barcelona-smart-planner": "/planner",
+};
+
+/**
  * Maps storefront cart ids (homepage / localStorage) to `public.products.slug`.
  * Checkout never trusts client-supplied prices — only these slugs are sent to createPendingOrder.
  */

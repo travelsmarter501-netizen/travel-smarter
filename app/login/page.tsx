@@ -6,13 +6,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Container from "../components/Container";
 import GoogleAuthButton from "../components/auth/GoogleAuthButton";
 import { createClient } from "../../utils/supabase/client";
+import { safeNextPath, signupHref } from "../lib/authRedirect";
 
-// Only allow redirecting back to a relative in-app path — never an absolute/external
-// URL — so `next` can't be abused as an open redirect.
-function safeNextPath(value: string | null): string {
-  if (value && value.startsWith("/") && !value.startsWith("//") && !value.includes("\\")) return value;
-  return "/account";
-}
 
 function LoginForm() {
   const router = useRouter();
@@ -21,7 +16,8 @@ function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  // /auth/callback sends the user back here with ?error=auth when Google / email confirmation did not complete.
+  const [error, setError] = useState<string | null>(searchParams.get("error") === "auth" ? "تعذّر إكمال تسجيل الدخول. حاول مرة أخرى." : null);
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -106,7 +102,7 @@ function LoginForm() {
 
           <p className="mt-6 text-center text-sm text-slate-600">
             ليس لديك حساب؟{" "}
-            <Link href={next === "/account" ? "/signup" : `/signup?next=${encodeURIComponent(next)}`} className="font-semibold text-teal-700 hover:text-teal-800">
+            <Link href={signupHref(next)} className="font-semibold text-teal-700 hover:text-teal-800">
               إنشاء حساب جديد
             </Link>
           </p>

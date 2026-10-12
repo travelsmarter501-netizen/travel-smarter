@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { createClient } from "../../utils/supabase/server";
 import { createServiceRoleClient } from "../../utils/supabase/service-role";
 import { hashClaimToken, isWellFormedClaimToken } from "../lib/commerce/claimToken";
+import { readPendingClaimCookie } from "./pendingClaimCookie";
 import ClaimPurchaseClient, { type ClaimViewState } from "./ClaimPurchaseClient";
 
 /**
@@ -10,8 +11,11 @@ import ClaimPurchaseClient, { type ClaimViewState } from "./ClaimPurchaseClient"
  * coarse state (claim_guest_order_status), and the actual claim happens in a Server Action behind
  * an authenticated session.
  *
+ * - The token comes from the URL (first landing) or, after the buyer bounced through sign-in and came
+ *   back to a plain /claim-purchase, from the HttpOnly resume cookie (see pendingClaimCookie.ts). A token
+ *   that came from the cookie is never passed to the client component -- it stays server-side.
  * - noindex + no-referrer so the token URL is not indexed and is not leaked to other sites.
- * - dynamic: it reads the session cookie and searchParams.
+ * - dynamic: it reads the session cookie, the resume cookie and searchParams.
  */
 export const metadata: Metadata = {
   title: "Your purchase | Travel Smarter",
@@ -21,9 +25,11 @@ export const metadata: Metadata = {
 
 export default async function ClaimPurchasePage({ searchParams }: { searchParams: Promise<{ token?: string | string[] }> }) {
   const { token: rawToken } = await searchParams;
-  const token = typeof rawToken === "string" ? rawToken : "";
+  const urlToken = isWellFormedClaimToken(rawToken) ? rawToken : null;
+  // A fresh link in the URL always wins; otherwise resume from the HttpOnly cookie.
+  const token = urlToken ?? (await readPendingClaimCookie());
 
-  if (!isWellFormedClaimToken(token)) {
+  if (!token) {
     return <ClaimPurchaseClient state="invalid" />;
   }
 
@@ -46,5 +52,8 @@ export default async function ClaimPurchasePage({ searchParams }: { searchParams
     else if (data === "paid") state = user ? "ready" : "signin";
   }
 
-  return <ClaimPurchaseClient state={state} token={state === "invalid" ? undefined : token} userEmail={user?.email ?? null} />;
+  if (state !== "pending") console.info("[claim] page state:", state, "| signedIn:", !!user, "| token source:", urlToken ? "url" : "cookie");
+
+  // Only a URL-sourced token goes to the client (it is already in the address bar); a cookie-sourced one never does.
+  return <ClaimPurchaseClient state={state} token={state !== "invalid" && urlToken ? urlToken : undefined} userEmail={user?.email ?? null} />;
 }

@@ -6,18 +6,12 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Container from "../components/Container";
 import GoogleAuthButton from "../components/auth/GoogleAuthButton";
 import { createClient } from "../../utils/supabase/client";
-
-// Only allow redirecting back to a relative in-app path -- never an absolute/external URL (open redirect).
-function safeNextPath(value: string | null): string {
-  if (value && value.startsWith("/") && !value.startsWith("//") && !value.includes("\\")) return value;
-  return "/account";
-}
+import { authCallbackUrl, loginHref, safeNextPath } from "../lib/authRedirect";
 
 function SignupForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const next = safeNextPath(searchParams.get("next"));
-  const nextQuery = next === "/account" ? "" : `?next=${encodeURIComponent(next)}`;
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -37,7 +31,7 @@ function SignupForm() {
       options: {
         data: { full_name: name },
         // The callback honors `next`, so a claim-purchase link survives email confirmation.
-        emailRedirectTo: `${window.location.origin}/auth/callback${nextQuery}`,
+        emailRedirectTo: authCallbackUrl(window.location.origin, next),
       },
     });
 
@@ -68,7 +62,7 @@ function SignupForm() {
             <p className="mt-2 text-sm leading-6 text-slate-600">
               أرسلنا رابط تأكيد إلى <span dir="ltr">{email}</span>. افتح الرابط لتفعيل حسابك ثم سجّل دخولك.
             </p>
-            <Link href={`/login${nextQuery}`} className="mt-6 inline-block text-sm font-semibold text-teal-700 hover:text-teal-800">
+            <Link href={loginHref(next)} className="mt-6 inline-block text-sm font-semibold text-teal-700 hover:text-teal-800">
               الذهاب لتسجيل الدخول
             </Link>
           </div>
@@ -159,7 +153,7 @@ function SignupForm() {
 
           <p className="mt-6 text-center text-sm text-slate-600">
             لديك حساب بالفعل؟{" "}
-            <Link href={`/login${nextQuery}`} className="font-semibold text-teal-700 hover:text-teal-800">
+            <Link href={loginHref(next)} className="font-semibold text-teal-700 hover:text-teal-800">
               تسجيل الدخول
             </Link>
           </p>

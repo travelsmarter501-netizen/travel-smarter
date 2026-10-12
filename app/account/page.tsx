@@ -8,22 +8,22 @@ import { INTEREST_OPTIONS } from "../components/smart-planner/InterestSelector";
 import { v2DisplayInterestsLabel } from "../lib/planner/v2PlannerTypes";
 import { createClient } from "../../utils/supabase/server";
 import { getUserEntitlements, GUIDE_BUNDLE_PRODUCT_SLUGS } from "../lib/entitlements";
+import { PRODUCT_CONTENT_ROUTES, PRODUCT_SLUGS } from "../lib/commerce/catalog";
+import PendingClaimBanner from "../components/account/PendingClaimBanner";
 import { getUserCustomPlanRequests } from "../lib/customPlanRequests";
 import { CUSTOM_PLAN_REQUEST_STATUS_LABELS } from "../lib/customPlanRequest";
 import { inclusiveDayCount } from "../lib/planner/dateOnly";
 import { isValidSmartPlannerV2SavedPlanRow } from "../lib/planner/smartPlannerV2SavedPlans";
 import { isValidSmartPlannerSavedPlanRow } from "../lib/planner/smartPlannerSavedPlans";
 
-// Maps an owned product's slug to the page it unlocks. Only Barcelona exists today;
-// a product without a known route still shows in the list but without an "open" button.
-const PRODUCT_ROUTES: Record<string, string> = {
-  "barcelona-guide": "/guides/barcelona",
-  "barcelona-smart-planner": "/smart-planner/barcelona",
-  "barcelona-ready-plan-1day": "/ready-plans/barcelona/1-day",
-  "barcelona-ready-plan-3day": "/ready-plans/barcelona/3-days",
-  "barcelona-ready-plan": "/ready-plans/barcelona",
-  "travel-smarter-personalized-plan": "/planner",
-};
+// An owned product's slug -> the page it unlocks comes from the shared PRODUCT_CONTENT_ROUTES (catalog.ts).
+// A product without a known route still shows in the list but without an "open" button.
+const PRODUCT_ROUTES = PRODUCT_CONTENT_ROUTES;
+
+/** "Open the guide" only makes sense for the Guide; every other product is a plan. */
+function openLabel(productSlug: string): string {
+  return productSlug === PRODUCT_SLUGS.guide ? "افتح الدليل" : "افتح الخطة";
+}
 
 const DESTINATION_LABELS: Record<string, string> = {
   barcelona: "Barcelona",
@@ -100,6 +100,8 @@ export default async function AccountPage() {
             </div>
           </div>
 
+          <PendingClaimBanner />
+
           <div className="mt-8 border-t border-slate-100 pt-6">
             <h2 className="text-lg font-bold text-slate-900">مشترياتي</h2>
 
@@ -123,7 +125,7 @@ export default async function AccountPage() {
                     </div>
                     {PRODUCT_ROUTES[product.productSlug] && (
                       <Button href={PRODUCT_ROUTES[product.productSlug]} size="md">
-                        افتح الدليل
+                        {openLabel(product.productSlug)}
                       </Button>
                     )}
                   </li>

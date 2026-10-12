@@ -6,7 +6,9 @@ import { useRouter } from "next/navigation";
 import Container from "../components/Container";
 import { useCart } from "../lib/cart";
 import { useLanguage } from "../lib/language";
-import { claimPurchaseAction } from "./actions";
+import { claimPurchaseAction, syncPendingClaimAction } from "./actions";
+import { loginHref, signupHref } from "../lib/authRedirect";
+import { claimReturnPath } from "./returnPath";
 import SuccessRefresh from "../checkout/success/SuccessRefresh";
 
 export type ClaimViewState = "pending" | "signin" | "ready" | "done" | "invalid";
@@ -86,11 +88,29 @@ export default function ClaimPurchaseClient({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [paidState]);
 
-  const claimUrl = token ? `/claim-purchase?token=${token}` : "/claim-purchase";
-  const next = encodeURIComponent(claimUrl);
+  // Ask the server to keep its HttpOnly resume cookie in step with this purchase (set while it is still
+  // claimable, cleared once it is not). The token is never stored where JavaScript can read it.
+  const [cookieReady, setCookieReady] = useState(false);
+  useEffect(() => {
+    let cancelled = false;
+    syncPendingClaimAction(token)
+      .then((result) => {
+        if (!cancelled) setCookieReady(result.remembered && (state === "pending" || state === "signin" || state === "ready"));
+      })
+      .catch(() => {
+        // server hiccup: sign-in links simply keep the token-in-URL fallback below
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [state, token]);
+
+  // Where sign-in / sign-up send the buyer back to. Once the server holds the token in its HttpOnly cookie
+  // (or the token never was in the URL), the return path is just "/claim-purchase"; until then it also
+  // carries the token so a slow or failed cookie write can never lose the purchase.
+  const claimNext = claimReturnPath(token, cookieReady);
 
   async function handleClaim() {
-    if (!token) return;
     setClaiming(true);
     setMessage(null);
     try {
@@ -100,7 +120,7 @@ export default function ClaimPurchaseClient({
       } else if (result.status === "not_paid_yet") {
         setMessage(c.notYet);
       } else if (result.status === "login_required") {
-        router.push(`/login?next=${next}`);
+        router.push(loginHref(claimNext));
         return;
       } else {
         setMessage(c.invalidBody);
@@ -162,13 +182,13 @@ export default function ClaimPurchaseClient({
                   )}
                   <div className="mt-6 flex flex-col gap-2.5">
                     <Link
-                      href={`/login?next=${next}`}
+                      href={loginHref(claimNext)}
                       className="flex w-full items-center justify-center rounded-full bg-teal-700 px-5 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-teal-800"
                     >
                       {c.signIn}
                     </Link>
                     <Link
-                      href={`/signup?next=${next}`}
+                      href={signupHref(claimNext)}
                       className="flex w-full items-center justify-center rounded-full border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-800 transition-colors hover:bg-slate-50"
                     >
                       {c.signUp}

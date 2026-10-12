@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 import { createClient } from "../../../utils/supabase/server";
+import { loginHref, safeNextPath } from "../../lib/authRedirect";
 
 // Handles the redirect back from Supabase OAuth (e.g. Google) and email confirmation links.
 // Exchanges the `code` param for a session, then sends the visitor into the app.
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
-  const rawNext = searchParams.get("next");
-  // Only allow a relative in-app path — never an absolute/external URL — so `next` can't be abused as an open redirect.
-  const next = rawNext && rawNext.startsWith("/") && !rawNext.startsWith("//") && !rawNext.includes("\\") ? rawNext : "/account";
+  // Only a plain in-app path is ever honored (see lib/authRedirect.ts) -- `next` can't be an open redirect.
+  const next = safeNextPath(searchParams.get("next"));
 
   if (code) {
     const supabase = await createClient();
@@ -18,5 +18,8 @@ export async function GET(request: Request) {
     }
   }
 
-  return NextResponse.redirect(`${origin}/login?error=auth`);
+  // Sign-in did not complete: back to the login page, keeping where the user was headed (e.g. /claim-purchase).
+  const retry = new URL(loginHref(next), origin);
+  retry.searchParams.set("error", "auth");
+  return NextResponse.redirect(retry);
 }

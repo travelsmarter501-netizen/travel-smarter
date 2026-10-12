@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { createClient } from "../../../utils/supabase/client";
+import { authCallbackUrl } from "../../lib/authRedirect";
 
 export default function GoogleAuthButton({ label, next }: { label: string; next?: string }) {
   const [loading, setLoading] = useState(false);
@@ -11,12 +12,11 @@ export default function GoogleAuthButton({ label, next }: { label: string; next?
     setLoading(true);
     setError(null);
     const supabase = createClient();
-    const callbackUrl = new URL("/auth/callback", window.location.origin);
-    if (next) callbackUrl.searchParams.set("next", next);
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: callbackUrl.toString(),
+        // /auth/callback?next=<safe in-app path>: Supabase returns the browser here after Google.
+        redirectTo: authCallbackUrl(window.location.origin, next ?? "/account"),
       },
     });
     if (error) {
