@@ -121,9 +121,9 @@ export type HomepageCopy = {
     /** Customer-facing checkout errors, keyed by the code the checkout actions return. */
     errors: Record<CheckoutErrorCode, string>;
   };
-  /** Small note used on the 5-day Ready Plan and Smart Planner pages -- not shown on the 1-day plan. */
+  /** "Included with your plan" card on the 3-day and 5-day Ready Plan pages -- not shown on the 1-day plan. */
   productPage: {
-    guideIncluded: string;
+    includedGuide: { badge: string; title: string; cta: string };
   };
   footer: {
     brandLine: string;
@@ -308,7 +308,11 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
       },
     },
     productPage: {
-      guideIncluded: "يشمل دليل برشلونة",
+      includedGuide: {
+        badge: "🎁 مشمول مع خطتك",
+        title: "دليل برشلونة الكامل",
+        cta: "افتح دليل برشلونة",
+      },
     },
     footer: {
       brandLine: "سافر أكثر. خطّط أقل.",
@@ -486,7 +490,11 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
       },
     },
     productPage: {
-      guideIncluded: "Barcelona Guide included",
+      includedGuide: {
+        badge: "🎁 Included with your plan",
+        title: "Complete Barcelona Travel Guide",
+        cta: "Open Barcelona Guide",
+      },
     },
     footer: {
       brandLine: "Travel More. Plan Less.",

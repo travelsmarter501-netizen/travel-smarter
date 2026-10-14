@@ -4,7 +4,7 @@ import Container from "../../components/Container";
 import BackLink from "../../components/detail/BackLink";
 import ProductAccessDenied from "../../components/guide/ProductAccessDenied";
 import BarcelonaReadyPlan from "../../components/guide/BarcelonaReadyPlan";
-import GuideIncludedNote from "../../components/GuideIncludedNote";
+import IncludedGuideCard from "../../components/IncludedGuideCard";
 import { barcelonaGuide } from "../../lib/barcelona-guide";
 import { barcelonaReadyPlan } from "../../lib/barcelona-ready-plan";
 import { hasProductAccess } from "../../lib/entitlements";
@@ -52,10 +52,10 @@ export default async function BarcelonaReadyPlanPage() {
           >
             📅 عندك 3 أيام؟ شوف خطة الـ3 أيام
           </Link>
-
-          {/* This product bundles Guide access -- see lib/entitlements.ts GUIDE_BUNDLE_PRODUCT_SLUGS. */}
-          <GuideIncludedNote />
         </div>
+
+        {/* This product bundles Guide access (see lib/entitlements.ts GUIDE_BUNDLE_PRODUCT_SLUGS): a clear way to open it. */}
+        <IncludedGuideCard />
 
         <BarcelonaReadyPlan
           guideSlug={guide.slug}

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Container from "../../../components/Container";
 import BackLink from "../../../components/detail/BackLink";
-import GuideIncludedNote from "../../../components/GuideIncludedNote";
+import IncludedGuideCard from "../../../components/IncludedGuideCard";
 import ProductAccessDenied from "../../../components/guide/ProductAccessDenied";
 import BarcelonaReadyPlan from "../../../components/guide/BarcelonaReadyPlan";
 import { barcelonaGuide } from "../../../lib/barcelona-guide";
@@ -54,10 +54,10 @@ export default async function BarcelonaReadyPlan3DayPage() {
           >
             🗓️ عندك 5 أيام؟ شوف الخطة الكاملة لـ5 أيام
           </Link>
-
-          {/* This product bundles Guide access -- see lib/entitlements.ts GUIDE_BUNDLE_PRODUCT_SLUGS. */}
-          <GuideIncludedNote />
         </div>
+
+        {/* This product bundles Guide access (see lib/entitlements.ts GUIDE_BUNDLE_PRODUCT_SLUGS): a clear way to open it. */}
+        <IncludedGuideCard />
 
         <BarcelonaReadyPlan
           guideSlug={guide.slug}
