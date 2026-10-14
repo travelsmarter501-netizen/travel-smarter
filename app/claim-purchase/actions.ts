@@ -4,6 +4,7 @@ import { createClient } from "../../utils/supabase/server";
 import { createServiceRoleClient } from "../../utils/supabase/service-role";
 import { hashClaimToken, isWellFormedClaimToken } from "../lib/commerce/claimToken";
 import { clearPendingClaimCookie, readPendingClaimCookie, setPendingClaimCookie } from "./pendingClaimCookie";
+import { recordBundledGuideEntitlement } from "../lib/commerce/bundles";
 
 export type ClaimPurchaseResult =
   | { status: "claimed" | "already_yours" }
@@ -71,7 +72,21 @@ export async function claimPurchaseAction(urlToken?: string): Promise<ClaimPurch
   // The remembered token is spent (claimed) or useless (invalid): forget it -- but only if it IS this token.
   if (data !== "not_paid_yet" && cookieToken === token) await clearPendingClaimCookie();
 
-  if (data === "claimed" || data === "already_yours") return { status: data };
+  if (data === "claimed" || data === "already_yours") {
+    // "+ Barcelona Guide" bundles: record the guide entitlement for the order THIS user just claimed (the SQL claim
+    // grants only the order's own items). Best effort and idempotent: the buyer's access never depends on it
+    // (hasProductAccess already accepts a bundle product for the guide), and a repeat claim retries it.
+    const { data: claimedOrder } = await serviceRole
+      .from("orders")
+      .select("id")
+      .eq("claim_token_hash", hashClaimToken(token))
+      .eq("user_id", user.id)
+      .maybeSingle<{ id: string }>();
+    if (claimedOrder && !(await recordBundledGuideEntitlement(serviceRole, { userId: user.id, orderId: claimedOrder.id }))) {
+      console.error("[claim] bundled guide entitlement could not be recorded");
+    }
+    return { status: data };
+  }
   if (data === "not_paid_yet") return { status: "not_paid_yet" };
   return { status: "invalid" };
 }

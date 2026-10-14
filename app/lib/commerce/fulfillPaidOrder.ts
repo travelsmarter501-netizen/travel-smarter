@@ -1,6 +1,7 @@
 import "server-only";
 import { createServiceRoleClient } from "../../../utils/supabase/service-role";
 import { CLAIM_WINDOW_DAYS } from "./claimToken";
+import { recordBundledGuideEntitlement } from "./bundles";
 
 type OrderRow = {
   id: string;
@@ -130,6 +131,12 @@ async function grantOrderEntitlements(
   });
 
   if (entitlementError) return false;
+
+  // "+ Barcelona Guide" bundles: also record the guide entitlement (no-op for every other order).
+  if (!(await recordBundledGuideEntitlement(serviceRole, { userId: order.user_id, orderId: order.id }))) {
+    console.error("[allpay] bundled guide entitlement could not be recorded (webhook will be retried)");
+    return false;
+  }
 
   await serviceRole.from("custom_plan_requests").update({ status: "paid" }).eq("order_id", order.id).eq("status", "pending_payment");
   return true;
