@@ -5,7 +5,7 @@ import { createPendingOrder, createGuestPendingOrder } from "../lib/orders";
 import { generateClaimToken, normalizeGuestEmail } from "../lib/commerce/claimToken";
 import { createCustomPlanPendingOrder } from "../lib/customPlanCommerce";
 import { createAllpayRedirectCheckout } from "../lib/allpay/createPayment";
-import { resolveCheckoutProductSlugs } from "../lib/commerce/catalog";
+import { resolveCheckoutProductSlugs, PRODUCT_SLUGS } from "../lib/commerce/catalog";
 import type { CheckoutErrorCode } from "../lib/commerce/checkoutErrors";
 
 export type StartCheckoutResult =
@@ -44,6 +44,11 @@ export async function startCartCheckout(input: { cartIds?: string[]; productSlug
 
   if (slugs.length === 0) {
     return { ok: false, error: "السلة فارغة.", code: "empty_cart" };
+  }
+
+  // The Personalized Plan is bought from /planner (questionnaire -> review -> pay), never from the cart.
+  if (slugs.includes(PRODUCT_SLUGS.personalizedPlan)) {
+    return { ok: false, error: "الخطة المخصصة بتبدأ من صفحة المخطط: جاوب على الأسئلة أولًا ثم أكمل الدفع.", code: "planner_answers_required" };
   }
 
   if (user) {

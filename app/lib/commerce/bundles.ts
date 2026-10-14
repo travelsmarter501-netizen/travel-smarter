@@ -2,6 +2,7 @@ import "server-only";
 import { createServiceRoleClient } from "../../../utils/supabase/service-role";
 import { GUIDE_BUNDLE_PRODUCT_SLUGS } from "../entitlements";
 import { PRODUCT_SLUGS } from "./catalog";
+import { destinationIncludesGuide } from "../planner/personalizedPlanAnswers";
 
 type ServiceRole = ReturnType<typeof createServiceRoleClient>;
 
@@ -17,8 +18,14 @@ type ItemRow = { products: { slug: string } | { slug: string }[] | null };
  *   - the verified Allpay webhook (fulfillPaidOrder.ts), for an order that already has an owner;
  *   - the guest claim (claim-purchase/actions.ts), for the order the authenticated user just claimed.
  *
+ * The Personalized Plan also bundles the guide, but by DESTINATION rather than by product: a Barcelona plan includes
+ * the Barcelona guide, any other destination grants none (see DESTINATION_INCLUDED_GUIDE_SLUG). The destination is
+ * read from the order's own personalized_plan_requests row, which was validated against the server's allow-list
+ * when the order was created and can never be edited afterwards.
+ *
  * Rules: it only ever acts for an order the caller has already established as PAID and OWNED by `userId`;
- * it grants nothing unless the order contains a bundle product; the row is inserted with the same
+ * it grants nothing unless the order contains a bundle product (or a personalized plan for a destination that
+ * includes a guide); the row is inserted with the same
  * (user_id, product_id) upsert-ignore the other entitlements use, so repeats and a pre-existing guide
  * entitlement (e.g. an earlier direct purchase) are harmless. No price, order total or order_items row is
  * touched -- the guide is not a charged line.
@@ -36,8 +43,19 @@ export async function recordBundledGuideEntitlement(serviceRole: ServiceRole, pa
   if (itemsError || !items) return false;
 
   const slugs = items.flatMap((item) => (Array.isArray(item.products) ? item.products.map((p) => p.slug) : item.products ? [item.products.slug] : []));
-  const containsBundle = slugs.some((slug) => (GUIDE_BUNDLE_PRODUCT_SLUGS as readonly string[]).includes(slug));
-  if (!containsBundle) return true;
+  let grantsGuide = slugs.some((slug) => (GUIDE_BUNDLE_PRODUCT_SLUGS as readonly string[]).includes(slug));
+
+  if (!grantsGuide && slugs.includes(PRODUCT_SLUGS.personalizedPlan)) {
+    const { data: request, error: requestError } = await serviceRole
+      .from("personalized_plan_requests")
+      .select("destination_id")
+      .eq("order_id", params.orderId)
+      .maybeSingle<{ destination_id: string }>();
+    if (requestError) return false;
+    grantsGuide = destinationIncludesGuide(request?.destination_id);
+  }
+
+  if (!grantsGuide) return true;
 
   const { data: guide, error: guideError } = await serviceRole.from("products").select("id").eq("slug", PRODUCT_SLUGS.guide).maybeSingle<{ id: string }>();
   if (guideError || !guide) return false;

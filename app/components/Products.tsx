@@ -40,6 +40,12 @@ export default function Products() {
 
   // "Buy now": normal shoppers never open the protected content route -- they go product -> checkout.
   function buyNow(product: (typeof t.products.items)[number]) {
+    // The Personalized Plan is the one product that is never bought from the cart: its questionnaire comes first
+    // (/planner -> review -> pay), so its card just opens the planner.
+    if (product.id === "personalized-trip-plan") {
+      router.push(product.route);
+      return;
+    }
     if (!isInCart(product.id)) addProductToCart(product);
     router.push("/checkout");
   }

@@ -31,6 +31,7 @@ const copy = {
     doneTitle: "مشترياتك في حسابك",
     doneBody: "تمت إضافة مشترياتك إلى حسابك. تقدر تفتحها من صفحة حسابي.",
     account: "حسابي",
+    buildPlan: "ابنِ خطتك المخصصة ✨",
     invalidTitle: "الرابط غير صالح",
     invalidBody: "هذا الرابط غير صالح أو انتهت صلاحيته أو تم استخدامه من قبل. إذا دفعت ولا تقدر تصل لمشترياتك، تواصل معنا وبنساعدك.",
     contact: "تواصل معنا",
@@ -52,6 +53,7 @@ const copy = {
     doneTitle: "Your purchase is in your account",
     doneBody: "Your purchase has been added to your account. You can open it from your account page.",
     account: "My account",
+    buildPlan: "Build your personalized plan ✨",
     invalidTitle: "This link isn't valid",
     invalidBody: "This link is invalid, has expired, or has already been used. If you paid and can't access your purchase, contact us and we'll help.",
     contact: "Contact us",
@@ -75,6 +77,7 @@ export default function ClaimPurchaseClient({
   const c = copy[language === "en" ? "en" : "ar"];
   const [claiming, setClaiming] = useState(false);
   const [claimed, setClaimed] = useState(false);
+  const [hasPlan, setHasPlan] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
   // The order is paid (or already claimed): the cart's contents were just bought, so empty it.
@@ -114,6 +117,7 @@ export default function ClaimPurchaseClient({
       const result = await claimPurchaseAction(token);
       if (result.status === "claimed" || result.status === "already_yours") {
         setClaimed(true);
+        setHasPlan(result.hasPersonalizedPlan === true);
       } else if (result.status === "not_paid_yet") {
         setMessage(c.notYet);
       } else if (result.status === "login_required") {
@@ -137,9 +141,21 @@ export default function ClaimPurchaseClient({
               <p className="text-4xl">✅</p>
               <h1 className="mt-3 text-2xl font-bold text-slate-900">{c.doneTitle}</h1>
               <p className="mt-2 text-sm leading-6 text-slate-600">{c.doneBody}</p>
+              {hasPlan && (
+                <Link
+                  href="/planner"
+                  className="mt-6 flex w-full items-center justify-center rounded-full bg-teal-700 px-5 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-teal-800"
+                >
+                  {c.buildPlan}
+                </Link>
+              )}
               <Link
                 href="/account"
-                className="mt-6 flex w-full items-center justify-center rounded-full bg-teal-700 px-5 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-teal-800"
+                className={
+                  hasPlan
+                    ? "mt-3 flex w-full items-center justify-center rounded-full border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-800 transition-colors hover:bg-slate-50"
+                    : "mt-6 flex w-full items-center justify-center rounded-full bg-teal-700 px-5 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-teal-800"
+                }
               >
                 {c.account}
               </Link>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useCart } from "../lib/cart";
 import { useLanguage } from "../lib/language";
 import { formatPrice, useCurrency } from "../lib/currency";
@@ -38,6 +39,8 @@ export default function CheckoutClient({
     setLoading(false);
 
     if (!result.ok) {
+      // The Personalized Plan is never bought from the cart: drop any stale cart line and point to the planner.
+      if (result.code === "planner_answers_required") removeItem("personalized-trip-plan");
       setError({ code: result.code, message: result.error });
       return;
     }
@@ -112,6 +115,14 @@ export default function CheckoutClient({
           {error && (
             <p role="alert" className="mt-4 text-sm font-semibold text-rose-600">
               {error.code ? t.checkout.errors[error.code] : error.message}
+              {error.code === "planner_answers_required" && (
+                <>
+                  {" "}
+                  <Link href="/planner" className="underline">
+                    {t.planner.page.title}
+                  </Link>
+                </>
+              )}
             </p>
           )}
 

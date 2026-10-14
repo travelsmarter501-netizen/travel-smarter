@@ -13,7 +13,7 @@ import type { V2Plan } from "./barcelonaV2Resolve";
  *
  * `import type` only from barcelonaV2Resolve.ts (which carries `import "server-only"`) -- type
  * imports are fully erased at compile time, so this file stays safe to import from client
- * components, exactly the same established pattern SmartPlannerV2App.tsx already uses.
+ * components, exactly the same established pattern SmartPlannerV2Result.tsx already uses.
  *
  * FROZEN generated output (per the task's own "do not rely on regenerating and hoping for
  * identical future output" instruction): `generated_plan_json.plan` stores the complete,
@@ -44,6 +44,12 @@ export type SmartPlannerV2SavedPreferences = {
    */
   surpriseMe?: boolean;
   accommodation: { booked: boolean; text?: string };
+  /**
+   * Set by the server only when the plan was generated from a paid personalized_plan_request. Such a plan is the
+   * product of a purchase: the account page hides Delete for it and the database refuses to delete it for the
+   * customer. Absent on legacy / manually saved plans.
+   */
+  personalizedPlanRequestId?: string;
 };
 
 export type SmartPlannerV2GeneratedPlanJson = { plan: V2Plan };

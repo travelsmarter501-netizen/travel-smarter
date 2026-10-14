@@ -22,4 +22,8 @@ export type CheckoutErrorCode =
   | "order_not_pending"
   | "order_items_failed"
   | "payment_page_failed"
-  | "payment_setup_failed";
+  | "payment_setup_failed"
+  /** The Personalized Plan can only be bought through /planner (questionnaire first), never from the cart/checkout. */
+  | "planner_answers_required"
+  /** The submitted questionnaire answers failed server-side validation. */
+  | "invalid_planner_answers";

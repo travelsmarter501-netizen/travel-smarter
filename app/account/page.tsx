@@ -175,7 +175,12 @@ export default async function AccountPage() {
                           <Button href={`/smart-planner/barcelona-v2/saved/${row.id}`} size="md">
                             افتح الخطة
                           </Button>
-                          <DeleteSavedPlanButton id={row.id} />
+                          {row.preferences_json.personalizedPlanRequestId ? (
+                            // Generated from a paid purchase: it is the product of that order, so it can't be deleted.
+                            <span className="text-xs font-semibold text-slate-400">مرتبطة بعملية شراء</span>
+                          ) : (
+                            <DeleteSavedPlanButton id={row.id} />
+                          )}
                         </div>
                       </li>
                     );

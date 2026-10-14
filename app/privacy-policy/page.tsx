@@ -12,7 +12,7 @@ const linkClass = "font-semibold text-teal-700 hover:underline";
 
 export default function PrivacyPolicyPage() {
   return (
-    <LegalPageLayout title="Privacy Policy" lastUpdated="October 4, 2026">
+    <LegalPageLayout title="Privacy Policy" lastUpdated="October 14, 2026">
       <p>
         This Privacy Policy explains how Travel Smarter (“Travel Smarter”, “we”, “us”) collects, uses and protects personal
         data when you visit our website, create an account, buy our products or contact us. By using the website you
@@ -42,12 +42,14 @@ export default function PrivacyPolicyPage() {
           </li>
           <li>
             <strong>Order information:</strong> the products you buy, the price and currency, the order status and date, the
-            payment reference supplied by the payment provider, and the access granted to your account.
+            payment reference supplied by the payment provider, and the access granted to your account. If you check out
+            without an account, this also includes the email address you enter.
           </li>
           <li>
             <strong>Trip planning information:</strong> the destination, trip length or travel dates, interests, and the
-            accommodation name or address you enter into the planner, together with the
-            plans you choose to save.
+            accommodation name or address you enter into the planner. When you continue to payment for a personalized plan,
+            these answers are stored with your order so that we can create and provide the plan you purchased, and they
+            are not changed afterwards. We also keep the plans we create for you.
           </li>
           <li>
             <strong>Contact details:</strong> any information you send us when you contact us by email or WhatsApp, such
@@ -66,7 +68,7 @@ export default function PrivacyPolicyPage() {
         <LegalList>
           <li>To create and manage your account.</li>
           <li>To process orders, confirm payments and grant access to the digital products you buy.</li>
-          <li>To generate, display and save personalized trip plans.</li>
+          <li>To store your planner answers with your order, and to generate, display and save the personalized trip plan you purchased.</li>
           <li>To respond to inquiries, support requests and access or refund issues.</li>
           <li>To protect the website and prevent fraud, abuse and unauthorized access.</li>
           <li>To comply with legal, tax and accounting obligations.</li>
@@ -92,7 +94,7 @@ export default function PrivacyPolicyPage() {
         <p>We share personal data only as needed to operate the website, with providers that help us deliver it:</p>
         <LegalList>
           <li>
-            <strong>Supabase:</strong> database, authentication and storage of account, order and saved-plan data.
+            <strong>Supabase:</strong> database, authentication and storage of account, order, planner-answer and saved-plan data.
           </li>
           <li>
             <strong>Allpay (and similar payment providers):</strong> payment processing.
@@ -103,7 +105,7 @@ export default function PrivacyPolicyPage() {
           </li>
           <li>
             <strong>Geoapify:</strong> a geocoding service. If you enter an accommodation name or address in the planner,
-            that text may be sent to Geoapify to find its location on the map.
+            that text may be sent to Geoapify when your plan is generated, to find its location on the map.
           </li>
           <li>
             <strong>Website hosting and infrastructure providers (currently Vercel):</strong> to serve the website.
@@ -119,8 +121,9 @@ export default function PrivacyPolicyPage() {
       <LegalSection title="6. Cookies and local storage">
         <p>
           We use only what is necessary for the website to work: authentication session cookies that keep you signed in,
-          and browser local storage that remembers your language choice, the items in your cart, your saved favorites and
-          checklist (tick) states in the guide, and a temporary draft of a plan while you sign in. We do not currently use advertising cookies or
+          a short-lived secure cookie that remembers a purchase made without an account while you sign in to add it to your account,
+          and browser local storage that remembers your language choice, the items in your cart, and your saved favorites and
+          checklist (tick) states in the guide. We do not currently use advertising cookies or
           third-party analytics trackers. You can clear cookies and local storage in your browser settings; doing so may
           sign you out and empty your cart.
         </p>
@@ -139,7 +142,8 @@ export default function PrivacyPolicyPage() {
         <p>
           We keep personal data only for as long as needed to provide the website and your purchased products, maintain
           your account, resolve disputes and enforce our terms, and meet legal, tax and accounting obligations. When data is
-          no longer needed, we delete or anonymize it. You can ask us to delete your account and data at any time (see
+          no longer needed, we delete or anonymize it. Planner answers saved with an order that is never completed may be
+          deleted. You can ask us to delete your account and data at any time (see
           “Your rights”); we may keep information that we are legally required to retain, such as records of transactions.
         </p>
       </LegalSection>

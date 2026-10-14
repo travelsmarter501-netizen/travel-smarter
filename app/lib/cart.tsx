@@ -47,7 +47,9 @@ function readStoredCart(): CartItem[] {
   cachedRaw = raw;
   try {
     const parsed = raw ? JSON.parse(raw) : [];
-    cachedCart = Array.isArray(parsed) ? parsed : EMPTY_CART;
+    // The Personalized Plan is no longer a cart product (its questionnaire comes first -- see /planner), so a line
+    // saved by an older visit is simply not shown instead of failing at checkout.
+    cachedCart = Array.isArray(parsed) ? parsed.filter((item) => item?.id !== "personalized-trip-plan") : EMPTY_CART;
   } catch {
     cachedCart = EMPTY_CART;
   }

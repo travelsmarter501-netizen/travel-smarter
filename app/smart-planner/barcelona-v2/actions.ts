@@ -1,4 +1,4 @@
-"use server";
+import "server-only";
 
 import { generateTravelPlan } from "../../lib/planner/travelPlannerEngine";
 import { BARCELONA_V2_DESTINATION_CONFIG } from "../../lib/planner/barcelonaV2DestinationConfig";
@@ -21,8 +21,6 @@ import { buildBarcelonaV2PlaceSelectionBonus, buildBarcelonaV2ShoppingCoverageGo
 import { applyBeachTimingGuard } from "../../lib/planner/plannerBeachTimingGuard";
 import { resolvePlannerPlace } from "../../lib/readyPlan";
 import { barcelonaGuide } from "../../lib/barcelona-guide";
-import { hasProductAccess } from "../../lib/entitlements";
-import { PRODUCT_SLUGS } from "../../lib/commerce/catalog";
 
 /** Places gated behind the customer explicitly signaling interest in experiences/entertainment
  * (the "🎟️ تجارب وترفيه" UI group, which maps to the footballExperiences + nightlife V2 keys --
@@ -36,7 +34,13 @@ const EXPERIENCES_GATED_PLACE_IDS = new Set(["teleferic-montjuic"]);
 
 /**
  * Smart Planner V2 -- the ONLY server-side entry point for V2 plan generation.
- * "use server": everything below runs on the server only and is never bundled into client JS.
+ *
+ * This is deliberately NOT a Server Action any more ("use server" was removed and the entitlement gate
+ * that used to sit here is gone): a Server Action is a public POST endpoint, and "owns the product" must
+ * never be enough to generate plans. The only caller is generatePersonalizedPlanForRequest
+ * (lib/commerce/personalizedPlan.ts), which first proves the caller owns a PAID, not-yet-generated
+ * personalized_plan_request and feeds this function the answers stored on the server -- one request, one
+ * plan. `server-only` keeps it out of every client bundle.
  *
  * Phase 4: now uses BARCELONA_V2_DESTINATION_CONFIG (the 35-entry expanded pool -- legacy 30 +
  * 5 new V2-only candidates, see barcelonaV2Metadata.ts) instead of the shared
@@ -82,15 +86,8 @@ function isV2PlannerInterest(value: unknown): value is V2PlannerInterest {
 const MAX_SUPPORTED_DAYS = 10;
 const MIN_SUPPORTED_DAYS = 1;
 
-export async function generateBarcelonaPlanV2Action(input: GenerateBarcelonaPlanV2Input): Promise<GenerateBarcelonaPlanV2Result> {
+export async function generateBarcelonaPlanV2(input: GenerateBarcelonaPlanV2Input): Promise<GenerateBarcelonaPlanV2Result> {
   try {
-    // Entitlement gate. A Server Action is its own POST endpoint, callable without ever loading the
-    // /planner page, so the page gate alone is not enough. hasProductAccess reads the user from the
-    // verified session (never from `input`) and is false for signed-out users.
-    if (!(await hasProductAccess(PRODUCT_SLUGS.personalizedPlan))) {
-      return { ok: false, error: "لازم تسجّل الدخول وتشتري الخطة المخصصة عشان تبني خطتك." };
-    }
-
     if (!input || typeof input !== "object") {
       return { ok: false, error: "طلب غير صالح." };
     }

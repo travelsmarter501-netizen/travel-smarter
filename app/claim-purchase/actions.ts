@@ -7,7 +7,8 @@ import { clearPendingClaimCookie, readPendingClaimCookie, setPendingClaimCookie 
 import { recordBundledGuideEntitlement } from "../lib/commerce/bundles";
 
 export type ClaimPurchaseResult =
-  | { status: "claimed" | "already_yours" }
+  /** hasPersonalizedPlan: the claimed order contains a Personalized Plan the buyer can now build (see /planner). */
+  | { status: "claimed" | "already_yours"; hasPersonalizedPlan?: boolean }
   | { status: "not_paid_yet" }
   | { status: "invalid" }
   | { status: "login_required" };
@@ -85,7 +86,16 @@ export async function claimPurchaseAction(urlToken?: string): Promise<ClaimPurch
     if (claimedOrder && !(await recordBundledGuideEntitlement(serviceRole, { userId: user.id, orderId: claimedOrder.id }))) {
       console.error("[claim] bundled guide entitlement could not be recorded");
     }
-    return { status: data };
+    let hasPersonalizedPlan = false;
+    if (claimedOrder) {
+      const { data: request } = await serviceRole
+        .from("personalized_plan_requests")
+        .select("id")
+        .eq("order_id", claimedOrder.id)
+        .maybeSingle<{ id: string }>();
+      hasPersonalizedPlan = !!request;
+    }
+    return { status: data, hasPersonalizedPlan };
   }
   if (data === "not_paid_yet") return { status: "not_paid_yet" };
   return { status: "invalid" };

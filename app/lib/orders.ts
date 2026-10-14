@@ -3,6 +3,7 @@ import { createClient } from "../../utils/supabase/server";
 import { createServiceRoleClient } from "../../utils/supabase/service-role";
 import { hasProductAccess, GUIDE_BUNDLE_PRODUCT_SLUGS } from "./entitlements";
 import { hashClaimToken } from "./commerce/claimToken";
+import { PRODUCT_SLUGS } from "./commerce/catalog";
 import type { CheckoutErrorCode } from "./commerce/checkoutErrors";
 
 /**
@@ -158,6 +159,18 @@ export async function getOrderWithItems(orderId: string): Promise<OrderWithItems
 
 export type CreatePendingOrderResult = { ok: true; data: OrderWithItems } | { ok: false; error: string; code: CheckoutErrorCode };
 
+/**
+ * The Personalized Plan is "one purchase = one plan built from the questionnaire answered BEFORE paying", so it can
+ * only be ordered through startPersonalizedPlanCheckout (app/planner/actions.ts), which stores those answers in the
+ * same transaction as the order. The generic cart/slug paths here must never create such an order, or someone
+ * could pay without any stored answers.
+ */
+const PLANNER_ANSWERS_REQUIRED: { ok: false; error: string; code: CheckoutErrorCode } = {
+  ok: false,
+  error: "الخطة المخصصة بتبدأ من صفحة المخطط: جاوب على الأسئلة أولًا ثم أكمل الدفع.",
+  code: "planner_answers_required",
+};
+
 /** Dedupe + trim the requested slugs. */
 function dedupeSlugs(productSlugs: string[]): string[] {
   return [...new Set((productSlugs ?? []).map((slug) => slug?.trim()).filter((slug): slug is string => !!slug))];
@@ -225,6 +238,9 @@ export async function createPendingOrder(productSlugs: string[]): Promise<Create
   if (deduped.length === 0) {
     return { ok: false, error: "لم يتم تحديد أي منتج للشراء.", code: "no_product_selected" };
   }
+  if (deduped.includes(PRODUCT_SLUGS.personalizedPlan)) {
+    return PLANNER_ANSWERS_REQUIRED;
+  }
 
   // Rule 1: redundant Guide removal.
   const afterGuideNormalization = dropRedundantGuide(deduped);
@@ -274,6 +290,9 @@ export async function createGuestPendingOrder(
   const finalSlugs = dropRedundantGuide(dedupeSlugs(productSlugs));
   if (finalSlugs.length === 0) {
     return { ok: false, error: "لم يتم تحديد أي منتج للشراء.", code: "no_product_selected" };
+  }
+  if (finalSlugs.includes(PRODUCT_SLUGS.personalizedPlan)) {
+    return PLANNER_ANSWERS_REQUIRED;
   }
 
   const serviceRole = createServiceRoleClient();

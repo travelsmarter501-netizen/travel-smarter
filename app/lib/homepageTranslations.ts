@@ -6,6 +6,7 @@
  */
 
 import type { CheckoutErrorCode } from "./commerce/checkoutErrors";
+import { plannerCopyAr, plannerCopyEn, type PlannerCopy } from "./plannerCopy";
 
 export type Language = "ar" | "en";
 
@@ -121,6 +122,8 @@ export type HomepageCopy = {
     /** Customer-facing checkout errors, keyed by the code the checkout actions return. */
     errors: Record<CheckoutErrorCode, string>;
   };
+  /** Personalized Plan flow: questionnaire wizard, review/payment step, post-payment states, "My Personalized Plans". */
+  planner: PlannerCopy;
   /** "Included with your plan" card on the 3-day and 5-day Ready Plan pages -- not shown on the 1-day plan. */
   productPage: {
     includedGuide: { badge: string; title: string; cta: string };
@@ -184,11 +187,11 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
           // cards with ONE automated product card. See app/planner/page.tsx.
           id: "personalized-trip-plan",
           title: "خطة مخصصة إلك ✨",
-          description: "اختار وجهتك واهتماماتك، وإحنا بنبني لك خطة ذكية حسب رحلتك.",
+          description: "جاوب على كم سؤال أولًا، وبعدها بنبني لك خطة ذكية حسب رحلتك.",
           priceILS: 59,
           route: "/planner",
-          ctaLabel: "اشترِ الآن",
-          addToCartLabel: "أضف للسلة",
+          ctaLabel: "ابدأ خطتك",
+          includesGuideLabel: "+ دليل برشلونة",
           badge: "فوري",
           comparisonHint: "برشلونة متاحة الآن — وجهات جديدة قريبًا.",
         },
@@ -305,8 +308,11 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
         order_items_failed: "تعذّر تحميل منتجات الطلب.",
         payment_page_failed: "تعذّر فتح صفحة الدفع. حاول مرة أخرى.",
         payment_setup_failed: "تعذّر تجهيز الدفع حاليًا. حاول مرة أخرى بعد قليل، وإذا استمرت المشكلة تواصل معنا.",
+        planner_answers_required: "الخطة المخصصة بتبدأ من صفحة المخطط: جاوب على الأسئلة أولًا ثم أكمل الدفع.",
+        invalid_planner_answers: "بيانات الخطة غير صالحة. راجع إجاباتك وحاول مرة أخرى.",
       },
     },
+    planner: plannerCopyAr,
     productPage: {
       includedGuide: {
         badge: "🎁 مشمول مع خطتك",
@@ -366,11 +372,11 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
         {
           id: "personalized-trip-plan",
           title: "Your Personalized Trip Plan ✨",
-          description: "Choose your destination and interests, and we'll build you a smart plan for your trip.",
+          description: "Answer a few questions first, then we'll build you a smart plan for your trip.",
           priceILS: 59,
           route: "/planner",
-          ctaLabel: "Buy Now",
-          addToCartLabel: "Add to Cart",
+          ctaLabel: "Start Your Plan",
+          includesGuideLabel: "+ Barcelona Guide",
           badge: "Instant",
           comparisonHint: "Barcelona available now — new destinations coming soon.",
         },
@@ -487,8 +493,11 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
         order_items_failed: "We couldn’t load the products in your order.",
         payment_page_failed: "We couldn’t open the payment page. Please try again.",
         payment_setup_failed: "We couldn’t set up the payment right now. Please try again in a moment, and contact us if the problem continues.",
+        planner_answers_required: "The Personalized Plan starts on the planner page: answer the questions first, then continue to payment.",
+        invalid_planner_answers: "Your plan details aren’t valid. Please review your answers and try again.",
       },
     },
+    planner: plannerCopyEn,
     productPage: {
       includedGuide: {
         badge: "🎁 Included with your plan",

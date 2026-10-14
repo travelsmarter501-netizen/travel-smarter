@@ -23,6 +23,13 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
   const entitlements = await getUserEntitlements();
   const paid = order?.status === "paid" || entitlements.length > 0;
 
+  // A Personalized Plan order is only half-done at payment: the buyer still builds the plan from /planner.
+  // (Read with the customer's own session, so row-level security limits this to an order they own.)
+  const { data: planRequest } = orderId
+    ? await supabase.from("personalized_plan_requests").select("id").eq("order_id", orderId).maybeSingle<{ id: string }>()
+    : { data: null };
+  const hasPlan = !!planRequest;
+
   return (
     <main className="py-10">
       <Container className="max-w-lg">
@@ -41,7 +48,10 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
           )}
           {!paid && <SuccessRefresh />}
           <div className="mt-6 flex flex-col gap-2.5">
-            <Button href="/account">حسابي</Button>
+            {paid && hasPlan && <Button href="/planner">ابنِ خطتك المخصصة ✨</Button>}
+            <Button href="/account" variant={paid && hasPlan ? "secondary" : "primary"}>
+              حسابي
+            </Button>
             <Link href="/" className="text-sm font-semibold text-teal-700 hover:text-teal-800">
               الرئيسية
             </Link>
