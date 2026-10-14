@@ -146,7 +146,7 @@ export default async function AccountPage() {
           </div>
 
           <div className="mt-8 border-t border-slate-100 pt-6">
-            <h2 className="text-lg font-bold text-slate-900">خططي المحفوظة</h2>
+            <h2 className="text-lg font-bold text-slate-900">خططي</h2>
 
             {!savedPlans || savedPlans.length === 0 ? (
               <div className="mt-3 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center">
@@ -215,7 +215,7 @@ export default async function AccountPage() {
 
           {/* Unified Personalized Plan merge: this section is now historical/legacy only -- the
               new unified planner (/planner) never creates a custom_plan_requests row, it saves
-              directly to smart_planner_saved_plans instead (see "خططي المحفوظة" above). Shown
+              directly to smart_planner_saved_plans instead (see "خططي" above). Shown
               only when a user actually has old Custom Plan requests, so a brand-new customer
               never sees an empty section nudging them toward a product that no longer exists. */}
           {customPlanRequests.length > 0 && (
