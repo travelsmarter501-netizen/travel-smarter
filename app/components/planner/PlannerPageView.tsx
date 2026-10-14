@@ -1,22 +1,36 @@
 "use client";
 
+import { useSyncExternalStore } from "react";
 import Link from "next/link";
 import PersonalizedPlanWizard from "./PersonalizedPlanWizard";
 import MyPersonalizedPlans from "./MyPersonalizedPlans";
 import { useLanguage } from "../../lib/language";
+import { readPlannerDraft } from "../../lib/planner/plannerDraft";
 import type { PlannerPlanSummary, PlannerRequestSummary } from "../../lib/commerce/personalizedPlan";
+
+const noopSubscribe = () => () => {};
+
+/**
+ * The questionnaire. Normally it renders straight away; when restoring a draft it waits until the page has hydrated
+ * (session storage does not exist on the server), so the pre-filled first render can never disagree with the server's.
+ */
+function WizardSlot({ initialDestinationId, restoreDraft }: { initialDestinationId?: string; restoreDraft: boolean }) {
+  const mounted = useSyncExternalStore(noopSubscribe, () => true, () => false);
+  if (restoreDraft && !mounted) return null;
+  return <PersonalizedPlanWizard initialDestinationId={initialDestinationId} initialDraft={restoreDraft ? readPlannerDraft() : null} />;
+}
 
 /**
  * The /planner page body (the server page decides WHICH view and loads the data; this component only renders it,
  * in the visitor's language):
- *   - "wizard": the free questionnaire -> review -> payment, for visitors, first-time buyers and anyone who chose
+ *   - "wizard": the free questionnaire -> checkout, for visitors, first-time buyers and anyone who chose
  *     "Create a new plan";
  *   - "mine": "My Personalized Plans" for a signed-in customer who already has plans/requests.
  */
 export default function PlannerPageView({
   view,
   initialDestinationId,
-  priceIls,
+  restoreDraft = false,
   signedIn,
   hasPlans,
   legacyOwnerNotice = false,
@@ -25,7 +39,8 @@ export default function PlannerPageView({
 }: {
   view: "wizard" | "mine";
   initialDestinationId?: string;
-  priceIls: number | null;
+  /** Came back from checkout via "Edit answers": pre-fill the questionnaire from this tab's saved draft. */
+  restoreDraft?: boolean;
   signedIn: boolean;
   /** The signed-in customer already has plans/requests, so the wizard offers a way back to them. */
   hasPlans: boolean;
@@ -77,7 +92,7 @@ export default function PlannerPageView({
             )}
 
             <div className="mt-6">
-              <PersonalizedPlanWizard initialDestinationId={initialDestinationId} priceIls={priceIls} signedIn={signedIn} />
+              <WizardSlot initialDestinationId={initialDestinationId} restoreDraft={restoreDraft} />
             </div>
 
             {!signedIn && (

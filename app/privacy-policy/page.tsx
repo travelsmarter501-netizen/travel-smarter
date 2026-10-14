@@ -122,8 +122,10 @@ export default function PrivacyPolicyPage() {
         <p>
           We use only what is necessary for the website to work: authentication session cookies that keep you signed in,
           a short-lived secure cookie that remembers a purchase made without an account while you sign in to add it to your account,
-          and browser local storage that remembers your language choice, the items in your cart, and your saved favorites and
-          checklist (tick) states in the guide. We do not currently use advertising cookies or
+          browser local storage that remembers your language choice, the items in your cart, and your saved favorites and
+          checklist (tick) states in the guide, and a temporary copy of your planner answers in your browser session while you move
+          from the planner to checkout (it is removed once your purchase is confirmed or the tab is closed). We do not currently
+          use advertising cookies or
           third-party analytics trackers. You can clear cookies and local storage in your browser settings; doing so may
           sign you out and empty your cart.
         </p>

@@ -9,6 +9,7 @@ import { useLanguage } from "../lib/language";
 import { claimPurchaseAction, syncPendingClaimAction } from "./actions";
 import { loginHref, signupHref } from "../lib/authRedirect";
 import { claimReturnPath } from "./returnPath";
+import { clearPlannerDraft } from "../lib/planner/plannerDraft";
 import SuccessRefresh from "../checkout/success/SuccessRefresh";
 
 export type ClaimViewState = "pending" | "signin" | "ready" | "done" | "invalid";
@@ -83,7 +84,10 @@ export default function ClaimPurchaseClient({
   // The order is paid (or already claimed): the cart's contents were just bought, so empty it.
   const paidState = state === "signin" || state === "ready" || state === "done";
   useEffect(() => {
-    if (paidState) clearCart();
+    if (paidState) {
+      clearCart();
+      clearPlannerDraft(); // a confirmed Personalized Plan purchase no longer needs this tab's questionnaire draft
+    }
     // clearCart is a stable action on the cart store; run once per paid state.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [paidState]);

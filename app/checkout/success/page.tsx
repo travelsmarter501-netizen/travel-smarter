@@ -6,6 +6,7 @@ import { createClient } from "../../../utils/supabase/server";
 import { getUserOrder } from "../../lib/orders";
 import { getUserEntitlements } from "../../lib/entitlements";
 import SuccessRefresh from "./SuccessRefresh";
+import ClearPlannerDraft from "../../components/planner/ClearPlannerDraft";
 
 export default async function CheckoutSuccessPage({ searchParams }: { searchParams: Promise<{ order_id?: string }> }) {
   const { order_id: orderId } = await searchParams;
@@ -47,6 +48,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
             </p>
           )}
           {!paid && <SuccessRefresh />}
+          {paid && hasPlan && <ClearPlannerDraft />}
           <div className="mt-6 flex flex-col gap-2.5">
             {paid && hasPlan && <Button href="/planner">ابنِ خطتك المخصصة ✨</Button>}
             <Button href="/account" variant={paid && hasPlan ? "secondary" : "primary"}>

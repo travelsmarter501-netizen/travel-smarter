@@ -22,7 +22,7 @@ export default async function CheckoutCancelledPage({ searchParams }: { searchPa
             ما تم خصم شيء ولم يُفتح أي منتج. تقدر ترجع للسلة وتكمّل الدفع متى ما بدك.
           </p>
           <div className="mt-6 flex flex-col gap-2.5">
-            {isPlanOrder ? <Button href="/planner">العودة لخطتك المخصصة</Button> : <Button href="/checkout">العودة لإتمام الشراء</Button>}
+            {isPlanOrder ? <Button href="/checkout?plan=personalized">العودة لخطتك المخصصة</Button> : <Button href="/checkout">العودة لإتمام الشراء</Button>}
             <Link href="/" className="text-sm font-semibold text-teal-700 hover:text-teal-800">
               الرئيسية
             </Link>

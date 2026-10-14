@@ -1,11 +1,13 @@
 import Container from "../components/Container";
 import CheckoutClient from "./CheckoutClient";
+import PersonalizedPlanCheckout from "../components/planner/PersonalizedPlanCheckout";
+import { getPersonalizedPlanPriceIls } from "../lib/commerce/personalizedPlan";
 import { isSellableProductSlug } from "../lib/commerce/catalog";
 import { getAllpayMode } from "../lib/allpay/config";
 import { createClient } from "../../utils/supabase/server";
 
-export default async function CheckoutPage({ searchParams }: { searchParams: Promise<{ product?: string }> }) {
-  const { product } = await searchParams;
+export default async function CheckoutPage({ searchParams }: { searchParams: Promise<{ product?: string; plan?: string }> }) {
+  const { product, plan } = await searchParams;
   const extraProductSlug = product && isSellableProductSlug(product) ? product : undefined;
 
   // The "test mode" banner is shown ONLY when the server is actually in test mode, so real
@@ -24,6 +26,18 @@ export default async function CheckoutPage({ searchParams }: { searchParams: Pro
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  // Personalized Plan: a different checkout body (summary of the questionnaire the visitor just finished). The price shown
+  // is display only; the order, its stored answers and the charge are all created server-side when the visitor pays.
+  if (plan === "personalized") {
+    return (
+      <main className="py-10">
+        <Container className="max-w-lg">
+          <PersonalizedPlanCheckout testMode={testMode} signedIn={!!user} priceIls={await getPersonalizedPlanPriceIls()} />
+        </Container>
+      </main>
+    );
+  }
 
   return (
     <main className="py-10">

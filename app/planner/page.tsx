@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import PlannerPageView from "../components/planner/PlannerPageView";
-import { getPersonalizedPlanPriceIls, loadMyPersonalizedPlans } from "../lib/commerce/personalizedPlan";
+import { loadMyPersonalizedPlans } from "../lib/commerce/personalizedPlan";
 import { isAvailablePlannerDestinationId, DEFAULT_PLANNER_DESTINATION_ID } from "../lib/planner/plannerDestinations";
 import { hasProductAccess } from "../lib/entitlements";
 import { PRODUCT_SLUGS } from "../lib/commerce/catalog";
@@ -11,8 +11,8 @@ import { createClient } from "../../utils/supabase/server";
  * /smart-planner/barcelona and /custom-plan/barcelona routes redirect here).
  *
  * "One purchase = one plan", questionnaire BEFORE payment:
- *   - Anyone (signed out, or signed in without plans) sees the free questionnaire, then a review of the order, and
- *     only "Continue to payment" starts checkout. Nothing is generated and nothing paid-for is shown here.
+ *   - Anyone (signed out, or signed in without plans) sees the free questionnaire; its last button goes straight to
+ *     /checkout?plan=personalized (compact summary + Allpay button). Nothing is generated and nothing paid-for is shown here.
  *   - A signed-in customer who already has plans or paid/pending requests sees "My Personalized Plans" (their plans,
  *     a "Build my plan" card for each paid-but-unbuilt request, and "Create a new plan").
  *   - "Create a new plan" (?new=1) is simply the questionnaire again -> a new order -> a new payment.
@@ -32,8 +32,8 @@ export const metadata: Metadata = {
     "اختار وجهتك واهتماماتك، وإحنا بنبني لك خطة ذكية حسب رحلتك. برشلونة متاحة الآن — وجهات جديدة قريبًا. Pick your destination and interests and we’ll build a smart plan for your trip.",
 };
 
-export default async function PlannerPage({ searchParams }: { searchParams: Promise<{ destination?: string; new?: string }> }) {
-  const { destination, new: wantsNew } = await searchParams;
+export default async function PlannerPage({ searchParams }: { searchParams: Promise<{ destination?: string; new?: string; edit?: string }> }) {
+  const { destination, new: wantsNew, edit } = await searchParams;
 
   const supabase = await createClient();
   const {
@@ -48,14 +48,11 @@ export default async function PlannerPage({ searchParams }: { searchParams: Prom
     !!user && mine.plans.length === 0 && !mine.hasAnyRequest && (await hasProductAccess(PRODUCT_SLUGS.personalizedPlan, user.id));
   const view = user && hasPlans && wantsNew !== "1" ? "mine" : "wizard";
 
-  // Display-only price for the review step (the charge itself is computed in the database).
-  const priceIls = view === "wizard" ? await getPersonalizedPlanPriceIls() : null;
-
   return (
     <PlannerPageView
       view={view}
       initialDestinationId={initialDestinationId}
-      priceIls={priceIls}
+      restoreDraft={edit === "1"}
       signedIn={!!user}
       hasPlans={hasPlans}
       legacyOwnerNotice={legacyOwnerWithoutPlan && view === "wizard"}

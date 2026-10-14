@@ -1,5 +1,5 @@
 /**
- * Arabic + English copy for the whole Personalized Plan flow: the questionnaire wizard, the review step,
+ * Arabic + English copy for the whole Personalized Plan flow: the questionnaire wizard, the checkout summary,
  * the payment CTA, the post-payment states and "My Personalized Plans".
  *
  * Wired into the site's existing language system: `HomepageCopy.planner` (homepageTranslations.ts) holds one
@@ -71,32 +71,29 @@ export type PlannerCopy = {
     accommodationHint: string;
     back: string;
     next: string;
-    reviewOrder: string;
+    continueToCheckout: string;
+    draftSaveFailed: string;
   };
-  review: {
+  /** Compact summary on /checkout?plan=personalized. */
+  checkoutSummary: {
     /** Placeholder: {destination} */
     title: string;
-    summaryHeading: string;
-    destination: string;
-    days: string;
-    dates: string;
+    /** Placeholder: {interests} */
     interests: string;
+    /** Placeholder: {accommodation} */
     accommodation: string;
     accommodationNotBooked: string;
-    productType: string;
-    productTypeValue: string;
-    price: string;
-    includedHeading: string;
-    includedItems: [string, string, string];
+    includesHeading: string;
+    includedPlan: string;
     /** Placeholder: {destination}. Shown only for destinations that include a guide. */
     includedGuide: string;
-    guideFreeNote: string;
+    price: string;
     emailLabel: string;
     emailHint: string;
-    payCta: string;
-    payRedirecting: string;
     editAnswers: string;
-    oneTripNote: string;
+    missingTitle: string;
+    missingBody: string;
+    backToPlanner: string;
   };
   mine: {
     title: string;
@@ -133,7 +130,7 @@ export const plannerCopyAr: PlannerCopy = {
   page: {
     title: "خطة مخصصة إلك ✨",
     subtitle: "اختار وجهتك واهتماماتك، وإحنا بنبني لك خطة ذكية حسب رحلتك.",
-    tagline: "جاوب على كم سؤال، راجع طلبك، وبعد الدفع بنبني خطتك حسب أيامك، اهتماماتك ومكان سكنك.",
+    tagline: "جاوب على كم سؤال، أكمل الدفع، وبنبني خطتك حسب أيامك، اهتماماتك ومكان سكنك.",
     backHome: "← الرئيسية",
     alreadyBought: "اشتريت من قبل؟ سجّل دخولك",
     legacyTitle: "اشتريت الخطة المخصصة قبل هذا التحديث",
@@ -192,30 +189,24 @@ export const plannerCopyAr: PlannerCopy = {
     accommodationHint: "اختار وضع السكن، وأدخل الاسم أو العنوان إذا حجزت.",
     back: "رجوع",
     next: "التالي",
-    reviewOrder: "راجع طلبك",
+    continueToCheckout: "المتابعة للدفع",
+    draftSaveFailed: "تعذّر حفظ إجاباتك على هذا المتصفح. فعّل التخزين المؤقت أو جرّب متصفحًا آخر.",
   },
-  review: {
-    title: "خطتك المخصصة إلى {destination}",
-    summaryHeading: "ملخص طلبك",
-    destination: "الوجهة",
-    days: "عدد الأيام",
-    dates: "التواريخ",
-    interests: "الاهتمامات",
-    accommodation: "السكن",
+  checkoutSummary: {
+    title: "خطة مخصصة إلى {destination}",
+    interests: "الاهتمامات: {interests}",
+    accommodation: "السكن: {accommodation}",
     accommodationNotBooked: "لسا ما حجزت",
-    productType: "نوع المنتج",
-    productTypeValue: "خطة سفر مخصصة",
-    price: "السعر",
-    includedHeading: "يشمل طلبك:",
-    includedItems: ["خطة سفر مخصصة مبنية على إجاباتك", "برنامج يومي منظم حسب عدد الأيام", "أماكن وأنشطة مناسبة لاهتماماتك"],
+    includesHeading: "يشمل:",
+    includedPlan: "خطة سفر مخصصة مبنية على إجاباتك",
     includedGuide: "دليل {destination} الكامل",
-    guideFreeNote: "مشمول بدون أي رسوم إضافية",
+    price: "السعر",
     emailLabel: "البريد الإلكتروني",
-    emailHint: "بنستخدم بريدك لإرسال تفاصيل الطلب. بعد الدفع بتسجّل دخولك لتفعيل خطتك.",
-    payCta: "المتابعة للدفع",
-    payRedirecting: "جاري التحويل للدفع...",
+    emailHint: "سنستخدم بريدك لإرسال تفاصيل الطلب.",
     editAnswers: "تعديل الإجابات",
-    oneTripNote: "كل عملية شراء خاصة برحلة واحدة وخطة واحدة. لرحلة ثانية بتنشئ خطة جديدة.",
+    missingTitle: "ما لقينا تفاصيل خطتك",
+    missingBody: "ابدأ من صفحة المخطط: جاوب على الأسئلة وبترجع لهون لإتمام الدفع.",
+    backToPlanner: "ابدأ من المخطط",
   },
   mine: {
     title: "خططي المخصصة",
@@ -254,7 +245,7 @@ export const plannerCopyEn: PlannerCopy = {
   page: {
     title: "Your Personalized Plan ✨",
     subtitle: "Pick your destination and interests, and we’ll build a smart plan around your trip.",
-    tagline: "Answer a few questions, review your order, and after payment we build your plan around your days, interests and where you’re staying.",
+    tagline: "Answer a few questions, check out, and we build your plan around your days, interests and where you’re staying.",
     backHome: "← Home",
     alreadyBought: "Already bought? Sign in",
     legacyTitle: "You bought the Personalized Plan before this update",
@@ -313,34 +304,24 @@ export const plannerCopyEn: PlannerCopy = {
     accommodationHint: "Choose your accommodation status, and enter the name or address if you’ve booked.",
     back: "Back",
     next: "Next",
-    reviewOrder: "Review your order",
+    continueToCheckout: "Continue to checkout",
+    draftSaveFailed: "We couldn’t save your answers in this browser. Enable site storage or try another browser.",
   },
-  review: {
-    title: "Your personalized plan to {destination}",
-    summaryHeading: "Order summary",
-    destination: "Destination",
-    days: "Number of days",
-    dates: "Dates",
-    interests: "Interests",
-    accommodation: "Accommodation",
+  checkoutSummary: {
+    title: "Personalized Plan to {destination}",
+    interests: "Interests: {interests}",
+    accommodation: "Accommodation: {accommodation}",
     accommodationNotBooked: "Not booked yet",
-    productType: "Product",
-    productTypeValue: "Personalized travel plan",
+    includesHeading: "Includes:",
+    includedPlan: "Personalized travel plan based on your answers",
+    includedGuide: "Complete {destination} Travel Guide",
     price: "Price",
-    includedHeading: "Your order includes:",
-    includedItems: [
-      "A personalized travel plan built from your answers",
-      "A daily itinerary organized by the number of days",
-      "Places and activities that match your interests",
-    ],
-    includedGuide: "The complete {destination} Travel Guide",
-    guideFreeNote: "Included at no extra charge",
     emailLabel: "Email",
-    emailHint: "We’ll use your email to send your order details. After paying, you sign in to activate your plan.",
-    payCta: "Continue to payment",
-    payRedirecting: "Redirecting to payment...",
+    emailHint: "We’ll use your email to send your order details.",
     editAnswers: "Edit answers",
-    oneTripNote: "Each purchase covers one trip and one plan. For another trip, you create a new plan.",
+    missingTitle: "We couldn’t find your plan details",
+    missingBody: "Start from the planner: answer the questions and you’ll come back here to pay.",
+    backToPlanner: "Start from the planner",
   },
   mine: {
     title: "My Personalized Plans",
