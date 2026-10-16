@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Price from "../Price";
 import { generatePersonalizedPlanAction, startComplimentaryPlan, startPersonalizedPlanCheckout } from "../../planner/actions";
 import PlanGeneratingScreen from "./PlanGeneratingScreen";
+import ScrollToTop from "../ScrollToTop";
 import { useLanguage } from "../../lib/language";
 import { fillCopy, type PlannerGenerateErrorCode } from "../../lib/plannerCopy";
 import { clearPlannerDraft, parsePlannerDraft, readPlannerDraftRaw } from "../../lib/planner/plannerDraft";
@@ -128,6 +129,7 @@ export default function PersonalizedPlanCheckout({
 
   return (
     <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+      <ScrollToTop />
       {testMode && <p className="inline-flex rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-amber-800">{t.checkout.testBadge}</p>}
       <h1 className="mt-4 text-2xl font-bold text-slate-900">{t.checkout.title}</h1>
 
@@ -136,7 +138,7 @@ export default function PersonalizedPlanCheckout({
           <p className="text-sm font-semibold text-slate-900">{summary.missingTitle}</p>
           <p className="mt-1 text-sm leading-6 text-slate-600">{summary.missingBody}</p>
           <Link
-            href="/planner"
+            href="/planner?new=1"
             className="mt-5 flex w-full items-center justify-center rounded-full bg-teal-700 px-5 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-teal-800"
           >
             {summary.backToPlanner}

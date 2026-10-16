@@ -4,6 +4,7 @@ import { useSyncExternalStore } from "react";
 import Link from "next/link";
 import PersonalizedPlanWizard from "./PersonalizedPlanWizard";
 import MyPersonalizedPlans from "./MyPersonalizedPlans";
+import ScrollToTop from "../ScrollToTop";
 import { useLanguage } from "../../lib/language";
 import { readPlannerDraft } from "../../lib/planner/plannerDraft";
 import type { PlannerPlanSummary, PlannerRequestSummary } from "../../lib/commerce/personalizedPlan";
@@ -54,6 +55,7 @@ export default function PlannerPageView({
 
   return (
     <main className="pb-10">
+      <ScrollToTop />
       <div className="mx-auto w-full max-w-3xl px-5 pt-4 sm:px-8 lg:px-10">
         <Link href="/" className="inline-flex items-center gap-1 text-sm font-semibold text-teal-700 hover:text-teal-800">
           {copy.page.backHome}
@@ -97,7 +99,7 @@ export default function PlannerPageView({
 
             {!signedIn && (
               <p className="mt-6 text-center">
-                <Link href="/login?next=%2Fplanner" className="text-sm font-semibold text-teal-700 hover:underline">
+                <Link href="/login?next=%2Fplanner%3Fnew%3D1" className="text-sm font-semibold text-teal-700 hover:underline">
                   {copy.page.alreadyBought}
                 </Link>
               </p>

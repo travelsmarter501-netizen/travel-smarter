@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import BackLink from "../../../../components/detail/BackLink";
+import ScrollToTop from "../../../../components/ScrollToTop";
 import SmartPlannerV2Result from "../../../../components/smart-planner-v2/SmartPlannerV2Result";
 import { createClient } from "../../../../../utils/supabase/server";
 import { isValidSmartPlannerV2SavedPlanRow } from "../../../../lib/planner/smartPlannerV2SavedPlans";
@@ -65,6 +66,7 @@ export default async function SavedSmartPlanV2Page(props: PageProps<"/smart-plan
 
   return (
     <main className="pb-10">
+      <ScrollToTop />
       <div className="mx-auto w-full max-w-3xl px-5 pt-4 sm:px-8 lg:px-10">
         <BackLink href="/account" label="حسابي" />
         <div className="mt-4">

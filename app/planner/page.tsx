@@ -16,7 +16,8 @@ import { createClient } from "../../utils/supabase/server";
  *     /checkout?plan=personalized (compact summary + Allpay button). Nothing is generated and nothing paid-for is shown here.
  *   - A signed-in customer who already has plans or paid/pending requests sees "My Personalized Plans" (their plans,
  *     a "Build my plan" card for each paid-but-unbuilt request, and "Create a new plan").
- *   - "Create a new plan" (?new=1) is simply the questionnaire again -> a new order -> a new payment.
+ *   - "Create a new plan", the homepage "ابدأ خطتك" button and "Edit answers" (?new=1 / ?edit=1) always open the questionnaire
+ *     itself, at step 1 for a new plan -> a new order -> a new payment.
  *
  * Owning the product entitlement does NOT unlock the planner any more: generation is authorized per paid request
  * (see lib/commerce/personalizedPlan.ts), never by the entitlement.
@@ -47,7 +48,10 @@ export default async function PlannerPage({ searchParams }: { searchParams: Prom
   // A legacy owner: bought before the questionnaire-first model, so there is an entitlement but never a request or plan.
   const legacyOwnerWithoutPlan =
     !!user && mine.plans.length === 0 && !mine.hasAnyRequest && (await hasProductAccess(PRODUCT_SLUGS.personalizedPlan, user.id));
-  const view = user && hasPlans && wantsNew !== "1" ? "mine" : "wizard";
+  // A visitor who ASKED for the questionnaire (the homepage button, "Create a new plan", "Edit answers", an old destination link)
+  // always gets it -- even a customer who already has plans. Plain /planner is the signed-in customer's My Personalized Plans.
+  const wantsQuestionnaire = wantsNew === "1" || edit === "1" || typeof destination === "string";
+  const view = user && hasPlans && !wantsQuestionnaire ? "mine" : "wizard";
 
   return (
     <PlannerPageView
