@@ -94,13 +94,13 @@ export default function Products() {
                       {product.includesGuideLabel}
                     </p>
                   )}
-                  <p className="mt-3 flex items-baseline gap-1.5">
+                  <p className="mt-3 flex flex-wrap items-baseline gap-x-1.5 gap-y-1">
                     {product.startingFrom && (
                       <span dir="auto" className="text-xs font-semibold text-slate-500">
                         {t.products.startingFromLabel}
                       </span>
                     )}
-                    <Price ils={product.priceILS} className="text-lg font-bold text-slate-900" />
+                    <Price ils={product.priceILS} referenceIls={product.referencePriceILS} showLabel className="text-xl font-extrabold text-slate-900" />
                   </p>
 
                   <button

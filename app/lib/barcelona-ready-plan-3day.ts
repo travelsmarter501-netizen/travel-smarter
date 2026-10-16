@@ -1,4 +1,5 @@
 import type { ReadyPlan } from "./readyPlanTypes";
+import { PRODUCT_PRICES_ILS } from "./commerce/pricing";
 
 /**
  * Barcelona — 3-Day Ready Plan.
@@ -43,14 +44,14 @@ import type { ReadyPlan } from "./readyPlanTypes";
  * santa-maria-del-mar, santa-maria-del-mar -> barceloneta-beach) against live Google Maps and
  * Apple Maps directions (2026-08). No leg in this file is left as an unresolved placeholder.
  *
- * `priceILS: 34` is the confirmed final price for this standalone 3-day product (updated from
- * the original 39 -- see the "Update Barcelona 3-Day Product Price" task's final report).
+ * `priceILS` is this product's launch price, read from app/lib/commerce/pricing.ts (display only: the amount charged
+ * comes from products.price_ils in the database).
  */
 export const barcelonaReadyPlan3Day: ReadyPlan = {
   slug: "barcelona-3day",
   title: "برشلونة — خطة 3 أيام",
   subtitle: "خطة برشلونة جاهزة لـ3 أيام — أهم المعالم بمسارات مرتبة وقريبة من بعض.",
-  priceILS: 34,
+  priceILS: PRODUCT_PRICES_ILS["barcelona-3day"].launch,
   days: [
     {
       id: "day-1",

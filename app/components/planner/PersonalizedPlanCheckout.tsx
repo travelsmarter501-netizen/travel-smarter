@@ -4,6 +4,8 @@ import { useMemo, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Price from "../Price";
+import { formatPrice } from "../../lib/currency";
+import { referencePriceIfDiscounted } from "../../lib/commerce/pricing";
 import { generatePersonalizedPlanAction, startComplimentaryPlan, startPersonalizedPlanCheckout } from "../../planner/actions";
 import PlanGeneratingScreen from "./PlanGeneratingScreen";
 import ScrollToTop from "../ScrollToTop";
@@ -173,14 +175,25 @@ export default function PersonalizedPlanCheckout({
             </div>
 
             {priceIls !== null && (
-              <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3 text-sm">
+              <div className="mt-4 flex items-center justify-between gap-3 border-t border-slate-100 pt-3 text-sm">
                 <span className="font-semibold text-slate-600">{summary.price}</span>
-                <span className="text-lg font-bold text-slate-900">
-                  <Price ils={priceIls} />
-                </span>
+                <Price ils={priceIls} referenceIls={referencePriceIfDiscounted("personalized-trip-plan", priceIls)} showLabel className="text-xl font-extrabold text-slate-900" />
               </div>
             )}
           </section>
+
+          {!complimentary && priceIls !== null && (
+            <div className="mt-5 rounded-2xl bg-slate-50 px-4 py-3">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-sm font-semibold text-slate-700">{t.pricing.amountToPay}</span>
+                {/* Always in shekels: that is the currency Allpay charges, whatever display currency is selected. */}
+                <span dir="ltr" className="text-2xl font-extrabold text-slate-900">
+                  {formatPrice(priceIls, "ILS")}
+                </span>
+              </div>
+              <p className="mt-1 text-xs text-slate-500">{t.pricing.chargedInIls}</p>
+            </div>
+          )}
 
           {complimentary ? (
             <>

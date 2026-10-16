@@ -5,6 +5,7 @@
  * homepage redesign task's final report for which pages still need a translation pass.
  */
 
+import { PRODUCT_PRICES_ILS } from "./commerce/pricing";
 import type { CheckoutErrorCode } from "./commerce/checkoutErrors";
 import { plannerCopyAr, plannerCopyEn, type PlannerCopy } from "./plannerCopy";
 
@@ -15,6 +16,8 @@ type Product = {
   title: string;
   description: string;
   priceILS: number;
+  /** Old price shown struck through next to priceILS (launch sale). Display only -- never used for any charge. */
+  referencePriceILS?: number;
   route: string;
   ctaLabel: string;
   /** Omitted (not shown) for a product whose price isn't a single fixed number yet -- e.g.
@@ -123,6 +126,15 @@ export type HomepageCopy = {
     errors: Record<CheckoutErrorCode, string>;
   };
   /** Personalized Plan flow: questionnaire wizard, review/payment step, post-payment states, "My Personalized Plans". */
+  /** Launch-sale price labels and the "amount you pay" block. */
+  pricing: {
+    launchPrice: string;
+    previousPrice: string;
+    amountToPay: string;
+    chargedInIls: string;
+    includedInPlan: string;
+    alreadyOwned: string;
+  };
   planner: PlannerCopy;
   /** "Included with your plan" card on the 3-day and 5-day Ready Plan pages -- not shown on the 1-day plan. */
   productPage: {
@@ -188,7 +200,8 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
           id: "personalized-trip-plan",
           title: "خطة مخصصة إلك ✨",
           description: "جاوب على كم سؤال أولًا، وبعدها بنبني لك خطة ذكية حسب رحلتك.",
-          priceILS: 59,
+          priceILS: PRODUCT_PRICES_ILS["personalized-trip-plan"].launch,
+          referencePriceILS: PRODUCT_PRICES_ILS["personalized-trip-plan"].reference,
           route: "/planner?new=1",
           ctaLabel: "ابدأ خطتك",
           includesGuideLabel: "+ دليل برشلونة",
@@ -199,7 +212,8 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
           id: "barcelona-1day",
           title: "برشلونة بيوم واحد",
           description: "أهم برشلونة بمسار مرتب ليوم واحد.",
-          priceILS: 19,
+          priceILS: PRODUCT_PRICES_ILS["barcelona-1day"].launch,
+          referencePriceILS: PRODUCT_PRICES_ILS["barcelona-1day"].reference,
           route: "/ready-plans/barcelona/1-day",
           ctaLabel: "اشترِ الآن",
           addToCartLabel: "أضف للسلة",
@@ -208,7 +222,8 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
           id: "barcelona-guide",
           title: "دليل برشلونة",
           description: "الأماكن، المطاعم، الفنادق، التسوق والسهر بمكان واحد.",
-          priceILS: 29,
+          priceILS: PRODUCT_PRICES_ILS["barcelona-guide"].launch,
+          referencePriceILS: PRODUCT_PRICES_ILS["barcelona-guide"].reference,
           route: "/guides/barcelona",
           ctaLabel: "اشترِ الآن",
           addToCartLabel: "أضف للسلة",
@@ -217,7 +232,8 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
           id: "barcelona-3day",
           title: "برشلونة 3 أيام",
           description: "أهم معالم برشلونة بمسارات مرتبة على 3 أيام.",
-          priceILS: 34,
+          priceILS: PRODUCT_PRICES_ILS["barcelona-3day"].launch,
+          referencePriceILS: PRODUCT_PRICES_ILS["barcelona-3day"].reference,
           route: "/ready-plans/barcelona/3-days",
           ctaLabel: "اشترِ الآن",
           addToCartLabel: "أضف للسلة",
@@ -227,7 +243,8 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
           id: "barcelona-5day",
           title: "برشلونة 5 أيام",
           description: "خطة جاهزة يوم بيوم بمسارات وتنقلات واضحة.",
-          priceILS: 39,
+          priceILS: PRODUCT_PRICES_ILS["barcelona-5day"].launch,
+          referencePriceILS: PRODUCT_PRICES_ILS["barcelona-5day"].reference,
           route: "/ready-plans/barcelona",
           ctaLabel: "اشترِ الآن",
           addToCartLabel: "أضف للسلة",
@@ -312,6 +329,14 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
         invalid_planner_answers: "بيانات الخطة غير صالحة. راجع إجاباتك وحاول مرة أخرى.",
       },
     },
+    pricing: {
+      launchPrice: "سعر إطلاق",
+      previousPrice: "السعر السابق",
+      amountToPay: "المبلغ الذي سيتم خصمه اليوم",
+      chargedInIls: "يتم الدفع بالشيكل (₪)",
+      includedInPlan: "مشمول ضمن خطتك",
+      alreadyOwned: "لديك هذا المنتج مسبقًا",
+    },
     planner: plannerCopyAr,
     productPage: {
       includedGuide: {
@@ -373,7 +398,8 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
           id: "personalized-trip-plan",
           title: "Your Personalized Trip Plan ✨",
           description: "Answer a few questions first, then we'll build you a smart plan for your trip.",
-          priceILS: 59,
+          priceILS: PRODUCT_PRICES_ILS["personalized-trip-plan"].launch,
+          referencePriceILS: PRODUCT_PRICES_ILS["personalized-trip-plan"].reference,
           route: "/planner?new=1",
           ctaLabel: "Start Your Plan",
           includesGuideLabel: "+ Barcelona Guide",
@@ -384,7 +410,8 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
           id: "barcelona-1day",
           title: "Barcelona in One Day",
           description: "See the essential Barcelona highlights in one organized day.",
-          priceILS: 19,
+          priceILS: PRODUCT_PRICES_ILS["barcelona-1day"].launch,
+          referencePriceILS: PRODUCT_PRICES_ILS["barcelona-1day"].reference,
           route: "/ready-plans/barcelona/1-day",
           ctaLabel: "Buy Now",
           addToCartLabel: "Add to Cart",
@@ -393,7 +420,8 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
           id: "barcelona-guide",
           title: "Barcelona Travel Guide",
           description: "Places, restaurants, hotels, shopping and nightlife in one guide.",
-          priceILS: 29,
+          priceILS: PRODUCT_PRICES_ILS["barcelona-guide"].launch,
+          referencePriceILS: PRODUCT_PRICES_ILS["barcelona-guide"].reference,
           route: "/guides/barcelona",
           ctaLabel: "Buy Now",
           addToCartLabel: "Add to Cart",
@@ -402,7 +430,8 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
           id: "barcelona-3day",
           title: "Barcelona — 3 Days",
           description: "The Barcelona highlights, organized across 3 well-paced days.",
-          priceILS: 34,
+          priceILS: PRODUCT_PRICES_ILS["barcelona-3day"].launch,
+          referencePriceILS: PRODUCT_PRICES_ILS["barcelona-3day"].reference,
           route: "/ready-plans/barcelona/3-days",
           ctaLabel: "Buy Now",
           addToCartLabel: "Add to Cart",
@@ -412,7 +441,8 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
           id: "barcelona-5day",
           title: "Barcelona — 5 Days",
           description: "A complete 5-day itinerary with organized routes and transport.",
-          priceILS: 39,
+          priceILS: PRODUCT_PRICES_ILS["barcelona-5day"].launch,
+          referencePriceILS: PRODUCT_PRICES_ILS["barcelona-5day"].reference,
           route: "/ready-plans/barcelona",
           ctaLabel: "Buy Now",
           addToCartLabel: "Add to Cart",
@@ -496,6 +526,14 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
         planner_answers_required: "The Personalized Plan starts on the planner page: answer the questions first, then continue to payment.",
         invalid_planner_answers: "Your plan details aren’t valid. Please review your answers and try again.",
       },
+    },
+    pricing: {
+      launchPrice: "Launch Price",
+      previousPrice: "Previous price",
+      amountToPay: "Amount charged today",
+      chargedInIls: "Charged in Israeli shekels (₪)",
+      includedInPlan: "Included with your plan",
+      alreadyOwned: "Already yours",
     },
     planner: plannerCopyEn,
     productPage: {

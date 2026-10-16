@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useSyncExternalStore, type ReactNode } from "react";
 import { homepageTranslations } from "./homepageTranslations";
+import { isGuideIncludedInCart } from "./commerce/pricing";
 
 export type CartItem = {
   id: string;
@@ -98,6 +99,8 @@ type CartContextValue = {
   isInCart: (id: string) => boolean;
   /** Current catalog price for a cart item, ignoring any stale price captured at add-to-cart time. */
   getPriceILS: (item: CartItem) => number;
+  /** True for a stand-alone Guide line that is already included in a 3-day/5-day plan in the cart (not charged separately). Display only. */
+  isIncludedInBundle: (item: CartItem) => boolean;
 };
 
 const CartContext = createContext<CartContextValue | null>(null);
@@ -125,11 +128,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const isInCart = (id: string) => items.some((item) => item.id === id);
 
-  const totalILS = items.reduce((sum, item) => sum + currentPriceILS(item), 0);
+  const cartIds = items.map((item) => item.id);
+  const isIncludedInBundle = (item: CartItem) => isGuideIncludedInCart(cartIds, item.id);
+  const totalILS = items.reduce((sum, item) => (isIncludedInBundle(item) ? sum : sum + currentPriceILS(item)), 0);
 
   return (
     <CartContext.Provider
-      value={{ items, addItem, removeItem, clearCart, totalILS, isInCart, getPriceILS: currentPriceILS }}
+      value={{ items, addItem, removeItem, clearCart, totalILS, isInCart, getPriceILS: currentPriceILS, isIncludedInBundle }}
     >
       {children}
     </CartContext.Provider>

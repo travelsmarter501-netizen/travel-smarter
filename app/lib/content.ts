@@ -1,5 +1,6 @@
 import type { ComponentType, SVGProps } from "react";
 import { IconBook, IconPackage, IconSparkles } from "../components/icons";
+import { PRODUCT_PRICES_ILS } from "./commerce/pricing";
 
 /**
  * Single source of truth for every destination. Prices are stored in ILS
@@ -31,9 +32,10 @@ export const destinations: Destination[] = [
     image:
       "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Evening_light_over_Barcelona.jpg/1280px-Evening_light_over_Barcelona.jpg",
     description: "عمارة ساحرة، شواطئ متوسطية، وحياة ليلية نابضة بالحيوية.",
-    customPlanPrice: 59,
-    packagePrice: 39,
-    guidePrice: 29,
+    // Barcelona's three prices are the launch prices (single source: commerce/pricing.ts).
+    customPlanPrice: PRODUCT_PRICES_ILS["personalized-trip-plan"].launch,
+    packagePrice: PRODUCT_PRICES_ILS["barcelona-5day"].launch,
+    guidePrice: PRODUCT_PRICES_ILS["barcelona-guide"].launch,
     packageDays: 5,
     status: "available",
   },
@@ -239,7 +241,7 @@ export const productCategories: ProductCategory[] = [
     // explicitly rather than reading like a generic all-destinations product.
     title: "خطة سفر مخصصة لبرشلونة",
     description: "اختار شو بتحب والأماكن اللي بدك تزورها، وإحنا بنرتبلك الأيام بأذكى مسار.",
-    priceFrom: 59,
+    priceFrom: PRODUCT_PRICES_ILS["personalized-trip-plan"].launch,
     ctaLabel: "ابنِ خطتك",
     // Sales entry point: the homepage products section (where "Buy now" lives). Never the
     // entitlement-gated content route -- that is for people who already bought.
@@ -251,7 +253,7 @@ export const productCategories: ProductCategory[] = [
     icon: IconPackage,
     title: "رزم سفر جاهزة",
     description: "برنامج يوم بيوم جاهز للتحميل والاستخدام",
-    priceFrom: 39,
+    priceFrom: PRODUCT_PRICES_ILS["barcelona-5day"].launch,
     ctaLabel: "تصفح الرزم",
     // Sales entry point (see above): the products section, not the gated Ready Plan route.
     ctaHref: "/#products",
@@ -261,7 +263,7 @@ export const productCategories: ProductCategory[] = [
     icon: IconBook,
     title: "دلائل سياحية",
     description: "كل ما تحتاج معرفته عن وجهتك في دليل واحد",
-    priceFrom: 29,
+    priceFrom: PRODUCT_PRICES_ILS["barcelona-guide"].launch,
     ctaLabel: "تصفح الأدلة",
     // Sales entry point (see above): the products section, not the gated Guide route.
     ctaHref: "/#products",

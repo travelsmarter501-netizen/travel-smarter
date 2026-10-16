@@ -1,4 +1,5 @@
 import type { ReadyPlan } from "./readyPlanTypes";
+import { PRODUCT_PRICES_ILS } from "./commerce/pricing";
 
 /**
  * Barcelona — 5-Day Ready Plan.
@@ -52,15 +53,14 @@ import type { ReadyPlan } from "./readyPlanTypes";
  * Apple's collapsed the distance to near-zero by geocoding the street address on top of the
  * other endpoint. No leg in this file is left as an unresolved placeholder.
  *
- * `priceILS` below is a commercial-UI display value only (Section B of the product-separation
- * task) — there is not yet a real `products` table row for the "barcelona-ready-plan" slug,
- * so this number is not enforced by any entitlement/payment logic yet.
+ * `priceILS` below is this product's launch price, read from app/lib/commerce/pricing.ts. It is a display value only: the amount
+ * charged comes from products.price_ils in the database, which is the only price payment logic ever reads.
  */
 export const barcelonaReadyPlan: ReadyPlan = {
   slug: "barcelona",
   title: "برشلونة — خطة 5 أيام",
   subtitle: "خطة برشلونة جاهزة لـ5 أيام — مرتبة يوم بيوم وبمسارات قريبة من بعض.",
-  priceILS: 39,
+  priceILS: PRODUCT_PRICES_ILS["barcelona-5day"].launch,
   days: [
     {
       id: "day-1",

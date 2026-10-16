@@ -6,6 +6,8 @@ import { createPortal } from "react-dom";
 import { useCart } from "../lib/cart";
 import { useLanguage } from "../lib/language";
 import { formatPrice, useCurrency } from "../lib/currency";
+import Price from "./Price";
+import { referencePriceIfDiscounted } from "../lib/commerce/pricing";
 import { IconClose, IconShoppingBag } from "./icons";
 
 /**
@@ -23,7 +25,7 @@ import { IconClose, IconShoppingBag } from "./icons";
  * backdrop. >= 640px: the original right-hand side drawer.
  */
 export default function CartWidget() {
-  const { items, removeItem, clearCart, totalILS, getPriceILS } = useCart();
+  const { items, removeItem, clearCart, totalILS, getPriceILS, isIncludedInBundle } = useCart();
   const { language, t } = useLanguage();
   const { currency } = useCurrency();
   const [open, setOpen] = useState(false);
@@ -127,8 +129,12 @@ export default function CartWidget() {
                         <p dir="auto" className="truncate text-sm font-semibold text-slate-900">
                           {language === "ar" ? item.titleAr : item.titleEn}
                         </p>
-                        <p dir="ltr" className="mt-1 text-xs font-semibold text-teal-700">
-                          {formatPrice(getPriceILS(item), currency)}
+                        <p className="mt-1 text-xs font-semibold text-teal-700">
+                          {isIncludedInBundle(item) ? (
+                            t.pricing.includedInPlan
+                          ) : (
+                            <Price ils={getPriceILS(item)} referenceIls={referencePriceIfDiscounted(item.id, getPriceILS(item))} className="text-sm font-bold text-teal-700" />
+                          )}
                         </p>
                       </div>
                       <button

@@ -4,6 +4,14 @@ import Flag from "./Flag";
 import Price from "./Price";
 import { IconBook, IconPackage, IconSparkles } from "./icons";
 import type { Destination } from "../lib/content";
+import { referencePriceIfDiscounted, type PricedCartId } from "../lib/commerce/pricing";
+
+// Which launch-priced product each of Barcelona's three tiles shows (display only).
+const TILE_PRODUCT: Record<"customPlanPrice" | "packagePrice" | "guidePrice", PricedCartId> = {
+  customPlanPrice: "personalized-trip-plan",
+  packagePrice: "barcelona-5day",
+  guidePrice: "barcelona-guide",
+};
 
 export default function DestinationCard({
   destination,
@@ -123,6 +131,7 @@ export default function DestinationCard({
 
                   <Price
                     ils={destination[key]}
+                    referenceIls={isBarcelona ? referencePriceIfDiscounted(TILE_PRODUCT[key], destination[key]) : undefined}
                     className="text-sm font-bold text-slate-900"
                   />
                 </Link>

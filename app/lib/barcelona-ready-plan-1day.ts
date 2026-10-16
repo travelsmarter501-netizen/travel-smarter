@@ -1,4 +1,5 @@
 import type { ReadyPlan } from "./readyPlanTypes";
+import { PRODUCT_PRICES_ILS } from "./commerce/pricing";
 
 /**
  * Barcelona — 1-Day Ready Plan.
@@ -61,9 +62,8 @@ import type { ReadyPlan } from "./readyPlanTypes";
  * close to the day.
  *
  * ── Pricing (2026-08) ──────────────────────────────────────────────────────────────
- * `priceILS: 19` is this product real customer-facing price, set independently from the
- * 5-day Ready Package (39ILS), the Guide (29ILS), and the Smart Planner (59ILS) -- none of
- * which this file touches. `app/lib/content.ts` `Destination` type still has only one
+ * `priceILS` is this product's launch price, read from app/lib/commerce/pricing.ts (display only: the amount charged comes from
+ * products.price_ils in the database), set independently from the other products. `app/lib/content.ts` `Destination` type still has only one
  * `packagePrice`/`packageDays` pair per destination (the 5-day product) -- this 1-day
  * product price is not wired into that shared model and is not shown on the homepage; it
  * is read directly from `barcelonaReadyPlan1Day.priceILS` by the Ready Plan UI itself (see
@@ -75,7 +75,7 @@ export const barcelonaReadyPlan1Day: ReadyPlan = {
   slug: "barcelona-1day",
   title: "برشلونة بيوم واحد",
   subtitle: "أهم برشلونة بيوم واحد — مسار مرتب بدون تضييع وقت.",
-  priceILS: 19,
+  priceILS: PRODUCT_PRICES_ILS["barcelona-1day"].launch,
   days: [
     {
       id: "day-1",

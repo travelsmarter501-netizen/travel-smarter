@@ -1,10 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import Price from "../components/Price";
 import { useCart } from "../lib/cart";
 import { useLanguage } from "../lib/language";
-import { formatPrice, useCurrency } from "../lib/currency";
+import { formatPrice } from "../lib/currency";
+import { CART_ID_TO_PRODUCT_SLUG } from "../lib/commerce/catalog";
+import { referencePriceIfDiscounted } from "../lib/commerce/pricing";
+import { quoteCheckout, type CheckoutQuote } from "./quote";
 import { startCartCheckout } from "./actions";
 import type { CheckoutErrorCode } from "../lib/commerce/checkoutErrors";
 
@@ -17,15 +21,37 @@ export default function CheckoutClient({
   testMode?: boolean;
   signedIn?: boolean;
 }) {
-  const { items, removeItem, getPriceILS, totalILS } = useCart();
+  const { items, removeItem, getPriceILS, totalILS, isIncludedInBundle } = useCart();
   const { language, t } = useLanguage();
-  const { currency } = useCurrency();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   // Kept as {code, message} (not a string) so the text follows the language if it is switched after an error.
   const [error, setError] = useState<{ code?: CheckoutErrorCode; message: string } | null>(null);
 
   const empty = items.length === 0 && !extraProductSlug;
+
+  // The amount that will actually be charged, asked from the server (database prices + the same bundle/ownership rules as order
+  // creation). The answer is only used while it still matches the current cart, so a stale number is never shown.
+  const cartKey = items.map((item) => item.id).join(",");
+  const cartIds = useMemo(() => (cartKey ? cartKey.split(",") : []), [cartKey]);
+  const quoteKey = cartKey + "|" + (extraProductSlug ?? "") + "|" + (signedIn ? "in" : "guest");
+  const [quoteState, setQuoteState] = useState<{ key: string; quote: CheckoutQuote | null } | null>(null);
+  const quote = quoteState?.key === quoteKey && quoteState.quote?.ok ? quoteState.quote : null;
+
+  useEffect(() => {
+    if (empty) return;
+    let cancelled = false;
+    quoteCheckout({ cartIds, productSlugs: extraProductSlug ? [extraProductSlug] : undefined })
+      .then((result) => {
+        if (!cancelled) setQuoteState({ key: quoteKey, quote: result });
+      })
+      .catch(() => {
+        if (!cancelled) setQuoteState({ key: quoteKey, quote: null });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [empty, cartIds, extraProductSlug, quoteKey]);
 
   async function handlePay() {
     setLoading(true);
@@ -48,6 +74,11 @@ export default function CheckoutClient({
     window.location.href = result.paymentUrl;
   }
 
+  // The one number to show as "what you pay": the server's quote, or (until it arrives) the cart's own sum for a cart checkout.
+  const amountToPay = quote ? quote.totalIls : items.length > 0 ? totalILS : null;
+  const extraCartId = extraProductSlug ? Object.keys(CART_ID_TO_PRODUCT_SLUG).find((id) => CART_ID_TO_PRODUCT_SLUG[id] === extraProductSlug) : undefined;
+  const extraLine = extraProductSlug ? quote?.lines.find((line) => line.slug === extraProductSlug) : undefined;
+
   return (
     <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
       {testMode && (
@@ -61,31 +92,51 @@ export default function CheckoutClient({
         <>
           <ul className="mt-6 space-y-3">
             {extraProductSlug && items.length === 0 && (
-              <li className="rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-900">{t.checkout.selectedProduct}</li>
-            )}
-            {items.map((item) => (
-              <li key={item.id} className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 px-4 py-3">
-                <div className="min-w-0">
-                  <p dir="auto" className="truncate text-sm font-semibold text-slate-900">
-                    {language === "ar" ? item.titleAr : item.titleEn}
-                  </p>
-                  <p dir="ltr" className="mt-1 text-xs font-semibold text-teal-700">
-                    {formatPrice(getPriceILS(item), currency)}
-                  </p>
-                </div>
-                <button type="button" onClick={() => removeItem(item.id)} className="text-xs font-semibold text-slate-500 hover:text-red-600">
-                  {t.cart.remove}
-                </button>
+              <li className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 px-4 py-3">
+                <span className="text-sm font-semibold text-slate-900">{t.checkout.selectedProduct}</span>
+                {extraLine && !extraLine.notCharged && (
+                  <Price ils={extraLine.priceIls} referenceIls={extraCartId ? referencePriceIfDiscounted(extraCartId, extraLine.priceIls) : undefined} className="text-sm font-bold text-teal-700" />
+                )}
               </li>
-            ))}
+            )}
+            {items.map((item) => {
+              const line = quote?.lines.find((candidate) => candidate.slug === CART_ID_TO_PRODUCT_SLUG[item.id]);
+              const notCharged = line ? line.notCharged : isIncludedInBundle(item) ? "included" : undefined;
+              const unit = line ? line.priceIls : getPriceILS(item);
+              return (
+                <li key={item.id} className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 px-4 py-3">
+                  <div className="min-w-0">
+                    <p dir="auto" className="truncate text-sm font-semibold text-slate-900">
+                      {language === "ar" ? item.titleAr : item.titleEn}
+                    </p>
+                    <p className="mt-1 text-xs font-semibold text-teal-700">
+                      {notCharged === "included" ? (
+                        t.pricing.includedInPlan
+                      ) : notCharged === "owned" ? (
+                        t.pricing.alreadyOwned
+                      ) : (
+                        <Price ils={unit} referenceIls={referencePriceIfDiscounted(item.id, unit)} className="text-sm font-bold text-teal-700" />
+                      )}
+                    </p>
+                  </div>
+                  <button type="button" onClick={() => removeItem(item.id)} className="text-xs font-semibold text-slate-500 hover:text-red-600">
+                    {t.cart.remove}
+                  </button>
+                </li>
+              );
+            })}
           </ul>
 
-          {items.length > 0 && (
-            <div className="mt-5 flex items-center justify-between text-sm">
-              <span className="font-semibold text-slate-600">{t.cart.subtotal}</span>
-              <span dir="ltr" className="text-lg font-bold text-slate-900">
-                {formatPrice(totalILS, currency)}
-              </span>
+          {amountToPay !== null && (
+            <div className="mt-5 rounded-2xl bg-slate-50 px-4 py-3">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-sm font-semibold text-slate-700">{t.pricing.amountToPay}</span>
+                {/* Always in shekels: that is the currency Allpay charges, whatever display currency is selected. */}
+                <span dir="ltr" className="text-2xl font-extrabold text-slate-900">
+                  {formatPrice(amountToPay, "ILS")}
+                </span>
+              </div>
+              <p className="mt-1 text-xs text-slate-500">{t.pricing.chargedInIls}</p>
             </div>
           )}
 

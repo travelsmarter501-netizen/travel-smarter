@@ -1,10 +1,11 @@
 import type { DestinationGuideContent } from "./guideTypes";
+import { PRODUCT_PRICES_ILS } from "./commerce/pricing";
 
 const WIKIMEDIA = "Wikimedia Commons";
 
 export const barcelonaGuide: DestinationGuideContent = {
   slug: "barcelona",
-  priceILS: 29,
+  priceILS: PRODUCT_PRICES_ILS["barcelona-guide"].launch,
   subtitle: "كل ما تحتاجه لرحلتك — بدون قراءة طويلة. افتح القسم اللي يهمك الحين وخلص.",
 
   quickFacts: [
