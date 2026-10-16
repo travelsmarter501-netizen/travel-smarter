@@ -3,7 +3,13 @@
 import { createClient } from "../../utils/supabase/server";
 import { createAllpayRedirectCheckout } from "../lib/allpay/createPayment";
 import { generateClaimToken, hashClaimToken, normalizeGuestEmail } from "../lib/commerce/claimToken";
-import { createPersonalizedPlanOrder, generatePersonalizedPlanForRequest, type GeneratePersonalizedPlanResult } from "../lib/commerce/personalizedPlan";
+import {
+  createComplimentaryPlanRequest,
+  createPersonalizedPlanOrder,
+  generatePersonalizedPlanForRequest,
+  type CreateComplimentaryRequestResult,
+  type GeneratePersonalizedPlanResult,
+} from "../lib/commerce/personalizedPlan";
 import { normalizePersonalizedAnswers } from "../lib/planner/personalizedPlanAnswers";
 import type { StartCheckoutResult } from "../checkout/actions";
 
@@ -61,4 +67,18 @@ export async function startPersonalizedPlanCheckout(input: { destinationId?: unk
  */
 export async function generatePersonalizedPlanAction(requestId: string): Promise<GeneratePersonalizedPlanResult> {
   return generatePersonalizedPlanForRequest(requestId);
+}
+
+/**
+ * Complimentary (demo) plan for allowlisted accounts only -- the questionnaire is the normal one, only the payment step is
+ * replaced. The browser sends just its raw answers; the server (1) takes the user from the verified session, (2) checks that
+ * user against the server-side COMPLIMENTARY_USER_IDS allowlist, (3) re-validates and rebuilds the answers with exactly the
+ * same normalizePersonalizedAnswers as a paid plan, and (4) stores a request that has NO order: no payment is created or
+ * faked, nothing is granted, and nothing can be counted as revenue. The plan is then built with the very same one-request-one-plan
+ * generation as a purchased one (generatePersonalizedPlanAction).
+ */
+export async function startComplimentaryPlan(input: { destinationId?: unknown; answers?: unknown }): Promise<CreateComplimentaryRequestResult> {
+  const normalized = normalizePersonalizedAnswers(input?.answers, input?.destinationId);
+  if (!normalized.ok) return { ok: false, code: "invalid_planner_answers" };
+  return createComplimentaryPlanRequest({ destinationId: normalized.destinationId, answers: normalized.answers });
 }

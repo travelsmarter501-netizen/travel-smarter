@@ -8,6 +8,7 @@ import { PRODUCT_SLUGS } from "./catalog";
 import type { CheckoutErrorCode } from "./checkoutErrors";
 import type { PersonalizedPlanAnswers } from "../planner/personalizedPlanAnswers";
 import { inclusiveDayCount } from "../planner/dateOnly";
+import { isComplimentaryUser } from "./complimentary";
 
 /**
  * Personalized Plan -- server-side order + generation logic for "one purchase = one plan".
@@ -70,6 +71,36 @@ export async function createPersonalizedPlanOrder(params: {
   return { ok: true, orderId: data.id };
 }
 
+// ── complimentary (demo) requests ────────────────────────────────────────────────────────────────────────
+export type ComplimentaryErrorCode = "login_required" | "not_available" | "invalid_planner_answers" | "create_failed";
+export type CreateComplimentaryRequestResult = { ok: true; requestId: string } | { ok: false; code: ComplimentaryErrorCode };
+
+/**
+ * Creates a complimentary request for the VERIFIED session user: no order, no payment, no entitlement. The allowlist check
+ * (COMPLIMENTARY_USER_IDS, server-side) happens here against the session user id; a non-allowlisted user gets the same
+ * generic "not_available" as a deployment with no allowlist at all, so nothing is revealed about who is on it.
+ * `answers`/`destinationId` must already be the output of normalizePersonalizedAnswers.
+ */
+export async function createComplimentaryPlanRequest(params: { destinationId: string; answers: PersonalizedPlanAnswers }): Promise<CreateComplimentaryRequestResult> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, code: "login_required" };
+  if (!isComplimentaryUser(user.id)) return { ok: false, code: "not_available" };
+
+  const { data, error } = await createServiceRoleClient().rpc("create_complimentary_personalized_plan_request", {
+    p_user_id: user.id,
+    p_destination_id: params.destinationId,
+    p_answers: params.answers,
+  });
+  if (error || typeof data !== "string") {
+    console.error("[planner] create_complimentary_personalized_plan_request failed:", error?.code ?? "no-code");
+    return { ok: false, code: "create_failed" };
+  }
+  return { ok: true, requestId: data };
+}
+
 // ── generation ────────────────────────────────────────────────────────────────────────────────────────────
 export type GeneratePersonalizedPlanResult =
   | { ok: true; planId: string }
@@ -115,6 +146,12 @@ export async function generatePersonalizedPlanForRequest(requestId: unknown): Pr
   if (typeof requestId !== "string" || !/^[0-9a-f-]{36}$/i.test(requestId)) return { ok: false, code: "not_found" };
 
   const serviceRole = createServiceRoleClient();
+
+  // Defense in depth for complimentary requests: the database already ties them to their owner, and the server re-checks the
+  // allowlist here, so removing someone from COMPLIMENTARY_USER_IDS also stops their unbuilt demo requests.
+  const { data: origin } = await serviceRole.from("personalized_plan_requests").select("source").eq("id", requestId).maybeSingle<{ source: string }>();
+  if (origin?.source === "complimentary" && !isComplimentaryUser(user.id)) return { ok: false, code: "not_found" };
+
   const { data: begin, error: beginError } = await serviceRole
     .rpc("begin_personalized_plan_generation", { p_request_id: requestId, p_user_id: user.id })
     .single<BeginRow>();
@@ -222,8 +259,10 @@ export type PlannerRequestSummary = {
   destinationId: string;
   days: number | null;
   createdAt: string;
-  /** 'ready' = paid, waiting for the customer to build it; 'pending' = payment not confirmed yet. */
+  /** 'ready' = paid (or complimentary), waiting for the customer to build it; 'pending' = payment not confirmed yet. */
   state: "ready" | "pending";
+  /** A complimentary/demo request (no order, no payment). */
+  complimentary: boolean;
 };
 export type MyPersonalizedPlans = {
   plans: PlannerPlanSummary[];
@@ -238,6 +277,7 @@ type RequestRow = {
   answers: { days?: unknown } | null;
   generated_at: string | null;
   created_at: string;
+  source: string;
   orders: { status: string; created_at: string } | { status: string; created_at: string }[] | null;
 };
 type PlanRow = { id: string; destination_slug: string; created_at: string; preferences_json: { durationDays?: unknown; arrivalDate?: unknown; departureDate?: unknown } | null };
@@ -254,7 +294,7 @@ export async function loadMyPersonalizedPlans(userId: string): Promise<MyPersona
   const [{ data: requestRows }, { data: planRows }] = await Promise.all([
     supabase
       .from("personalized_plan_requests")
-      .select("id, destination_id, answers, generated_at, created_at, orders!inner(status, created_at)")
+      .select("id, destination_id, answers, generated_at, created_at, source, orders(status, created_at)")
       .order("created_at", { ascending: false })
       .returns<RequestRow[]>(),
     supabase
@@ -269,12 +309,19 @@ export async function loadMyPersonalizedPlans(userId: string): Promise<MyPersona
   const now = Date.now();
   const requests: PlannerRequestSummary[] = [];
   for (const row of requestRows ?? []) {
-    const order = Array.isArray(row.orders) ? row.orders[0] : row.orders;
-    if (!order || row.generated_at) continue;
+    if (row.generated_at) continue;
     const days = typeof row.answers?.days === "number" ? row.answers.days : null;
-    if (order.status === "paid") requests.push({ id: row.id, destinationId: row.destination_id, days, createdAt: row.created_at, state: "ready" });
+    const base = { id: row.id, destinationId: row.destination_id, days, createdAt: row.created_at };
+    if (row.source === "complimentary") {
+      // No order and no payment: ready to build as soon as it exists (row-level security already limits this to the owner).
+      requests.push({ ...base, state: "ready", complimentary: true });
+      continue;
+    }
+    const order = Array.isArray(row.orders) ? row.orders[0] : row.orders;
+    if (!order) continue;
+    if (order.status === "paid") requests.push({ ...base, state: "ready", complimentary: false });
     else if (order.status === "pending" && now - new Date(order.created_at).getTime() < PENDING_WINDOW_MS)
-      requests.push({ id: row.id, destinationId: row.destination_id, days, createdAt: row.created_at, state: "pending" });
+      requests.push({ ...base, state: "pending", complimentary: false });
   }
 
   const plans: PlannerPlanSummary[] = (planRows ?? []).map((row) => {

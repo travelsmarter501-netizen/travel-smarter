@@ -127,9 +127,11 @@ function ReadyRequestCard({ request, destinationLabel }: { request: PlannerReque
 
   return (
     <section className="rounded-3xl border border-teal-200 bg-teal-50/70 p-5 sm:p-6">
-      <p className="text-sm font-bold text-teal-800">{copy.mine.readyBadge}</p>
+      <p className="text-sm font-bold text-teal-800">{request.complimentary ? copy.mine.complimentaryBadge : copy.mine.readyBadge}</p>
       <h2 className="mt-1 text-lg font-bold text-slate-900">{copy.mine.readyTitle}</h2>
-      <p className="mt-1 text-sm leading-6 text-slate-600">{fillCopy(copy.mine.readyBody, { destination: destinationLabel, days: request.days ?? "" })}</p>
+      <p className="mt-1 text-sm leading-6 text-slate-600">
+        {fillCopy(request.complimentary ? copy.mine.complimentaryBody : copy.mine.readyBody, { destination: destinationLabel, days: request.days ?? "" })}
+      </p>
       {errorCode && (
         <p role="alert" className="mt-3 text-sm font-semibold text-rose-600">
           {copy.generateErrors[errorCode]}

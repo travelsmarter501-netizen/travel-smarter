@@ -10,6 +10,8 @@
  * comes from the planner engine and the Barcelona guide data in Arabic and is out of scope for this flow.
  */
 
+export type PlannerComplimentaryErrorCode = "login_required" | "not_available" | "invalid_planner_answers" | "create_failed";
+
 export type PlannerGenerateErrorCode =
   | "login_required"
   | "not_found"
@@ -94,6 +96,11 @@ export type PlannerCopy = {
     missingTitle: string;
     missingBody: string;
     backToPlanner: string;
+    /** Allowlisted accounts only (server-decided): the payment step is replaced by a complimentary plan. */
+    complimentaryPrice: string;
+    complimentaryNotice: string;
+    complimentaryCta: string;
+    complimentaryCreating: string;
   };
   mine: {
     title: string;
@@ -118,8 +125,11 @@ export type PlannerCopy = {
     pendingTitle: string;
     pendingBody: string;
     newPlanNote: string;
+    complimentaryBadge: string;
+    complimentaryBody: string;
   };
   generateErrors: Record<PlannerGenerateErrorCode, string>;
+  complimentaryErrors: Record<PlannerComplimentaryErrorCode, string>;
 };
 
 export function fillCopy(template: string, values: Record<string, string | number>): string {
@@ -207,6 +217,10 @@ export const plannerCopyAr: PlannerCopy = {
     missingTitle: "ما لقينا تفاصيل خطتك",
     missingBody: "ابدأ من صفحة المخطط: جاوب على الأسئلة وبترجع لهون لإتمام الدفع.",
     backToPlanner: "ابدأ من المخطط",
+    complimentaryPrice: "مجاني (حساب تجريبي)",
+    complimentaryNotice: "حسابك مفعّل لإنشاء خطط تجريبية مجانية: بدون دفع. بنفس الأسئلة وبنفس طريقة بناء الخطة.",
+    complimentaryCta: "إنشاء خطتي التجريبية المجانية",
+    complimentaryCreating: "جاري التجهيز...",
   },
   mine: {
     title: "خططي المخصصة",
@@ -227,6 +241,8 @@ export const plannerCopyAr: PlannerCopy = {
     pendingTitle: "عم نتأكد من دفعتك",
     pendingBody: "بمجرد تأكيد الدفع بتظهر هنا خطتك جاهزة للبناء. الصفحة بتتحدّث لحالها.",
     newPlanNote: "كل خطة جديدة هي عملية شراء جديدة لرحلة جديدة.",
+    complimentaryBadge: "🎬 خطة تجريبية مجانية",
+    complimentaryBody: "طلب خطتك التجريبية لـ {destination} ({days} أيام) جاهز، بدون دفع. اضغط لنبني خطتك من إجاباتك.",
   },
   generateErrors: {
     login_required: "لازم تسجّل الدخول عشان نبني خطتك.",
@@ -238,6 +254,12 @@ export const plannerCopyAr: PlannerCopy = {
     generation_failed: "تعذّر بناء الخطة حاليًا. دفعتك محفوظة، وتقدر تحاول مرة ثانية بدون أي رسوم إضافية.",
     save_failed: "بنينا الخطة بس ما قدرنا نحفظها. حاول مرة ثانية بدون أي رسوم إضافية.",
     unexpected: "صار خطأ غير متوقع. حاول مرة أخرى.",
+  },
+  complimentaryErrors: {
+    login_required: "لازم تسجّل الدخول.",
+    not_available: "الخطة التجريبية المجانية غير متاحة لهذا الحساب.",
+    invalid_planner_answers: "بيانات الخطة غير صالحة. راجع إجاباتك وحاول مرة أخرى.",
+    create_failed: "تعذّر تجهيز الطلب. حاول مرة أخرى.",
   },
 };
 
@@ -322,6 +344,10 @@ export const plannerCopyEn: PlannerCopy = {
     missingTitle: "We couldn’t find your plan details",
     missingBody: "Start from the planner: answer the questions and you’ll come back here to pay.",
     backToPlanner: "Start from the planner",
+    complimentaryPrice: "Free (demo account)",
+    complimentaryNotice: "Your account can create complimentary demo plans: no payment, same questions, same plan builder.",
+    complimentaryCta: "Create my complimentary plan",
+    complimentaryCreating: "Preparing...",
   },
   mine: {
     title: "My Personalized Plans",
@@ -342,6 +368,8 @@ export const plannerCopyEn: PlannerCopy = {
     pendingTitle: "We’re confirming your payment",
     pendingBody: "As soon as the payment is confirmed, your plan will appear here ready to build. This page refreshes on its own.",
     newPlanNote: "Each new plan is a new purchase for a new trip.",
+    complimentaryBadge: "🎬 Complimentary demo plan",
+    complimentaryBody: "Your demo request for the {destination} plan ({days} days) is ready, no payment needed. Tap below and we’ll build it from your answers.",
   },
   generateErrors: {
     login_required: "Please sign in so we can build your plan.",
@@ -353,5 +381,11 @@ export const plannerCopyEn: PlannerCopy = {
     generation_failed: "We couldn’t build the plan right now. Your payment is safe, and you can try again at no extra charge.",
     save_failed: "We built the plan but couldn’t save it. Please try again at no extra charge.",
     unexpected: "Something went wrong. Please try again.",
+  },
+  complimentaryErrors: {
+    login_required: "Please sign in.",
+    not_available: "Complimentary plans aren’t available for this account.",
+    invalid_planner_answers: "Your plan details aren’t valid. Please review your answers and try again.",
+    create_failed: "We couldn’t prepare the request. Please try again.",
   },
 };

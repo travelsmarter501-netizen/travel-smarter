@@ -2,6 +2,7 @@ import Container from "../components/Container";
 import CheckoutClient from "./CheckoutClient";
 import PersonalizedPlanCheckout from "../components/planner/PersonalizedPlanCheckout";
 import { getPersonalizedPlanPriceIls } from "../lib/commerce/personalizedPlan";
+import { isComplimentaryUser } from "../lib/commerce/complimentary";
 import { isSellableProductSlug } from "../lib/commerce/catalog";
 import { getAllpayMode } from "../lib/allpay/config";
 import { createClient } from "../../utils/supabase/server";
@@ -33,7 +34,13 @@ export default async function CheckoutPage({ searchParams }: { searchParams: Pro
     return (
       <main className="py-10">
         <Container className="max-w-lg">
-          <PersonalizedPlanCheckout testMode={testMode} signedIn={!!user} priceIls={await getPersonalizedPlanPriceIls()} />
+          <PersonalizedPlanCheckout
+            testMode={testMode}
+            signedIn={!!user}
+            priceIls={await getPersonalizedPlanPriceIls()}
+            // One boolean about THIS session, decided on the server (COMPLIMENTARY_USER_IDS); the list itself never leaves the server.
+            complimentary={!!user && isComplimentaryUser(user.id)}
+          />
         </Container>
       </main>
     );

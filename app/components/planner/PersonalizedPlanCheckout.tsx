@@ -2,14 +2,16 @@
 
 import { useMemo, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Price from "../Price";
-import { startPersonalizedPlanCheckout } from "../../planner/actions";
+import { startComplimentaryPlan, startPersonalizedPlanCheckout } from "../../planner/actions";
 import { useLanguage } from "../../lib/language";
 import { fillCopy } from "../../lib/plannerCopy";
-import { parsePlannerDraft, readPlannerDraftRaw } from "../../lib/planner/plannerDraft";
+import { clearPlannerDraft, parsePlannerDraft, readPlannerDraftRaw } from "../../lib/planner/plannerDraft";
 import { destinationIncludesGuide } from "../../lib/planner/personalizedPlanAnswers";
 import { V2_INTEREST_DISPLAY_GROUPS, isV2DisplayGroupActive } from "../../lib/planner/v2PlannerTypes";
 import type { CheckoutErrorCode } from "../../lib/commerce/checkoutErrors";
+import type { ComplimentaryErrorCode } from "../../lib/commerce/personalizedPlan";
 
 const noopSubscribe = () => () => {};
 
@@ -26,13 +28,20 @@ export default function PersonalizedPlanCheckout({
   testMode = false,
   signedIn = false,
   priceIls,
+  complimentary = false,
 }: {
   testMode?: boolean;
   signedIn?: boolean;
+  /**
+   * True only for an allowlisted account (decided on the server). Replaces the Allpay button with "create my complimentary
+   * plan": the same questionnaire, no payment. It is a UI switch only -- the server action re-checks the allowlist itself.
+   */
+  complimentary?: boolean;
   /** Display only -- the amount charged is computed in the database from the same products row. */
   priceIls: number | null;
 }) {
   const { t, language } = useLanguage();
+  const router = useRouter();
   const copy = t.planner;
   const summary = copy.checkoutSummary;
 
@@ -43,6 +52,7 @@ export default function PersonalizedPlanCheckout({
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<{ code?: CheckoutErrorCode; message: string } | null>(null);
+  const [complimentaryError, setComplimentaryError] = useState<ComplimentaryErrorCode | null>(null);
 
   async function handlePay() {
     if (!draft) return;
@@ -59,6 +69,25 @@ export default function PersonalizedPlanCheckout({
     } catch {
       setLoading(false);
       setError({ message: copy.generateErrors.unexpected });
+    }
+  }
+
+  async function handleComplimentary() {
+    if (!draft) return;
+    setLoading(true);
+    setComplimentaryError(null);
+    try {
+      const result = await startComplimentaryPlan({ destinationId: draft.destinationId, answers: draft.rawAnswers });
+      if (!result.ok) {
+        setLoading(false);
+        setComplimentaryError(result.code);
+        return;
+      }
+      clearPlannerDraft();
+      router.push("/planner");
+    } catch {
+      setLoading(false);
+      setComplimentaryError("create_failed");
     }
   }
 
@@ -118,51 +147,80 @@ export default function PersonalizedPlanCheckout({
               </ul>
             </div>
 
-            {priceIls !== null && (
+            {complimentary ? (
               <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3 text-sm">
                 <span className="font-semibold text-slate-600">{summary.price}</span>
-                <span className="text-lg font-bold text-slate-900">
-                  <Price ils={priceIls} />
-                </span>
+                <span className="text-lg font-bold text-teal-700">{summary.complimentaryPrice}</span>
               </div>
+            ) : (
+              priceIls !== null && (
+                <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3 text-sm">
+                  <span className="font-semibold text-slate-600">{summary.price}</span>
+                  <span className="text-lg font-bold text-slate-900">
+                    <Price ils={priceIls} />
+                  </span>
+                </div>
+              )
             )}
           </section>
 
-          {!signedIn && (
-            <div className="mt-6">
-              <label htmlFor="checkout-email" className="mb-1.5 block text-sm font-semibold text-slate-800">
-                {summary.emailLabel}
-              </label>
-              <input
-                id="checkout-email"
-                type="email"
-                inputMode="email"
-                autoComplete="email"
-                dir="ltr"
-                required
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                placeholder="example@email.com"
-                className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm text-slate-900 outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100"
-              />
-              <p className="mt-2 text-xs leading-5 text-slate-500">{summary.emailHint}</p>
-            </div>
-          )}
+          {complimentary ? (
+            <>
+              <p className="mt-6 rounded-2xl bg-teal-50 px-4 py-3 text-sm font-semibold leading-6 text-teal-800">{summary.complimentaryNotice}</p>
+              {complimentaryError && (
+                <p role="alert" className="mt-4 text-sm font-semibold text-rose-600">
+                  {copy.complimentaryErrors[complimentaryError]}
+                </p>
+              )}
+              <button
+                type="button"
+                onClick={handleComplimentary}
+                disabled={loading}
+                className="mt-4 flex w-full items-center justify-center rounded-full bg-teal-700 px-5 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-teal-800 disabled:opacity-60"
+              >
+                {loading ? summary.complimentaryCreating : summary.complimentaryCta}
+              </button>
+            </>
+          ) : (
+            <>
+            {!signedIn && (
+              <div className="mt-6">
+                <label htmlFor="checkout-email" className="mb-1.5 block text-sm font-semibold text-slate-800">
+                  {summary.emailLabel}
+                </label>
+                <input
+                  id="checkout-email"
+                  type="email"
+                  inputMode="email"
+                  autoComplete="email"
+                  dir="ltr"
+                  required
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  placeholder="example@email.com"
+                  className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm text-slate-900 outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100"
+                />
+                <p className="mt-2 text-xs leading-5 text-slate-500">{summary.emailHint}</p>
+              </div>
+            )}
 
-          {error && (
-            <p role="alert" className="mt-4 text-sm font-semibold text-rose-600">
-              {error.code ? t.checkout.errors[error.code] : error.message}
-            </p>
-          )}
+            {error && (
+              <p role="alert" className="mt-4 text-sm font-semibold text-rose-600">
+                {error.code ? t.checkout.errors[error.code] : error.message}
+              </p>
+            )}
 
-          <button
-            type="button"
-            onClick={handlePay}
-            disabled={loading || (!signedIn && email.trim().length === 0)}
-            className="mt-6 flex w-full items-center justify-center rounded-full bg-teal-700 px-5 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-teal-800 disabled:opacity-60"
-          >
-            {loading ? t.checkout.redirecting : testMode ? t.checkout.payButtonTest : t.checkout.payButton}
-          </button>
+            <button
+              type="button"
+              onClick={handlePay}
+              disabled={loading || (!signedIn && email.trim().length === 0)}
+              className="mt-6 flex w-full items-center justify-center rounded-full bg-teal-700 px-5 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-teal-800 disabled:opacity-60"
+            >
+              {loading ? t.checkout.redirecting : testMode ? t.checkout.payButtonTest : t.checkout.payButton}
+            </button>
+
+            </>
+          )}
 
           <p className="mt-4 text-center">
             <Link href="/planner?edit=1" className="text-sm font-semibold text-teal-700 hover:underline">
