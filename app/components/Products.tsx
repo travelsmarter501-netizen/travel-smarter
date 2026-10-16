@@ -100,7 +100,7 @@ export default function Products() {
                         {t.products.startingFromLabel}
                       </span>
                     )}
-                    <Price ils={product.priceILS} referenceIls={product.referencePriceILS} showLabel className="text-xl font-extrabold text-slate-900" />
+                    <Price ils={product.priceILS} referenceIls={product.referencePriceILS} className="text-xl font-extrabold text-slate-900" />
                   </p>
 
                   <button

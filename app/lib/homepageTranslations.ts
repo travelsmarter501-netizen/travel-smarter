@@ -128,7 +128,6 @@ export type HomepageCopy = {
   /** Personalized Plan flow: questionnaire wizard, review/payment step, post-payment states, "My Personalized Plans". */
   /** Launch-sale price labels and the "amount you pay" block. */
   pricing: {
-    launchPrice: string;
     previousPrice: string;
     amountToPay: string;
     chargedInIls: string;
@@ -330,7 +329,6 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
       },
     },
     pricing: {
-      launchPrice: "سعر إطلاق",
       previousPrice: "السعر السابق",
       amountToPay: "المبلغ الذي سيتم خصمه اليوم",
       chargedInIls: "يتم الدفع بالشيكل (₪)",
@@ -528,7 +526,6 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
       },
     },
     pricing: {
-      launchPrice: "Launch Price",
       previousPrice: "Previous price",
       amountToPay: "Amount charged today",
       chargedInIls: "Charged in Israeli shekels (₪)",

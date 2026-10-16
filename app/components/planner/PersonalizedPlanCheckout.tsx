@@ -177,7 +177,7 @@ export default function PersonalizedPlanCheckout({
             {priceIls !== null && (
               <div className="mt-4 flex items-center justify-between gap-3 border-t border-slate-100 pt-3 text-sm">
                 <span className="font-semibold text-slate-600">{summary.price}</span>
-                <Price ils={priceIls} referenceIls={referencePriceIfDiscounted("personalized-trip-plan", priceIls)} showLabel className="text-xl font-extrabold text-slate-900" />
+                <Price ils={priceIls} referenceIls={referencePriceIfDiscounted("personalized-trip-plan", priceIls)} className="text-xl font-extrabold text-slate-900" />
               </div>
             )}
           </section>
