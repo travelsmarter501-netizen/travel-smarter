@@ -84,6 +84,11 @@ export type HomepageCopy = {
     eyebrow: string;
     title: string;
     startingFromLabel: string;
+    /** A signed-in customer already owns this product: the card says so and opens it (no price, no buy buttons). */
+    ownedBadge: string;
+    ownedCta: string;
+    /** Personalized Plan card, for a customer who already has plans: a way back to them next to the "start a new plan" button. */
+    myPlansCta: string;
     items: Product[];
   };
   destinations: {
@@ -191,6 +196,9 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
       eyebrow: "المنتجات",
       title: "اختار الخطة اللي تناسب رحلتك",
       startingFromLabel: "ابتداءً من",
+      ownedBadge: "تم الشراء ✓",
+      ownedCta: "افتح المنتج",
+      myPlansCta: "افتح خططي المخصصة",
       items: [
         {
           // Unified Personalized Plan merge: replaces the old separate "خطة رحلة مخصصة إلك"
@@ -326,6 +334,7 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
         payment_setup_failed: "تعذّر تجهيز الدفع حاليًا. حاول مرة أخرى بعد قليل، وإذا استمرت المشكلة تواصل معنا.",
         planner_answers_required: "الخطة المخصصة بتبدأ من صفحة المخطط: جاوب على الأسئلة أولًا ثم أكمل الدفع.",
         invalid_planner_answers: "بيانات الخطة غير صالحة. راجع إجاباتك وحاول مرة أخرى.",
+        paid_plan_awaiting_build: "عندك خطة مدفوعة بانتظار البناء. افتح «خططي المخصصة» وابنِها أولًا — لا حاجة لدفع جديد.",
       },
     },
     pricing: {
@@ -391,6 +400,9 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
       eyebrow: "Products",
       title: "Choose the Plan That Fits Your Trip",
       startingFromLabel: "Starting from",
+      ownedBadge: "Purchased ✓",
+      ownedCta: "Open",
+      myPlansCta: "Open my personalized plans",
       items: [
         {
           id: "personalized-trip-plan",
@@ -523,6 +535,7 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
         payment_setup_failed: "We couldn’t set up the payment right now. Please try again in a moment, and contact us if the problem continues.",
         planner_answers_required: "The Personalized Plan starts on the planner page: answer the questions first, then continue to payment.",
         invalid_planner_answers: "Your plan details aren’t valid. Please review your answers and try again.",
+        paid_plan_awaiting_build: "You already have a paid plan waiting to be built. Open My Personalized Plans and build it first — there’s no need to pay again.",
       },
     },
     pricing: {

@@ -252,6 +252,33 @@ export async function generatePersonalizedPlanForRequest(requestId: unknown): Pr
   return { ok: true, planId };
 }
 
+// ── "paid but not built yet" ──────────────────────────────────────────────────────────────────────────────────
+/**
+ * True when this customer owns a PAID Personalized Plan request that has not produced its plan yet. Such a customer builds
+ * that plan (free, one click) -- they are never sent back to payment, and /planner and the purchase action both use this.
+ * It is decided on the server from the database (the verified session user id, the order status and generated_at), never from
+ * anything the browser keeps (session storage drafts, an old tab, a back button).
+ *
+ * Only paid orders count: an unpaid (pending) request is not "paid", and a request whose plan was built (even if that plan was
+ * later deleted) has generated_at set, so it is not "unbuilt" and a new purchase stays possible.
+ */
+export async function hasPaidUnbuiltRequest(userId: string): Promise<boolean> {
+  const serviceRole = createServiceRoleClient();
+  const { data: orders, error } = await serviceRole.from("orders").select("id").eq("user_id", userId).eq("status", "paid").returns<{ id: string }[]>();
+  if (error || !orders || orders.length === 0) return false;
+  const { data: requests, error: requestError } = await serviceRole
+    .from("personalized_plan_requests")
+    .select("id")
+    .in(
+      "order_id",
+      orders.map((order) => order.id)
+    )
+    .is("generated_at", null)
+    .limit(1)
+    .returns<{ id: string }[]>();
+  return !requestError && !!requests && requests.length > 0;
+}
+
 // ── what /planner shows a signed-in customer ─────────────────────────────────────────────────────────────
 export type PlannerPlanSummary = { id: string; destinationId: string; days: number | null; createdAt: string };
 export type PlannerRequestSummary = {

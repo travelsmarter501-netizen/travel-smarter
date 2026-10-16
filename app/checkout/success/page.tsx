@@ -1,12 +1,10 @@
 import { redirect } from "next/navigation";
-import Link from "next/link";
 import Container from "../../components/Container";
-import Button from "../../components/Button";
+import PaymentConfirmed from "../../components/checkout/PaymentConfirmed";
 import { createClient } from "../../../utils/supabase/server";
 import { getUserOrder } from "../../lib/orders";
 import { getUserEntitlements } from "../../lib/entitlements";
-import SuccessRefresh from "./SuccessRefresh";
-import ClearPlannerDraft from "../../components/planner/ClearPlannerDraft";
+import { destinationForPurchase } from "../../lib/commerce/claimDestination";
 
 export default async function CheckoutSuccessPage({ searchParams }: { searchParams: Promise<{ order_id?: string }> }) {
   const { order_id: orderId } = await searchParams;
@@ -24,41 +22,25 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
   const entitlements = await getUserEntitlements();
   const paid = order?.status === "paid" || entitlements.length > 0;
 
-  // A Personalized Plan order is only half-done at payment: the buyer still builds the plan from /planner.
-  // (Read with the customer's own session, so row-level security limits this to an order they own.)
-  const { data: planRequest } = orderId
-    ? await supabase.from("personalized_plan_requests").select("id").eq("order_id", orderId).maybeSingle<{ id: string }>()
-    : { data: null };
-  const hasPlan = !!planRequest;
+  // What they bought decides where "Open" goes: a Personalized Plan is only half-done at payment (the buyer still builds the plan
+  // from /planner); a single product opens its own page; anything else opens the account. Read with the customer's own session,
+  // so row-level security limits both queries to an order they own.
+  let nextPath = "/account";
+  let hasPlan = false;
+  if (orderId && order?.status === "paid") {
+    const [{ data: items }, { data: planRequest }] = await Promise.all([
+      supabase.from("order_items").select("products(slug)").eq("order_id", orderId).returns<{ products: { slug: string } | { slug: string }[] | null }[]>(),
+      supabase.from("personalized_plan_requests").select("id").eq("order_id", orderId).maybeSingle<{ id: string }>(),
+    ]);
+    hasPlan = !!planRequest;
+    const slugs = (items ?? []).flatMap((item) => (Array.isArray(item.products) ? item.products.map((p) => p.slug) : item.products ? [item.products.slug] : []));
+    nextPath = destinationForPurchase(slugs, hasPlan);
+  }
 
   return (
     <main className="py-10">
       <Container className="max-w-lg">
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 text-center shadow-sm sm:p-8">
-          <p className="text-4xl">{paid ? "✅" : "⏳"}</p>
-          <h1 className="mt-3 text-2xl font-bold text-slate-900">{paid ? "تم تأكيد الدفع" : "جاري تأكيد الدفع"}</h1>
-          <p className="mt-2 text-sm leading-6 text-slate-600">
-            {paid
-              ? "المنتجات صارت متاحة على حسابك بعد التحقق من الدفع."
-              : "ما منفعّل المنتج إلا بعد وصول تأكيد Allpay الموقّع. إذا خلصت الدفع، انتظر لحظات أو افتح حسابك."}
-          </p>
-          {orderId && (
-            <p dir="ltr" className="mt-3 text-xs text-slate-400">
-              {orderId.slice(0, 8).toUpperCase()}
-            </p>
-          )}
-          {!paid && <SuccessRefresh />}
-          {paid && hasPlan && <ClearPlannerDraft />}
-          <div className="mt-6 flex flex-col gap-2.5">
-            {paid && hasPlan && <Button href="/planner">ابنِ خطتك المخصصة ✨</Button>}
-            <Button href="/account" variant={paid && hasPlan ? "secondary" : "primary"}>
-              حسابي
-            </Button>
-            <Link href="/" className="text-sm font-semibold text-teal-700 hover:text-teal-800">
-              الرئيسية
-            </Link>
-          </div>
-        </div>
+        <PaymentConfirmed paid={paid} orderId={orderId} nextPath={nextPath} clearDraft={paid && hasPlan} />
       </Container>
     </main>
   );

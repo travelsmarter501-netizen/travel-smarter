@@ -5,13 +5,22 @@ import { createServiceRoleClient } from "../../utils/supabase/service-role";
 import { hashClaimToken, isWellFormedClaimToken } from "../lib/commerce/claimToken";
 import { clearPendingClaimCookie, readPendingClaimCookie, setPendingClaimCookie } from "./pendingClaimCookie";
 import { recordBundledGuideEntitlement } from "../lib/commerce/bundles";
+import { claimEmailVerdict } from "../lib/commerce/claimEmail";
+import { claimedOrderDestination } from "../lib/commerce/claimDestination";
 
 export type ClaimPurchaseResult =
-  /** hasPersonalizedPlan: the claimed order contains a Personalized Plan the buyer can now build (see /planner). */
-  | { status: "claimed" | "already_yours"; hasPersonalizedPlan?: boolean }
+  /**
+   * hasPersonalizedPlan: the claimed order contains a Personalized Plan the buyer can now build (see /planner).
+   * next: the in-app path of what they bought (a fixed path chosen by the server, see claimDestination.ts).
+   */
+  | { status: "claimed" | "already_yours"; hasPersonalizedPlan?: boolean; next: string }
   | { status: "not_paid_yet" }
   | { status: "invalid" }
-  | { status: "login_required" };
+  | { status: "login_required" }
+  /** The signed-in account's verified email is not the email used at checkout: nothing was claimed. */
+  | { status: "email_mismatch" }
+  /** The signed-in account has no confirmed email yet: nothing was claimed. */
+  | { status: "email_unverified" };
 
 /**
  * Which claim token an action works on: the one in the URL the buyer arrived with (if well-formed),
@@ -32,8 +41,10 @@ async function resolveClaimToken(urlToken: unknown): Promise<{ token: string | n
  * Trust model:
  * - The user id comes ONLY from the verified session (auth.getUser()), never from the arguments.
  * - No session -> nothing happens ("login_required"). Claiming without authentication is impossible.
- * - The token is the sole proof of purchase (from the URL, or the HttpOnly cookie when the buyer came
- *   back from signing in). No email comparison is performed anywhere.
+ * - The token is the proof of purchase (from the URL, or the HttpOnly cookie when the buyer came
+ *   back from signing in). On top of it the account must have a CONFIRMED email that equals the checkout email
+ *   (trim + lowercase, see claimEmail.ts) -- the address typed at checkout is not proof of owning that mailbox.
+ *   On a mismatch nothing is claimed and the remembered cookie is kept, so the buyer can switch to the right account.
  * - The function is service_role-only; this Server Action is the single caller.
  * - Every failure collapses to a generic status so nothing is revealed about other people's orders.
  * - The remembered cookie is cleared as soon as it is spent (claimed) or proven useless (invalid).
@@ -58,8 +69,25 @@ export async function claimPurchaseAction(urlToken?: string): Promise<ClaimPurch
   const source = isWellFormedClaimToken(urlToken) ? "url" : "cookie";
 
   const serviceRole = createServiceRoleClient();
+  const tokenHash = hashClaimToken(token);
+
+  // The email rule. An order that is already this user's skips it (it is simply being re-opened); one that belongs to somebody else
+  // (or does not exist) falls through to the SQL function, which answers "invalid" without revealing anything.
+  const { data: orderRow } = await serviceRole
+    .from("orders")
+    .select("guest_email, user_id")
+    .eq("claim_token_hash", tokenHash)
+    .maybeSingle<{ guest_email: string | null; user_id: string | null }>();
+  if (orderRow && orderRow.user_id === null) {
+    const verdict = claimEmailVerdict({ orderEmail: orderRow.guest_email, accountEmail: user.email, accountEmailConfirmed: !!user.email_confirmed_at });
+    if (verdict !== "ok") {
+      console.info("[claim] refused:", verdict);
+      return { status: verdict === "mismatch" ? "email_mismatch" : "email_unverified" };
+    }
+  }
+
   const { data, error } = await serviceRole.rpc("claim_guest_order", {
-    p_token_hash: hashClaimToken(token),
+    p_token_hash: tokenHash,
     p_user_id: user.id,
   });
 
@@ -80,7 +108,7 @@ export async function claimPurchaseAction(urlToken?: string): Promise<ClaimPurch
     const { data: claimedOrder } = await serviceRole
       .from("orders")
       .select("id")
-      .eq("claim_token_hash", hashClaimToken(token))
+      .eq("claim_token_hash", tokenHash)
       .eq("user_id", user.id)
       .maybeSingle<{ id: string }>();
     if (claimedOrder && !(await recordBundledGuideEntitlement(serviceRole, { userId: user.id, orderId: claimedOrder.id }))) {
@@ -95,7 +123,7 @@ export async function claimPurchaseAction(urlToken?: string): Promise<ClaimPurch
         .maybeSingle<{ id: string }>();
       hasPersonalizedPlan = !!request;
     }
-    return { status: data, hasPersonalizedPlan };
+    return { status: data, hasPersonalizedPlan, next: await claimedOrderDestination(serviceRole, { tokenHash, userId: user.id }) };
   }
   if (data === "not_paid_yet") return { status: "not_paid_yet" };
   return { status: "invalid" };
@@ -106,6 +134,8 @@ export type PendingClaimSync = {
   state: "paid" | "pending" | "none";
   /** True when the HttpOnly cookie now holds this token, i.e. sign-in redirects no longer need the token in the URL. */
   remembered: boolean;
+  /** For a paid purchase and a signed-in viewer: false when the account's confirmed email is not the checkout email (so it will not be auto-attached). */
+  accountMatches?: boolean;
 };
 
 /**
@@ -143,7 +173,16 @@ export async function syncPendingClaimAction(urlToken?: string): Promise<Pending
       await setPendingClaimCookie(token);
       console.info("[claim] sync: remembered pending claim (HttpOnly cookie)");
     }
-    return { state: data, remembered: true };
+    let accountMatches: boolean | undefined;
+    if (data === "paid" && user) {
+      const { data: orderRow } = await serviceRole
+        .from("orders")
+        .select("guest_email")
+        .eq("claim_token_hash", hashClaimToken(token))
+        .maybeSingle<{ guest_email: string | null }>();
+      accountMatches = claimEmailVerdict({ orderEmail: orderRow?.guest_email, accountEmail: user.email, accountEmailConfirmed: !!user.email_confirmed_at }) === "ok";
+    }
+    return { state: data, remembered: true, accountMatches };
   }
 
   // "mine" (already attached to this user) or "invalid" (unknown / expired / claimed by someone else)

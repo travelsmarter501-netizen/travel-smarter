@@ -124,6 +124,8 @@ export type PlannerCopy = {
     pendingTitle: string;
     pendingBody: string;
     newPlanNote: string;
+    /** Shown instead of "Create a new plan" while a paid plan is still waiting to be built. */
+    buildFirstNote: string;
     complimentaryBadge: string;
     complimentaryBody: string;
   };
@@ -238,6 +240,7 @@ export const plannerCopyAr: PlannerCopy = {
     pendingTitle: "عم نتأكد من دفعتك",
     pendingBody: "بمجرد تأكيد الدفع بتظهر هنا خطتك جاهزة للبناء. الصفحة بتتحدّث لحالها.",
     newPlanNote: "كل خطة جديدة هي عملية شراء جديدة لرحلة جديدة.",
+    buildFirstNote: "عندك خطة مدفوعة جاهزة للبناء. ابنِها أولًا، وبعدها تقدر تنشئ خطة جديدة لرحلة أخرى.",
     complimentaryBadge: "✨ جاهزة للبناء",
     complimentaryBody: "طلب خطتك لـ {destination} ({days} أيام) جاهز. اضغط لنبني خطتك من إجاباتك.",
   },
@@ -363,6 +366,7 @@ export const plannerCopyEn: PlannerCopy = {
     pendingTitle: "We’re confirming your payment",
     pendingBody: "As soon as the payment is confirmed, your plan will appear here ready to build. This page refreshes on its own.",
     newPlanNote: "Each new plan is a new purchase for a new trip.",
+    buildFirstNote: "You have a paid plan ready to build. Build it first, then you can create another plan for a different trip.",
     complimentaryBadge: "✨ Ready to build",
     complimentaryBody: "Your request for the {destination} plan ({days} days) is ready. Tap below and we’ll build it from your answers.",
   },

@@ -1,4 +1,5 @@
 import { createClient } from "../../utils/supabase/server";
+import { GUIDE_BUNDLE_PRODUCT_SLUGS } from "./commerce/guideBundles";
 
 export type OwnedProduct = {
   productSlug: string;
@@ -20,7 +21,7 @@ export type OwnedProduct = {
  * all three but currently only has an observable effect for the 3-day product until those
  * two rows are also added via a migration -- see this task's final report.
  */
-export const GUIDE_BUNDLE_PRODUCT_SLUGS = ["barcelona-ready-plan", "barcelona-ready-plan-3day", "barcelona-smart-planner"] as const;
+export { GUIDE_BUNDLE_PRODUCT_SLUGS };
 
 type EntitlementRow = {
   granted_at: string;

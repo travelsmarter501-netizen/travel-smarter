@@ -13,7 +13,7 @@ export const DEFAULT_NEXT_PATH = "/account";
 
 const MAX_NEXT_LENGTH = 2048;
 const CONTROL_CHARS = /[\u0000-\u001f\u007f]/;
-const AUTH_PAGES = /^\/(login|signup|auth)(\/|\?|#|$)/;
+const AUTH_PAGES = /^\/(login|signup|forgot-password|auth)(\/|\?|#|$)/;
 
 export function safeNextPath(value: string | null | undefined, fallback: string = DEFAULT_NEXT_PATH): string {
   if (typeof value !== "string" || value.length === 0 || value.length > MAX_NEXT_LENGTH) return fallback;
@@ -44,6 +44,20 @@ export function loginHref(next: string): string {
 /** "/signup" (+ "?next=..." unless it is just the default landing page). */
 export function signupHref(next: string): string {
   return withNext("/signup", next);
+}
+
+/** "/forgot-password" (+ "?next=..." unless it is just the default landing page): where a pending purchase claim is resumed after the reset. */
+export function forgotPasswordHref(next: string): string {
+  return withNext("/forgot-password", next);
+}
+
+/**
+ * Where the password-reset email link leads: through /auth/callback (which turns the link into a session) and on to
+ * /reset-password, carrying the in-app path to continue to afterwards (e.g. /claim-purchase) as that page's own `next`.
+ */
+export function resetPasswordCallbackUrl(origin: string, next: string): string {
+  const resetPath = withNext("/reset-password", next);
+  return authCallbackUrl(origin, resetPath);
 }
 
 /** The absolute URL Supabase sends the browser back to after Google / email confirmation. */

@@ -6,6 +6,7 @@ import Button from "../Button";
 import { generatePersonalizedPlanAction } from "../../planner/actions";
 import { useLanguage } from "../../lib/language";
 import { fillCopy, type PlannerGenerateErrorCode } from "../../lib/plannerCopy";
+import { formatPurchaseDate } from "../../lib/accountView";
 import type { PlannerPlanSummary, PlannerRequestSummary } from "../../lib/commerce/personalizedPlan";
 
 const REFRESH_EVERY_MS = 5000;
@@ -22,11 +23,13 @@ const PHRASE_EVERY_MS = 1400;
  * Plus the one way to get another plan: "Create a new plan" -> a fresh questionnaire -> a new purchase.
  */
 export default function MyPersonalizedPlans({ plans, requests }: { plans: PlannerPlanSummary[]; requests: PlannerRequestSummary[] }) {
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
   const copy = t.planner;
   const router = useRouter();
 
   const hasPending = requests.some((request) => request.state === "pending");
+  // A paid plan is waiting to be built: it is built first, so no second purchase is offered meanwhile.
+  const mustBuildFirst = requests.some((request) => request.state === "ready" && !request.complimentary);
   useEffect(() => {
     if (!hasPending) return;
     const started = Date.now();
@@ -40,8 +43,8 @@ export default function MyPersonalizedPlans({ plans, requests }: { plans: Planne
     return () => clearInterval(timer);
   }, [hasPending, router]);
 
-  const locale = language === "ar" ? "ar-EG" : "en-GB";
-  const formatDate = (iso: string) => new Intl.DateTimeFormat(locale, { dateStyle: "medium" }).format(new Date(iso));
+  // dd/mm/yyyy, the same format as the account page's purchases
+  const formatDate = formatPurchaseDate;
   const destinationName = (id: string) => copy.wizard.destinationNames[id] ?? id;
   const daysLabel = (days: number | null) => (days === null ? "" : days === 1 ? `1 ${copy.wizard.dayOne}` : fillCopy(copy.mine.daysCount, { n: days }));
 
@@ -51,10 +54,16 @@ export default function MyPersonalizedPlans({ plans, requests }: { plans: Planne
         <h1 className="text-2xl font-bold text-slate-900 sm:text-3xl">{copy.mine.title}</h1>
         <p className="mt-2 text-sm leading-6 text-slate-600 sm:text-base">{copy.mine.subtitle}</p>
         <div className="mt-4">
-          <Button href="/planner?new=1" size="lg" className="w-full sm:w-auto">
-            ＋ {copy.mine.createNew}
-          </Button>
-          <p className="mt-2 text-xs text-slate-400">{copy.mine.newPlanNote}</p>
+          {mustBuildFirst ? (
+            <p className="text-sm font-semibold leading-6 text-teal-800">{copy.mine.buildFirstNote}</p>
+          ) : (
+            <>
+              <Button href="/planner?new=1" size="lg" className="w-full sm:w-auto">
+                ＋ {copy.mine.createNew}
+              </Button>
+              <p className="mt-2 text-xs text-slate-400">{copy.mine.newPlanNote}</p>
+            </>
+          )}
         </div>
       </div>
 

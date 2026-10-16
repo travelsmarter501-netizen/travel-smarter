@@ -2,13 +2,13 @@ import { redirect } from "next/navigation";
 import Container from "../components/Container";
 import Button from "../components/Button";
 import SignOutButton from "../components/auth/SignOutButton";
-import DeleteSavedPlanButton from "../components/account/DeleteSavedPlanButton";
+import { AccountPlans, AccountPurchases, type AccountPlanView } from "../components/account/AccountSections";
 import CustomPlanCheckoutButton from "../components/account/CustomPlanCheckoutButton";
 import { INTEREST_OPTIONS } from "../components/smart-planner/InterestSelector";
 import { v2DisplayInterestsLabel } from "../lib/planner/v2PlannerTypes";
 import { createClient } from "../../utils/supabase/server";
 import { getUserEntitlements, GUIDE_BUNDLE_PRODUCT_SLUGS } from "../lib/entitlements";
-import { PRODUCT_CONTENT_ROUTES, PRODUCT_SLUGS } from "../lib/commerce/catalog";
+import { buildAccountPurchases, type PersonalizedPurchase } from "../lib/accountView";
 import PendingClaimBanner from "../components/account/PendingClaimBanner";
 import { getUserCustomPlanRequests } from "../lib/customPlanRequests";
 import { CUSTOM_PLAN_REQUEST_STATUS_LABELS } from "../lib/customPlanRequest";
@@ -16,17 +16,19 @@ import { inclusiveDayCount } from "../lib/planner/dateOnly";
 import { isValidSmartPlannerV2SavedPlanRow } from "../lib/planner/smartPlannerV2SavedPlans";
 import { isValidSmartPlannerSavedPlanRow } from "../lib/planner/smartPlannerSavedPlans";
 
-// An owned product's slug -> the page it unlocks comes from the shared PRODUCT_CONTENT_ROUTES (catalog.ts).
-// A product without a known route still shows in the list but without an "open" button.
-const PRODUCT_ROUTES = PRODUCT_CONTENT_ROUTES;
-
-/** "Open the guide" only makes sense for the Guide; every other product is a plan. */
-function openLabel(productSlug: string): string {
-  return productSlug === PRODUCT_SLUGS.guide ? "افتح الدليل" : "افتح الخطة";
-}
-
 const DESTINATION_LABELS: Record<string, string> = {
   barcelona: "Barcelona",
+};
+
+type PersonalizedRequestRow = {
+  id: string;
+  destination_id: string;
+  answers: { days?: unknown } | null;
+  generated_at: string | null;
+  saved_plan_id: string | null;
+  source: string;
+  created_at: string;
+  orders: { status: string; paid_at: string | null; created_at: string } | { status: string; paid_at: string | null; created_at: string }[] | null;
 };
 
 function interestsLabel(interests: string[]): string {
@@ -80,6 +82,64 @@ export default async function AccountPage() {
   const { data: savedPlansRaw } = await supabase.from("smart_planner_saved_plans").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
   const savedPlans = savedPlansRaw ?? [];
 
+  // Each paid Personalized Plan is its own purchase (bought per trip). Read with the customer's own session: row-level security
+  // limits personalized_plan_requests to requests whose order they own. Complimentary requests have no order and are not purchases.
+  const { data: requestRows } = await supabase
+    .from("personalized_plan_requests")
+    .select("id, destination_id, answers, generated_at, saved_plan_id, source, created_at, orders(status, paid_at, created_at)")
+    .order("created_at", { ascending: false })
+    .returns<PersonalizedRequestRow[]>();
+  const personalizedPurchases: PersonalizedPurchase[] = [];
+  for (const row of requestRows ?? []) {
+    if (row.source === "complimentary") continue;
+    const order = Array.isArray(row.orders) ? row.orders[0] : row.orders;
+    if (!order || order.status !== "paid") continue;
+    const planStillExists = !!row.saved_plan_id && savedPlans.some((plan) => plan.id === row.saved_plan_id);
+    personalizedPurchases.push({
+      requestId: row.id,
+      destinationId: row.destination_id,
+      days: typeof row.answers?.days === "number" ? row.answers.days : null,
+      purchasedAt: order.paid_at ?? order.created_at,
+      generated: !!row.generated_at,
+      planId: planStillExists ? row.saved_plan_id : null,
+    });
+  }
+  const purchases = buildAccountPurchases({ entitlements: ownedProducts, personalized: personalizedPurchases });
+
+  const plans: AccountPlanView[] = [];
+  for (const row of savedPlans) {
+    if (isValidSmartPlannerV2SavedPlanRow(row)) {
+      const linked = !!row.preferences_json.personalizedPlanRequestId;
+      plans.push({
+        id: row.id,
+        destinationId: row.destination_slug,
+        days: v2SavedPlanDayCount(row.preferences_json),
+        interests: row.preferences_json.surpriseMe ? null : v2DisplayInterestsLabel(row.preferences_json.interests),
+        surprise: !!row.preferences_json.surpriseMe,
+        createdAt: row.created_at,
+        href: `/smart-planner/barcelona-v2/saved/${row.id}`,
+        // Generated from a paid purchase: it is the product of that order, so it can't be deleted.
+        linkedToPurchase: linked,
+        deletable: !linked,
+      });
+      continue;
+    }
+    // This table is shared with V1 (distinguished only by shape): a row that fails BOTH validators is neither cleanly V1 nor V2
+    // (e.g. a future interest-key rename could make an old row fail its own validator), so it is skipped rather than blindly cast.
+    if (!isValidSmartPlannerSavedPlanRow(row)) continue;
+    plans.push({
+      id: row.id,
+      destinationId: row.destination_slug,
+      days: row.preferences_json.tripLength,
+      interests: interestsLabel(row.preferences_json.interests) || null,
+      surprise: false,
+      createdAt: row.created_at,
+      href: `/smart-planner/barcelona/saved/${row.id}`,
+      linkedToPurchase: false,
+      deletable: true,
+    });
+  }
+
   const customPlanRequests = await getUserCustomPlanRequests();
 
   return (
@@ -102,121 +162,9 @@ export default async function AccountPage() {
 
           <PendingClaimBanner />
 
-          <div className="mt-8 border-t border-slate-100 pt-6">
-            <h2 className="text-lg font-bold text-slate-900">مشترياتي</h2>
+          <AccountPurchases purchases={purchases} inheritedGuideFrom={hasInheritedGuideAccess && inheritedGuideFrom ? { slug: inheritedGuideFrom.productSlug, name: inheritedGuideFrom.productName } : null} />
 
-            {ownedProducts.length === 0 ? (
-              <div className="mt-3 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center">
-                <p className="text-sm text-slate-500">لسا ما عندك منتجات مشتراة.</p>
-              </div>
-            ) : (
-              <ul className="mt-3 space-y-3">
-                {ownedProducts.map((product) => (
-                  <li
-                    key={product.productSlug}
-                    className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3.5"
-                  >
-                    <div>
-                      <p className="font-semibold text-slate-900">{product.productName}</p>
-                      <p className="text-xs text-slate-500">
-                        تم الشراء بتاريخ{" "}
-                        {new Intl.DateTimeFormat("ar-EG", { dateStyle: "medium" }).format(new Date(product.grantedAt))}
-                      </p>
-                    </div>
-                    {PRODUCT_ROUTES[product.productSlug] && (
-                      <Button href={PRODUCT_ROUTES[product.productSlug]} size="md">
-                        {openLabel(product.productSlug)}
-                      </Button>
-                    )}
-                  </li>
-                ))}
-                {hasInheritedGuideAccess && (
-                  <li className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-teal-200 bg-teal-50/50 px-4 py-3.5">
-                    <div>
-                      <p className="font-semibold text-slate-900">دليل برشلونة</p>
-                      <p className="text-xs text-teal-700">متضمن مع {inheritedGuideFrom?.productName} — بدون شراء منفصل</p>
-                    </div>
-                    <Button href="/guides/barcelona" size="md">
-                      افتح الدليل
-                    </Button>
-                  </li>
-                )}
-              </ul>
-            )}
-          </div>
-
-          <div className="mt-8 border-t border-slate-100 pt-6">
-            <h2 className="text-lg font-bold text-slate-900">خططي</h2>
-
-            {!savedPlans || savedPlans.length === 0 ? (
-              <div className="mt-3 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center">
-                <p className="text-sm text-slate-500">لسا ما حفظت أي خطة.</p>
-              </div>
-            ) : (
-              <ul className="mt-3 space-y-3">
-                {savedPlans.map((row) => {
-                  if (isValidSmartPlannerV2SavedPlanRow(row)) {
-                    const days = v2SavedPlanDayCount(row.preferences_json);
-                    return (
-                      <li key={row.id} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3.5">
-                        <div>
-                          <p className="font-semibold text-slate-900">
-                            {DESTINATION_LABELS[row.destination_slug] ?? row.destination_slug}
-                            {days !== null && ` · ${days} أيام`}
-                          </p>
-                          <p className="text-xs text-slate-500">
-                            {row.preferences_json.surpriseMe ? "فاجئني ✨" : v2DisplayInterestsLabel(row.preferences_json.interests)}
-                          </p>
-                          <p className="mt-0.5 text-xs text-slate-400">
-                            {new Intl.DateTimeFormat("ar-EG", { dateStyle: "medium" }).format(new Date(row.created_at))}
-                          </p>
-                        </div>
-                        <div className="flex shrink-0 items-center gap-2">
-                          <Button href={`/smart-planner/barcelona-v2/saved/${row.id}`} size="md">
-                            افتح الخطة
-                          </Button>
-                          {row.preferences_json.personalizedPlanRequestId ? (
-                            // Generated from a paid purchase: it is the product of that order, so it can't be deleted.
-                            <span className="text-xs font-semibold text-slate-400">مرتبطة بعملية شراء</span>
-                          ) : (
-                            <DeleteSavedPlanButton id={row.id} />
-                          )}
-                        </div>
-                      </li>
-                    );
-                  }
-
-                  // Final Pre-Payment Master QA: this table is shared with V2 (distinguished
-                  // only by shape, not by a separate table) -- a row that fails BOTH the V2
-                  // check above and this V1 check is neither cleanly V1- nor V2-shaped (e.g. a
-                  // future interest-key rename could make an old V2 row fail its own validator),
-                  // so it must never be blindly cast and rendered as V1 -- skip it silently
-                  // instead of showing a broken/garbled saved-plan card.
-                  if (!isValidSmartPlannerSavedPlanRow(row)) return null;
-                  const plan = row;
-                  return (
-                    <li key={plan.id} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3.5">
-                      <div>
-                        <p className="font-semibold text-slate-900">
-                          {DESTINATION_LABELS[plan.destination_slug] ?? plan.destination_slug} · {plan.preferences_json.tripLength} أيام
-                        </p>
-                        <p className="text-xs text-slate-500">{interestsLabel(plan.preferences_json.interests)}</p>
-                        <p className="mt-0.5 text-xs text-slate-400">
-                          {new Intl.DateTimeFormat("ar-EG", { dateStyle: "medium" }).format(new Date(plan.created_at))}
-                        </p>
-                      </div>
-                      <div className="flex shrink-0 items-center gap-2">
-                        <Button href={`/smart-planner/barcelona/saved/${plan.id}`} size="md">
-                          افتح الخطة
-                        </Button>
-                        <DeleteSavedPlanButton id={plan.id} />
-                      </div>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-          </div>
+          <AccountPlans plans={plans} />
 
           {/* Unified Personalized Plan merge: this section is now historical/legacy only -- the
               new unified planner (/planner) never creates a custom_plan_requests row, it saves

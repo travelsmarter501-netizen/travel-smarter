@@ -7,6 +7,7 @@ import {
   createComplimentaryPlanRequest,
   createPersonalizedPlanOrder,
   generatePersonalizedPlanForRequest,
+  hasPaidUnbuiltRequest,
   type CreateComplimentaryRequestResult,
   type GeneratePersonalizedPlanResult,
 } from "../lib/commerce/personalizedPlan";
@@ -35,6 +36,10 @@ export async function startPersonalizedPlanCheckout(input: { destinationId?: unk
   } = await supabase.auth.getUser();
 
   if (user) {
+    // A paid plan that has not been built yet is built, not paid for again (also stops a stale tab or an old draft from re-submitting).
+    if (await hasPaidUnbuiltRequest(user.id)) {
+      return { ok: false, error: "عندك خطة مدفوعة بانتظار البناء. افتح «خططي المخصصة» وابنِها أولًا.", code: "paid_plan_awaiting_build" };
+    }
     const order = await createPersonalizedPlanOrder({ userId: user.id, destinationId: normalized.destinationId, answers: normalized.answers });
     if (!order.ok) return { ok: false, error: order.error, code: order.code };
 

@@ -234,9 +234,14 @@ export default function PersonalizedPlanCheckout({
             )}
 
             {error && (
-              <p role="alert" className="mt-4 text-sm font-semibold text-rose-600">
-                {error.code ? t.checkout.errors[error.code] : error.message}
-              </p>
+              <div role="alert" className="mt-4 text-sm font-semibold text-rose-600">
+                <p>{error.code ? t.checkout.errors[error.code] : error.message}</p>
+                {error.code === "paid_plan_awaiting_build" && (
+                  <Link href="/planner" className="mt-2 inline-block text-teal-700 hover:underline">
+                    {copy.mine.title}
+                  </Link>
+                )}
+              </div>
             )}
 
             <button

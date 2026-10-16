@@ -3,14 +3,17 @@
 import { useState } from "react";
 import { createClient } from "../../../utils/supabase/client";
 import { authCallbackUrl } from "../../lib/authRedirect";
+import { authCopy } from "../../lib/authCopy";
+import { useLanguage } from "../../lib/language";
 
 export default function GoogleAuthButton({ label, next }: { label: string; next?: string }) {
+  const { language } = useLanguage();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [failed, setFailed] = useState(false);
 
   async function handleClick() {
     setLoading(true);
-    setError(null);
+    setFailed(false);
     const supabase = createClient();
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
@@ -20,7 +23,7 @@ export default function GoogleAuthButton({ label, next }: { label: string; next?
       },
     });
     if (error) {
-      setError("تعذّر بدء تسجيل الدخول عبر Google. حاول مرة أخرى.");
+      setFailed(true);
       setLoading(false);
     }
     // On success the browser is redirected to Google, so no further action needed here.
@@ -52,9 +55,9 @@ export default function GoogleAuthButton({ label, next }: { label: string; next?
             d="M12 4.77c1.76 0 3.35.61 4.6 1.8l3.44-3.44C17.95 1.19 15.24 0 12 0 7.28 0 3.24 2.7 1.26 6.62l4.01 3.11C6.22 6.88 8.87 4.77 12 4.77z"
           />
         </svg>
-        {loading ? "جاري التحويل..." : label}
+        {loading ? (language === "en" ? "Redirecting..." : "جاري التحويل...") : label}
       </button>
-      {error && <p className="mt-2 text-center text-xs text-red-600">{error}</p>}
+      {failed && <p role="alert" className="mt-2 text-center text-xs text-red-600">{authCopy[language === "en" ? "en" : "ar"].common.googleStartFailed}</p>}
     </div>
   );
 }

@@ -1,7 +1,9 @@
 import Container from "../components/Container";
+import { redirect } from "next/navigation";
 import CheckoutClient from "./CheckoutClient";
 import PersonalizedPlanCheckout from "../components/planner/PersonalizedPlanCheckout";
-import { getPersonalizedPlanPriceIls } from "../lib/commerce/personalizedPlan";
+import { getPersonalizedPlanPriceIls, hasPaidUnbuiltRequest } from "../lib/commerce/personalizedPlan";
+import { pendingClaimState } from "../claim-purchase/pendingClaimStatus";
 import { isComplimentaryUser } from "../lib/commerce/complimentary";
 import { isSellableProductSlug } from "../lib/commerce/catalog";
 import { getAllpayMode } from "../lib/allpay/config";
@@ -31,6 +33,11 @@ export default async function CheckoutPage({ searchParams }: { searchParams: Pro
   // Personalized Plan: a different checkout body (summary of the questionnaire the visitor just finished). The price shown
   // is display only; the order, its stored answers and the charge are all created server-side when the visitor pays.
   if (plan === "personalized") {
+    // Never ask to pay for a plan that is already paid: a paid purchase still waiting to be attached to an account goes to the claim page,
+    // and a paid plan that is not built yet goes to the planner (decided from the database, not from this tab's draft).
+    if ((await pendingClaimState(user?.id ?? null)) === "paid") redirect("/claim-purchase");
+    if (user && (await hasPaidUnbuiltRequest(user.id))) redirect("/planner");
+
     return (
       <main className="py-10">
         <Container className="max-w-lg">
