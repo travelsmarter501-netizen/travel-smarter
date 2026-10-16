@@ -285,10 +285,14 @@ type PlanRow = { id: string; destination_slug: string; created_at: string; prefe
 const PENDING_WINDOW_MS = 3 * 60 * 60 * 1000;
 
 /**
+ * `hidePending` is decided by the server for allowlisted (complimentary) accounts: they never pay, so an unpaid purchase request
+ * left behind by an abandoned normal checkout must not show up as an "awaiting payment confirmation" card. Regular customers
+ * are unaffected (the card still tells them their payment is being confirmed).
+ *
  * Read with the customer's OWN session client, so row-level security (not this code) decides what is visible:
  * only requests whose order they own, and only their own saved plans.
  */
-export async function loadMyPersonalizedPlans(userId: string): Promise<MyPersonalizedPlans> {
+export async function loadMyPersonalizedPlans(userId: string, options: { hidePending?: boolean } = {}): Promise<MyPersonalizedPlans> {
   const supabase = await createClient();
 
   const [{ data: requestRows }, { data: planRows }] = await Promise.all([
@@ -320,7 +324,7 @@ export async function loadMyPersonalizedPlans(userId: string): Promise<MyPersona
     const order = Array.isArray(row.orders) ? row.orders[0] : row.orders;
     if (!order) continue;
     if (order.status === "paid") requests.push({ ...base, state: "ready", complimentary: false });
-    else if (order.status === "pending" && now - new Date(order.created_at).getTime() < PENDING_WINDOW_MS)
+    else if (!options.hidePending && order.status === "pending" && now - new Date(order.created_at).getTime() < PENDING_WINDOW_MS)
       requests.push({ ...base, state: "pending", complimentary: false });
   }
 

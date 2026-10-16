@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import PlannerPageView from "../components/planner/PlannerPageView";
 import { loadMyPersonalizedPlans } from "../lib/commerce/personalizedPlan";
+import { isComplimentaryUser } from "../lib/commerce/complimentary";
 import { isAvailablePlannerDestinationId, DEFAULT_PLANNER_DESTINATION_ID } from "../lib/planner/plannerDestinations";
 import { hasProductAccess } from "../lib/entitlements";
 import { PRODUCT_SLUGS } from "../lib/commerce/catalog";
@@ -41,7 +42,7 @@ export default async function PlannerPage({ searchParams }: { searchParams: Prom
   } = await supabase.auth.getUser();
 
   const initialDestinationId = isAvailablePlannerDestinationId(destination) ? (destination as string) : DEFAULT_PLANNER_DESTINATION_ID;
-  const mine = user ? await loadMyPersonalizedPlans(user.id) : { plans: [], requests: [], hasAnyRequest: false };
+  const mine = user ? await loadMyPersonalizedPlans(user.id, { hidePending: isComplimentaryUser(user.id) }) : { plans: [], requests: [], hasAnyRequest: false };
   const hasPlans = mine.plans.length > 0 || mine.requests.length > 0;
   // A legacy owner: bought before the questionnaire-first model, so there is an entitlement but never a request or plan.
   const legacyOwnerWithoutPlan =

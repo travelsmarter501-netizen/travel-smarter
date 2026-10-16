@@ -4,9 +4,10 @@ import { useMemo, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Price from "../Price";
-import { startComplimentaryPlan, startPersonalizedPlanCheckout } from "../../planner/actions";
+import { generatePersonalizedPlanAction, startComplimentaryPlan, startPersonalizedPlanCheckout } from "../../planner/actions";
+import PlanGeneratingScreen from "./PlanGeneratingScreen";
 import { useLanguage } from "../../lib/language";
-import { fillCopy } from "../../lib/plannerCopy";
+import { fillCopy, type PlannerGenerateErrorCode } from "../../lib/plannerCopy";
 import { clearPlannerDraft, parsePlannerDraft, readPlannerDraftRaw } from "../../lib/planner/plannerDraft";
 import { destinationIncludesGuide } from "../../lib/planner/personalizedPlanAnswers";
 import { V2_INTEREST_DISPLAY_GROUPS, isV2DisplayGroupActive } from "../../lib/planner/v2PlannerTypes";
@@ -53,6 +54,10 @@ export default function PersonalizedPlanCheckout({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<{ code?: CheckoutErrorCode; message: string } | null>(null);
   const [complimentaryError, setComplimentaryError] = useState<ComplimentaryErrorCode | null>(null);
+  const [generateError, setGenerateError] = useState<PlannerGenerateErrorCode | null>(null);
+  const [generating, setGenerating] = useState(false);
+  // Once the request exists, a retry only re-runs the build -- it never creates a second request.
+  const [createdRequestId, setCreatedRequestId] = useState<string | null>(null);
 
   async function handlePay() {
     if (!draft) return;
@@ -72,22 +77,38 @@ export default function PersonalizedPlanCheckout({
     }
   }
 
+  /**
+   * Allowlisted accounts: create the request (the server re-checks the allowlist), build the plan with the existing
+   * authorized generation, and open it directly -- no payment step, no waiting page. While it builds, the generating screen shows.
+   */
   async function handleComplimentary() {
     if (!draft) return;
-    setLoading(true);
+    setGenerating(true);
     setComplimentaryError(null);
+    setGenerateError(null);
     try {
-      const result = await startComplimentaryPlan({ destinationId: draft.destinationId, answers: draft.rawAnswers });
-      if (!result.ok) {
-        setLoading(false);
-        setComplimentaryError(result.code);
+      let requestId = createdRequestId;
+      if (!requestId) {
+        const created = await startComplimentaryPlan({ destinationId: draft.destinationId, answers: draft.rawAnswers });
+        if (!created.ok) {
+          setGenerating(false);
+          setComplimentaryError(created.code);
+          return;
+        }
+        requestId = created.requestId;
+        setCreatedRequestId(requestId);
+      }
+      const built = await generatePersonalizedPlanAction(requestId);
+      if (!built.ok) {
+        setGenerating(false);
+        setGenerateError(built.code);
         return;
       }
       clearPlannerDraft();
-      router.push("/planner");
+      router.push(`/smart-planner/barcelona-v2/saved/${built.planId}`);
     } catch {
-      setLoading(false);
-      setComplimentaryError("create_failed");
+      setGenerating(false);
+      setGenerateError("unexpected");
     }
   }
 
@@ -102,6 +123,8 @@ export default function PersonalizedPlanCheckout({
           .map((group) => copy.wizard.interestGroups[group.id] ?? group.label)
           .join(language === "ar" ? "، " : ", ");
   const accommodationText = draft?.answers.accommodation.booked ? (draft.answers.accommodation.text ?? "") : summary.accommodationNotBooked;
+
+  if (generating) return <PlanGeneratingScreen />;
 
   return (
     <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
@@ -147,38 +170,29 @@ export default function PersonalizedPlanCheckout({
               </ul>
             </div>
 
-            {complimentary ? (
+            {priceIls !== null && (
               <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3 text-sm">
                 <span className="font-semibold text-slate-600">{summary.price}</span>
-                <span className="text-lg font-bold text-teal-700">{summary.complimentaryPrice}</span>
+                <span className="text-lg font-bold text-slate-900">
+                  <Price ils={priceIls} />
+                </span>
               </div>
-            ) : (
-              priceIls !== null && (
-                <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3 text-sm">
-                  <span className="font-semibold text-slate-600">{summary.price}</span>
-                  <span className="text-lg font-bold text-slate-900">
-                    <Price ils={priceIls} />
-                  </span>
-                </div>
-              )
             )}
           </section>
 
           {complimentary ? (
             <>
-              <p className="mt-6 rounded-2xl bg-teal-50 px-4 py-3 text-sm font-semibold leading-6 text-teal-800">{summary.complimentaryNotice}</p>
-              {complimentaryError && (
-                <p role="alert" className="mt-4 text-sm font-semibold text-rose-600">
-                  {copy.complimentaryErrors[complimentaryError]}
+              {(complimentaryError || generateError) && (
+                <p role="alert" className="mt-6 text-sm font-semibold text-rose-600">
+                  {complimentaryError ? copy.complimentaryErrors[complimentaryError] : copy.generateErrors[generateError!]}
                 </p>
               )}
               <button
                 type="button"
                 onClick={handleComplimentary}
-                disabled={loading}
-                className="mt-4 flex w-full items-center justify-center rounded-full bg-teal-700 px-5 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-teal-800 disabled:opacity-60"
+                className="mt-6 flex w-full items-center justify-center rounded-full bg-teal-700 px-5 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-teal-800"
               >
-                {loading ? summary.complimentaryCreating : summary.complimentaryCta}
+                {summary.complimentaryCta}
               </button>
             </>
           ) : (
