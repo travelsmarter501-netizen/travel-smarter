@@ -87,13 +87,8 @@ export type HomepageCopy = {
     /** A signed-in customer already owns this product: the card says so and opens it (no price, no buy buttons). */
     ownedBadge: string;
     ownedCta: string;
-    /**
-     * Personalized Plan card, for a customer who already has a plan: the card becomes "Purchased" with a primary button to their
-     * plan(s) -- and nothing else -- or, when a paid plan is still waiting to be built, a "Build my plan" button instead. No price, no
-     * purchase button, and no "create another plan" (that lives inside the plans page).
-     */
+    /** Personalized Plan card for an OWNER: "Purchased", no price, and this ONE button into their planner (nothing else is offered). */
     personalizedOpen: string;
-    personalizedBuild: string;
     items: Product[];
   };
   destinations: {
@@ -204,7 +199,6 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
       ownedBadge: "تم الشراء ✓",
       ownedCta: "افتح المنتج",
       personalizedOpen: "افتح خطتي المخصصة",
-      personalizedBuild: "ابنِ خطتي ✨",
       items: [
         {
           // Unified Personalized Plan merge: replaces the old separate "خطة رحلة مخصصة إلك"
@@ -340,8 +334,7 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
         payment_setup_failed: "تعذّر تجهيز الدفع حاليًا. حاول مرة أخرى بعد قليل، وإذا استمرت المشكلة تواصل معنا.",
         planner_answers_required: "الخطة المخصصة بتبدأ من صفحة المخطط: جاوب على الأسئلة أولًا ثم أكمل الدفع.",
         invalid_planner_answers: "بيانات الخطة غير صالحة. راجع إجاباتك وحاول مرة أخرى.",
-        paid_plan_awaiting_build: "عندك خطة مدفوعة بانتظار البناء. افتح «خططي المخصصة» وابنِها أولًا — لا حاجة لدفع جديد.",
-        duplicate_plan_request: "اشتريت خطة بنفس هذه الإجابات قبل قليل. افتح «خططي المخصصة»، أو غيّر إجاباتك إذا كانت لرحلة جديدة.",
+        planner_already_unlocked: "مخطط الرحلات المخصص مفتوح لك مسبقًا — أنشئ خطتك بدون أي دفع جديد.",
       },
     },
     pricing: {
@@ -409,8 +402,7 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
       startingFromLabel: "Starting from",
       ownedBadge: "Purchased ✓",
       ownedCta: "Open",
-      personalizedOpen: "Open my personalized plan",
-      personalizedBuild: "Build my plan ✨",
+      personalizedOpen: "Open my personalized planner",
       items: [
         {
           id: "personalized-trip-plan",
@@ -543,8 +535,7 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
         payment_setup_failed: "We couldn’t set up the payment right now. Please try again in a moment, and contact us if the problem continues.",
         planner_answers_required: "The Personalized Plan starts on the planner page: answer the questions first, then continue to payment.",
         invalid_planner_answers: "Your plan details aren’t valid. Please review your answers and try again.",
-        paid_plan_awaiting_build: "You already have a paid plan waiting to be built. Open My Personalized Plans and build it first — there’s no need to pay again.",
-        duplicate_plan_request: "You just bought a plan with these exact answers. Open My Personalized Plans, or change your answers if this is a new trip.",
+        planner_already_unlocked: "Your personalized planner is already unlocked — create your plan with no new payment.",
       },
     },
     pricing: {

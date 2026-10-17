@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { createClient } from "../../utils/supabase/client";
 import { useAuthStatus } from "./useAuthStatus";
 import { ownedCartIds } from "./commerce/ownership";
-import { V2_SAVED_PLAN_PRODUCT_SLUG } from "./planner/smartPlannerV2SavedPlans";
 
 export type OwnedProductsState = {
   /**
@@ -15,16 +14,14 @@ export type OwnedProductsState = {
   /** Storefront card ids (barcelona-guide, barcelona-3day, ...) the visitor already owns. Never contains the Personalized Plan. */
   ownedCartIds: ReadonlySet<string>;
   /**
-   * Where the visitor stands with the Personalized Plan (which is bought per trip, so it is never in ownedCartIds):
-   * "generated" = at least one plan built from a paid / complimentary request (or a saved personalized plan) -> the card shows "Open my plan";
-   * "unbuilt"   = a paid request is waiting to be built (takes precedence)                                       -> "Build my plan";
-   * "none"      = nothing yet                                                                                    -> the normal sell state.
+   * The visitor OWNS the Personalized Plan (an entitlement from any earlier model, or a paid purchase of theirs): the planner is unlocked for
+   * them, so its card is "Purchased" with ONE button into the planner. It is not part of ownedCartIds (those cards open a content page).
    */
-  personalized: "none" | "unbuilt" | "generated";
+  ownsPersonalizedPlanner: boolean;
 };
 
 const EMPTY: ReadonlySet<string> = new Set();
-type Loaded = { ownedCartIds: ReadonlySet<string>; personalized: OwnedProductsState["personalized"] };
+type Loaded = { ownedCartIds: ReadonlySet<string>; ownsPersonalizedPlanner: boolean };
 
 /**
  * For the homepage cards only: which products the signed-in visitor already owns. Read with the visitor's own browser session, so
@@ -42,25 +39,21 @@ export function useOwnedProducts(): OwnedProductsState {
 
     Promise.all([
       supabase.from("user_entitlements").select("products!inner(slug, active)").eq("products.active", true).returns<{ products: { slug: string } | { slug: string }[] }[]>(),
-      supabase.from("personalized_plan_requests").select("id, source, generated_at, orders(status)").limit(50),
-      supabase.from("smart_planner_saved_plans").select("id").eq("product_slug", V2_SAVED_PLAN_PRODUCT_SLUG).limit(1),
+      supabase.from("personalized_plan_requests").select("id, source, orders(status)").limit(50),
     ])
-      .then(([entitlements, requests, plans]) => {
+      .then(([entitlements, requests]) => {
         if (cancelled) return;
         const slugs = (entitlements.data ?? []).flatMap((row) => (Array.isArray(row.products) ? row.products.map((p) => p.slug) : [row.products.slug]));
-        const requestRows = (requests.data ?? []) as { source: string; generated_at: string | null; orders: { status: string } | { status: string }[] | null }[];
-        const isPaid = (row: (typeof requestRows)[number]) => {
-          if (row.source === "complimentary") return true;
+        // Ownership mirrors the server's rule: an entitlement to the product, or a PAID order of theirs that contains it.
+        const hasPaidRequest = ((requests.data ?? []) as { orders: { status: string } | { status: string }[] | null }[]).some((row) => {
           const order = Array.isArray(row.orders) ? row.orders[0] : row.orders;
           return order?.status === "paid";
-        };
-        const unbuilt = requestRows.some((row) => isPaid(row) && !row.generated_at);
-        const generated = requestRows.some((row) => isPaid(row) && !!row.generated_at) || (plans.data ?? []).length > 0;
-        setLoaded({ ownedCartIds: ownedCartIds(slugs), personalized: unbuilt ? "unbuilt" : generated ? "generated" : "none" });
+        });
+        setLoaded({ ownedCartIds: ownedCartIds(slugs), ownsPersonalizedPlanner: slugs.includes("travel-smarter-personalized-plan") || hasPaidRequest });
       })
       .catch(() => {
         // Could not read purchases: show the normal storefront (the server still protects everything).
-        if (!cancelled) setLoaded({ ownedCartIds: EMPTY, personalized: "none" });
+        if (!cancelled) setLoaded({ ownedCartIds: EMPTY, ownsPersonalizedPlanner: false });
       });
 
     return () => {
@@ -68,8 +61,8 @@ export function useOwnedProducts(): OwnedProductsState {
     };
   }, [auth]);
 
-  if (auth === "loading") return { status: "unknown", ownedCartIds: EMPTY, personalized: "none" };
-  if (auth === "signedOut") return { status: "signedOut", ownedCartIds: EMPTY, personalized: "none" };
-  if (!loaded) return { status: "loading", ownedCartIds: EMPTY, personalized: "none" };
-  return { status: "ready", ownedCartIds: loaded.ownedCartIds, personalized: loaded.personalized };
+  if (auth === "loading") return { status: "unknown", ownedCartIds: EMPTY, ownsPersonalizedPlanner: false };
+  if (auth === "signedOut") return { status: "signedOut", ownedCartIds: EMPTY, ownsPersonalizedPlanner: false };
+  if (!loaded) return { status: "loading", ownedCartIds: EMPTY, ownsPersonalizedPlanner: false };
+  return { status: "ready", ownedCartIds: loaded.ownedCartIds, ownsPersonalizedPlanner: loaded.ownsPersonalizedPlanner };
 }

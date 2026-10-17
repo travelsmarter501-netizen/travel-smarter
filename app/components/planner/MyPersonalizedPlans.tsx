@@ -6,6 +6,7 @@ import Button from "../Button";
 import PlansLists from "./PlansLists";
 import type { PlanCardData } from "./PlanCard";
 import { generatePersonalizedPlanAction } from "../../planner/actions";
+import { plannerEditPlanHref } from "../../lib/planner/planLinks";
 import { useLanguage } from "../../lib/language";
 import { fillCopy, type PlannerGenerateErrorCode } from "../../lib/plannerCopy";
 import type { PlannerPlanSummary, PlannerRequestSummary } from "../../lib/commerce/personalizedPlan";
@@ -15,22 +16,20 @@ const REFRESH_FOR_MS = 3 * 60 * 1000;
 const PHRASE_EVERY_MS = 1400;
 
 /**
- * "My Personalized Plans" -- what /planner shows a customer who has already bought. Three things, all
- * driven by rows the server read with the customer's own session (row-level security decides what is visible):
- *   - requests whose payment is confirmed but whose plan has not been built yet -> "Build my plan"
- *     (one request = one plan; the button only sends the request id, the answers come from the database);
- *   - requests still waiting for the payment confirmation (the page refreshes itself);
- *   - the plans they already have, each with an "Open plan" button.
- * Plus the one way to get another plan: "Create a new plan" -> a fresh questionnaire -> a new purchase.
+ * "My Personalized Plans" -- what /planner shows a signed-in customer who has the planner (or a request to build). Driven by rows the server
+ * read with the customer's own session (row-level security decides what is visible):
+ *   - requests whose payment is confirmed but whose first plan has not been built yet -> "Build my plan"
+ *     (the button only sends the request id, the answers come from the database);
+ *   - a pending order, only when that specific order is being resumed (see loadMyPersonalizedPlans);
+ *   - the plans they have, each with Open plan / Edit plan / Delete.
+ * Plus "Create a new plan": for an owner it is FREE -- it opens a fresh questionnaire that ends in "Create my plan", not in payment.
  */
-export default function MyPersonalizedPlans({ plans, archivedPlans = [], requests }: { plans: PlannerPlanSummary[]; archivedPlans?: PlannerPlanSummary[]; requests: PlannerRequestSummary[] }) {
+export default function MyPersonalizedPlans({ plans, requests, owner = false }: { plans: PlannerPlanSummary[]; requests: PlannerRequestSummary[]; owner?: boolean }) {
   const { t } = useLanguage();
   const copy = t.planner;
   const router = useRouter();
 
   const hasPending = requests.some((request) => request.state === "pending");
-  // A paid plan is waiting to be built: it is built first, so no second purchase is offered meanwhile.
-  const mustBuildFirst = requests.some((request) => request.state === "ready" && !request.complimentary);
   useEffect(() => {
     if (!hasPending) return;
     const started = Date.now();
@@ -51,6 +50,7 @@ export default function MyPersonalizedPlans({ plans, archivedPlans = [], request
     days: plan.days,
     details: plan.details,
     href: `/smart-planner/barcelona-v2/saved/${plan.id}`,
+    editHref: plannerEditPlanHref(plan.id),
   });
 
   return (
@@ -59,16 +59,10 @@ export default function MyPersonalizedPlans({ plans, archivedPlans = [], request
         <h1 className="text-2xl font-bold text-slate-900 sm:text-3xl">{copy.mine.title}</h1>
         <p className="mt-2 text-sm leading-6 text-slate-600 sm:text-base">{copy.mine.subtitle}</p>
         <div className="mt-4">
-          {mustBuildFirst ? (
-            <p className="text-sm font-semibold leading-6 text-teal-800">{copy.mine.buildFirstNote}</p>
-          ) : (
-            <>
-              <Button href="/planner?new=1" variant="secondary" size="md" className="w-full sm:w-auto">
-                ＋ {copy.mine.createNew}
-              </Button>
-              <p className="mt-2 text-xs text-slate-400">{copy.mine.newPlanNote}</p>
-            </>
-          )}
+          <Button href="/planner?new=1" size="md" className="w-full sm:w-auto">
+            ＋ {copy.mine.createNew}
+          </Button>
+          {owner && <p className="mt-2 text-xs text-slate-500">{copy.mine.newPlanNote}</p>}
         </div>
       </div>
 
@@ -84,11 +78,18 @@ export default function MyPersonalizedPlans({ plans, archivedPlans = [], request
         )
       )}
 
-      {(plans.length > 0 || archivedPlans.length > 0) && (
+      {plans.length > 0 ? (
         <section aria-label={copy.mine.plansHeading}>
-          {plans.length > 0 && <h2 className="text-lg font-bold text-slate-900">{copy.mine.plansHeading}</h2>}
-          <PlansLists plans={plans.map(toCardData)} archivedPlans={archivedPlans.map(toCardData)} />
+          <h2 className="text-lg font-bold text-slate-900">{copy.mine.plansHeading}</h2>
+          <PlansLists plans={plans.map(toCardData)} />
         </section>
+      ) : (
+        owner &&
+        requests.length === 0 && (
+          <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center">
+            <p className="text-sm text-slate-500">{copy.mine.emptyOwner}</p>
+          </div>
+        )
       )}
     </div>
   );

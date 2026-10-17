@@ -22,10 +22,9 @@ const barcelonaImage = destinations.find((destination) => destination.slug === "
  * routes (/guides/barcelona, /ready-plans/..., /planner): those are entitlement-gated content, not
  * sales pages -- EXCEPT for a signed-in customer who already owns that product: its card then shows
  * "Purchased", no price and no buy buttons, and a single "Open" button to the content they own. Products they
- * do not own are unchanged. The Personalized Plan is bought per trip, so it is not an entitlement -- but once the visitor has a
- * plan, its card behaves like any owned product: "Purchased", no price, and ONE button, "Open my personalized plan" (a paid plan
- * still waiting to be built shows "Build my plan" instead). The card never offers a second purchase: "Create another plan" lives inside
- * the customer's own plans page (/planner), not on the storefront.
+ * do not own are unchanged. The Personalized Plan is an unlock rather than a content page, but its card follows the same rule: once the
+ * visitor owns it the card shows "Purchased", no price and ONE button into their planner ("Open my personalized planner"). There is no second
+ * purchase to offer -- creating and editing plans is free for an owner (see /planner).
  */
 export default function Products() {
   const { t } = useLanguage();
@@ -67,8 +66,8 @@ export default function Products() {
         <div className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {t.products.items.map((product) => {
             const inCart = isInCart(product.id);
-            const personalizedState = product.id === "personalized-trip-plan" ? owned.personalized : "none";
-            const isOwned = owned.ownedCartIds.has(product.id) || personalizedState !== "none";
+            const isPlanner = product.id === "personalized-trip-plan";
+            const isOwned = owned.ownedCartIds.has(product.id) || (isPlanner && owned.ownsPersonalizedPlanner);
             // A signed-in visitor's purchases are still being read: keep the card's height but do not flash a price / buy button at an owner.
             const readingPurchases = owned.status === "loading";
             return (
@@ -116,10 +115,10 @@ export default function Products() {
                   )}
                   {isOwned ? (
                     <Link
-                      href={personalizedState === "none" ? product.route : PLANNER_MY_PLANS}
+                      href={isPlanner ? PLANNER_MY_PLANS : product.route}
                       className="mt-4 flex items-center justify-center rounded-full bg-teal-700 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-teal-800"
                     >
-                      {personalizedState === "unbuilt" ? t.products.personalizedBuild : personalizedState === "generated" ? t.products.personalizedOpen : t.products.ownedCta}
+                      {isPlanner ? t.products.personalizedOpen : t.products.ownedCta}
                     </Link>
                   ) : (
                     <div className={readingPurchases ? "invisible" : undefined} aria-hidden={readingPurchases || undefined}>

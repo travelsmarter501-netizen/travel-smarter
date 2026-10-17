@@ -7,7 +7,7 @@ import MyPersonalizedPlans from "./MyPersonalizedPlans";
 import ScrollToTop from "../ScrollToTop";
 import ClearPlannerDraft from "./ClearPlannerDraft";
 import { useLanguage } from "../../lib/language";
-import { readPlannerDraft } from "../../lib/planner/plannerDraft";
+import { readPlannerDraft, type PlannerDraft } from "../../lib/planner/plannerDraft";
 import type { PlannerPlanSummary, PlannerRequestSummary } from "../../lib/commerce/personalizedPlan";
 
 const noopSubscribe = () => () => {};
@@ -19,38 +19,44 @@ const noopSubscribe = () => () => {};
 function WizardSlot({
   initialDestinationId,
   restoreDraft,
-  signedIn,
-  hasPlans,
-  explicitNewPlan,
+  serverDraft,
+  owner,
+  editPlanId,
 }: {
   initialDestinationId?: string;
   restoreDraft: boolean;
-  signedIn: boolean;
-  hasPlans: boolean;
-  explicitNewPlan: boolean;
+  /** An owner editing a plan: its answers, read on the server. Wins over anything this tab remembers. */
+  serverDraft: PlannerDraft | null;
+  owner: boolean;
+  editPlanId: string | null;
 }) {
   const mounted = useSyncExternalStore(noopSubscribe, () => true, () => false);
-  if (restoreDraft && !mounted) return null;
-  return <PersonalizedPlanWizard initialDestinationId={initialDestinationId} initialDraft={restoreDraft ? readPlannerDraft() : null} signedIn={signedIn} hasPlans={hasPlans} explicitNewPlan={explicitNewPlan} />;
+  if (restoreDraft && !serverDraft && !mounted) return null;
+  return (
+    <PersonalizedPlanWizard
+      initialDestinationId={initialDestinationId}
+      initialDraft={serverDraft ?? (restoreDraft ? readPlannerDraft() : null)}
+      owner={owner}
+      editPlanId={editPlanId}
+    />
+  );
 }
 
 /**
  * The /planner page body (the server page decides WHICH view and loads the data; this component only renders it,
  * in the visitor's language):
- *   - "wizard": the free questionnaire -> checkout, for visitors, first-time buyers and anyone who chose
- *     "Create a new plan";
- *   - "mine": "My Personalized Plans" for a signed-in customer who already has plans/requests.
+ *   - "wizard": the questionnaire. For someone who has not bought the Personalized Plan it ends in checkout; for an OWNER (new plan or
+ *     "Edit plan") it ends in "Create my plan" / "Update my plan" with no payment;
+ *   - "mine": "My Personalized Plans" -- an owner's plans (Open / Edit / Delete) and the free "Create a new plan".
  */
 export default function PlannerPageView({
   view,
   initialDestinationId,
   restoreDraft = false,
   signedIn,
-  hasPlans,
-  legacyOwnerNotice = false,
-  explicitNewPlan = false,
+  owner = false,
+  editPlan = null,
   plans,
-  archivedPlans = [],
   requests,
 }: {
   view: "wizard" | "mine";
@@ -58,15 +64,11 @@ export default function PlannerPageView({
   /** Came back from checkout via "Edit answers": pre-fill the questionnaire from this tab's saved draft. */
   restoreDraft?: boolean;
   signedIn: boolean;
-  /** The signed-in customer already has plans/requests, so the wizard offers a way back to them. */
-  hasPlans: boolean;
-  /** The customer owns the product from before the questionnaire-first model but has no plan or request. */
-  legacyOwnerNotice?: boolean;
-  /** The visit asked for a new questionnaire on purpose (?new=1, or ?edit=1 inside that flow). */
-  explicitNewPlan?: boolean;
+  /** The signed-in customer owns the Personalized Plan (decided on the server). */
+  owner?: boolean;
+  /** An owner editing one of their own plans: its id and its stored answers. */
+  editPlan?: { id: string; draft: PlannerDraft } | null;
   plans: PlannerPlanSummary[];
-  /** Plans the customer removed from My Plans (still stored, restorable). */
-  archivedPlans?: PlannerPlanSummary[];
   requests: PlannerRequestSummary[];
 }) {
   const { t } = useLanguage();
@@ -84,11 +86,11 @@ export default function PlannerPageView({
 
         {view === "mine" ? (
           <div className="mt-4">
-            <MyPersonalizedPlans plans={plans} archivedPlans={archivedPlans} requests={requests} />
+            <MyPersonalizedPlans plans={plans} requests={requests} owner={owner} />
           </div>
         ) : (
           <>
-            {hasPlans && (
+            {owner && (
               <p className="mt-3">
                 <Link href="/planner" className="text-sm font-semibold text-teal-700 hover:text-teal-800">
                   {copy.mine.title}
@@ -99,23 +101,16 @@ export default function PlannerPageView({
               <h1 className="text-2xl font-bold text-slate-900 sm:text-3xl">{copy.page.title}</h1>
               <p className="mt-2 text-sm leading-6 text-slate-600 sm:text-base">{copy.page.subtitle}</p>
             </div>
-            <p className="mt-4 text-center text-sm font-semibold text-teal-700">{copy.page.tagline}</p>
-
-            {legacyOwnerNotice && (
-              <section className="mt-5 rounded-3xl border border-amber-200 bg-amber-50/70 p-5">
-                <h2 className="text-base font-bold text-slate-900">{copy.page.legacyTitle}</h2>
-                <p className="mt-1 text-sm leading-6 text-slate-600">{copy.page.legacyBody}</p>
-                <a
-                  href={`mailto:travelsmarter501@gmail.com?subject=${encodeURIComponent("Personalized Plan purchase before the update")}`}
-                  className="mt-3 inline-block text-sm font-semibold text-teal-700 hover:underline"
-                >
-                  {copy.page.legacyContact}
-                </a>
-              </section>
-            )}
+            <p className="mt-4 text-center text-sm font-semibold text-teal-700">{owner ? copy.page.ownerTagline : copy.page.tagline}</p>
 
             <div className="mt-6">
-              <WizardSlot initialDestinationId={initialDestinationId} restoreDraft={restoreDraft} signedIn={signedIn} hasPlans={hasPlans} explicitNewPlan={explicitNewPlan} />
+              <WizardSlot
+                initialDestinationId={initialDestinationId}
+                restoreDraft={restoreDraft}
+                serverDraft={editPlan?.draft ?? null}
+                owner={owner}
+                editPlanId={editPlan?.id ?? null}
+              />
             </div>
 
             {!signedIn && (

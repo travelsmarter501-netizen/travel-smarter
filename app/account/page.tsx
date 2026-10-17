@@ -8,7 +8,8 @@ import CustomPlanCheckoutButton from "../components/account/CustomPlanCheckoutBu
 import { INTEREST_OPTIONS } from "../components/smart-planner/InterestSelector";
 import { createClient } from "../../utils/supabase/server";
 import { getUserEntitlements, GUIDE_BUNDLE_PRODUCT_SLUGS } from "../lib/entitlements";
-import { buildAccountPurchases, type PersonalizedPurchase } from "../lib/accountView";
+import { buildAccountPurchases } from "../lib/accountView";
+import { plannerEditPlanHref } from "../lib/planner/planLinks";
 import PendingClaimBanner from "../components/account/PendingClaimBanner";
 import { getUserCustomPlanRequests } from "../lib/customPlanRequests";
 import { CUSTOM_PLAN_REQUEST_STATUS_LABELS } from "../lib/customPlanRequest";
@@ -18,17 +19,6 @@ import { isValidSmartPlannerSavedPlanRow } from "../lib/planner/smartPlannerSave
 
 const DESTINATION_LABELS: Record<string, string> = {
   barcelona: "Barcelona",
-};
-
-type PersonalizedRequestRow = {
-  id: string;
-  destination_id: string;
-  answers: { days?: unknown; surpriseMe?: unknown; interests?: unknown; accommodation?: { booked?: unknown; text?: unknown } | null } | null;
-  generated_at: string | null;
-  saved_plan_id: string | null;
-  source: string;
-  created_at: string;
-  orders: { status: string; paid_at: string | null; created_at: string } | { status: string; paid_at: string | null; created_at: string }[] | null;
 };
 
 function interestsLabel(interests: string[]): string {
@@ -81,59 +71,27 @@ export default async function AccountPage() {
   // (matching this table's only other real shape).
   const { data: savedPlansRaw } = await supabase.from("smart_planner_saved_plans").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
   const savedPlans = savedPlansRaw ?? [];
-  // Plans the customer removed from My Plans are hidden here (they are kept; /planner lists them for restoring). A row only counts as
-  // hidden when archived_at is set -- the plan, its request and its order are untouched.
-  const isRemoved = (plan: unknown) => !!(plan as { archived_at?: string | null }).archived_at;
-
-  // Each paid Personalized Plan is its own purchase (bought per trip). Read with the customer's own session: row-level security
-  // limits personalized_plan_requests to requests whose order they own. Complimentary requests have no order and are not purchases.
-  const { data: requestRows } = await supabase
-    .from("personalized_plan_requests")
-    .select("id, destination_id, answers, generated_at, saved_plan_id, source, created_at, orders(status, paid_at, created_at)")
-    .order("created_at", { ascending: false })
-    .returns<PersonalizedRequestRow[]>();
-  const personalizedPurchases: PersonalizedPurchase[] = [];
-  for (const row of requestRows ?? []) {
-    if (row.source === "complimentary") continue;
-    const order = Array.isArray(row.orders) ? row.orders[0] : row.orders;
-    if (!order || order.status !== "paid") continue;
-    const planStillExists = !!row.saved_plan_id && savedPlans.some((plan) => plan.id === row.saved_plan_id);
-    personalizedPurchases.push({
-      requestId: row.id,
-      destinationId: row.destination_id,
-      days: typeof row.answers?.days === "number" ? row.answers.days : null,
-      details: {
-        surpriseMe: row.answers?.surpriseMe === true,
-        interests: Array.isArray(row.answers?.interests) ? (row.answers.interests as PersonalizedPurchase["details"]["interests"]) : [],
-        accommodation: row.answers?.accommodation
-          ? { booked: row.answers.accommodation.booked === true, text: typeof row.answers.accommodation.text === "string" ? row.answers.accommodation.text : undefined }
-          : null,
-      },
-      purchasedAt: order.paid_at ?? order.created_at,
-      generated: !!row.generated_at,
-      planId: planStillExists ? row.saved_plan_id : null,
-    });
-  }
-  const purchases = buildAccountPurchases({ entitlements: ownedProducts, personalized: personalizedPurchases });
+  // The Personalized Plan is ONE purchase (it unlocks the planner), listed with the other products for as long as they own it -- even if every
+  // saved plan was deleted. Their plans are listed separately below.
+  const purchases = buildAccountPurchases({ entitlements: ownedProducts });
 
   const plans: PlanCardData[] = [];
-  const removedPlans: PlanCardData[] = [];
   for (const row of savedPlans) {
-    const target = isRemoved(row) ? removedPlans : plans;
     if (isValidSmartPlannerV2SavedPlanRow(row)) {
-      target.push({
+      plans.push({
         id: row.id,
         destinationId: row.destination_slug,
         days: v2SavedPlanDayCount(row.preferences_json),
         details: { surpriseMe: !!row.preferences_json.surpriseMe, interests: row.preferences_json.interests, accommodation: row.preferences_json.accommodation },
         href: `/smart-planner/barcelona-v2/saved/${row.id}`,
+        editHref: plannerEditPlanHref(row.id),
       });
       continue;
     }
     // This table is shared with V1 (distinguished only by shape): a row that fails BOTH validators is neither cleanly V1 nor V2
     // (e.g. a future interest-key rename could make an old row fail its own validator), so it is skipped rather than blindly cast.
     if (!isValidSmartPlannerSavedPlanRow(row)) continue;
-    target.push({
+    plans.push({
       id: row.id,
       destinationId: row.destination_slug,
       days: row.preferences_json.tripLength,
@@ -166,7 +124,7 @@ export default async function AccountPage() {
 
           <AccountPurchases purchases={purchases} inheritedGuideFrom={hasInheritedGuideAccess && inheritedGuideFrom ? { slug: inheritedGuideFrom.productSlug, name: inheritedGuideFrom.productName } : null} />
 
-          <AccountPlans plans={plans} archivedPlans={removedPlans} />
+          <AccountPlans plans={plans} />
 
           {/* Unified Personalized Plan merge: this section is now historical/legacy only -- the
               new unified planner (/planner) never creates a custom_plan_requests row, it saves

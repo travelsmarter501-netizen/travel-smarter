@@ -6,7 +6,6 @@ import type { PlanCardData } from "../planner/PlanCard";
 import { useLanguage } from "../../lib/language";
 import { fillCopy } from "../../lib/plannerCopy";
 import { formatPurchaseDate, productDisplayName, type AccountPurchase } from "../../lib/accountView";
-import { personalizedTripDetails } from "../../lib/planner/personalizedSummary";
 import { PRODUCT_SLUGS } from "../../lib/commerce/catalog";
 
 const copy = {
@@ -15,48 +14,26 @@ const copy = {
     purchasesEmpty: "لسا ما عندك منتجات مشتراة.",
     purchasedOn: "تم الشراء بتاريخ {date}",
     open: "افتح",
-    openPlan: "افتح الخطة",
-    build: "ابنِ خطتي ✨",
-    personalizedName: "خطة مخصصة إلى {destination}",
+    openPlanner: "افتح المخطط",
     includedWith: "متضمن مع {name} — بدون شراء منفصل",
     guideName: "دليل برشلونة",
     openGuide: "افتح الدليل",
     plansTitle: "خططي",
     plansEmpty: "لسا ما عندك أي خطة.",
-    daysCount: "{n} أيام",
-    dayOne: "يوم",
   },
   en: {
     purchasesTitle: "My purchases",
     purchasesEmpty: "You haven't bought anything yet.",
     purchasedOn: "Purchased on {date}",
     open: "Open",
-    openPlan: "Open plan",
-    build: "Build my plan ✨",
-    personalizedName: "Personalized plan to {destination}",
+    openPlanner: "Open planner",
     includedWith: "Included with {name} — no separate purchase",
     guideName: "Barcelona Travel Guide",
     openGuide: "Open guide",
     plansTitle: "My plans",
     plansEmpty: "You don't have any plan yet.",
-    daysCount: "{n} days",
-    dayOne: "day",
   },
 } as const;
-
-const DESTINATION_NAMES = {
-  ar: { barcelona: "برشلونة" },
-  en: { barcelona: "Barcelona" },
-} as const;
-
-function destinationName(language: "ar" | "en", id: string): string {
-  return (DESTINATION_NAMES[language] as Record<string, string>)[id] ?? id;
-}
-
-function daysText(c: (typeof copy)["ar"] | (typeof copy)["en"], days: number | null): string | null {
-  if (days === null) return null;
-  return days === 1 ? `1 ${c.dayOne}` : fillCopy(c.daysCount, { n: days });
-}
 
 export function AccountPurchases({ purchases, inheritedGuideFrom }: { purchases: AccountPurchase[]; inheritedGuideFrom: { slug: string; name: string } | null }) {
   const { language } = useLanguage();
@@ -74,43 +51,8 @@ export function AccountPurchases({ purchases, inheritedGuideFrom }: { purchases:
       ) : (
         <ul className="mt-3 space-y-3">
           {purchases.map((purchase) => {
-            if (purchase.kind === "personalized") {
-              // A Personalized Plan row is about the TRIP it was bought for (destination, days, interests, accommodation) -- the useful
-              // information -- not about when it was bought, so no purchase date is shown here.
-              const trip = personalizedTripDetails(purchase.details, lang);
-              const title = fillCopy(c.personalizedName, { destination: destinationName(lang, purchase.destinationId) });
-              return (
-                <li key={purchase.key} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3.5">
-                  <div className="min-w-0">
-                    <p dir="auto" className="font-semibold text-slate-900">
-                      {title}
-                    </p>
-                    {daysText(c, purchase.days) && (
-                      <p dir="auto" className="text-xs text-slate-600">
-                        {daysText(c, purchase.days)}
-                      </p>
-                    )}
-                    {trip.interests && (
-                      <p dir="auto" className="text-xs text-slate-600">
-                        {trip.interests}
-                      </p>
-                    )}
-                    {trip.accommodation && (
-                      <p dir="auto" className="text-xs text-slate-600">
-                        {trip.accommodation}
-                      </p>
-                    )}
-                  </div>
-                  {purchase.href && (
-                    <Button href={purchase.href} size="md">
-                      {purchase.built ? c.openPlan : c.build}
-                    </Button>
-                  )}
-                </li>
-              );
-            }
             const name = productDisplayName(purchase.slug, lang, purchase.fallbackName);
-            const openLabel = purchase.slug === PRODUCT_SLUGS.guide ? c.openGuide : c.open;
+            const openLabel = purchase.slug === PRODUCT_SLUGS.guide ? c.openGuide : purchase.slug === PRODUCT_SLUGS.personalizedPlan ? c.openPlanner : c.open;
             return (
               <li key={purchase.key} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3.5">
                 <div className="min-w-0">
@@ -146,8 +88,8 @@ export function AccountPurchases({ purchases, inheritedGuideFrom }: { purchases:
   );
 }
 
-/** "My plans" on the account page: the same cards as /planner (destination, days, trip details, Open plan, Remove) plus the "Removed plans" section with Restore. */
-export function AccountPlans({ plans, archivedPlans = [] }: { plans: PlanCardData[]; archivedPlans?: PlanCardData[] }) {
+/** "My plans" on the account page: the same cards as /planner (destination, days, trip details, Open plan, Edit plan, Delete). */
+export function AccountPlans({ plans }: { plans: PlanCardData[] }) {
   const { language } = useLanguage();
   const c = copy[language === "en" ? "en" : "ar"];
 
@@ -155,7 +97,7 @@ export function AccountPlans({ plans, archivedPlans = [] }: { plans: PlanCardDat
     <div className="mt-8 border-t border-slate-100 pt-6">
       <h2 className="text-lg font-bold text-slate-900">{c.plansTitle}</h2>
 
-      <PlansLists plans={plans} archivedPlans={archivedPlans} emptyText={c.plansEmpty} />
+      <PlansLists plans={plans} emptyText={c.plansEmpty} />
     </div>
   );
 }

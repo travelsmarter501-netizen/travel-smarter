@@ -16,6 +16,11 @@ export type PlannerGenerateErrorCode =
   | "login_required"
   | "not_found"
   | "not_paid"
+  /** The signed-in account does not own the Personalized Plan (nothing is generated for free). */
+  | "not_owner"
+  /** At most 30 saved plans per customer. */
+  | "limit"
+  | "invalid_answers"
   | "in_progress"
   | "plan_deleted"
   | "unsupported_destination"
@@ -28,13 +33,10 @@ export type PlannerCopy = {
     title: string;
     subtitle: string;
     tagline: string;
+    ownerTagline: string;
     backHome: string;
     /** Shown to signed-out visitors who already bought a plan as a guest. */
     alreadyBought: string;
-    /** Notice for a customer who bought under the old pay-first model and has no saved plan. */
-    legacyTitle: string;
-    legacyBody: string;
-    legacyContact: string;
   };
   wizard: {
     progressAria: string;
@@ -75,14 +77,13 @@ export type PlannerCopy = {
     next: string;
     continueToCheckout: string;
     draftSaveFailed: string;
-    /** The last step when the SERVER says payment must not be offered (see getPersonalizedFlowStatus). */
-    checkingPurchase: string;
-    buildMyPlan: string;
-    openMyPlan: string;
-    paidNote: string;
-    duplicateNote: string;
-    /** Shown on top of the questionnaire for a customer who already has plans: this is a new trip and a new purchase. */
-    newTripNote: string;
+    /** An owner's last step: no payment -- the plan is created straight away. */
+    createMyPlan: string;
+    updateMyPlan: string;
+    /** Friendly line on top of an owner's questionnaire. */
+    ownerIntro: string;
+    /** Placeholders: none. Shown above the answers when an existing plan is being edited. */
+    editingNote: string;
   };
   /** Compact summary on /checkout?plan=personalized. */
   checkoutSummary: {
@@ -132,11 +133,8 @@ export type PlannerCopy = {
     pendingTitle: string;
     pendingBody: string;
     newPlanNote: string;
-    /** Shown instead of "Create a new plan" while a paid plan is still waiting to be built. */
-    buildFirstNote: string;
-    /** Plans the customer removed from the list (they are kept and can be restored). */
-    archivedHeading: string;
-    archivedNote: string;
+    /** Empty state for an owner with no saved plan. */
+    emptyOwner: string;
     complimentaryBadge: string;
     complimentaryBody: string;
   };
@@ -153,11 +151,9 @@ export const plannerCopyAr: PlannerCopy = {
     title: "خطة مخصصة إلك ✨",
     subtitle: "اختار وجهتك واهتماماتك، وإحنا بنبني لك خطة ذكية حسب رحلتك.",
     tagline: "جاوب على كم سؤال، أكمل الدفع، وبنبني خطتك حسب أيامك، اهتماماتك ومكان سكنك.",
+    ownerTagline: "جاوب على كم سؤال وبنبني خطتك حسب أيامك، اهتماماتك ومكان سكنك.",
     backHome: "← الرئيسية",
     alreadyBought: "اشتريت من قبل؟ سجّل دخولك",
-    legacyTitle: "اشتريت الخطة المخصصة قبل هذا التحديث",
-    legacyBody: "مشترياتك محفوظة في حسابك. إذا ما لقيت خطتك أو بدك مساعدة لبنائها، تواصل معنا وبنساعدك. وتقدر كمان تبدأ خطة جديدة من الأسفل لرحلة جديدة.",
-    legacyContact: "تواصل معنا",
   },
   wizard: {
     progressAria: "خطوات إنشاء الرحلة",
@@ -213,12 +209,10 @@ export const plannerCopyAr: PlannerCopy = {
     next: "التالي",
     continueToCheckout: "المتابعة للدفع",
     draftSaveFailed: "تعذّر حفظ إجاباتك على هذا المتصفح. فعّل التخزين المؤقت أو جرّب متصفحًا آخر.",
-    checkingPurchase: "جاري التحقق من حالة خطتك...",
-    buildMyPlan: "ابنِ خطتي ✨",
-    openMyPlan: "افتح خطتي",
-    paidNote: "دفعتك لخطة مؤكدة وخطتك جاهزة للبناء — لا حاجة لدفع جديد.",
-    duplicateNote: "اشتريت خطة بنفس هذه الإجابات قبل قليل — لا حاجة لدفع جديد. افتح خطتك، أو غيّر إجاباتك إذا كانت لرحلة جديدة.",
-    newTripNote: "هذه خطة جديدة لرحلة أخرى، وتتطلب عملية شراء جديدة. خطتك الحالية محفوظة كما هي.",
+    createMyPlan: "أنشئ خطتي ✨",
+    updateMyPlan: "حدّث خطتي ✨",
+    ownerIntro: "عدّل تفاصيل رحلتك وأنشئ خطتك بالطريقة التي تناسبك.",
+    editingNote: "إجاباتك الحالية محمّلة. عدّلها ثم حدّث الخطة — بدون أي دفع.",
   },
   checkoutSummary: {
     title: "خطة مخصصة إلى {destination}",
@@ -240,7 +234,7 @@ export const plannerCopyAr: PlannerCopy = {
   },
   mine: {
     title: "خططي المخصصة",
-    subtitle: "هنا كل خططك المخصصة. لكل رحلة جديدة بتنشئ خطة جديدة.",
+    subtitle: "عدّل تفاصيل رحلتك وأنشئ خطتك بالطريقة التي تناسبك.",
     createNew: "إنشاء خطة جديدة",
     plansHeading: "خططك",
     openPlan: "افتح الخطة",
@@ -256,10 +250,8 @@ export const plannerCopyAr: PlannerCopy = {
     pendingBadge: "بانتظار تأكيد الدفع",
     pendingTitle: "عم نتأكد من دفعتك",
     pendingBody: "بمجرد تأكيد الدفع بتظهر هنا خطتك جاهزة للبناء. الصفحة بتتحدّث لحالها.",
-    newPlanNote: "كل خطة جديدة هي عملية شراء جديدة لرحلة جديدة.",
-    buildFirstNote: "عندك خطة مدفوعة جاهزة للبناء. ابنِها أولًا، وبعدها تقدر تنشئ خطة جديدة لرحلة أخرى.",
-    archivedHeading: "الخطط المحذوفة",
-    archivedNote: "هذه الخطط مخفية فقط، ومشترياتك محفوظة. تقدر تستعيد أي خطة منها.",
+    newPlanNote: "أنشئ ما تشاء من الخطط — بدون دفع إضافي.",
+    emptyOwner: "ما عندك خطط محفوظة حاليًا. أنشئ خطتك الأولى متى بدك.",
     complimentaryBadge: "✨ جاهزة للبناء",
     complimentaryBody: "طلب خطتك لـ {destination} ({days} أيام) جاهز. اضغط لنبني خطتك من إجاباتك.",
   },
@@ -267,8 +259,11 @@ export const plannerCopyAr: PlannerCopy = {
     login_required: "لازم تسجّل الدخول عشان نبني خطتك.",
     not_found: "ما لقينا هذا الطلب ضمن حسابك.",
     not_paid: "ما قدرنا نتأكد من الدفع بعد. جرّب بعد قليل.",
+    not_owner: "إنشاء الخطط المخصصة متاح لمن اشترى الخطة المخصصة فقط.",
+    limit: "وصلت للحد الأقصى من الخطط المحفوظة (30). احذف خطة قديمة ثم حاول مرة أخرى.",
+    invalid_answers: "بيانات الخطة غير صالحة. راجع إجاباتك وحاول مرة أخرى.",
     in_progress: "خطتك قيد البناء حاليًا. انتظر لحظات وحدّث الصفحة.",
-    plan_deleted: "هذه الخطة انبنت وانحذفت من حسابك سابقًا. لإنشاء خطة جديدة اختار «إنشاء خطة جديدة».",
+    plan_deleted: "هذه الخطة انبنت وانحذفت من حسابك سابقًا. تقدر تنشئ خطة جديدة متى بدك بدون دفع.",
     unsupported_destination: "هذه الوجهة غير مدعومة بعد. تواصل معنا وبنساعدك.",
     generation_failed: "تعذّر بناء الخطة حاليًا. دفعتك محفوظة، وتقدر تحاول مرة ثانية بدون أي رسوم إضافية.",
     save_failed: "بنينا الخطة بس ما قدرنا نحفظها. حاول مرة ثانية بدون أي رسوم إضافية.",
@@ -287,11 +282,9 @@ export const plannerCopyEn: PlannerCopy = {
     title: "Your Personalized Plan ✨",
     subtitle: "Pick your destination and interests, and we’ll build a smart plan around your trip.",
     tagline: "Answer a few questions, check out, and we build your plan around your days, interests and where you’re staying.",
+    ownerTagline: "Answer a few questions and we build your plan around your days, interests and where you’re staying.",
     backHome: "← Home",
     alreadyBought: "Already bought? Sign in",
-    legacyTitle: "You bought the Personalized Plan before this update",
-    legacyBody: "Your purchase is safe in your account. If you can’t find your plan or want help building it, contact us and we’ll help. You can also start a new plan below for another trip.",
-    legacyContact: "Contact us",
   },
   wizard: {
     progressAria: "Trip planning steps",
@@ -347,12 +340,10 @@ export const plannerCopyEn: PlannerCopy = {
     next: "Next",
     continueToCheckout: "Continue to checkout",
     draftSaveFailed: "We couldn’t save your answers in this browser. Enable site storage or try another browser.",
-    checkingPurchase: "Checking your plan status...",
-    buildMyPlan: "Build my plan ✨",
-    openMyPlan: "Open my plan",
-    paidNote: "Your payment is confirmed and your plan is ready to build — there's nothing more to pay.",
-    duplicateNote: "You just bought a plan with these exact answers — there's nothing more to pay. Open your plan, or change your answers if this is a new trip.",
-    newTripNote: "This is a new plan for another trip and needs a new purchase. Your current plan stays exactly as it is.",
+    createMyPlan: "Create my plan ✨",
+    updateMyPlan: "Update my plan ✨",
+    ownerIntro: "Update your trip details and create a plan that fits you.",
+    editingNote: "Your current answers are loaded. Change them and update the plan — no payment.",
   },
   checkoutSummary: {
     title: "Personalized Plan to {destination}",
@@ -374,7 +365,7 @@ export const plannerCopyEn: PlannerCopy = {
   },
   mine: {
     title: "My Personalized Plans",
-    subtitle: "All your personalized plans are here. For each new trip you create a new plan.",
+    subtitle: "Update your trip details and create a plan that fits you.",
     createNew: "Create a new plan",
     plansHeading: "Your plans",
     openPlan: "Open plan",
@@ -390,10 +381,8 @@ export const plannerCopyEn: PlannerCopy = {
     pendingBadge: "Awaiting payment confirmation",
     pendingTitle: "We’re confirming your payment",
     pendingBody: "As soon as the payment is confirmed, your plan will appear here ready to build. This page refreshes on its own.",
-    newPlanNote: "Each new plan is a new purchase for a new trip.",
-    buildFirstNote: "You have a paid plan ready to build. Build it first, then you can create another plan for a different trip.",
-    archivedHeading: "Removed plans",
-    archivedNote: "These plans are only hidden, and your purchases are safe. You can restore any of them.",
+    newPlanNote: "Create as many plans as you like — no extra payment.",
+    emptyOwner: "You don't have any saved plan right now. Create your first one whenever you like.",
     complimentaryBadge: "✨ Ready to build",
     complimentaryBody: "Your request for the {destination} plan ({days} days) is ready. Tap below and we’ll build it from your answers.",
   },
@@ -401,8 +390,11 @@ export const plannerCopyEn: PlannerCopy = {
     login_required: "Please sign in so we can build your plan.",
     not_found: "We couldn’t find this order in your account.",
     not_paid: "We couldn’t confirm the payment yet. Please try again in a moment.",
+    not_owner: "Creating personalized plans is available to customers who bought the Personalized Plan.",
+    limit: "You've reached the maximum of 30 saved plans. Delete an old one and try again.",
+    invalid_answers: "Your plan details aren’t valid. Please review your answers and try again.",
     in_progress: "Your plan is being built right now. Wait a few seconds and refresh the page.",
-    plan_deleted: "This plan was already built and later deleted from your account. To get a new plan, choose “Create a new plan”.",
+    plan_deleted: "This plan was already built and later deleted from your account. You can create a new plan any time at no charge.",
     unsupported_destination: "This destination isn’t supported yet. Contact us and we’ll help.",
     generation_failed: "We couldn’t build the plan right now. Your payment is safe, and you can try again at no extra charge.",
     save_failed: "We built the plan but couldn’t save it. Please try again at no extra charge.",

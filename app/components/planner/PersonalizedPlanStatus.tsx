@@ -7,30 +7,22 @@ import { PLANNER_MY_PLANS } from "../../lib/planner/planLinks";
 
 const copy = {
   ar: {
-    readyTitle: "خطتك المخصصة جاهزة ✅",
-    readyBody: "خطتك محفوظة في حسابك، ولا حاجة لدفع جديد لفتحها.",
-    open: "افتح خطتي",
-    buildTitle: "تم تأكيد الدفع ✅",
-    buildBody: "خطتك جاهزة للبناء — لا حاجة لدفع جديد.",
-    build: "ابنِ خطتي ✨",
+    title: "مخطط الرحلات المخصص مفتوح لك ✅",
+    body: "اشتريته مسبقًا — أنشئ خطتك وعدّلها بالطريقة التي تناسبك، بدون أي دفع جديد.",
+    open: "افتح خطتي المخصصة",
   },
   en: {
-    readyTitle: "Your personalized plan is ready ✅",
-    readyBody: "Your plan is saved in your account — there's nothing more to pay to open it.",
-    open: "Open my plan",
-    buildTitle: "Payment confirmed ✅",
-    buildBody: "Your plan is ready to build — there's nothing more to pay.",
-    build: "Build my plan ✨",
+    title: "Your personalized planner is unlocked ✅",
+    body: "You already bought it — create and edit your plan whenever you like, with no new payment.",
+    open: "Open my personalized planner",
   },
 } as const;
 
 /**
- * What /checkout?plan=personalized shows a customer who has ALREADY paid: no price, no summary, no payment button.
- *   "generated": their plan exists -> "Open my plan" (only; "Create another plan" lives inside the plans page);
- *   "unbuilt":   paid, not built yet -> "Build my plan".
- * The decision is made on the server (see getPersonalizedPlanState); this only displays it.
+ * What /checkout?plan=personalized shows a customer who ALREADY owns the Personalized Plan: no price, no summary, no payment button --
+ * just the way into their (unlocked) planner. Whether they own it is decided on the server; this only displays it.
  */
-export default function PersonalizedPlanStatus({ state }: { state: "generated" | "unbuilt" }) {
+export default function PersonalizedPlanStatus() {
   const { language } = useLanguage();
   const c = copy[language === "en" ? "en" : "ar"];
 
@@ -38,13 +30,13 @@ export default function PersonalizedPlanStatus({ state }: { state: "generated" |
     <main className="py-10">
       <Container className="max-w-lg">
         <div className="rounded-3xl border border-slate-200 bg-white p-6 text-center shadow-sm sm:p-8">
-          <h1 className="text-2xl font-bold text-slate-900">{state === "generated" ? c.readyTitle : c.buildTitle}</h1>
-          <p className="mt-2 text-sm leading-6 text-slate-600">{state === "generated" ? c.readyBody : c.buildBody}</p>
+          <h1 className="text-2xl font-bold text-slate-900">{c.title}</h1>
+          <p className="mt-2 text-sm leading-6 text-slate-600">{c.body}</p>
           <Link
             href={PLANNER_MY_PLANS}
             className="mt-6 flex w-full items-center justify-center rounded-full bg-teal-700 px-5 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-teal-800"
           >
-            {state === "generated" ? c.open : c.build}
+            {c.open}
           </Link>
         </div>
       </Container>

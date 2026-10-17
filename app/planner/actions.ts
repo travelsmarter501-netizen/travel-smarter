@@ -6,13 +6,14 @@ import { generateClaimToken, hashClaimToken, normalizeGuestEmail } from "../lib/
 import {
   createComplimentaryPlanRequest,
   createPersonalizedPlanOrder,
+  deleteOwnSavedPlan,
+  generateOwnerPersonalizedPlan,
   generatePersonalizedPlanForRequest,
-  getPersonalizedPlanState,
-  hasPaidUnbuiltRequest,
-  hasRecentPaidRequestWithSameAnswers,
-  type PersonalizedPlanState,
+  ownsPersonalizedPlan,
   type CreateComplimentaryRequestResult,
+  type DeleteSavedPlanResult,
   type GeneratePersonalizedPlanResult,
+  type OwnerPlanResult,
 } from "../lib/commerce/personalizedPlan";
 import { normalizePersonalizedAnswers } from "../lib/planner/personalizedPlanAnswers";
 import type { StartCheckoutResult } from "../checkout/actions";
@@ -39,13 +40,10 @@ export async function startPersonalizedPlanCheckout(input: { destinationId?: unk
   } = await supabase.auth.getUser();
 
   if (user) {
-    // A paid plan that has not been built yet is built, not paid for again (also stops a stale tab or an old draft from re-submitting).
-    if (await hasPaidUnbuiltRequest(user.id)) {
-      return { ok: false, error: "عندك خطة مدفوعة بانتظار البناء. افتح «خططي المخصصة» وابنِها أولًا.", code: "paid_plan_awaiting_build" };
-    }
-    // The same answers bought again right after the first purchase come from a stale tab / old draft: open the plan, do not charge twice.
-    if (await hasRecentPaidRequestWithSameAnswers(user.id, normalized.destinationId, normalized.answers)) {
-      return { ok: false, error: "اشتريت خطة بنفس هذه الإجابات قبل قليل. افتح «خططي المخصصة».", code: "duplicate_plan_request" };
+    // The Personalized Plan is bought ONCE. An owner (a stale tab, an old draft, a direct link) is never charged again: the planner is
+    // already unlocked for them and creating plans is free.
+    if (await ownsPersonalizedPlan(user.id)) {
+      return { ok: false, error: "مخطط الرحلات المخصص مفتوح لك مسبقًا — أنشئ خطتك بدون أي دفع جديد.", code: "planner_already_unlocked" };
     }
     const order = await createPersonalizedPlanOrder({ userId: user.id, destinationId: normalized.destinationId, answers: normalized.answers });
     if (!order.ok) return { ok: false, error: order.error, code: order.code };
@@ -95,30 +93,20 @@ export async function startComplimentaryPlan(input: { destinationId?: unknown; a
   return createComplimentaryPlanRequest({ destinationId: normalized.destinationId, answers: normalized.answers });
 }
 
-export type PersonalizedFlowStatus = {
-  /** "unbuilt": a paid plan is waiting to be built; "generated": they already have a plan; "none": nothing yet. */
-  state: PersonalizedPlanState;
-  /** These exact answers were just bought (a stale tab / old draft): the final step must open the plan, not offer payment. */
-  duplicate: boolean;
-};
+/**
+ * Creates -- or, with `replacePlanId`, regenerates in place ("Edit plan") -- one personalized plan for an OWNER of the Personalized Plan, with no
+ * payment. The user comes from the verified session; whether they own the product is decided by the database
+ * (user_owns_personalized_plan inside begin_owner_plan_generation). A non-owner gets `not_owner` and nothing is generated. No order, order item,
+ * payment, request or entitlement is created.
+ */
+export async function generateOwnerPlanAction(input: { destinationId?: unknown; answers?: unknown; replacePlanId?: unknown }): Promise<OwnerPlanResult> {
+  return generateOwnerPersonalizedPlan({ destinationId: input?.destinationId, answers: input?.answers, replacePlanId: input?.replacePlanId });
+}
 
 /**
- * The questionnaire's last step asks the SERVER whether payment may be offered at all, so a stale tab or an old browser draft can never turn
- * an already-paid request into a second checkout. The user comes from the verified session; the answers (optional) are only compared with the
- * customer's own recent paid requests. Nothing is created or changed here. A signed-out visitor is always "none" (a guest buys normally).
+ * Permanently deletes one of the signed-in customer's own saved plans. Only that plan row goes: the paid order, the payment and the
+ * entitlements (so the customer stays an owner and may create plans again) are untouched, and so are all other plans.
  */
-export async function getPersonalizedFlowStatus(input?: { destinationId?: unknown; answers?: unknown }): Promise<PersonalizedFlowStatus> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { state: "none", duplicate: false };
-
-  const state = await getPersonalizedPlanState(user.id);
-  let duplicate = false;
-  if (input?.answers !== undefined) {
-    const normalized = normalizePersonalizedAnswers(input.answers, input.destinationId);
-    if (normalized.ok) duplicate = await hasRecentPaidRequestWithSameAnswers(user.id, normalized.destinationId, normalized.answers);
-  }
-  return { state, duplicate };
+export async function deleteSavedPlanAction(planId: string): Promise<DeleteSavedPlanResult> {
+  return deleteOwnSavedPlan(planId);
 }

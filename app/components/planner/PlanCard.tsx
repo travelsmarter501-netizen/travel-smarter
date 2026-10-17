@@ -6,7 +6,7 @@ import Button from "../Button";
 import { useLanguage } from "../../lib/language";
 import { fillCopy } from "../../lib/plannerCopy";
 import { personalizedTripDetails, type TripDetailsInput } from "../../lib/planner/personalizedSummary";
-import { setPlanArchivedAction } from "../../planner/archiveActions";
+import { deleteSavedPlanAction } from "../../planner/actions";
 
 export type PlanCardData = {
   id: string;
@@ -17,6 +17,8 @@ export type PlanCardData = {
   /** For an older plan whose interests are not in the current format: a ready-made interests line. */
   interestsLine?: string | null;
   href: string;
+  /** Where "Edit plan" goes (the owner's pre-filled questionnaire). Absent for plans that cannot be regenerated (older planner versions). */
+  editHref?: string;
 };
 
 const DESTINATION_NAMES = { ar: { barcelona: "برشلونة" }, en: { barcelona: "Barcelona" } } as const;
@@ -27,13 +29,11 @@ const copy = {
     daysCount: "{n} أيام",
     dayOne: "يوم",
     open: "افتح الخطة",
-    remove: "حذف",
-    restore: "استعادة",
-    removing: "جاري الحذف...",
-    restoring: "جاري الاستعادة...",
-    confirm: "هل تريد إزالة هذه الخطة من قائمة خططي؟",
-    confirmNote: "هذا لا يلغي عملية الشراء ولا يسترد المبلغ، ويمكنك استعادة الخطة لاحقًا.",
-    confirmYes: "نعم، احذف",
+    edit: "تعديل الخطة",
+    delete: "حذف",
+    deleting: "جاري الحذف...",
+    confirm: "هل تريد حذف هذه الخطة نهائيًا؟ لا يمكن التراجع عن هذا الإجراء.",
+    confirmYes: "نعم، احذف نهائيًا",
     cancel: "إلغاء",
     failed: "تعذّر تنفيذ الطلب. حاول مرة أخرى.",
     loginAgain: "انتهت جلستك. سجّل دخولك مرة أخرى ثم حاول من جديد.",
@@ -44,13 +44,11 @@ const copy = {
     daysCount: "{n} days",
     dayOne: "day",
     open: "Open plan",
-    remove: "Remove",
-    restore: "Restore",
-    removing: "Removing...",
-    restoring: "Restoring...",
-    confirm: "Remove this plan from My Plans?",
-    confirmNote: "This doesn't cancel or refund your purchase, and you can restore the plan later.",
-    confirmYes: "Yes, remove",
+    edit: "Edit plan",
+    delete: "Delete",
+    deleting: "Deleting...",
+    confirm: "Delete this plan permanently? This action cannot be undone.",
+    confirmYes: "Yes, delete permanently",
     cancel: "Cancel",
     failed: "We couldn't complete that. Please try again.",
     loginAgain: "Your session ended. Sign in again and try once more.",
@@ -59,16 +57,14 @@ const copy = {
 } as const;
 
 /**
- * One saved plan as a card: destination, days, the trip details it was built from, "Open plan" and "Remove" (or "Restore" for a plan
- * that was removed). Remove only HIDES the plan -- it is stored in the database and so are its request, order and entitlements (see
- * planner/archiveActions.ts).
+ * One saved plan as a card: destination, days, the trip details it was built from, "Open plan", "Edit plan" and "Delete".
  *
- * The confirmation is part of the page, not the browser's native dialog: a native browser dialog can be silently suppressed (in-app browsers,
- * blocked dialogs) which made "Remove" look like it did nothing. On success the card leaves the list at once and the page refreshes from the
- * server; on failure the card says why. The list that holds the card (PlansLists) moves it between "My plans" and "Removed plans" through
- * `onChanged`; used on its own the card simply hides itself.
+ * Delete is PERMANENT for that one plan (planner/actions.ts -> delete_saved_plan, owner-checked on the server) and says so in an in-page
+ * confirmation (not the browser's native dialog, which can be silently blocked). It never touches the customer's order, payment or
+ * ownership of the Personalized Plan, so they can still create plans afterwards. On success the card leaves the list at once and the page
+ * refreshes from the server; on failure the card says why.
  */
-export default function PlanCard({ plan, archived = false, onChanged }: { plan: PlanCardData; archived?: boolean; /** Called after the server confirmed the change, so the list can move the card at once. */ onChanged?: (archived: boolean) => void }) {
+export default function PlanCard({ plan }: { plan: PlanCardData }) {
   const { language } = useLanguage();
   const lang = language === "en" ? "en" : "ar";
   const c = copy[lang];
@@ -83,28 +79,24 @@ export default function PlanCard({ plan, archived = false, onChanged }: { plan: 
   const trip = personalizedTripDetails(plan.details, lang);
   const interests = plan.interestsLine ?? trip.interests;
 
-  async function setArchived(next: boolean) {
+  async function remove() {
     setBusy(true);
     setError(null);
     try {
-      const result = await setPlanArchivedAction(plan.id, next);
+      const result = await deleteSavedPlanAction(plan.id);
       if (!result.ok) {
-        console.error("[plans] archive failed:", result.code);
+        console.error("[plans] delete failed:", result.code);
         setError(result.code === "login_required" ? c.loginAgain : result.code === "not_found" ? c.notFound : c.failed);
         setBusy(false);
         return;
       }
     } catch {
-      console.error("[plans] archive request failed");
+      console.error("[plans] delete request failed");
       setError(c.failed);
       setBusy(false);
       return;
     }
-    // Done on the server: leave the list immediately, then let the server re-render the page (so the other list and the account agree).
-    setConfirming(false);
-    setBusy(false);
-    if (onChanged) onChanged(next);
-    else setGone(true);
+    setGone(true);
     router.refresh();
   }
 
@@ -112,54 +104,54 @@ export default function PlanCard({ plan, archived = false, onChanged }: { plan: 
 
   return (
     <li className="rounded-2xl border border-slate-200 bg-white px-4 py-3.5">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p dir="auto" className="font-semibold text-slate-900">
-            {fillCopy(c.planTitle, { destination })}
-            {days && ` · ${days}`}
+      <div>
+        <p dir="auto" className="font-semibold text-slate-900">
+          {fillCopy(c.planTitle, { destination })}
+          {days && ` · ${days}`}
+        </p>
+        {interests && (
+          <p dir="auto" className="mt-0.5 text-xs text-slate-600">
+            {interests}
           </p>
-          {interests && (
-            <p dir="auto" className="mt-0.5 text-xs text-slate-600">
-              {interests}
-            </p>
-          )}
-          {trip.accommodation && (
-            <p dir="auto" className="text-xs text-slate-600">
-              {trip.accommodation}
-            </p>
-          )}
-        </div>
-        <div className="flex shrink-0 items-center gap-2">
-          <Button href={plan.href} size="md">
-            {c.open}
+        )}
+        {trip.accommodation && (
+          <p dir="auto" className="text-xs text-slate-600">
+            {trip.accommodation}
+          </p>
+        )}
+      </div>
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        <Button href={plan.href} size="md">
+          {c.open}
+        </Button>
+        {plan.editHref && (
+          <Button href={plan.editHref} variant="secondary" size="md">
+            {c.edit}
           </Button>
-          <button
-            type="button"
-            onClick={() => (archived ? setArchived(false) : setConfirming(true))}
-            disabled={busy || confirming}
-            className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-600 transition-colors hover:border-slate-300 hover:bg-slate-50 disabled:opacity-60"
-          >
-            {busy && archived ? c.restoring : archived ? c.restore : c.remove}
-          </button>
-        </div>
+        )}
+        <button
+          type="button"
+          onClick={() => setConfirming(true)}
+          disabled={busy || confirming}
+          className="inline-flex items-center rounded-full border border-rose-200 bg-white px-3.5 py-2 text-xs font-bold text-rose-600 transition-colors hover:border-rose-300 hover:bg-rose-50 disabled:opacity-60"
+        >
+          {c.delete}
+        </button>
       </div>
 
-      {confirming && !archived && (
-        <div role="alertdialog" aria-label={c.confirm} className="mt-3 rounded-xl bg-slate-50 px-3.5 py-3">
-          <p dir="auto" className="text-sm font-semibold text-slate-900">
+      {confirming && (
+        <div role="alertdialog" aria-label={c.confirm} className="mt-3 rounded-xl bg-rose-50 px-3.5 py-3">
+          <p dir="auto" className="text-sm font-semibold leading-6 text-slate-900">
             {c.confirm}
-          </p>
-          <p dir="auto" className="mt-1 text-xs leading-5 text-slate-600">
-            {c.confirmNote}
           </p>
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <button
               type="button"
-              onClick={() => setArchived(true)}
+              onClick={remove}
               disabled={busy}
               className="inline-flex items-center rounded-full bg-rose-600 px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-rose-700 disabled:opacity-60"
             >
-              {busy ? c.removing : c.confirmYes}
+              {busy ? c.deleting : c.confirmYes}
             </button>
             <button
               type="button"

@@ -27,7 +27,5 @@ export type CheckoutErrorCode =
   | "planner_answers_required"
   /** The submitted questionnaire answers failed server-side validation. */
   | "invalid_planner_answers"
-  /** The customer already paid for a Personalized Plan they have not built yet: they build it first, they do not pay again. */
-  | "paid_plan_awaiting_build"
-  /** The same questionnaire answers were just bought (stale tab / old draft / double tap): open the plan instead of paying twice. */
-  | "duplicate_plan_request";
+  /** The customer already owns the Personalized Plan: the planner is unlocked, so creating plans is free and nothing is charged again. */
+  | "planner_already_unlocked";

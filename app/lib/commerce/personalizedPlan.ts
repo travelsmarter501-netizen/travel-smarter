@@ -9,20 +9,25 @@ import type { CheckoutErrorCode } from "./checkoutErrors";
 import type { PersonalizedPlanAnswers } from "../planner/personalizedPlanAnswers";
 import { inclusiveDayCount } from "../planner/dateOnly";
 import { isComplimentaryUser } from "./complimentary";
+import { randomUUID } from "crypto";
+import { normalizePersonalizedAnswers } from "../planner/personalizedPlanAnswers";
 import type { TripDetailsInput } from "../planner/personalizedSummary";
 
 /**
- * Personalized Plan -- server-side order + generation logic for "one purchase = one plan".
+ * Personalized Plan -- server-side purchase + generation logic.
  *
+ * The Personalized Plan is an UNLOCK: paying once makes the customer an OWNER of the personalized planner, and an owner creates, edits and
+ * deletes personalized plans freely, with no further payment (see generateOwnerPersonalizedPlan).
+ *
+ * Buying it:
  *   questionnaire -> createPersonalizedPlanOrder (order + stored answers, atomically, price from the DB)
- *                 -> Allpay -> verified webhook / guest claim (unchanged) -> the request's order is PAID and OWNED
- *                 -> generatePersonalizedPlanForRequest (the ONLY way a plan gets generated)
+ *                 -> Allpay -> verified webhook / guest claim (unchanged) -> the order is PAID and OWNED, the entitlement is granted
+ *                 -> the first plan is built from the answers typed before paying (generatePersonalizedPlanForRequest, kept as it was:
+ *                    lease + once-only completion protect that ONE request from being built twice)
  *
- * Generation is authorized by exactly one thing: begin_personalized_plan_generation returning 'granted' for
- * (request, verified session user) -- i.e. a request linked to a PAID order owned by that user that has not
- * already produced its plan. Owning the product entitlement does not matter here, and neither do the
- * questionnaire answers (they are only the stored input). Everything below runs with the service-role client,
- * but only AFTER the user id has been read from the verified session -- never from an argument.
+ * Using it afterwards: authorization is ownership (user_owns_personalized_plan) and nothing else -- no order, no payment, no request.
+ * Everything below runs with the service-role client, but only AFTER the user id has been read from the verified session -- never
+ * from an argument.
  */
 
 type ServiceRole = ReturnType<typeof createServiceRoleClient>;
@@ -253,115 +258,164 @@ export async function generatePersonalizedPlanForRequest(requestId: unknown): Pr
   return { ok: true, planId };
 }
 
-// ── "paid but not built yet" ──────────────────────────────────────────────────────────────────────────────────
+// ── ownership: the Personalized Plan is an UNLOCK ─────────────────────────────────────────────────────────────
 /**
- * True when this customer owns a PAID Personalized Plan request that has not produced its plan yet. Such a customer builds
- * that plan (free, one click) -- they are never sent back to payment, and /planner and the purchase action both use this.
- * It is decided on the server from the database (the verified session user id, the order status and generated_at), never from
- * anything the browser keeps (session storage drafts, an old tab, a back button).
+ * True when this customer owns the Personalized Plan: an active entitlement from ANY earlier model, or a PAID order of theirs that contains
+ * the product (decided by the database function user_owns_personalized_plan). Pending / unpaid orders never count. Guests are never owners
+ * until their paid purchase is claimed into an account.
+ */
+export async function ownsPersonalizedPlan(userId: string): Promise<boolean> {
+  const { data, error } = await createServiceRoleClient().rpc("user_owns_personalized_plan", { p_user_id: userId });
+  if (error) {
+    console.error("[planner] user_owns_personalized_plan failed:", error.code ?? "no-code");
+    return false;
+  }
+  return data === true;
+}
+
+export type OwnerPlanErrorCode = "login_required" | "not_owner" | "invalid_answers" | "limit" | "in_progress" | "not_found" | "unsupported_destination" | "generation_failed" | "save_failed";
+export type OwnerPlanResult = { ok: true; planId: string } | { ok: false; code: OwnerPlanErrorCode };
+
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * Creates (or, with `replacePlanId`, regenerates in place) one personalized plan for an OWNER, from the answers the browser sends -- which are
+ * re-validated and rebuilt from the allow-list exactly like a purchase's answers. No order, order item, payment, request or entitlement is
+ * created: the only authority is begin_owner_plan_generation, which says 'granted' only to a verified owner, one generation at a time, and
+ * within the 30-plan cap. A non-owner gets not_owner and nothing is generated.
  *
- * Only paid orders count: an unpaid (pending) request is not "paid", and a request whose plan was built (even if that plan was
- * later deleted) has generated_at set, so it is not "unbuilt" and a new purchase stays possible.
+ * "Edit plan" rewrites that plan's content in place (it keeps its id, so there is no duplicate clutter); a new plan is a new saved plan.
  */
-export async function hasPaidUnbuiltRequest(userId: string): Promise<boolean> {
-  const serviceRole = createServiceRoleClient();
-  const { data: orders, error } = await serviceRole.from("orders").select("id").eq("user_id", userId).eq("status", "paid").returns<{ id: string }[]>();
-  if (error || !orders || orders.length === 0) return false;
-  const { data: requests, error: requestError } = await serviceRole
-    .from("personalized_plan_requests")
-    .select("id")
-    .in(
-      "order_id",
-      orders.map((order) => order.id)
-    )
-    .is("generated_at", null)
-    .limit(1)
-    .returns<{ id: string }[]>();
-  return !requestError && !!requests && requests.length > 0;
-}
+export async function generateOwnerPersonalizedPlan(input: { destinationId?: unknown; answers?: unknown; replacePlanId?: unknown }): Promise<OwnerPlanResult> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, code: "login_required" };
 
-/**
- * Where this customer stands with the Personalized Plan, decided on the server from the database:
- *   "unbuilt"   a PAID request is waiting to be built       -> "Build my plan", never payment;
- *   "generated" they have at least one plan built from a paid / complimentary request (or a saved personalized plan) -> "Open my plan";
- *   "none"      nothing yet                                  -> the normal questionnaire and checkout.
- * A plan the customer removed from My Plans still counts as generated (it is only hidden). Unpaid attempts never count.
- */
-export type PersonalizedPlanState = "none" | "unbuilt" | "generated";
+  const normalized = normalizePersonalizedAnswers(input.answers, input.destinationId);
+  if (!normalized.ok) return { ok: false, code: "invalid_answers" };
 
-export async function getPersonalizedPlanState(userId: string): Promise<PersonalizedPlanState> {
-  if (await hasPaidUnbuiltRequest(userId)) return "unbuilt";
+  let replaceId: string | null = null;
+  if (input.replacePlanId !== undefined && input.replacePlanId !== null) {
+    if (typeof input.replacePlanId !== "string" || !UUID_PATTERN.test(input.replacePlanId)) return { ok: false, code: "not_found" };
+    replaceId = input.replacePlanId;
+  }
 
   const serviceRole = createServiceRoleClient();
-  const { data: orders } = await serviceRole.from("orders").select("id").eq("user_id", userId).eq("status", "paid").returns<{ id: string }[]>();
-  if (orders && orders.length > 0) {
-    const { data: paid } = await serviceRole
-      .from("personalized_plan_requests")
+  const { data: gate, error: gateError } = await serviceRole.rpc("begin_owner_plan_generation", { p_user_id: user.id, p_replace_plan_id: replaceId });
+  if (gateError || typeof gate !== "string") {
+    console.error("[planner] begin_owner_plan_generation failed:", gateError?.code ?? "no-code");
+    return { ok: false, code: "generation_failed" };
+  }
+  if (gate === "denied") return { ok: false, code: "not_owner" };
+  if (gate === "limit") return { ok: false, code: "limit" };
+  if (gate === "in_progress") return { ok: false, code: "in_progress" };
+  if (gate === "not_found") return { ok: false, code: "not_found" };
+  if (gate !== "granted") return { ok: false, code: "generation_failed" };
+
+  // From here on this call holds the generation lease: it is released on every path out.
+  try {
+    if (normalized.destinationId !== "barcelona") return { ok: false, code: "unsupported_destination" };
+
+    const answers = normalized.answers;
+    const generated = await generateBarcelonaPlanV2({
+      destinationId: normalized.destinationId,
+      dateMode: answers.dateMode,
+      durationDays: answers.durationDays,
+      arrivalDate: answers.arrivalDate,
+      departureDate: answers.departureDate,
+      interests: answers.interests,
+      surpriseMe: answers.surpriseMe,
+      accommodation: answers.accommodation,
+    });
+    if (!generated.ok) {
+      console.error("[planner] owner plan generation failed");
+      return { ok: false, code: "generation_failed" };
+    }
+
+    const preferences = normalizeSmartPlannerV2Preferences(buildSavedPreferences(answers));
+
+    if (replaceId) {
+      const { data: replaced, error: replaceError } = await serviceRole.rpc("replace_owned_plan_content", {
+        p_plan_id: replaceId,
+        p_user_id: user.id,
+        p_preferences: preferences,
+        p_generated: { plan: generated.data },
+      });
+      if (replaceError) {
+        console.error("[planner] replace_owned_plan_content failed:", replaceError.code ?? "no-code");
+        return { ok: false, code: "save_failed" };
+      }
+      return replaced === true ? { ok: true, planId: replaceId } : { ok: false, code: "not_found" };
+    }
+
+    const { data: inserted, error: insertError } = await serviceRole
+      .from("smart_planner_saved_plans")
+      .insert({
+        user_id: user.id,
+        product_slug: V2_SAVED_PLAN_PRODUCT_SLUG,
+        destination_slug: "barcelona",
+        // planGeneration makes every owner-created plan distinct, so the table's identical-preferences rule never rejects a repeat.
+        preferences_json: { ...preferences, planGeneration: randomUUID() },
+        generated_plan_json: { plan: generated.data },
+      })
       .select("id")
-      .in(
-        "order_id",
-        orders.map((order) => order.id)
-      )
-      .not("generated_at", "is", null)
-      .limit(1)
-      .returns<{ id: string }[]>();
-    if (paid && paid.length > 0) return "generated";
+      .single<{ id: string }>();
+    if (insertError || !inserted?.id) {
+      console.error("[planner] saving an owner plan failed:", insertError?.code ?? "no-code");
+      return { ok: false, code: "save_failed" };
+    }
+    return { ok: true, planId: inserted.id };
+  } finally {
+    await serviceRole.rpc("end_owner_plan_generation", { p_user_id: user.id });
   }
+}
 
-  const { data: complimentary } = await serviceRole
-    .from("personalized_plan_requests")
-    .select("id")
-    .eq("complimentary_user_id", userId)
-    .not("generated_at", "is", null)
-    .limit(1)
-    .returns<{ id: string }[]>();
-  if (complimentary && complimentary.length > 0) return "generated";
+export type DeleteSavedPlanResult = { ok: true } | { ok: false; code: "login_required" | "not_found" | "failed" };
 
-  const { data: plans } = await serviceRole
+/** Permanently deletes ONE of the signed-in customer's own saved plans. The order, payment, entitlements and ownership are never touched. */
+export async function deleteOwnSavedPlan(planId: unknown): Promise<DeleteSavedPlanResult> {
+  if (typeof planId !== "string" || !UUID_PATTERN.test(planId)) return { ok: false, code: "not_found" };
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, code: "login_required" };
+  const { data, error } = await createServiceRoleClient().rpc("delete_saved_plan", { p_plan_id: planId, p_user_id: user.id });
+  if (error) {
+    console.error("[planner] delete_saved_plan failed:", error.code ?? "no-code");
+    return { ok: false, code: "failed" };
+  }
+  return data === true ? { ok: true } : { ok: false, code: "not_found" };
+}
+
+/** The stored answers of one of the signed-in customer's own plans, to pre-fill "Edit plan". Read with their OWN session (row-level security). */
+export type EditablePlan = { id: string; destinationId: string; rawAnswers: Record<string, unknown> };
+
+export async function loadEditablePlan(planId: unknown): Promise<EditablePlan | null> {
+  if (typeof planId !== "string" || !UUID_PATTERN.test(planId)) return null;
+  const supabase = await createClient();
+  const { data } = await supabase
     .from("smart_planner_saved_plans")
-    .select("id")
-    .eq("user_id", userId)
+    .select("id, destination_slug, preferences_json")
+    .eq("id", planId)
     .eq("product_slug", V2_SAVED_PLAN_PRODUCT_SLUG)
-    .limit(1)
-    .returns<{ id: string }[]>();
-  return plans && plans.length > 0 ? "generated" : "none";
-}
-
-/** Stable JSON (sorted keys) so two answer objects compare equal whatever order their keys were written in. */
-function stableStringify(value: unknown): string {
-  if (Array.isArray(value)) return "[" + value.map(stableStringify).join(",") + "]";
-  if (value && typeof value === "object") {
-    const entries = Object.entries(value as Record<string, unknown>)
-      .filter(([, v]) => v !== undefined)
-      .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
-    return "{" + entries.map(([k, v]) => JSON.stringify(k) + ":" + stableStringify(v)).join(",") + "}";
-  }
-  return JSON.stringify(value);
-}
-
-const DUPLICATE_WINDOW_MS = 24 * 60 * 60 * 1000;
-
-/**
- * True when this customer already has a PAID request for exactly these destination + answers from the last 24 hours. That is what a
- * stale tab, an old draft or a double tap produces: the same questionnaire submitted again right after it was bought. A genuine
- * second trip has different answers, so it is not caught. Paid requests only (an abandoned unpaid attempt can be retried freely).
- */
-export async function hasRecentPaidRequestWithSameAnswers(userId: string, destinationId: string, answers: PersonalizedPlanAnswers): Promise<boolean> {
-  const serviceRole = createServiceRoleClient();
-  const { data: orders, error } = await serviceRole.from("orders").select("id").eq("user_id", userId).eq("status", "paid").returns<{ id: string }[]>();
-  if (error || !orders || orders.length === 0) return false;
-  const { data: requests, error: requestError } = await serviceRole
-    .from("personalized_plan_requests")
-    .select("destination_id, answers, created_at")
-    .in(
-      "order_id",
-      orders.map((order) => order.id)
-    )
-    .returns<{ destination_id: string; answers: unknown; created_at: string }[]>();
-  if (requestError || !requests) return false;
-  const wanted = stableStringify(answers);
-  const since = Date.now() - DUPLICATE_WINDOW_MS;
-  return requests.some((row) => row.destination_id === destinationId && new Date(row.created_at).getTime() >= since && stableStringify(row.answers) === wanted);
+    .maybeSingle<{ id: string; destination_slug: string; preferences_json: Record<string, unknown> | null }>();
+  const p = data?.preferences_json;
+  if (!data || !p) return null;
+  const accommodation = p.accommodation as { booked?: unknown; text?: unknown } | null | undefined;
+  return {
+    id: data.id,
+    destinationId: data.destination_slug,
+    rawAnswers: {
+      dateMode: p.dateMode,
+      ...(p.dateMode === "specific" ? { arrivalDate: p.arrivalDate, departureDate: p.departureDate } : { durationDays: p.durationDays }),
+      interests: Array.isArray(p.interests) ? p.interests : [],
+      surpriseMe: p.surpriseMe === true,
+      accommodation: accommodation?.booked === true ? { booked: true, text: typeof accommodation.text === "string" ? accommodation.text : "" } : { booked: false },
+    },
+  };
 }
 
 // ── what /planner shows a signed-in customer ─────────────────────────────────────────────────────────────
@@ -372,9 +426,8 @@ export type PlannerPlanSummary = {
   createdAt: string;
   /** The trip the plan was built for (interests / accommodation), for the card. */
   details: TripDetailsInput;
-  /** Built from a paid (or complimentary) request: the plan is that purchase's product. */
+  /** Built from the answers typed before paying (a purchase request). */
   linkedToPurchase: boolean;
-  archivedAt: string | null;
 };
 export type PlannerRequestSummary = {
   id: string;
@@ -387,15 +440,10 @@ export type PlannerRequestSummary = {
   complimentary: boolean;
 };
 export type MyPersonalizedPlans = {
-  /** Plans shown in "My Plans" (not removed). */
+  /** The customer's saved personalized plans ("My Plans"). */
   plans: PlannerPlanSummary[];
-  /** Plans the customer removed from the list; they still exist and can be restored. */
-  archivedPlans: PlannerPlanSummary[];
+  /** Paid (or complimentary) requests still waiting to be built from their stored answers, and -- only when explicitly resumed -- a pending order. */
   requests: PlannerRequestSummary[];
-  /** How many of the customer's personalized requests (paid or complimentary) have produced their plan -- removed plans still count. */
-  generatedCount: number;
-  /** True if the customer has a paid (or complimentary) request under the one-purchase-one-plan model, built or not. Unpaid attempts never count. */
-  hasAnyRequest: boolean;
 };
 
 type RequestRow = {
@@ -412,7 +460,6 @@ type PlanRow = {
   id: string;
   destination_slug: string;
   created_at: string;
-  archived_at: string | null;
   preferences_json: {
     durationDays?: unknown;
     arrivalDate?: unknown;
@@ -447,7 +494,7 @@ export async function loadMyPersonalizedPlans(userId: string, options: { pending
       .returns<RequestRow[]>(),
     supabase
       .from("smart_planner_saved_plans")
-      .select("id, destination_slug, created_at, archived_at, preferences_json")
+      .select("id, destination_slug, created_at, preferences_json")
       .eq("user_id", userId)
       .eq("product_slug", V2_SAVED_PLAN_PRODUCT_SLUG)
       .order("created_at", { ascending: false })
@@ -455,13 +502,8 @@ export async function loadMyPersonalizedPlans(userId: string, options: { pending
   ]);
 
   const requests: PlannerRequestSummary[] = [];
-  let generatedCount = 0;
   for (const row of requestRows ?? []) {
-    if (row.generated_at) {
-      const generatedOrder = Array.isArray(row.orders) ? row.orders[0] : row.orders;
-      if (row.source === "complimentary" || generatedOrder?.status === "paid") generatedCount += 1;
-      continue;
-    }
+    if (row.generated_at) continue;
     const days = typeof row.answers?.days === "number" ? row.answers.days : null;
     const base = { id: row.id, destinationId: row.destination_id, days, createdAt: row.created_at };
     if (row.source === "complimentary") {
@@ -495,16 +537,8 @@ export async function loadMyPersonalizedPlans(userId: string, options: { pending
         accommodation: p.accommodation ? { booked: p.accommodation.booked === true, text: typeof p.accommodation.text === "string" ? p.accommodation.text : undefined } : null,
       },
       linkedToPurchase: typeof p.personalizedPlanRequestId === "string",
-      archivedAt: row.archived_at ?? null,
     };
   });
 
-  return {
-    plans: allPlans.filter((plan) => !plan.archivedAt),
-    archivedPlans: allPlans.filter((plan) => !!plan.archivedAt),
-    requests,
-    generatedCount,
-    // Purchase-backed requests only (paid, or complimentary): an unpaid attempt does not make someone a customer of the new model.
-    hasAnyRequest: generatedCount > 0 || requests.some((request) => request.state === "ready"),
-  };
+  return { plans: allPlans, requests };
 }

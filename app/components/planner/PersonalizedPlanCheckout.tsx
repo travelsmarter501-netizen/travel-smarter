@@ -236,7 +236,7 @@ export default function PersonalizedPlanCheckout({
             {error && (
               <div role="alert" className="mt-4 text-sm font-semibold text-rose-600">
                 <p>{error.code ? t.checkout.errors[error.code] : error.message}</p>
-                {error.code === "paid_plan_awaiting_build" && (
+                {error.code === "planner_already_unlocked" && (
                   <Link href="/planner" className="mt-2 inline-block text-teal-700 hover:underline">
                     {copy.mine.title}
                   </Link>
