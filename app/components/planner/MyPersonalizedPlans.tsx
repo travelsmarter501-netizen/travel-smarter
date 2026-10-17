@@ -3,10 +3,10 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Button from "../Button";
+import PlanCard, { type PlanCardData } from "./PlanCard";
 import { generatePersonalizedPlanAction } from "../../planner/actions";
 import { useLanguage } from "../../lib/language";
 import { fillCopy, type PlannerGenerateErrorCode } from "../../lib/plannerCopy";
-import { formatPurchaseDate } from "../../lib/accountView";
 import type { PlannerPlanSummary, PlannerRequestSummary } from "../../lib/commerce/personalizedPlan";
 
 const REFRESH_EVERY_MS = 5000;
@@ -22,7 +22,7 @@ const PHRASE_EVERY_MS = 1400;
  *   - the plans they already have, each with an "Open plan" button.
  * Plus the one way to get another plan: "Create a new plan" -> a fresh questionnaire -> a new purchase.
  */
-export default function MyPersonalizedPlans({ plans, requests }: { plans: PlannerPlanSummary[]; requests: PlannerRequestSummary[] }) {
+export default function MyPersonalizedPlans({ plans, archivedPlans = [], requests }: { plans: PlannerPlanSummary[]; archivedPlans?: PlannerPlanSummary[]; requests: PlannerRequestSummary[] }) {
   const { t } = useLanguage();
   const copy = t.planner;
   const router = useRouter();
@@ -43,10 +43,14 @@ export default function MyPersonalizedPlans({ plans, requests }: { plans: Planne
     return () => clearInterval(timer);
   }, [hasPending, router]);
 
-  // dd/mm/yyyy, the same format as the account page's purchases
-  const formatDate = formatPurchaseDate;
   const destinationName = (id: string) => copy.wizard.destinationNames[id] ?? id;
-  const daysLabel = (days: number | null) => (days === null ? "" : days === 1 ? `1 ${copy.wizard.dayOne}` : fillCopy(copy.mine.daysCount, { n: days }));
+  const toCardData = (plan: PlannerPlanSummary): PlanCardData => ({
+    id: plan.id,
+    destinationId: plan.destinationId,
+    days: plan.days,
+    details: plan.details,
+    href: `/smart-planner/barcelona-v2/saved/${plan.id}`,
+  });
 
   return (
     <div className="space-y-6">
@@ -84,20 +88,24 @@ export default function MyPersonalizedPlans({ plans, requests }: { plans: Planne
           <h2 className="text-lg font-bold text-slate-900">{copy.mine.plansHeading}</h2>
           <ul className="mt-3 space-y-3">
             {plans.map((plan) => (
-              <li key={plan.id} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3.5">
-                <div>
-                  <p className="font-semibold text-slate-900">{fillCopy(copy.mine.planTitle, { destination: destinationName(plan.destinationId) })}</p>
-                  <p className="text-xs text-slate-500">
-                    {[daysLabel(plan.days), fillCopy(copy.mine.createdOn, { date: formatDate(plan.createdAt) })].filter(Boolean).join(" · ")}
-                  </p>
-                </div>
-                <Button href={`/smart-planner/barcelona-v2/saved/${plan.id}`} size="md">
-                  {copy.mine.openPlan}
-                </Button>
-              </li>
+              <PlanCard key={plan.id} plan={toCardData(plan)} />
             ))}
           </ul>
         </section>
+      )}
+
+      {archivedPlans.length > 0 && (
+        <details className="rounded-2xl border border-slate-200 bg-slate-50/60 px-4 py-3">
+          <summary className="cursor-pointer text-sm font-semibold text-slate-700">
+            {copy.mine.archivedHeading} ({archivedPlans.length})
+          </summary>
+          <p className="mt-2 text-xs leading-5 text-slate-500">{copy.mine.archivedNote}</p>
+          <ul className="mt-3 space-y-3">
+            {archivedPlans.map((plan) => (
+              <PlanCard key={plan.id} plan={toCardData(plan)} archived />
+            ))}
+          </ul>
+        </details>
       )}
     </div>
   );

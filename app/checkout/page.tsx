@@ -2,15 +2,16 @@ import Container from "../components/Container";
 import { redirect } from "next/navigation";
 import CheckoutClient from "./CheckoutClient";
 import PersonalizedPlanCheckout from "../components/planner/PersonalizedPlanCheckout";
-import { getPersonalizedPlanPriceIls, hasPaidUnbuiltRequest } from "../lib/commerce/personalizedPlan";
+import PersonalizedPlanStatus from "../components/planner/PersonalizedPlanStatus";
+import { getPersonalizedPlanPriceIls, getPersonalizedPlanState } from "../lib/commerce/personalizedPlan";
 import { pendingClaimState } from "../claim-purchase/pendingClaimStatus";
 import { isComplimentaryUser } from "../lib/commerce/complimentary";
 import { isSellableProductSlug } from "../lib/commerce/catalog";
 import { getAllpayMode } from "../lib/allpay/config";
 import { createClient } from "../../utils/supabase/server";
 
-export default async function CheckoutPage({ searchParams }: { searchParams: Promise<{ product?: string; plan?: string }> }) {
-  const { product, plan } = await searchParams;
+export default async function CheckoutPage({ searchParams }: { searchParams: Promise<{ product?: string; plan?: string; new?: string }> }) {
+  const { product, plan, new: explicitNewPlan } = await searchParams;
   const extraProductSlug = product && isSellableProductSlug(product) ? product : undefined;
 
   // The "test mode" banner is shown ONLY when the server is actually in test mode, so real
@@ -33,10 +34,17 @@ export default async function CheckoutPage({ searchParams }: { searchParams: Pro
   // Personalized Plan: a different checkout body (summary of the questionnaire the visitor just finished). The price shown
   // is display only; the order, its stored answers and the charge are all created server-side when the visitor pays.
   if (plan === "personalized") {
-    // Never ask to pay for a plan that is already paid: a paid purchase still waiting to be attached to an account goes to the claim page,
-    // and a paid plan that is not built yet goes to the planner (decided from the database, not from this tab's draft).
+    // Never show a purchase screen for a plan that is already paid. Decided from the database, not from this tab's draft:
+    //   - a paid purchase still waiting to be attached to an account -> the claim page;
+    //   - a paid plan that is not built yet -> "Build my plan" (no price, no payment button);
+    //   - a plan already built -> "Your plan is ready" with "Open my plan" and "Create another plan". Only the explicit new-plan path
+    //     (the questionnaire's checkout step, ?new=1) shows the purchase summary again -- a direct visit or an old bookmark never does.
     if ((await pendingClaimState(user?.id ?? null)) === "paid") redirect("/claim-purchase");
-    if (user && (await hasPaidUnbuiltRequest(user.id))) redirect("/planner");
+    if (user) {
+      const planState = await getPersonalizedPlanState(user.id);
+      if (planState === "unbuilt") return <PersonalizedPlanStatus state="unbuilt" />;
+      if (planState === "generated" && explicitNewPlan !== "1") return <PersonalizedPlanStatus state="generated" />;
+    }
 
     return (
       <main className="py-10">

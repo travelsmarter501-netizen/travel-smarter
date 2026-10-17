@@ -5,6 +5,10 @@ import ScrollToTop from "../../../../components/ScrollToTop";
 import SmartPlannerV2Result from "../../../../components/smart-planner-v2/SmartPlannerV2Result";
 import { createClient } from "../../../../../utils/supabase/server";
 import { isValidSmartPlannerV2SavedPlanRow } from "../../../../lib/planner/smartPlannerV2SavedPlans";
+import IncludedGuideCard from "../../../../components/planner/IncludedGuideCard";
+import { destinationIncludesGuide } from "../../../../lib/planner/personalizedPlanAnswers";
+import { hasProductAccess } from "../../../../lib/entitlements";
+import { PRODUCT_SLUGS } from "../../../../lib/commerce/catalog";
 
 /**
  * Smart Planner V2 Phase 5 -- saved-plan reopen route, separate from V1's
@@ -26,6 +30,9 @@ import { isValidSmartPlannerV2SavedPlanRow } from "../../../../lib/planner/smart
  * interest key is a real current V2PlannerInterest, generated_plan_json.plan looks like a real
  * V2Plan) before anything is rendered -- a row that fails this is treated exactly like "not
  * found", never rendered half-validated.
+ *
+ * A plan whose destination includes a guide (Barcelona) shows an "Included with your plan" card linking to the real guide, but only
+ * when the signed-in owner actually has the guide entitlement (checked here on the server) -- the guide itself is never duplicated.
  *
  * Renders the exact frozen V2Plan from generated_plan_json -- never regenerates. Reuses
  * SmartPlannerV2Result with no onEditSelections/onRegenerate/saveAction props (all optional),
@@ -64,11 +71,18 @@ export default async function SavedSmartPlanV2Page(props: PageProps<"/smart-plan
     );
   }
 
+  const showIncludedGuide = destinationIncludesGuide(validRow.destination_slug) && (await hasProductAccess(PRODUCT_SLUGS.guide, user.id));
+
   return (
     <main className="pb-10">
       <ScrollToTop />
       <div className="mx-auto w-full max-w-3xl px-5 pt-4 sm:px-8 lg:px-10">
         <BackLink href="/account" label="حسابي" />
+        {showIncludedGuide && (
+          <div className="mt-4">
+            <IncludedGuideCard />
+          </div>
+        )}
         <div className="mt-4">
           <SmartPlannerV2Result
             plan={validRow.generated_plan_json.plan}

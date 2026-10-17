@@ -14,12 +14,17 @@ export type OwnedProductsState = {
   status: "unknown" | "loading" | "signedOut" | "ready";
   /** Storefront card ids (barcelona-guide, barcelona-3day, ...) the visitor already owns. Never contains the Personalized Plan. */
   ownedCartIds: ReadonlySet<string>;
-  /** The visitor has at least one personalized plan or paid plan request (so "Open my plans" is useful). */
-  hasPersonalizedPlans: boolean;
+  /**
+   * Where the visitor stands with the Personalized Plan (which is bought per trip, so it is never in ownedCartIds):
+   * "generated" = at least one plan built from a paid / complimentary request (or a saved personalized plan) -> the card shows "Open my plan";
+   * "unbuilt"   = a paid request is waiting to be built (takes precedence)                                       -> "Build my plan";
+   * "none"      = nothing yet                                                                                    -> the normal sell state.
+   */
+  personalized: "none" | "unbuilt" | "generated";
 };
 
 const EMPTY: ReadonlySet<string> = new Set();
-type Loaded = { ownedCartIds: ReadonlySet<string>; hasPersonalizedPlans: boolean };
+type Loaded = { ownedCartIds: ReadonlySet<string>; personalized: OwnedProductsState["personalized"] };
 
 /**
  * For the homepage cards only: which products the signed-in visitor already owns. Read with the visitor's own browser session, so
@@ -37,23 +42,25 @@ export function useOwnedProducts(): OwnedProductsState {
 
     Promise.all([
       supabase.from("user_entitlements").select("products!inner(slug, active)").eq("products.active", true).returns<{ products: { slug: string } | { slug: string }[] }[]>(),
-      supabase.from("personalized_plan_requests").select("id, source, orders(status)").limit(20),
+      supabase.from("personalized_plan_requests").select("id, source, generated_at, orders(status)").limit(50),
       supabase.from("smart_planner_saved_plans").select("id").eq("product_slug", V2_SAVED_PLAN_PRODUCT_SLUG).limit(1),
     ])
       .then(([entitlements, requests, plans]) => {
         if (cancelled) return;
         const slugs = (entitlements.data ?? []).flatMap((row) => (Array.isArray(row.products) ? row.products.map((p) => p.slug) : [row.products.slug]));
-        const requestRows = (requests.data ?? []) as { source: string; orders: { status: string } | { status: string }[] | null }[];
-        const hasPaidRequest = requestRows.some((row) => {
+        const requestRows = (requests.data ?? []) as { source: string; generated_at: string | null; orders: { status: string } | { status: string }[] | null }[];
+        const isPaid = (row: (typeof requestRows)[number]) => {
           if (row.source === "complimentary") return true;
           const order = Array.isArray(row.orders) ? row.orders[0] : row.orders;
           return order?.status === "paid";
-        });
-        setLoaded({ ownedCartIds: ownedCartIds(slugs), hasPersonalizedPlans: hasPaidRequest || (plans.data ?? []).length > 0 });
+        };
+        const unbuilt = requestRows.some((row) => isPaid(row) && !row.generated_at);
+        const generated = requestRows.some((row) => isPaid(row) && !!row.generated_at) || (plans.data ?? []).length > 0;
+        setLoaded({ ownedCartIds: ownedCartIds(slugs), personalized: unbuilt ? "unbuilt" : generated ? "generated" : "none" });
       })
       .catch(() => {
         // Could not read purchases: show the normal storefront (the server still protects everything).
-        if (!cancelled) setLoaded({ ownedCartIds: EMPTY, hasPersonalizedPlans: false });
+        if (!cancelled) setLoaded({ ownedCartIds: EMPTY, personalized: "none" });
       });
 
     return () => {
@@ -61,8 +68,8 @@ export function useOwnedProducts(): OwnedProductsState {
     };
   }, [auth]);
 
-  if (auth === "loading") return { status: "unknown", ownedCartIds: EMPTY, hasPersonalizedPlans: false };
-  if (auth === "signedOut") return { status: "signedOut", ownedCartIds: EMPTY, hasPersonalizedPlans: false };
-  if (!loaded) return { status: "loading", ownedCartIds: EMPTY, hasPersonalizedPlans: false };
-  return { status: "ready", ownedCartIds: loaded.ownedCartIds, hasPersonalizedPlans: loaded.hasPersonalizedPlans };
+  if (auth === "loading") return { status: "unknown", ownedCartIds: EMPTY, personalized: "none" };
+  if (auth === "signedOut") return { status: "signedOut", ownedCartIds: EMPTY, personalized: "none" };
+  if (!loaded) return { status: "loading", ownedCartIds: EMPTY, personalized: "none" };
+  return { status: "ready", ownedCartIds: loaded.ownedCartIds, personalized: loaded.personalized };
 }

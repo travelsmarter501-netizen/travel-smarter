@@ -15,11 +15,12 @@ import { createClient } from "../../utils/supabase/server";
  *
  * "One purchase = one plan", questionnaire BEFORE payment:
  *   - Anyone (signed out, or signed in without plans) sees the free questionnaire; its last button goes straight to
- *     /checkout?plan=personalized (compact summary + Allpay button). Nothing is generated and nothing paid-for is shown here.
- *   - A signed-in customer who already has plans or paid/pending requests sees "My Personalized Plans" (their plans,
- *     a "Build my plan" card for each paid-but-unbuilt request, and "Create a new plan").
- *   - "Create a new plan", the homepage "ابدأ خطتك" button and "Edit answers" (?new=1 / ?edit=1) always open the questionnaire
- *     itself, at step 1 for a new plan -> a new order -> a new payment.
+ *     /checkout?plan=personalized&new=1 (compact summary + Allpay button). Nothing is generated and nothing paid-for is shown here.
+ *   - A signed-in customer who already has a personalized purchase (a built plan, a paid plan to build, or plans they removed from
+ *     the list) sees "My Personalized Plans" by default -- their plans, a "Build my plan" card for each paid-but-unbuilt request,
+ *     and "Create another plan". They are never dropped into a fresh questionnaire.
+ *   - Only the explicit paths "Create another plan" (?new=1) and "Edit answers" (?edit=1) open the questionnaire for them, at
+ *     step 1 -> a new order -> a new payment. A bare /planner or a ?destination= link does not.
  *
  * Owning the product entitlement does NOT unlock the planner any more: generation is authorized per paid request
  * (see lib/commerce/personalizedPlan.ts), never by the entitlement.
@@ -54,16 +55,22 @@ export default async function PlannerPage({ searchParams }: { searchParams: Prom
   if ((await pendingClaimState(user?.id ?? null)) === "paid") redirect("/claim-purchase");
 
   const initialDestinationId = isAvailablePlannerDestinationId(destination) ? (destination as string) : DEFAULT_PLANNER_DESTINATION_ID;
-  const mine = user ? await loadMyPersonalizedPlans(user.id, { hidePending: isComplimentaryUser(user.id) }) : { plans: [], requests: [], hasAnyRequest: false };
-  const hasPlans = mine.plans.length > 0 || mine.requests.length > 0;
+  const mine = user
+    ? await loadMyPersonalizedPlans(user.id, { hidePending: isComplimentaryUser(user.id) })
+    : { plans: [], archivedPlans: [], requests: [], generatedCount: 0, hasAnyRequest: false };
+  // Has this customer already bought a personalized plan (built, waiting to be built, awaiting confirmation, or removed from their list)?
+  // Then /planner is THEIR plans, not a fresh questionnaire -- a repeat purchase is an explicit choice (?new=1).
+  const hasPlans = mine.plans.length > 0 || mine.archivedPlans.length > 0 || mine.generatedCount > 0 || mine.requests.length > 0;
   // A legacy owner: bought before the questionnaire-first model, so there is an entitlement but never a request or plan.
   const legacyOwnerWithoutPlan =
-    !!user && mine.plans.length === 0 && !mine.hasAnyRequest && (await hasProductAccess(PRODUCT_SLUGS.personalizedPlan, user.id));
+    !!user && mine.plans.length === 0 && mine.archivedPlans.length === 0 && mine.generatedCount === 0 && !mine.hasAnyRequest && (await hasProductAccess(PRODUCT_SLUGS.personalizedPlan, user.id));
   // A visitor who ASKED for the questionnaire (the homepage button, "Create a new plan", "Edit answers", an old destination link)
   // always gets it -- even a customer who already has plans. Plain /planner is the signed-in customer's My Personalized Plans.
   // A paid plan waiting to be built always wins over a request for the questionnaire.
   const hasPaidUnbuilt = mine.requests.some((request) => request.state === "ready" && !request.complimentary);
-  const wantsQuestionnaire = (wantsNew === "1" || edit === "1" || typeof destination === "string") && !hasPaidUnbuilt;
+  // Only the two explicit new-plan paths open the questionnaire for a customer who already has plans: ?new=1 ("Create another plan") and
+  // ?edit=1 ("Edit answers" inside that same new purchase). A bare /planner or a ?destination= link shows their existing plans.
+  const wantsQuestionnaire = (wantsNew === "1" || edit === "1") && !hasPaidUnbuilt;
   const view = user && hasPlans && !wantsQuestionnaire ? "mine" : "wizard";
 
   return (
@@ -75,6 +82,7 @@ export default async function PlannerPage({ searchParams }: { searchParams: Prom
       hasPlans={hasPlans}
       legacyOwnerNotice={legacyOwnerWithoutPlan && view === "wizard"}
       plans={mine.plans}
+      archivedPlans={mine.archivedPlans}
       requests={mine.requests}
     />
   );

@@ -1,6 +1,7 @@
 import { homepageTranslations, type Language } from "./homepageTranslations";
 import { CART_ID_TO_PRODUCT_SLUG, PRODUCT_CONTENT_ROUTES, PRODUCT_SLUGS } from "./commerce/catalog";
 import type { OwnedProduct } from "./entitlements";
+import type { TripDetailsInput } from "./planner/personalizedSummary";
 
 /**
  * What the account page's "Purchases" list shows, built from plain data so it can be tested without a browser:
@@ -16,6 +17,8 @@ export type PersonalizedPurchase = {
   requestId: string;
   destinationId: string;
   days: number | null;
+  /** The questionnaire answers this purchase was made for (interests / accommodation), shown instead of a purchase date. */
+  details: TripDetailsInput;
   /** When the order was paid (falls back to when it was created). */
   purchasedAt: string;
   /** True once the plan was built (generated_at is set) -- stays true even if the saved plan was deleted later. */
@@ -26,7 +29,7 @@ export type PersonalizedPurchase = {
 
 export type AccountPurchase =
   | { key: string; kind: "product"; slug: string; fallbackName: string; purchasedAt: string; href: string | null }
-  | { key: string; kind: "personalized"; requestId: string; destinationId: string; days: number | null; purchasedAt: string; href: string | null; built: boolean };
+  | { key: string; kind: "personalized"; requestId: string; destinationId: string; days: number | null; details: TripDetailsInput; purchasedAt: string; href: string | null; built: boolean };
 
 const LEGACY_PERSONALIZED_SLUGS: readonly string[] = [PRODUCT_SLUGS.personalizedPlan, "barcelona-smart-planner"];
 
@@ -50,6 +53,7 @@ export function buildAccountPurchases(input: { entitlements: readonly OwnedProdu
     requestId: purchase.requestId,
     destinationId: purchase.destinationId,
     days: purchase.days,
+    details: purchase.details,
     purchasedAt: purchase.purchasedAt,
     // built -> its plan (no button if that plan was deleted); not built yet -> the planner's "Build my plan".
     href: purchase.planId ? `/smart-planner/barcelona-v2/saved/${purchase.planId}` : purchase.generated ? null : "/planner",

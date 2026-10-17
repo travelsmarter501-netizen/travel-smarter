@@ -8,6 +8,7 @@ import {
   createPersonalizedPlanOrder,
   generatePersonalizedPlanForRequest,
   hasPaidUnbuiltRequest,
+  hasRecentPaidRequestWithSameAnswers,
   type CreateComplimentaryRequestResult,
   type GeneratePersonalizedPlanResult,
 } from "../lib/commerce/personalizedPlan";
@@ -39,6 +40,10 @@ export async function startPersonalizedPlanCheckout(input: { destinationId?: unk
     // A paid plan that has not been built yet is built, not paid for again (also stops a stale tab or an old draft from re-submitting).
     if (await hasPaidUnbuiltRequest(user.id)) {
       return { ok: false, error: "عندك خطة مدفوعة بانتظار البناء. افتح «خططي المخصصة» وابنِها أولًا.", code: "paid_plan_awaiting_build" };
+    }
+    // The same answers bought again right after the first purchase come from a stale tab / old draft: open the plan, do not charge twice.
+    if (await hasRecentPaidRequestWithSameAnswers(user.id, normalized.destinationId, normalized.answers)) {
+      return { ok: false, error: "اشتريت خطة بنفس هذه الإجابات قبل قليل. افتح «خططي المخصصة».", code: "duplicate_plan_request" };
     }
     const order = await createPersonalizedPlanOrder({ userId: user.id, destinationId: normalized.destinationId, answers: normalized.answers });
     if (!order.ok) return { ok: false, error: order.error, code: order.code };

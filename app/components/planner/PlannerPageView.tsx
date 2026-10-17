@@ -36,6 +36,7 @@ export default function PlannerPageView({
   hasPlans,
   legacyOwnerNotice = false,
   plans,
+  archivedPlans = [],
   requests,
 }: {
   view: "wizard" | "mine";
@@ -48,6 +49,8 @@ export default function PlannerPageView({
   /** The customer owns the product from before the questionnaire-first model but has no plan or request. */
   legacyOwnerNotice?: boolean;
   plans: PlannerPlanSummary[];
+  /** Plans the customer removed from My Plans (still stored, restorable). */
+  archivedPlans?: PlannerPlanSummary[];
   requests: PlannerRequestSummary[];
 }) {
   const { t } = useLanguage();
@@ -63,7 +66,7 @@ export default function PlannerPageView({
 
         {view === "mine" ? (
           <div className="mt-4">
-            <MyPersonalizedPlans plans={plans} requests={requests} />
+            <MyPersonalizedPlans plans={plans} archivedPlans={archivedPlans} requests={requests} />
           </div>
         ) : (
           <>

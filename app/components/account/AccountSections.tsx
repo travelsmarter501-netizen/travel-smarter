@@ -1,10 +1,11 @@
 "use client";
 
 import Button from "../Button";
-import DeleteSavedPlanButton from "./DeleteSavedPlanButton";
+import PlanCard, { type PlanCardData } from "../planner/PlanCard";
 import { useLanguage } from "../../lib/language";
 import { fillCopy } from "../../lib/plannerCopy";
 import { formatPurchaseDate, productDisplayName, type AccountPurchase } from "../../lib/accountView";
+import { personalizedTripDetails } from "../../lib/planner/personalizedSummary";
 import { PRODUCT_SLUGS } from "../../lib/commerce/catalog";
 
 const copy = {
@@ -13,36 +14,32 @@ const copy = {
     purchasesEmpty: "لسا ما عندك منتجات مشتراة.",
     purchasedOn: "تم الشراء بتاريخ {date}",
     open: "افتح",
+    openPlan: "افتح الخطة",
     build: "ابنِ خطتي ✨",
-    personalizedName: "خطة مخصصة · {destination}",
+    personalizedName: "خطة مخصصة إلى {destination}",
     includedWith: "متضمن مع {name} — بدون شراء منفصل",
     guideName: "دليل برشلونة",
     openGuide: "افتح الدليل",
     plansTitle: "خططي",
-    plansEmpty: "لسا ما حفظت أي خطة.",
-    openPlan: "افتح الخطة",
-    linkedToPurchase: "مرتبطة بعملية شراء",
+    plansEmpty: "لسا ما عندك أي خطة.",
     daysCount: "{n} أيام",
     dayOne: "يوم",
-    surprise: "فاجئني ✨",
   },
   en: {
     purchasesTitle: "My purchases",
     purchasesEmpty: "You haven't bought anything yet.",
     purchasedOn: "Purchased on {date}",
     open: "Open",
+    openPlan: "Open plan",
     build: "Build my plan ✨",
-    personalizedName: "Personalized plan · {destination}",
+    personalizedName: "Personalized plan to {destination}",
     includedWith: "Included with {name} — no separate purchase",
     guideName: "Barcelona Travel Guide",
     openGuide: "Open guide",
     plansTitle: "My plans",
-    plansEmpty: "You haven't saved any plan yet.",
-    openPlan: "Open plan",
-    linkedToPurchase: "Linked to a purchase",
+    plansEmpty: "You don't have any plan yet.",
     daysCount: "{n} days",
     dayOne: "day",
-    surprise: "Surprise me ✨",
   },
 } as const;
 
@@ -76,12 +73,43 @@ export function AccountPurchases({ purchases, inheritedGuideFrom }: { purchases:
       ) : (
         <ul className="mt-3 space-y-3">
           {purchases.map((purchase) => {
-            const name =
-              purchase.kind === "product"
-                ? productDisplayName(purchase.slug, lang, purchase.fallbackName)
-                : [fillCopy(c.personalizedName, { destination: destinationName(lang, purchase.destinationId) }), daysText(c, purchase.days)].filter(Boolean).join(" · ");
-            const href = purchase.href;
-            const openLabel = purchase.kind === "personalized" && !purchase.built ? c.build : purchase.kind === "product" && purchase.slug === PRODUCT_SLUGS.guide ? c.openGuide : c.open;
+            if (purchase.kind === "personalized") {
+              // A Personalized Plan row is about the TRIP it was bought for (destination, days, interests, accommodation) -- the useful
+              // information -- not about when it was bought, so no purchase date is shown here.
+              const trip = personalizedTripDetails(purchase.details, lang);
+              const title = fillCopy(c.personalizedName, { destination: destinationName(lang, purchase.destinationId) });
+              return (
+                <li key={purchase.key} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3.5">
+                  <div className="min-w-0">
+                    <p dir="auto" className="font-semibold text-slate-900">
+                      {title}
+                    </p>
+                    {daysText(c, purchase.days) && (
+                      <p dir="auto" className="text-xs text-slate-600">
+                        {daysText(c, purchase.days)}
+                      </p>
+                    )}
+                    {trip.interests && (
+                      <p dir="auto" className="text-xs text-slate-600">
+                        {trip.interests}
+                      </p>
+                    )}
+                    {trip.accommodation && (
+                      <p dir="auto" className="text-xs text-slate-600">
+                        {trip.accommodation}
+                      </p>
+                    )}
+                  </div>
+                  {purchase.href && (
+                    <Button href={purchase.href} size="md">
+                      {purchase.built ? c.openPlan : c.build}
+                    </Button>
+                  )}
+                </li>
+              );
+            }
+            const name = productDisplayName(purchase.slug, lang, purchase.fallbackName);
+            const openLabel = purchase.slug === PRODUCT_SLUGS.guide ? c.openGuide : c.open;
             return (
               <li key={purchase.key} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3.5">
                 <div className="min-w-0">
@@ -90,8 +118,8 @@ export function AccountPurchases({ purchases, inheritedGuideFrom }: { purchases:
                   </p>
                   <p className="text-xs text-slate-500">{fillCopy(c.purchasedOn, { date: formatPurchaseDate(purchase.purchasedAt) })}</p>
                 </div>
-                {href && (
-                  <Button href={href} size="md">
+                {purchase.href && (
+                  <Button href={purchase.href} size="md">
                     {openLabel}
                   </Button>
                 )}
@@ -117,25 +145,10 @@ export function AccountPurchases({ purchases, inheritedGuideFrom }: { purchases:
   );
 }
 
-/** One saved plan, already reduced by the server to plain values (see account/page.tsx). */
-export type AccountPlanView = {
-  id: string;
-  destinationId: string;
-  days: number | null;
-  /** The interests line (or "surprise me"); null when there is none. */
-  interests: string | null;
-  surprise: boolean;
-  createdAt: string;
-  href: string;
-  /** Built from a paid purchase: it is that purchase's product, so it cannot be deleted. */
-  linkedToPurchase: boolean;
-  deletable: boolean;
-};
-
-export function AccountPlans({ plans }: { plans: AccountPlanView[] }) {
+/** "My plans" on the account page: the same cards as /planner (destination, days, trip details, Open plan, Remove). */
+export function AccountPlans({ plans }: { plans: PlanCardData[] }) {
   const { language } = useLanguage();
-  const lang = language === "en" ? "en" : "ar";
-  const c = copy[lang];
+  const c = copy[language === "en" ? "en" : "ar"];
 
   return (
     <div className="mt-8 border-t border-slate-100 pt-6">
@@ -147,30 +160,9 @@ export function AccountPlans({ plans }: { plans: AccountPlanView[] }) {
         </div>
       ) : (
         <ul className="mt-3 space-y-3">
-          {plans.map((plan) => {
-            const days = daysText(c, plan.days);
-            return (
-              <li key={plan.id} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3.5">
-                <div className="min-w-0">
-                  <p dir="auto" className="font-semibold text-slate-900">
-                    {[destinationName(lang, plan.destinationId), days].filter(Boolean).join(" · ")}
-                  </p>
-                  {(plan.surprise || plan.interests) && (
-                    <p dir="auto" className="text-xs text-slate-500">
-                      {plan.surprise ? c.surprise : plan.interests}
-                    </p>
-                  )}
-                  <p className="mt-0.5 text-xs text-slate-400">{formatPurchaseDate(plan.createdAt)}</p>
-                </div>
-                <div className="flex shrink-0 items-center gap-2">
-                  <Button href={plan.href} size="md">
-                    {c.openPlan}
-                  </Button>
-                  {plan.linkedToPurchase ? <span className="text-xs font-semibold text-slate-400">{c.linkedToPurchase}</span> : plan.deletable ? <DeleteSavedPlanButton id={plan.id} /> : null}
-                </div>
-              </li>
-            );
-          })}
+          {plans.map((plan) => (
+            <PlanCard key={plan.id} plan={plan} />
+          ))}
         </ul>
       )}
     </div>

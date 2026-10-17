@@ -9,6 +9,7 @@ import type { CheckoutErrorCode } from "./checkoutErrors";
 import type { PersonalizedPlanAnswers } from "../planner/personalizedPlanAnswers";
 import { inclusiveDayCount } from "../planner/dateOnly";
 import { isComplimentaryUser } from "./complimentary";
+import type { TripDetailsInput } from "../planner/personalizedSummary";
 
 /**
  * Personalized Plan -- server-side order + generation logic for "one purchase = one plan".
@@ -279,8 +280,102 @@ export async function hasPaidUnbuiltRequest(userId: string): Promise<boolean> {
   return !requestError && !!requests && requests.length > 0;
 }
 
+/**
+ * Where this customer stands with the Personalized Plan, decided on the server from the database:
+ *   "unbuilt"   a PAID request is waiting to be built       -> "Build my plan", never payment;
+ *   "generated" they have at least one plan built from a paid / complimentary request (or a saved personalized plan) -> "Open my plan";
+ *   "none"      nothing yet                                  -> the normal questionnaire and checkout.
+ * A plan the customer removed from My Plans still counts as generated (it is only hidden). Unpaid attempts never count.
+ */
+export type PersonalizedPlanState = "none" | "unbuilt" | "generated";
+
+export async function getPersonalizedPlanState(userId: string): Promise<PersonalizedPlanState> {
+  if (await hasPaidUnbuiltRequest(userId)) return "unbuilt";
+
+  const serviceRole = createServiceRoleClient();
+  const { data: orders } = await serviceRole.from("orders").select("id").eq("user_id", userId).eq("status", "paid").returns<{ id: string }[]>();
+  if (orders && orders.length > 0) {
+    const { data: paid } = await serviceRole
+      .from("personalized_plan_requests")
+      .select("id")
+      .in(
+        "order_id",
+        orders.map((order) => order.id)
+      )
+      .not("generated_at", "is", null)
+      .limit(1)
+      .returns<{ id: string }[]>();
+    if (paid && paid.length > 0) return "generated";
+  }
+
+  const { data: complimentary } = await serviceRole
+    .from("personalized_plan_requests")
+    .select("id")
+    .eq("complimentary_user_id", userId)
+    .not("generated_at", "is", null)
+    .limit(1)
+    .returns<{ id: string }[]>();
+  if (complimentary && complimentary.length > 0) return "generated";
+
+  const { data: plans } = await serviceRole
+    .from("smart_planner_saved_plans")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("product_slug", V2_SAVED_PLAN_PRODUCT_SLUG)
+    .limit(1)
+    .returns<{ id: string }[]>();
+  return plans && plans.length > 0 ? "generated" : "none";
+}
+
+/** Stable JSON (sorted keys) so two answer objects compare equal whatever order their keys were written in. */
+function stableStringify(value: unknown): string {
+  if (Array.isArray(value)) return "[" + value.map(stableStringify).join(",") + "]";
+  if (value && typeof value === "object") {
+    const entries = Object.entries(value as Record<string, unknown>)
+      .filter(([, v]) => v !== undefined)
+      .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
+    return "{" + entries.map(([k, v]) => JSON.stringify(k) + ":" + stableStringify(v)).join(",") + "}";
+  }
+  return JSON.stringify(value);
+}
+
+const DUPLICATE_WINDOW_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * True when this customer already has a PAID request for exactly these destination + answers from the last 24 hours. That is what a
+ * stale tab, an old draft or a double tap produces: the same questionnaire submitted again right after it was bought. A genuine
+ * second trip has different answers, so it is not caught. Paid requests only (an abandoned unpaid attempt can be retried freely).
+ */
+export async function hasRecentPaidRequestWithSameAnswers(userId: string, destinationId: string, answers: PersonalizedPlanAnswers): Promise<boolean> {
+  const serviceRole = createServiceRoleClient();
+  const { data: orders, error } = await serviceRole.from("orders").select("id").eq("user_id", userId).eq("status", "paid").returns<{ id: string }[]>();
+  if (error || !orders || orders.length === 0) return false;
+  const { data: requests, error: requestError } = await serviceRole
+    .from("personalized_plan_requests")
+    .select("destination_id, answers, created_at")
+    .in(
+      "order_id",
+      orders.map((order) => order.id)
+    )
+    .returns<{ destination_id: string; answers: unknown; created_at: string }[]>();
+  if (requestError || !requests) return false;
+  const wanted = stableStringify(answers);
+  const since = Date.now() - DUPLICATE_WINDOW_MS;
+  return requests.some((row) => row.destination_id === destinationId && new Date(row.created_at).getTime() >= since && stableStringify(row.answers) === wanted);
+}
+
 // ── what /planner shows a signed-in customer ─────────────────────────────────────────────────────────────
-export type PlannerPlanSummary = { id: string; destinationId: string; days: number | null; createdAt: string };
+export type PlannerPlanSummary = {
+  id: string;
+  destinationId: string;
+  days: number | null;
+  createdAt: string;
+  /** The trip the plan was built for (interests / accommodation), for the card. */
+  details: TripDetailsInput;
+  /** Built from a paid (or complimentary) request: the plan is that purchase's product. */
+  linkedToPurchase: boolean;
+  archivedAt: string | null;
+};
 export type PlannerRequestSummary = {
   id: string;
   destinationId: string;
@@ -292,8 +387,13 @@ export type PlannerRequestSummary = {
   complimentary: boolean;
 };
 export type MyPersonalizedPlans = {
+  /** Plans shown in "My Plans" (not removed). */
   plans: PlannerPlanSummary[];
+  /** Plans the customer removed from the list; they still exist and can be restored. */
+  archivedPlans: PlannerPlanSummary[];
   requests: PlannerRequestSummary[];
+  /** How many of the customer's personalized requests (paid or complimentary) have produced their plan -- removed plans still count. */
+  generatedCount: number;
   /** True if the customer has ever started a purchase under the one-purchase-one-plan model (any state). */
   hasAnyRequest: boolean;
 };
@@ -307,7 +407,21 @@ type RequestRow = {
   source: string;
   orders: { status: string; created_at: string } | { status: string; created_at: string }[] | null;
 };
-type PlanRow = { id: string; destination_slug: string; created_at: string; preferences_json: { durationDays?: unknown; arrivalDate?: unknown; departureDate?: unknown } | null };
+type PlanRow = {
+  id: string;
+  destination_slug: string;
+  created_at: string;
+  archived_at: string | null;
+  preferences_json: {
+    durationDays?: unknown;
+    arrivalDate?: unknown;
+    departureDate?: unknown;
+    surpriseMe?: unknown;
+    interests?: unknown;
+    accommodation?: { booked?: unknown; text?: unknown } | null;
+    personalizedPlanRequestId?: unknown;
+  } | null;
+};
 
 const PENDING_WINDOW_MS = 3 * 60 * 60 * 1000;
 
@@ -330,7 +444,7 @@ export async function loadMyPersonalizedPlans(userId: string, options: { hidePen
       .returns<RequestRow[]>(),
     supabase
       .from("smart_planner_saved_plans")
-      .select("id, destination_slug, created_at, preferences_json")
+      .select("id, destination_slug, created_at, archived_at, preferences_json")
       .eq("user_id", userId)
       .eq("product_slug", V2_SAVED_PLAN_PRODUCT_SLUG)
       .order("created_at", { ascending: false })
@@ -339,8 +453,13 @@ export async function loadMyPersonalizedPlans(userId: string, options: { hidePen
 
   const now = Date.now();
   const requests: PlannerRequestSummary[] = [];
+  let generatedCount = 0;
   for (const row of requestRows ?? []) {
-    if (row.generated_at) continue;
+    if (row.generated_at) {
+      const generatedOrder = Array.isArray(row.orders) ? row.orders[0] : row.orders;
+      if (row.source === "complimentary" || generatedOrder?.status === "paid") generatedCount += 1;
+      continue;
+    }
     const days = typeof row.answers?.days === "number" ? row.answers.days : null;
     const base = { id: row.id, destinationId: row.destination_id, days, createdAt: row.created_at };
     if (row.source === "complimentary") {
@@ -355,7 +474,7 @@ export async function loadMyPersonalizedPlans(userId: string, options: { hidePen
       requests.push({ ...base, state: "pending", complimentary: false });
   }
 
-  const plans: PlannerPlanSummary[] = (planRows ?? []).map((row) => {
+  const allPlans: PlannerPlanSummary[] = (planRows ?? []).map((row) => {
     const p = row.preferences_json ?? {};
     const days =
       typeof p.durationDays === "number"
@@ -363,8 +482,26 @@ export async function loadMyPersonalizedPlans(userId: string, options: { hidePen
         : typeof p.arrivalDate === "string" && typeof p.departureDate === "string"
           ? inclusiveDayCount(p.arrivalDate, p.departureDate)
           : null;
-    return { id: row.id, destinationId: row.destination_slug, days, createdAt: row.created_at };
+    return {
+      id: row.id,
+      destinationId: row.destination_slug,
+      days,
+      createdAt: row.created_at,
+      details: {
+        surpriseMe: p.surpriseMe === true,
+        interests: Array.isArray(p.interests) ? (p.interests as TripDetailsInput["interests"]) : [],
+        accommodation: p.accommodation ? { booked: p.accommodation.booked === true, text: typeof p.accommodation.text === "string" ? p.accommodation.text : undefined } : null,
+      },
+      linkedToPurchase: typeof p.personalizedPlanRequestId === "string",
+      archivedAt: row.archived_at ?? null,
+    };
   });
 
-  return { plans, requests, hasAnyRequest: (requestRows ?? []).length > 0 };
+  return {
+    plans: allPlans.filter((plan) => !plan.archivedAt),
+    archivedPlans: allPlans.filter((plan) => !!plan.archivedAt),
+    requests,
+    generatedCount,
+    hasAnyRequest: (requestRows ?? []).length > 0,
+  };
 }

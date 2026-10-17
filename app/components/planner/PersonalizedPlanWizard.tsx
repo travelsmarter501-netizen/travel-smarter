@@ -7,6 +7,7 @@ import { useLanguage } from "../../lib/language";
 import { fillCopy } from "../../lib/plannerCopy";
 import { inclusiveDayCount } from "../../lib/planner/dateOnly";
 import { writePlannerDraft, type PlannerAccommodationStatus, type PlannerDraft } from "../../lib/planner/plannerDraft";
+import { CHECKOUT_NEW_PLAN } from "../../lib/planner/planLinks";
 import type { V2PlannerInterest } from "../../lib/planner/v2PlannerTypes";
 import { PLANNER_DESTINATIONS, DEFAULT_PLANNER_DESTINATION_ID, isAvailablePlannerDestinationId } from "../../lib/planner/plannerDestinations";
 import { MAX_ACCOMMODATION_TEXT_LENGTH, MAX_PERSONALIZED_PLAN_DAYS } from "../../lib/planner/personalizedPlanAnswers";
@@ -88,7 +89,7 @@ export default function PersonalizedPlanWizard({ initialDestinationId, initialDr
       setSaveFailed(true);
       return;
     }
-    router.push("/checkout?plan=personalized");
+    router.push(CHECKOUT_NEW_PLAN);
   }
 
   return (

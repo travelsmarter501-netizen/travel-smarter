@@ -9,6 +9,7 @@ import Price from "./Price";
 import { useCart } from "../lib/cart";
 import { useLanguage } from "../lib/language";
 import { useOwnedProducts } from "../lib/useOwnedProducts";
+import { PLANNER_MY_PLANS, PLANNER_NEW_PLAN } from "../lib/planner/planLinks";
 import { homepageTranslations } from "../lib/homepageTranslations";
 import { destinations } from "../lib/content";
 
@@ -21,8 +22,9 @@ const barcelonaImage = destinations.find((destination) => destination.slug === "
  * routes (/guides/barcelona, /ready-plans/..., /planner): those are entitlement-gated content, not
  * sales pages -- EXCEPT for a signed-in customer who already owns that product: its card then shows
  * "Purchased", no price and no buy buttons, and a single "Open" button to the content they own. Products they
- * do not own are unchanged. The Personalized Plan is bought again for every trip, so it is never shown as owned:
- * its card keeps the price and "start a plan", and gains an "Open my personalized plans" link once they have any.
+ * do not own are unchanged. The Personalized Plan is bought per trip, so it is not an entitlement -- but once the visitor has a
+ * plan, its card is "Purchased" too: no price, a primary "Open my personalized plan" and a smaller "Create another plan" (the one explicit
+ * way to start another questionnaire and another purchase); a paid plan still waiting to be built shows "Build my plan".
  */
 export default function Products() {
   const { t } = useLanguage();
@@ -64,7 +66,8 @@ export default function Products() {
         <div className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {t.products.items.map((product) => {
             const inCart = isInCart(product.id);
-            const isOwned = owned.ownedCartIds.has(product.id);
+            const personalizedState = product.id === "personalized-trip-plan" ? owned.personalized : "none";
+            const isOwned = owned.ownedCartIds.has(product.id) || personalizedState !== "none";
             // A signed-in visitor's purchases are still being read: keep the card's height but do not flash a price / buy button at an owner.
             const readingPurchases = owned.status === "loading";
             return (
@@ -111,12 +114,19 @@ export default function Products() {
                     </p>
                   )}
                   {isOwned ? (
-                    <Link
-                      href={product.route}
-                      className="mt-4 flex items-center justify-center rounded-full bg-teal-700 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-teal-800"
-                    >
-                      {t.products.ownedCta}
-                    </Link>
+                    <>
+                      <Link
+                        href={personalizedState === "none" ? product.route : PLANNER_MY_PLANS}
+                        className="mt-4 flex items-center justify-center rounded-full bg-teal-700 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-teal-800"
+                      >
+                        {personalizedState === "unbuilt" ? t.products.personalizedBuild : personalizedState === "generated" ? t.products.personalizedOpen : t.products.ownedCta}
+                      </Link>
+                      {personalizedState === "generated" && (
+                        <Link href={PLANNER_NEW_PLAN} className="mt-2 text-center text-xs font-semibold text-slate-500 underline-offset-2 hover:text-teal-700 hover:underline">
+                          {t.products.personalizedAnother}
+                        </Link>
+                      )}
+                    </>
                   ) : (
                     <div className={readingPurchases ? "invisible" : undefined} aria-hidden={readingPurchases || undefined}>
                       <p className="mt-3 flex flex-wrap items-baseline gap-x-1.5 gap-y-1">
@@ -151,14 +161,6 @@ export default function Products() {
                         </button>
                       )}
                     </div>
-                  )}
-                  {!isOwned && product.id === "personalized-trip-plan" && owned.hasPersonalizedPlans && (
-                    <Link
-                      href="/planner"
-                      className="mt-2 flex items-center justify-center rounded-full border border-teal-200 bg-teal-50 px-4 py-2.5 text-sm font-semibold text-teal-800 transition-colors hover:bg-teal-100"
-                    >
-                      {t.products.myPlansCta}
-                    </Link>
                   )}
                 </div>
               </div>

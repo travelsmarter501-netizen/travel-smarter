@@ -2,10 +2,10 @@ import { redirect } from "next/navigation";
 import Container from "../components/Container";
 import Button from "../components/Button";
 import SignOutButton from "../components/auth/SignOutButton";
-import { AccountPlans, AccountPurchases, type AccountPlanView } from "../components/account/AccountSections";
+import { AccountPlans, AccountPurchases } from "../components/account/AccountSections";
+import type { PlanCardData } from "../components/planner/PlanCard";
 import CustomPlanCheckoutButton from "../components/account/CustomPlanCheckoutButton";
 import { INTEREST_OPTIONS } from "../components/smart-planner/InterestSelector";
-import { v2DisplayInterestsLabel } from "../lib/planner/v2PlannerTypes";
 import { createClient } from "../../utils/supabase/server";
 import { getUserEntitlements, GUIDE_BUNDLE_PRODUCT_SLUGS } from "../lib/entitlements";
 import { buildAccountPurchases, type PersonalizedPurchase } from "../lib/accountView";
@@ -23,7 +23,7 @@ const DESTINATION_LABELS: Record<string, string> = {
 type PersonalizedRequestRow = {
   id: string;
   destination_id: string;
-  answers: { days?: unknown } | null;
+  answers: { days?: unknown; surpriseMe?: unknown; interests?: unknown; accommodation?: { booked?: unknown; text?: unknown } | null } | null;
   generated_at: string | null;
   saved_plan_id: string | null;
   source: string;
@@ -81,6 +81,9 @@ export default async function AccountPage() {
   // (matching this table's only other real shape).
   const { data: savedPlansRaw } = await supabase.from("smart_planner_saved_plans").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
   const savedPlans = savedPlansRaw ?? [];
+  // Plans the customer removed from My Plans are hidden here (they are kept; /planner lists them for restoring). A row only counts as
+  // hidden when archived_at is set -- the plan, its request and its order are untouched.
+  const visiblePlans = savedPlans.filter((plan) => !(plan as { archived_at?: string | null }).archived_at);
 
   // Each paid Personalized Plan is its own purchase (bought per trip). Read with the customer's own session: row-level security
   // limits personalized_plan_requests to requests whose order they own. Complimentary requests have no order and are not purchases.
@@ -99,6 +102,13 @@ export default async function AccountPage() {
       requestId: row.id,
       destinationId: row.destination_id,
       days: typeof row.answers?.days === "number" ? row.answers.days : null,
+      details: {
+        surpriseMe: row.answers?.surpriseMe === true,
+        interests: Array.isArray(row.answers?.interests) ? (row.answers.interests as PersonalizedPurchase["details"]["interests"]) : [],
+        accommodation: row.answers?.accommodation
+          ? { booked: row.answers.accommodation.booked === true, text: typeof row.answers.accommodation.text === "string" ? row.answers.accommodation.text : undefined }
+          : null,
+      },
       purchasedAt: order.paid_at ?? order.created_at,
       generated: !!row.generated_at,
       planId: planStillExists ? row.saved_plan_id : null,
@@ -106,21 +116,15 @@ export default async function AccountPage() {
   }
   const purchases = buildAccountPurchases({ entitlements: ownedProducts, personalized: personalizedPurchases });
 
-  const plans: AccountPlanView[] = [];
-  for (const row of savedPlans) {
+  const plans: PlanCardData[] = [];
+  for (const row of visiblePlans) {
     if (isValidSmartPlannerV2SavedPlanRow(row)) {
-      const linked = !!row.preferences_json.personalizedPlanRequestId;
       plans.push({
         id: row.id,
         destinationId: row.destination_slug,
         days: v2SavedPlanDayCount(row.preferences_json),
-        interests: row.preferences_json.surpriseMe ? null : v2DisplayInterestsLabel(row.preferences_json.interests),
-        surprise: !!row.preferences_json.surpriseMe,
-        createdAt: row.created_at,
+        details: { surpriseMe: !!row.preferences_json.surpriseMe, interests: row.preferences_json.interests, accommodation: row.preferences_json.accommodation },
         href: `/smart-planner/barcelona-v2/saved/${row.id}`,
-        // Generated from a paid purchase: it is the product of that order, so it can't be deleted.
-        linkedToPurchase: linked,
-        deletable: !linked,
       });
       continue;
     }
@@ -131,12 +135,8 @@ export default async function AccountPage() {
       id: row.id,
       destinationId: row.destination_slug,
       days: row.preferences_json.tripLength,
-      interests: interestsLabel(row.preferences_json.interests) || null,
-      surprise: false,
-      createdAt: row.created_at,
+      interestsLine: interestsLabel(row.preferences_json.interests) || null,
       href: `/smart-planner/barcelona/saved/${row.id}`,
-      linkedToPurchase: false,
-      deletable: true,
     });
   }
 
