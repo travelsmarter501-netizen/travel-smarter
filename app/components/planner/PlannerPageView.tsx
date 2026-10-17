@@ -5,6 +5,7 @@ import Link from "next/link";
 import PersonalizedPlanWizard from "./PersonalizedPlanWizard";
 import MyPersonalizedPlans from "./MyPersonalizedPlans";
 import ScrollToTop from "../ScrollToTop";
+import ClearPlannerDraft from "./ClearPlannerDraft";
 import { useLanguage } from "../../lib/language";
 import { readPlannerDraft } from "../../lib/planner/plannerDraft";
 import type { PlannerPlanSummary, PlannerRequestSummary } from "../../lib/commerce/personalizedPlan";
@@ -15,10 +16,22 @@ const noopSubscribe = () => () => {};
  * The questionnaire. Normally it renders straight away; when restoring a draft it waits until the page has hydrated
  * (session storage does not exist on the server), so the pre-filled first render can never disagree with the server's.
  */
-function WizardSlot({ initialDestinationId, restoreDraft, signedIn, hasPlans }: { initialDestinationId?: string; restoreDraft: boolean; signedIn: boolean; hasPlans: boolean }) {
+function WizardSlot({
+  initialDestinationId,
+  restoreDraft,
+  signedIn,
+  hasPlans,
+  explicitNewPlan,
+}: {
+  initialDestinationId?: string;
+  restoreDraft: boolean;
+  signedIn: boolean;
+  hasPlans: boolean;
+  explicitNewPlan: boolean;
+}) {
   const mounted = useSyncExternalStore(noopSubscribe, () => true, () => false);
   if (restoreDraft && !mounted) return null;
-  return <PersonalizedPlanWizard initialDestinationId={initialDestinationId} initialDraft={restoreDraft ? readPlannerDraft() : null} signedIn={signedIn} hasPlans={hasPlans} />;
+  return <PersonalizedPlanWizard initialDestinationId={initialDestinationId} initialDraft={restoreDraft ? readPlannerDraft() : null} signedIn={signedIn} hasPlans={hasPlans} explicitNewPlan={explicitNewPlan} />;
 }
 
 /**
@@ -35,6 +48,7 @@ export default function PlannerPageView({
   signedIn,
   hasPlans,
   legacyOwnerNotice = false,
+  explicitNewPlan = false,
   plans,
   archivedPlans = [],
   requests,
@@ -48,6 +62,8 @@ export default function PlannerPageView({
   hasPlans: boolean;
   /** The customer owns the product from before the questionnaire-first model but has no plan or request. */
   legacyOwnerNotice?: boolean;
+  /** The visit asked for a new questionnaire on purpose (?new=1, or ?edit=1 inside that flow). */
+  explicitNewPlan?: boolean;
   plans: PlannerPlanSummary[];
   /** Plans the customer removed from My Plans (still stored, restorable). */
   archivedPlans?: PlannerPlanSummary[];
@@ -59,6 +75,8 @@ export default function PlannerPageView({
   return (
     <main className="pb-10">
       <ScrollToTop />
+      {/* Whatever this tab remembers from an earlier questionnaire is stale on a fresh visit: only "Edit answers" (?edit=1) restores it. */}
+      {!restoreDraft && <ClearPlannerDraft />}
       <div className="mx-auto w-full max-w-3xl px-5 pt-4 sm:px-8 lg:px-10">
         <Link href="/" className="inline-flex items-center gap-1 text-sm font-semibold text-teal-700 hover:text-teal-800">
           {copy.page.backHome}
@@ -97,12 +115,12 @@ export default function PlannerPageView({
             )}
 
             <div className="mt-6">
-              <WizardSlot initialDestinationId={initialDestinationId} restoreDraft={restoreDraft} signedIn={signedIn} hasPlans={hasPlans} />
+              <WizardSlot initialDestinationId={initialDestinationId} restoreDraft={restoreDraft} signedIn={signedIn} hasPlans={hasPlans} explicitNewPlan={explicitNewPlan} />
             </div>
 
             {!signedIn && (
               <p className="mt-6 text-center">
-                <Link href="/login?next=%2Fplanner%3Fnew%3D1" className="text-sm font-semibold text-teal-700 hover:underline">
+                <Link href="/login?next=%2Fplanner" className="text-sm font-semibold text-teal-700 hover:underline">
                   {copy.page.alreadyBought}
                 </Link>
               </p>

@@ -1,7 +1,8 @@
 "use client";
 
 import Button from "../Button";
-import PlanCard, { type PlanCardData } from "../planner/PlanCard";
+import PlansLists from "../planner/PlansLists";
+import type { PlanCardData } from "../planner/PlanCard";
 import { useLanguage } from "../../lib/language";
 import { fillCopy } from "../../lib/plannerCopy";
 import { formatPurchaseDate, productDisplayName, type AccountPurchase } from "../../lib/accountView";
@@ -145,8 +146,8 @@ export function AccountPurchases({ purchases, inheritedGuideFrom }: { purchases:
   );
 }
 
-/** "My plans" on the account page: the same cards as /planner (destination, days, trip details, Open plan, Remove). */
-export function AccountPlans({ plans }: { plans: PlanCardData[] }) {
+/** "My plans" on the account page: the same cards as /planner (destination, days, trip details, Open plan, Remove) plus the "Removed plans" section with Restore. */
+export function AccountPlans({ plans, archivedPlans = [] }: { plans: PlanCardData[]; archivedPlans?: PlanCardData[] }) {
   const { language } = useLanguage();
   const c = copy[language === "en" ? "en" : "ar"];
 
@@ -154,17 +155,7 @@ export function AccountPlans({ plans }: { plans: PlanCardData[] }) {
     <div className="mt-8 border-t border-slate-100 pt-6">
       <h2 className="text-lg font-bold text-slate-900">{c.plansTitle}</h2>
 
-      {plans.length === 0 ? (
-        <div className="mt-3 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center">
-          <p className="text-sm text-slate-500">{c.plansEmpty}</p>
-        </div>
-      ) : (
-        <ul className="mt-3 space-y-3">
-          {plans.map((plan) => (
-            <PlanCard key={plan.id} plan={plan} />
-          ))}
-        </ul>
-      )}
+      <PlansLists plans={plans} archivedPlans={archivedPlans} emptyText={c.plansEmpty} />
     </div>
   );
 }

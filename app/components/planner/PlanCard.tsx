@@ -65,9 +65,10 @@ const copy = {
  *
  * The confirmation is part of the page, not the browser's native dialog: a native browser dialog can be silently suppressed (in-app browsers,
  * blocked dialogs) which made "Remove" look like it did nothing. On success the card leaves the list at once and the page refreshes from the
- * server; on failure the card says why.
+ * server; on failure the card says why. The list that holds the card (PlansLists) moves it between "My plans" and "Removed plans" through
+ * `onChanged`; used on its own the card simply hides itself.
  */
-export default function PlanCard({ plan, archived = false }: { plan: PlanCardData; archived?: boolean }) {
+export default function PlanCard({ plan, archived = false, onChanged }: { plan: PlanCardData; archived?: boolean; /** Called after the server confirmed the change, so the list can move the card at once. */ onChanged?: (archived: boolean) => void }) {
   const { language } = useLanguage();
   const lang = language === "en" ? "en" : "ar";
   const c = copy[lang];
@@ -102,7 +103,8 @@ export default function PlanCard({ plan, archived = false }: { plan: PlanCardDat
     // Done on the server: leave the list immediately, then let the server re-render the page (so the other list and the account agree).
     setConfirming(false);
     setBusy(false);
-    setGone(true);
+    if (onChanged) onChanged(next);
+    else setGone(true);
     router.refresh();
   }
 

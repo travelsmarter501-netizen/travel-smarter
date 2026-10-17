@@ -83,7 +83,7 @@ export default async function AccountPage() {
   const savedPlans = savedPlansRaw ?? [];
   // Plans the customer removed from My Plans are hidden here (they are kept; /planner lists them for restoring). A row only counts as
   // hidden when archived_at is set -- the plan, its request and its order are untouched.
-  const visiblePlans = savedPlans.filter((plan) => !(plan as { archived_at?: string | null }).archived_at);
+  const isRemoved = (plan: unknown) => !!(plan as { archived_at?: string | null }).archived_at;
 
   // Each paid Personalized Plan is its own purchase (bought per trip). Read with the customer's own session: row-level security
   // limits personalized_plan_requests to requests whose order they own. Complimentary requests have no order and are not purchases.
@@ -117,9 +117,11 @@ export default async function AccountPage() {
   const purchases = buildAccountPurchases({ entitlements: ownedProducts, personalized: personalizedPurchases });
 
   const plans: PlanCardData[] = [];
-  for (const row of visiblePlans) {
+  const removedPlans: PlanCardData[] = [];
+  for (const row of savedPlans) {
+    const target = isRemoved(row) ? removedPlans : plans;
     if (isValidSmartPlannerV2SavedPlanRow(row)) {
-      plans.push({
+      target.push({
         id: row.id,
         destinationId: row.destination_slug,
         days: v2SavedPlanDayCount(row.preferences_json),
@@ -131,7 +133,7 @@ export default async function AccountPage() {
     // This table is shared with V1 (distinguished only by shape): a row that fails BOTH validators is neither cleanly V1 nor V2
     // (e.g. a future interest-key rename could make an old row fail its own validator), so it is skipped rather than blindly cast.
     if (!isValidSmartPlannerSavedPlanRow(row)) continue;
-    plans.push({
+    target.push({
       id: row.id,
       destinationId: row.destination_slug,
       days: row.preferences_json.tripLength,
@@ -164,7 +166,7 @@ export default async function AccountPage() {
 
           <AccountPurchases purchases={purchases} inheritedGuideFrom={hasInheritedGuideAccess && inheritedGuideFrom ? { slug: inheritedGuideFrom.productSlug, name: inheritedGuideFrom.productName } : null} />
 
-          <AccountPlans plans={plans} />
+          <AccountPlans plans={plans} archivedPlans={removedPlans} />
 
           {/* Unified Personalized Plan merge: this section is now historical/legacy only -- the
               new unified planner (/planner) never creates a custom_plan_requests row, it saves

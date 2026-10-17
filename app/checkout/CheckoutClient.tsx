@@ -169,7 +169,7 @@ export default function CheckoutClient({
               {error.code === "planner_answers_required" && (
                 <>
                   {" "}
-                  <Link href="/planner?new=1" className="underline">
+                  <Link href="/planner" className="underline">
                     {t.planner.page.title}
                   </Link>
                 </>

@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Button from "../Button";
-import PlanCard, { type PlanCardData } from "./PlanCard";
+import PlansLists from "./PlansLists";
+import type { PlanCardData } from "./PlanCard";
 import { generatePersonalizedPlanAction } from "../../planner/actions";
 import { useLanguage } from "../../lib/language";
 import { fillCopy, type PlannerGenerateErrorCode } from "../../lib/plannerCopy";
@@ -83,29 +84,11 @@ export default function MyPersonalizedPlans({ plans, archivedPlans = [], request
         )
       )}
 
-      {plans.length > 0 && (
+      {(plans.length > 0 || archivedPlans.length > 0) && (
         <section aria-label={copy.mine.plansHeading}>
-          <h2 className="text-lg font-bold text-slate-900">{copy.mine.plansHeading}</h2>
-          <ul className="mt-3 space-y-3">
-            {plans.map((plan) => (
-              <PlanCard key={plan.id} plan={toCardData(plan)} />
-            ))}
-          </ul>
+          {plans.length > 0 && <h2 className="text-lg font-bold text-slate-900">{copy.mine.plansHeading}</h2>}
+          <PlansLists plans={plans.map(toCardData)} archivedPlans={archivedPlans.map(toCardData)} />
         </section>
-      )}
-
-      {archivedPlans.length > 0 && (
-        <details className="rounded-2xl border border-slate-200 bg-slate-50/60 px-4 py-3">
-          <summary className="cursor-pointer text-sm font-semibold text-slate-700">
-            {copy.mine.archivedHeading} ({archivedPlans.length})
-          </summary>
-          <p className="mt-2 text-xs leading-5 text-slate-500">{copy.mine.archivedNote}</p>
-          <ul className="mt-3 space-y-3">
-            {archivedPlans.map((plan) => (
-              <PlanCard key={plan.id} plan={toCardData(plan)} archived />
-            ))}
-          </ul>
-        </details>
       )}
     </div>
   );

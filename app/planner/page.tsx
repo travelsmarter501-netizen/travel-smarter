@@ -85,6 +85,7 @@ export default async function PlannerPage({ searchParams }: { searchParams: Prom
       signedIn={!!user}
       hasPlans={hasPlans}
       legacyOwnerNotice={legacyOwnerWithoutPlan && view === "wizard"}
+      explicitNewPlan={wantsNew === "1" || edit === "1"}
       plans={mine.plans}
       archivedPlans={mine.archivedPlans}
       requests={mine.requests}

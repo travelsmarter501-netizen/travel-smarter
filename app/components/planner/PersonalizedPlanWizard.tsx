@@ -37,6 +37,7 @@ export default function PersonalizedPlanWizard({
   initialDraft = null,
   signedIn = false,
   hasPlans = false,
+  explicitNewPlan = true,
 }: {
   initialDestinationId?: string;
   initialDraft?: PlannerDraft | null;
@@ -44,6 +45,11 @@ export default function PersonalizedPlanWizard({
   signedIn?: boolean;
   /** The customer already has plans: say that this questionnaire is a NEW trip and a new purchase. */
   hasPlans?: boolean;
+  /**
+   * This questionnaire was opened on purpose as a NEW plan (?new=1 / ?edit=1). A customer who already has plans and somehow lands here
+   * WITHOUT that is never offered payment: the last step opens their plans instead (the page already shows them their plans in that case).
+   */
+  explicitNewPlan?: boolean;
 }) {
   const { t, language } = useLanguage();
   const router = useRouter();
@@ -123,7 +129,7 @@ export default function PersonalizedPlanWizard({
   const flow = checked?.status ?? null;
   const currentFlow = checked && checked.signature === answersSignature ? checked.status : null;
   const checking = clickChecking || (signedIn && step === 4 && !currentFlow && failedSignature !== answersSignature);
-  const paymentBlocked = signedIn && !!flow && (flow.state === "unbuilt" || (!!currentFlow && currentFlow.duplicate));
+  const paymentBlocked = (hasPlans && !explicitNewPlan) || (signedIn && !!flow && (flow.state === "unbuilt" || (!!currentFlow && currentFlow.duplicate)));
 
   async function handleContinue() {
     if (!canContinue || accommodationStatus === null) return;
@@ -160,7 +166,7 @@ export default function PersonalizedPlanWizard({
 
   return (
     <div className="space-y-5">
-      {hasPlans && <p className="rounded-2xl bg-teal-50 px-4 py-3 text-xs font-semibold leading-5 text-teal-800">{wizard.newTripNote}</p>}
+      {hasPlans && explicitNewPlan && <p className="rounded-2xl bg-teal-50 px-4 py-3 text-xs font-semibold leading-5 text-teal-800">{wizard.newTripNote}</p>}
       <div>
         <div className="flex items-center gap-1.5" role="list" aria-label={wizard.progressAria}>
           {([1, 2, 3, 4] as const).map((n) => (
@@ -352,7 +358,7 @@ export default function PersonalizedPlanWizard({
         </div>
       )}
 
-      {step === 4 && paymentBlocked && (
+      {step === 4 && paymentBlocked && (flow?.state === "unbuilt" || !!currentFlow?.duplicate) && (
         <p role="status" className="rounded-2xl bg-amber-50 px-4 py-3 text-sm font-semibold leading-6 text-amber-900">
           {flow?.state === "unbuilt" ? wizard.paidNote : wizard.duplicateNote}
         </p>

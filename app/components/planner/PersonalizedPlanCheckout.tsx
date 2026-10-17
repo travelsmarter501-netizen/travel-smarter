@@ -140,7 +140,7 @@ export default function PersonalizedPlanCheckout({
           <p className="text-sm font-semibold text-slate-900">{summary.missingTitle}</p>
           <p className="mt-1 text-sm leading-6 text-slate-600">{summary.missingBody}</p>
           <Link
-            href="/planner?new=1"
+            href="/planner"
             className="mt-5 flex w-full items-center justify-center rounded-full bg-teal-700 px-5 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-teal-800"
           >
             {summary.backToPlanner}

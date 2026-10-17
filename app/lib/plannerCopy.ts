@@ -258,7 +258,7 @@ export const plannerCopyAr: PlannerCopy = {
     pendingBody: "بمجرد تأكيد الدفع بتظهر هنا خطتك جاهزة للبناء. الصفحة بتتحدّث لحالها.",
     newPlanNote: "كل خطة جديدة هي عملية شراء جديدة لرحلة جديدة.",
     buildFirstNote: "عندك خطة مدفوعة جاهزة للبناء. ابنِها أولًا، وبعدها تقدر تنشئ خطة جديدة لرحلة أخرى.",
-    archivedHeading: "خطط محذوفة من القائمة",
+    archivedHeading: "الخطط المحذوفة",
     archivedNote: "هذه الخطط مخفية فقط، ومشترياتك محفوظة. تقدر تستعيد أي خطة منها.",
     complimentaryBadge: "✨ جاهزة للبناء",
     complimentaryBody: "طلب خطتك لـ {destination} ({days} أيام) جاهز. اضغط لنبني خطتك من إجاباتك.",
