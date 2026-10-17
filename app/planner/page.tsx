@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import PlannerPageView from "../components/planner/PlannerPageView";
 import { loadMyPersonalizedPlans } from "../lib/commerce/personalizedPlan";
 import { pendingClaimState } from "../claim-purchase/pendingClaimStatus";
-import { isComplimentaryUser } from "../lib/commerce/complimentary";
 import { isAvailablePlannerDestinationId, DEFAULT_PLANNER_DESTINATION_ID } from "../lib/planner/plannerDestinations";
 import { hasProductAccess } from "../lib/entitlements";
 import { PRODUCT_SLUGS } from "../lib/commerce/catalog";
@@ -27,6 +26,8 @@ import { createClient } from "../../utils/supabase/server";
  *
  * What this page shows is decided HERE from the database, never from the browser (session storage drafts, an old tab):
  *   - a paid purchase of this browser that is not attached to an account yet  -> /claim-purchase (it attaches it automatically);
+ *   - an UNPAID (pending) order never changes this page -- not a global banner, not the owned state, not the view. It is shown as
+ *     "awaiting payment confirmation" only for the specific order in ?order=<id> that is still pending (see loadMyPersonalizedPlans);
  *   - a PAID request that has not been built yet -> always "My Personalized Plans" with its "Build my plan" button, even for
  *     ?new=1 / ?edit=1 -- the questionnaire (and its "Continue to payment") is never offered while a paid plan is waiting;
  *   - otherwise unpaid -> the questionnaire -> checkout; paid-not-built -> Build my plan; built -> Open my plan.
@@ -43,8 +44,11 @@ export const metadata: Metadata = {
     "اختار وجهتك واهتماماتك، وإحنا بنبني لك خطة ذكية حسب رحلتك. برشلونة متاحة الآن — وجهات جديدة قريبًا. Pick your destination and interests and we’ll build a smart plan for your trip.",
 };
 
-export default async function PlannerPage({ searchParams }: { searchParams: Promise<{ destination?: string; new?: string; edit?: string }> }) {
-  const { destination, new: wantsNew, edit } = await searchParams;
+export default async function PlannerPage({ searchParams }: { searchParams: Promise<{ destination?: string; new?: string; edit?: string; order?: string | string[] }> }) {
+  const { destination, new: wantsNew, edit, order } = await searchParams;
+  // The one purchase attempt this visit is about, if any (a well-formed order id). Only that order can ever show "awaiting payment confirmation".
+  const orderParam = Array.isArray(order) ? order[0] : order;
+  const pendingOrderId = typeof orderParam === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(orderParam) ? orderParam : null;
 
   const supabase = await createClient();
   const {
@@ -56,7 +60,7 @@ export default async function PlannerPage({ searchParams }: { searchParams: Prom
 
   const initialDestinationId = isAvailablePlannerDestinationId(destination) ? (destination as string) : DEFAULT_PLANNER_DESTINATION_ID;
   const mine = user
-    ? await loadMyPersonalizedPlans(user.id, { hidePending: isComplimentaryUser(user.id) })
+    ? await loadMyPersonalizedPlans(user.id, { pendingOrderId })
     : { plans: [], archivedPlans: [], requests: [], generatedCount: 0, hasAnyRequest: false };
   // Has this customer already bought a personalized plan (built, waiting to be built, awaiting confirmation, or removed from their list)?
   // Then /planner is THEIR plans, not a fresh questionnaire -- a repeat purchase is an explicit choice (?new=1).

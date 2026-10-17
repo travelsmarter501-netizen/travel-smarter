@@ -394,12 +394,13 @@ export type MyPersonalizedPlans = {
   requests: PlannerRequestSummary[];
   /** How many of the customer's personalized requests (paid or complimentary) have produced their plan -- removed plans still count. */
   generatedCount: number;
-  /** True if the customer has ever started a purchase under the one-purchase-one-plan model (any state). */
+  /** True if the customer has a paid (or complimentary) request under the one-purchase-one-plan model, built or not. Unpaid attempts never count. */
   hasAnyRequest: boolean;
 };
 
 type RequestRow = {
   id: string;
+  order_id: string | null;
   destination_id: string;
   answers: { days?: unknown } | null;
   generated_at: string | null;
@@ -423,23 +424,25 @@ type PlanRow = {
   } | null;
 };
 
-const PENDING_WINDOW_MS = 3 * 60 * 60 * 1000;
 
 /**
- * `hidePending` is decided by the server for allowlisted (complimentary) accounts: they never pay, so an unpaid purchase request
- * left behind by an abandoned normal checkout must not show up as an "awaiting payment confirmation" card. Regular customers
- * are unaffected (the card still tells them their payment is being confirmed).
+ * What /planner shows a signed-in customer.
+ *
+ * A PENDING (unpaid) personalized order is NOT part of the normal picture: it may be an abandoned checkout, a cancelled payment or an
+ * old duplicate, and none of that may make My Plans look like a payment is outstanding. It is shown as "awaiting payment confirmation"
+ * only when the visitor is resuming THAT specific order (`pendingOrderId`, from the ?order= link) and it still belongs to them and is still
+ * pending. Every other unpaid request is ignored here: it unlocks nothing, blocks nothing, and does not count as having a plan.
  *
  * Read with the customer's OWN session client, so row-level security (not this code) decides what is visible:
  * only requests whose order they own, and only their own saved plans.
  */
-export async function loadMyPersonalizedPlans(userId: string, options: { hidePending?: boolean } = {}): Promise<MyPersonalizedPlans> {
+export async function loadMyPersonalizedPlans(userId: string, options: { pendingOrderId?: string | null } = {}): Promise<MyPersonalizedPlans> {
   const supabase = await createClient();
 
   const [{ data: requestRows }, { data: planRows }] = await Promise.all([
     supabase
       .from("personalized_plan_requests")
-      .select("id, destination_id, answers, generated_at, created_at, source, orders(status, created_at)")
+      .select("id, order_id, destination_id, answers, generated_at, created_at, source, orders(status, created_at)")
       .order("created_at", { ascending: false })
       .returns<RequestRow[]>(),
     supabase
@@ -451,7 +454,6 @@ export async function loadMyPersonalizedPlans(userId: string, options: { hidePen
       .returns<PlanRow[]>(),
   ]);
 
-  const now = Date.now();
   const requests: PlannerRequestSummary[] = [];
   let generatedCount = 0;
   for (const row of requestRows ?? []) {
@@ -470,7 +472,7 @@ export async function loadMyPersonalizedPlans(userId: string, options: { hidePen
     const order = Array.isArray(row.orders) ? row.orders[0] : row.orders;
     if (!order) continue;
     if (order.status === "paid") requests.push({ ...base, state: "ready", complimentary: false });
-    else if (!options.hidePending && order.status === "pending" && now - new Date(order.created_at).getTime() < PENDING_WINDOW_MS)
+    else if (order.status === "pending" && !!options.pendingOrderId && row.order_id === options.pendingOrderId)
       requests.push({ ...base, state: "pending", complimentary: false });
   }
 
@@ -502,6 +504,7 @@ export async function loadMyPersonalizedPlans(userId: string, options: { hidePen
     archivedPlans: allPlans.filter((plan) => !!plan.archivedAt),
     requests,
     generatedCount,
-    hasAnyRequest: (requestRows ?? []).length > 0,
+    // Purchase-backed requests only (paid, or complimentary): an unpaid attempt does not make someone a customer of the new model.
+    hasAnyRequest: generatedCount > 0 || requests.some((request) => request.state === "ready"),
   };
 }
