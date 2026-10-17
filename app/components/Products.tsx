@@ -9,7 +9,7 @@ import Price from "./Price";
 import { useCart } from "../lib/cart";
 import { useLanguage } from "../lib/language";
 import { useOwnedProducts } from "../lib/useOwnedProducts";
-import { PLANNER_MY_PLANS } from "../lib/planner/planLinks";
+import { PLANNER_NEW_PLAN } from "../lib/planner/planLinks";
 import { homepageTranslations } from "../lib/homepageTranslations";
 import { destinations } from "../lib/content";
 
@@ -115,7 +115,7 @@ export default function Products() {
                   )}
                   {isOwned ? (
                     <Link
-                      href={isPlanner ? PLANNER_MY_PLANS : product.route}
+                      href={isPlanner ? PLANNER_NEW_PLAN : product.route}
                       className="mt-4 flex items-center justify-center rounded-full bg-teal-700 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-teal-800"
                     >
                       {isPlanner ? t.products.personalizedOpen : t.products.ownedCta}

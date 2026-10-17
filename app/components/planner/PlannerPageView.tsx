@@ -1,5 +1,6 @@
 "use client";
 
+import { PLANNER_MY_PLANS } from "../../lib/planner/planLinks";
 import { useSyncExternalStore } from "react";
 import Link from "next/link";
 import PersonalizedPlanWizard from "./PersonalizedPlanWizard";
@@ -92,7 +93,7 @@ export default function PlannerPageView({
           <>
             {owner && (
               <p className="mt-3">
-                <Link href="/planner" className="text-sm font-semibold text-teal-700 hover:text-teal-800">
+                <Link href={PLANNER_MY_PLANS} className="text-sm font-semibold text-teal-700 hover:text-teal-800">
                   {copy.mine.title}
                 </Link>
               </p>

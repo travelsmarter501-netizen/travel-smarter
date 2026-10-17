@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Container from "../Container";
 import { useLanguage } from "../../lib/language";
-import { PLANNER_MY_PLANS } from "../../lib/planner/planLinks";
+import { PLANNER_NEW_PLAN } from "../../lib/planner/planLinks";
 
 const copy = {
   ar: {
@@ -33,7 +33,7 @@ export default function PersonalizedPlanStatus() {
           <h1 className="text-2xl font-bold text-slate-900">{c.title}</h1>
           <p className="mt-2 text-sm leading-6 text-slate-600">{c.body}</p>
           <Link
-            href={PLANNER_MY_PLANS}
+            href={PLANNER_NEW_PLAN}
             className="mt-6 flex w-full items-center justify-center rounded-full bg-teal-700 px-5 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-teal-800"
           >
             {c.open}
