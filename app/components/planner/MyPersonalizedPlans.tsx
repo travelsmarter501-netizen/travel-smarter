@@ -62,7 +62,7 @@ export default function MyPersonalizedPlans({ plans, archivedPlans = [], request
             <p className="text-sm font-semibold leading-6 text-teal-800">{copy.mine.buildFirstNote}</p>
           ) : (
             <>
-              <Button href="/planner?new=1" size="lg" className="w-full sm:w-auto">
+              <Button href="/planner?new=1" variant="secondary" size="md" className="w-full sm:w-auto">
                 ＋ {copy.mine.createNew}
               </Button>
               <p className="mt-2 text-xs text-slate-400">{copy.mine.newPlanNote}</p>

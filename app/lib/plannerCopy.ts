@@ -75,6 +75,14 @@ export type PlannerCopy = {
     next: string;
     continueToCheckout: string;
     draftSaveFailed: string;
+    /** The last step when the SERVER says payment must not be offered (see getPersonalizedFlowStatus). */
+    checkingPurchase: string;
+    buildMyPlan: string;
+    openMyPlan: string;
+    paidNote: string;
+    duplicateNote: string;
+    /** Shown on top of the questionnaire for a customer who already has plans: this is a new trip and a new purchase. */
+    newTripNote: string;
   };
   /** Compact summary on /checkout?plan=personalized. */
   checkoutSummary: {
@@ -205,6 +213,12 @@ export const plannerCopyAr: PlannerCopy = {
     next: "التالي",
     continueToCheckout: "المتابعة للدفع",
     draftSaveFailed: "تعذّر حفظ إجاباتك على هذا المتصفح. فعّل التخزين المؤقت أو جرّب متصفحًا آخر.",
+    checkingPurchase: "جاري التحقق من حالة خطتك...",
+    buildMyPlan: "ابنِ خطتي ✨",
+    openMyPlan: "افتح خطتي",
+    paidNote: "دفعتك لخطة مؤكدة وخطتك جاهزة للبناء — لا حاجة لدفع جديد.",
+    duplicateNote: "اشتريت خطة بنفس هذه الإجابات قبل قليل — لا حاجة لدفع جديد. افتح خطتك، أو غيّر إجاباتك إذا كانت لرحلة جديدة.",
+    newTripNote: "هذه خطة جديدة لرحلة أخرى، وتتطلب عملية شراء جديدة. خطتك الحالية محفوظة كما هي.",
   },
   checkoutSummary: {
     title: "خطة مخصصة إلى {destination}",
@@ -333,6 +347,12 @@ export const plannerCopyEn: PlannerCopy = {
     next: "Next",
     continueToCheckout: "Continue to checkout",
     draftSaveFailed: "We couldn’t save your answers in this browser. Enable site storage or try another browser.",
+    checkingPurchase: "Checking your plan status...",
+    buildMyPlan: "Build my plan ✨",
+    openMyPlan: "Open my plan",
+    paidNote: "Your payment is confirmed and your plan is ready to build — there's nothing more to pay.",
+    duplicateNote: "You just bought a plan with these exact answers — there's nothing more to pay. Open your plan, or change your answers if this is a new trip.",
+    newTripNote: "This is a new plan for another trip and needs a new purchase. Your current plan stays exactly as it is.",
   },
   checkoutSummary: {
     title: "Personalized Plan to {destination}",

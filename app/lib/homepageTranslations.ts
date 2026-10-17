@@ -89,11 +89,10 @@ export type HomepageCopy = {
     ownedCta: string;
     /**
      * Personalized Plan card, for a customer who already has a plan: the card becomes "Purchased" with a primary button to their
-     * plan(s), a smaller "Create another plan" (the one explicit way to buy again), and -- when a paid plan is still waiting to be
-     * built -- a "Build my plan" button instead. No price, no purchase button.
+     * plan(s) -- and nothing else -- or, when a paid plan is still waiting to be built, a "Build my plan" button instead. No price, no
+     * purchase button, and no "create another plan" (that lives inside the plans page).
      */
     personalizedOpen: string;
-    personalizedAnother: string;
     personalizedBuild: string;
     items: Product[];
   };
@@ -205,7 +204,6 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
       ownedBadge: "تم الشراء ✓",
       ownedCta: "افتح المنتج",
       personalizedOpen: "افتح خطتي المخصصة",
-      personalizedAnother: "إنشاء خطة جديدة",
       personalizedBuild: "ابنِ خطتي ✨",
       items: [
         {
@@ -412,7 +410,6 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
       ownedBadge: "Purchased ✓",
       ownedCta: "Open",
       personalizedOpen: "Open my personalized plan",
-      personalizedAnother: "Create another plan",
       personalizedBuild: "Build my plan ✨",
       items: [
         {

@@ -7,8 +7,10 @@ import {
   createComplimentaryPlanRequest,
   createPersonalizedPlanOrder,
   generatePersonalizedPlanForRequest,
+  getPersonalizedPlanState,
   hasPaidUnbuiltRequest,
   hasRecentPaidRequestWithSameAnswers,
+  type PersonalizedPlanState,
   type CreateComplimentaryRequestResult,
   type GeneratePersonalizedPlanResult,
 } from "../lib/commerce/personalizedPlan";
@@ -91,4 +93,32 @@ export async function startComplimentaryPlan(input: { destinationId?: unknown; a
   const normalized = normalizePersonalizedAnswers(input?.answers, input?.destinationId);
   if (!normalized.ok) return { ok: false, code: "invalid_planner_answers" };
   return createComplimentaryPlanRequest({ destinationId: normalized.destinationId, answers: normalized.answers });
+}
+
+export type PersonalizedFlowStatus = {
+  /** "unbuilt": a paid plan is waiting to be built; "generated": they already have a plan; "none": nothing yet. */
+  state: PersonalizedPlanState;
+  /** These exact answers were just bought (a stale tab / old draft): the final step must open the plan, not offer payment. */
+  duplicate: boolean;
+};
+
+/**
+ * The questionnaire's last step asks the SERVER whether payment may be offered at all, so a stale tab or an old browser draft can never turn
+ * an already-paid request into a second checkout. The user comes from the verified session; the answers (optional) are only compared with the
+ * customer's own recent paid requests. Nothing is created or changed here. A signed-out visitor is always "none" (a guest buys normally).
+ */
+export async function getPersonalizedFlowStatus(input?: { destinationId?: unknown; answers?: unknown }): Promise<PersonalizedFlowStatus> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { state: "none", duplicate: false };
+
+  const state = await getPersonalizedPlanState(user.id);
+  let duplicate = false;
+  if (input?.answers !== undefined) {
+    const normalized = normalizePersonalizedAnswers(input.answers, input.destinationId);
+    if (normalized.ok) duplicate = await hasRecentPaidRequestWithSameAnswers(user.id, normalized.destinationId, normalized.answers);
+  }
+  return { state, duplicate };
 }

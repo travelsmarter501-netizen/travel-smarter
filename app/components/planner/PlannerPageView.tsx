@@ -15,10 +15,10 @@ const noopSubscribe = () => () => {};
  * The questionnaire. Normally it renders straight away; when restoring a draft it waits until the page has hydrated
  * (session storage does not exist on the server), so the pre-filled first render can never disagree with the server's.
  */
-function WizardSlot({ initialDestinationId, restoreDraft }: { initialDestinationId?: string; restoreDraft: boolean }) {
+function WizardSlot({ initialDestinationId, restoreDraft, signedIn, hasPlans }: { initialDestinationId?: string; restoreDraft: boolean; signedIn: boolean; hasPlans: boolean }) {
   const mounted = useSyncExternalStore(noopSubscribe, () => true, () => false);
   if (restoreDraft && !mounted) return null;
-  return <PersonalizedPlanWizard initialDestinationId={initialDestinationId} initialDraft={restoreDraft ? readPlannerDraft() : null} />;
+  return <PersonalizedPlanWizard initialDestinationId={initialDestinationId} initialDraft={restoreDraft ? readPlannerDraft() : null} signedIn={signedIn} hasPlans={hasPlans} />;
 }
 
 /**
@@ -97,7 +97,7 @@ export default function PlannerPageView({
             )}
 
             <div className="mt-6">
-              <WizardSlot initialDestinationId={initialDestinationId} restoreDraft={restoreDraft} />
+              <WizardSlot initialDestinationId={initialDestinationId} restoreDraft={restoreDraft} signedIn={signedIn} hasPlans={hasPlans} />
             </div>
 
             {!signedIn && (

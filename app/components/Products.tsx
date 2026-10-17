@@ -9,7 +9,7 @@ import Price from "./Price";
 import { useCart } from "../lib/cart";
 import { useLanguage } from "../lib/language";
 import { useOwnedProducts } from "../lib/useOwnedProducts";
-import { PLANNER_MY_PLANS, PLANNER_NEW_PLAN } from "../lib/planner/planLinks";
+import { PLANNER_MY_PLANS } from "../lib/planner/planLinks";
 import { homepageTranslations } from "../lib/homepageTranslations";
 import { destinations } from "../lib/content";
 
@@ -23,8 +23,9 @@ const barcelonaImage = destinations.find((destination) => destination.slug === "
  * sales pages -- EXCEPT for a signed-in customer who already owns that product: its card then shows
  * "Purchased", no price and no buy buttons, and a single "Open" button to the content they own. Products they
  * do not own are unchanged. The Personalized Plan is bought per trip, so it is not an entitlement -- but once the visitor has a
- * plan, its card is "Purchased" too: no price, a primary "Open my personalized plan" and a smaller "Create another plan" (the one explicit
- * way to start another questionnaire and another purchase); a paid plan still waiting to be built shows "Build my plan".
+ * plan, its card behaves like any owned product: "Purchased", no price, and ONE button, "Open my personalized plan" (a paid plan
+ * still waiting to be built shows "Build my plan" instead). The card never offers a second purchase: "Create another plan" lives inside
+ * the customer's own plans page (/planner), not on the storefront.
  */
 export default function Products() {
   const { t } = useLanguage();
@@ -114,19 +115,12 @@ export default function Products() {
                     </p>
                   )}
                   {isOwned ? (
-                    <>
-                      <Link
-                        href={personalizedState === "none" ? product.route : PLANNER_MY_PLANS}
-                        className="mt-4 flex items-center justify-center rounded-full bg-teal-700 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-teal-800"
-                      >
-                        {personalizedState === "unbuilt" ? t.products.personalizedBuild : personalizedState === "generated" ? t.products.personalizedOpen : t.products.ownedCta}
-                      </Link>
-                      {personalizedState === "generated" && (
-                        <Link href={PLANNER_NEW_PLAN} className="mt-2 text-center text-xs font-semibold text-slate-500 underline-offset-2 hover:text-teal-700 hover:underline">
-                          {t.products.personalizedAnother}
-                        </Link>
-                      )}
-                    </>
+                    <Link
+                      href={personalizedState === "none" ? product.route : PLANNER_MY_PLANS}
+                      className="mt-4 flex items-center justify-center rounded-full bg-teal-700 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-teal-800"
+                    >
+                      {personalizedState === "unbuilt" ? t.products.personalizedBuild : personalizedState === "generated" ? t.products.personalizedOpen : t.products.ownedCta}
+                    </Link>
                   ) : (
                     <div className={readingPurchases ? "invisible" : undefined} aria-hidden={readingPurchases || undefined}>
                       <p className="mt-3 flex flex-wrap items-baseline gap-x-1.5 gap-y-1">

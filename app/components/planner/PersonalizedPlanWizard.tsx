@@ -1,13 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import V2InterestSelector from "../smart-planner-v2/V2InterestSelector";
 import { useLanguage } from "../../lib/language";
 import { fillCopy } from "../../lib/plannerCopy";
 import { inclusiveDayCount } from "../../lib/planner/dateOnly";
 import { writePlannerDraft, type PlannerAccommodationStatus, type PlannerDraft } from "../../lib/planner/plannerDraft";
-import { CHECKOUT_NEW_PLAN } from "../../lib/planner/planLinks";
+import { CHECKOUT_NEW_PLAN, PLANNER_MY_PLANS } from "../../lib/planner/planLinks";
+import { getPersonalizedFlowStatus, type PersonalizedFlowStatus } from "../../planner/actions";
 import type { V2PlannerInterest } from "../../lib/planner/v2PlannerTypes";
 import { PLANNER_DESTINATIONS, DEFAULT_PLANNER_DESTINATION_ID, isAvailablePlannerDestinationId } from "../../lib/planner/plannerDestinations";
 import { MAX_ACCOMMODATION_TEXT_LENGTH, MAX_PERSONALIZED_PLAN_DAYS } from "../../lib/planner/personalizedPlanAnswers";
@@ -31,7 +32,19 @@ const choiceClass = (active: boolean) =>
  * `initialDraft` (only when the customer came back via "Edit answers") pre-fills every answer and opens the last step.
  * Everything the customer sees is bilingual through the site's language system (t.planner).
  */
-export default function PersonalizedPlanWizard({ initialDestinationId, initialDraft = null }: { initialDestinationId?: string; initialDraft?: PlannerDraft | null }) {
+export default function PersonalizedPlanWizard({
+  initialDestinationId,
+  initialDraft = null,
+  signedIn = false,
+  hasPlans = false,
+}: {
+  initialDestinationId?: string;
+  initialDraft?: PlannerDraft | null;
+  /** A signed-in visitor's final step asks the server whether payment may be offered (see getPersonalizedFlowStatus). */
+  signedIn?: boolean;
+  /** The customer already has plans: say that this questionnaire is a NEW trip and a new purchase. */
+  hasPlans?: boolean;
+}) {
   const { t, language } = useLanguage();
   const router = useRouter();
   const wizard = t.planner.wizard;
@@ -49,6 +62,12 @@ export default function PersonalizedPlanWizard({ initialDestinationId, initialDr
   const [accommodationStatus, setAccommodationStatus] = useState<PlannerAccommodationStatus | null>(initialDraft?.accommodationStatus ?? null);
   const [accommodationText, setAccommodationText] = useState(initialDraft?.answers.accommodation.text ?? "");
   const [saveFailed, setSaveFailed] = useState(false);
+  // What the SERVER says about this customer's purchase. It overrides anything this tab remembers: a paid plan that is waiting to be built, or
+  // answers that were just bought, turn the last step's "Continue to payment" into "Build my plan" / "Open my plan".
+  // `checked` remembers which answers the status was asked for, so a status for older answers is never mistaken for the current ones.
+  const [checked, setChecked] = useState<{ signature: string; status: PersonalizedFlowStatus } | null>(null);
+  const [failedSignature, setFailedSignature] = useState<string | null>(null);
+  const [clickChecking, setClickChecking] = useState(false);
 
   const inputDir = language === "ar" ? "rtl" : "ltr";
 
@@ -72,17 +91,60 @@ export default function PersonalizedPlanWizard({ initialDestinationId, initialDr
   };
   const canContinue = stepValid[1] && stepValid[2] && stepValid[3] && stepValid[4];
 
-  function handleContinue() {
+  const buildAnswers = () => ({
+    dateMode,
+    ...(dateMode === "flexible" ? { durationDays } : { arrivalDate, departureDate }),
+    interests: surpriseMe ? [] : interests,
+    surpriseMe,
+    accommodation: accommodationTextRequired ? { booked: true, text: accommodationText.trim() } : { booked: false },
+  });
+  const answersSignature = JSON.stringify([destinationId, buildAnswers()]);
+
+  // Entering the last step (and whenever its answers change): ask the server. Until it answers, payment is not offered.
+  useEffect(() => {
+    if (!signedIn || step !== 4) return;
+    let cancelled = false;
+    const signature = answersSignature;
+    getPersonalizedFlowStatus({ destinationId, answers: buildAnswers() })
+      .then((status) => {
+        if (!cancelled) setChecked({ signature, status });
+      })
+      .catch(() => {
+        // Could not ask: the click handler asks again, and the checkout page and the purchase action enforce the same rules on the server.
+        if (!cancelled) setFailedSignature(signature);
+      });
+    return () => {
+      cancelled = true;
+    };
+    // buildAnswers only reads the answers captured by answersSignature
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [signedIn, step, answersSignature]);
+
+  const flow = checked?.status ?? null;
+  const currentFlow = checked && checked.signature === answersSignature ? checked.status : null;
+  const checking = clickChecking || (signedIn && step === 4 && !currentFlow && failedSignature !== answersSignature);
+  const paymentBlocked = signedIn && !!flow && (flow.state === "unbuilt" || (!!currentFlow && currentFlow.duplicate));
+
+  async function handleContinue() {
     if (!canContinue || accommodationStatus === null) return;
+    if (signedIn) {
+      // The authoritative check at the moment of the click: a stale tab can never reach the checkout for an already-paid request.
+      setClickChecking(true);
+      try {
+        const status = await getPersonalizedFlowStatus({ destinationId, answers: buildAnswers() });
+        setChecked({ signature: answersSignature, status });
+        if (status.state === "unbuilt" || status.duplicate) {
+          setClickChecking(false);
+          return;
+        }
+      } catch {
+        // fall through: the checkout page and the purchase action enforce the same rule server-side
+      }
+      setClickChecking(false);
+    }
     const saved = writePlannerDraft({
       destinationId,
-      answers: {
-        dateMode,
-        ...(dateMode === "flexible" ? { durationDays } : { arrivalDate, departureDate }),
-        interests: surpriseMe ? [] : interests,
-        surpriseMe,
-        accommodation: accommodationTextRequired ? { booked: true, text: accommodationText.trim() } : { booked: false },
-      },
+      answers: buildAnswers(),
       accommodationStatus,
     });
     if (!saved) {
@@ -92,8 +154,13 @@ export default function PersonalizedPlanWizard({ initialDestinationId, initialDr
     router.push(CHECKOUT_NEW_PLAN);
   }
 
+  function openMyPlans() {
+    router.push(PLANNER_MY_PLANS);
+  }
+
   return (
     <div className="space-y-5">
+      {hasPlans && <p className="rounded-2xl bg-teal-50 px-4 py-3 text-xs font-semibold leading-5 text-teal-800">{wizard.newTripNote}</p>}
       <div>
         <div className="flex items-center gap-1.5" role="list" aria-label={wizard.progressAria}>
           {([1, 2, 3, 4] as const).map((n) => (
@@ -285,6 +352,12 @@ export default function PersonalizedPlanWizard({ initialDestinationId, initialDr
         </div>
       )}
 
+      {step === 4 && paymentBlocked && (
+        <p role="status" className="rounded-2xl bg-amber-50 px-4 py-3 text-sm font-semibold leading-6 text-amber-900">
+          {flow?.state === "unbuilt" ? wizard.paidNote : wizard.duplicateNote}
+        </p>
+      )}
+
       {saveFailed && (
         <p role="alert" className="text-center text-sm font-semibold text-rose-600">
           {wizard.draftSaveFailed}
@@ -311,14 +384,22 @@ export default function PersonalizedPlanWizard({ initialDestinationId, initialDr
           >
             {wizard.next}
           </button>
+        ) : paymentBlocked ? (
+          <button
+            type="button"
+            onClick={openMyPlans}
+            className="flex flex-1 items-center justify-center rounded-full bg-teal-700 px-5 py-3.5 text-base font-semibold text-white shadow-sm transition-colors hover:bg-teal-800"
+          >
+            {flow?.state === "unbuilt" ? wizard.buildMyPlan : wizard.openMyPlan}
+          </button>
         ) : (
           <button
             type="button"
             onClick={handleContinue}
-            disabled={!canContinue}
+            disabled={!canContinue || checking}
             className="flex flex-1 items-center justify-center rounded-full bg-teal-700 px-5 py-3.5 text-base font-semibold text-white shadow-sm transition-colors hover:bg-teal-800 disabled:opacity-60"
           >
-            {wizard.continueToCheckout}
+            {checking ? wizard.checkingPurchase : wizard.continueToCheckout}
           </button>
         )}
       </div>
