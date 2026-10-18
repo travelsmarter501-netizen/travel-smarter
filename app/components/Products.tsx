@@ -118,6 +118,11 @@ export default function Products() {
                   {isOwned ? (
                     <Link
                       href={isPlanner ? PLANNER_NEW_PLAN : product.route}
+                      // The planner is a dynamic, per-customer route, so Next does not prefetch it on its own (only static routes, or routes
+                      // with a loading boundary, are prefetched). This link exists only once ownership is confirmed (the owned card), so
+                      // prefetch the whole route as soon as the card scrolls into view: tapping it then opens the questionnaire from the
+                      // client cache. A signed-out visitor never gets this link, so nothing planner-related is fetched for them.
+                      prefetch={isPlanner ? true : undefined}
                       className="mt-4 flex items-center justify-center rounded-full bg-teal-700 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-teal-800"
                     >
                       {isPlanner ? t.products.personalizedOpen : t.products.ownedCta}

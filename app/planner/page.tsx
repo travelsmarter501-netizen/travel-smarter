@@ -40,12 +40,13 @@ export default async function PlannerPage({
     data: { user },
   } = await supabase.auth.getUser();
 
+  // The two lookups below are independent of each other, so they run together instead of one after the other. Both are read-only, and the
+  // answer to each is still decided on the server from the database.
+  const [claimState, owner] = await Promise.all([pendingClaimState(user?.id ?? null), user ? ownsPersonalizedPlan(user.id) : Promise.resolve(false)]);
   // This browser holds a paid purchase that is not in an account yet: finish that first (signed out it asks to sign in, signed in it attaches it).
-  if ((await pendingClaimState(user?.id ?? null)) === "paid") redirect("/claim-purchase");
+  if (claimState === "paid") redirect("/claim-purchase");
 
   const initialDestinationId = isAvailablePlannerDestinationId(destination) ? (destination as string) : DEFAULT_PLANNER_DESTINATION_ID;
-  const owner = user ? await ownsPersonalizedPlan(user.id) : false;
-  const mine = user ? await loadMyPersonalizedPlans(user.id, { pendingOrderId }) : { plans: [], requests: [] };
 
   // "Edit plan": an owner's questionnaire pre-filled from one of THEIR plans (read with their own session, so another customer's id finds nothing).
   let editPlan: { id: string; draft: PlannerDraft } | null = null;
@@ -56,6 +57,11 @@ export default async function PlannerPage({
     const draft = plan ? parsePlannerDraft(JSON.stringify({ destinationId: plan.destinationId, answers: plan.rawAnswers, accommodationStatus: booked ? "hotel" : "not_booked" })) : null;
     if (plan && draft) editPlan = { id: plan.id, draft };
   }
+
+  // The plan / request lists are only shown on "My Personalized Plans". The questionnaire (?new=1, ?edit=1, or editing one of their plans) never
+  // reads them, so those queries are skipped there -- the page does not wait for data it will not render.
+  const questionnaireRequested = wantsNew === "1" || edit === "1" || !!editPlan;
+  const mine = user && !questionnaireRequested ? await loadMyPersonalizedPlans(user.id, { pendingOrderId }) : { plans: [], requests: [] };
 
   const hasPlans = mine.plans.length > 0 || mine.requests.length > 0;
   const asksForQuestionnaire = wantsNew === "1" || edit === "1" || !!editPlan;
