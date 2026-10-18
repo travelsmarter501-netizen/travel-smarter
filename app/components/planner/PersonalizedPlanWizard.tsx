@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import V2InterestSelector from "../smart-planner-v2/V2InterestSelector";
 import { useLanguage } from "../../lib/language";
+import { usePlannerCopy } from "../../lib/usePlannerCopy";
 import { fillCopy, type PlannerGenerateErrorCode } from "../../lib/plannerCopy";
 import { inclusiveDayCount } from "../../lib/planner/dateOnly";
 import { writePlannerDraft, type PlannerAccommodationStatus, type PlannerDraft } from "../../lib/planner/plannerDraft";
@@ -49,10 +50,11 @@ export default function PersonalizedPlanWizard({
   /** An owner editing one of their plans: the same questionnaire, pre-filled, whose last step regenerates THAT plan in place. */
   editPlanId?: string | null;
 }) {
-  const { t, language } = useLanguage();
+  const { language } = useLanguage();
   const router = useRouter();
-  const wizard = t.planner.wizard;
-  const generateErrors = t.planner.generateErrors;
+  const plannerCopy = usePlannerCopy();
+  const wizard = plannerCopy.wizard;
+  const generateErrors = plannerCopy.generateErrors;
 
   const [step, setStep] = useState<Step>(initialDraft ? 4 : 1);
   const [destinationId, setDestinationId] = useState<string>(

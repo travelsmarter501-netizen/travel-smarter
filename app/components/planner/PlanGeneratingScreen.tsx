@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useLanguage } from "../../lib/language";
+import { usePlannerCopy } from "../../lib/usePlannerCopy";
 
 const PHRASE_EVERY_MS = 1400;
 
@@ -10,8 +10,7 @@ const PHRASE_EVERY_MS = 1400;
  * already uses. Shown while the plan is generated; it is tied to the real server call, never a fake timer.
  */
 export default function PlanGeneratingScreen() {
-  const { t } = useLanguage();
-  const copy = t.planner;
+  const copy = usePlannerCopy();
   const [index, setIndex] = useState(0);
 
   useEffect(() => {

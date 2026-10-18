@@ -7,7 +7,7 @@ import PlansLists from "./PlansLists";
 import type { PlanCardData } from "./PlanCard";
 import { generatePersonalizedPlanAction } from "../../planner/actions";
 import { plannerEditPlanHref } from "../../lib/planner/planLinks";
-import { useLanguage } from "../../lib/language";
+import { usePlannerCopy } from "../../lib/usePlannerCopy";
 import { fillCopy, type PlannerGenerateErrorCode } from "../../lib/plannerCopy";
 import type { PlannerPlanSummary, PlannerRequestSummary } from "../../lib/commerce/personalizedPlan";
 
@@ -25,8 +25,7 @@ const PHRASE_EVERY_MS = 1400;
  * Plus "Create a new plan": for an owner it is FREE -- it opens a fresh questionnaire that ends in "Create my plan", not in payment.
  */
 export default function MyPersonalizedPlans({ plans, requests, owner = false }: { plans: PlannerPlanSummary[]; requests: PlannerRequestSummary[]; owner?: boolean }) {
-  const { t } = useLanguage();
-  const copy = t.planner;
+  const copy = usePlannerCopy();
   const router = useRouter();
 
   const hasPending = requests.some((request) => request.state === "pending");
@@ -96,8 +95,7 @@ export default function MyPersonalizedPlans({ plans, requests, owner = false }: 
 }
 
 function ReadyRequestCard({ request, destinationLabel }: { request: PlannerRequestSummary; destinationLabel: string }) {
-  const { t } = useLanguage();
-  const copy = t.planner;
+  const copy = usePlannerCopy();
   const router = useRouter();
   const [building, setBuilding] = useState(false);
   const [phraseIndex, setPhraseIndex] = useState(0);

@@ -30,6 +30,23 @@ const nextConfig: NextConfig = {
     // browsers/requests that don't accept AVIF. Purely an encoding-format change -- no source
     // image, remote host, or dimension is affected.
     formats: ["image/avif", "image/webp"],
+    // Quality 60 is used for the large photographic images (homepage hero, product and destination cards): visually
+    // equivalent for photos at these sizes and roughly a quarter smaller than the default 75. Next 16 only honours
+    // qualities that are listed here; 75 stays for everything that does not ask for a specific quality.
+    qualities: [60, 75],
+    // The optimized variants are derived from images that practically never change (public/ files and fixed
+    // Wikimedia URLs), so keep them for 30 days instead of the 4-hour default: fewer re-optimizations / revalidations.
+    minimumCacheTTL: 60 * 60 * 24 * 30,
+  },
+  async headers() {
+    // Small, rarely-changing static files that appear on the first screen. Browsers may reuse them for a day without
+    // asking again (and serve a stale copy for up to 30 days while refreshing in the background) -- repeat visits and
+    // in-app navigations stop paying a network round trip per file. Hashed /_next/static assets are already immutable.
+    const cacheDay = "public, max-age=86400, stale-while-revalidate=2592000";
+    return ["/flags/:path*", "/brand/:path*", "/hero/:path*"].map((source) => ({
+      source,
+      headers: [{ key: "Cache-Control", value: cacheDay }],
+    }));
   },
 };
 

@@ -7,7 +7,7 @@ import PersonalizedPlanWizard from "./PersonalizedPlanWizard";
 import MyPersonalizedPlans from "./MyPersonalizedPlans";
 import ScrollToTop from "../ScrollToTop";
 import ClearPlannerDraft from "./ClearPlannerDraft";
-import { useLanguage } from "../../lib/language";
+import { usePlannerCopy } from "../../lib/usePlannerCopy";
 import { readPlannerDraft, type PlannerDraft } from "../../lib/planner/plannerDraft";
 import type { PlannerPlanSummary, PlannerRequestSummary } from "../../lib/commerce/personalizedPlan";
 
@@ -72,8 +72,7 @@ export default function PlannerPageView({
   plans: PlannerPlanSummary[];
   requests: PlannerRequestSummary[];
 }) {
-  const { t } = useLanguage();
-  const copy = t.planner;
+  const copy = usePlannerCopy();
 
   return (
     <main className="pb-10">

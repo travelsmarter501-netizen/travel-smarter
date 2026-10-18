@@ -38,7 +38,9 @@ export function AccountNavLinkView({ status, variant = "bar", onNavigate }: { st
   }
 
   return (
-    <Link href={href} onClick={onNavigate} className={className} data-auth-state={status}>
+    // Signed out: do not prefetch /login. Prefetching pulls that page's JavaScript (it carries the Supabase client, ~70 KB gzipped)
+    // as soon as the mobile menu is opened, for a visitor who may never sign in; the page still opens normally when tapped.
+    <Link href={href} prefetch={signedIn ? undefined : false} onClick={onNavigate} className={className} data-auth-state={status}>
       {label}
     </Link>
   );

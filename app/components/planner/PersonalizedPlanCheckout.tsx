@@ -10,6 +10,7 @@ import { generatePersonalizedPlanAction, startComplimentaryPlan, startPersonaliz
 import PlanGeneratingScreen from "./PlanGeneratingScreen";
 import ScrollToTop from "../ScrollToTop";
 import { useLanguage } from "../../lib/language";
+import { usePlannerCopy } from "../../lib/usePlannerCopy";
 import { fillCopy, type PlannerGenerateErrorCode } from "../../lib/plannerCopy";
 import { clearPlannerDraft, parsePlannerDraft, readPlannerDraftRaw } from "../../lib/planner/plannerDraft";
 import { destinationIncludesGuide } from "../../lib/planner/personalizedPlanAnswers";
@@ -46,7 +47,7 @@ export default function PersonalizedPlanCheckout({
 }) {
   const { t, language } = useLanguage();
   const router = useRouter();
-  const copy = t.planner;
+  const copy = usePlannerCopy();
   const summary = copy.checkoutSummary;
 
   const mounted = useSyncExternalStore(noopSubscribe, () => true, () => false);

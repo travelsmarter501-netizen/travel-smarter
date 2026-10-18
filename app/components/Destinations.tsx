@@ -33,6 +33,8 @@ export default function Destinations() {
                   alt={item.name}
                   fill
                   loading="lazy"
+                  fetchPriority="low"
+                  quality={60}
                   sizes="(min-width: 1024px) 20vw, (min-width: 640px) 33vw, 50vw"
                   className={`object-cover transition-transform duration-300 ${available ? "group-hover:scale-105" : "grayscale-[35%]"}`}
                 />

@@ -5,6 +5,7 @@ import Link from "next/link";
 import Price from "../components/Price";
 import { useCart } from "../lib/cart";
 import { useLanguage } from "../lib/language";
+import { usePlannerCopy } from "../lib/usePlannerCopy";
 import { formatPrice } from "../lib/currency";
 import { CART_ID_TO_PRODUCT_SLUG } from "../lib/commerce/catalog";
 import { referencePriceIfDiscounted } from "../lib/commerce/pricing";
@@ -23,6 +24,7 @@ export default function CheckoutClient({
 }) {
   const { items, removeItem, getPriceILS, totalILS, isIncludedInBundle } = useCart();
   const { language, t } = useLanguage();
+  const plannerCopy = usePlannerCopy();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   // Kept as {code, message} (not a string) so the text follows the language if it is switched after an error.
@@ -170,7 +172,7 @@ export default function CheckoutClient({
                 <>
                   {" "}
                   <Link href="/planner" className="underline">
-                    {t.planner.page.title}
+                    {plannerCopy.page.title}
                   </Link>
                 </>
               )}

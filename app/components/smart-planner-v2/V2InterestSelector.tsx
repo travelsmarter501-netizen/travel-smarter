@@ -2,7 +2,7 @@
 
 import { V2_INTEREST_DISPLAY_GROUPS, isV2DisplayGroupActive, toggleV2DisplayGroup } from "../../lib/planner/v2PlannerTypes";
 import type { V2PlannerInterest } from "../../lib/planner/v2PlannerTypes";
-import { useLanguage } from "../../lib/language";
+import { usePlannerCopy } from "../../lib/usePlannerCopy";
 import { fillCopy } from "../../lib/plannerCopy";
 
 /**
@@ -38,8 +38,7 @@ export default function V2InterestSelector({
   surpriseMeActive: boolean;
   onSurpriseMe: () => void;
 }) {
-  const { t } = useLanguage();
-  const copy = t.planner.wizard;
+  const copy = usePlannerCopy().wizard;
   const activeGroupCount = surpriseMeActive ? 0 : V2_INTEREST_DISPLAY_GROUPS.filter((group) => isV2DisplayGroupActive(selected, group)).length;
 
   return (

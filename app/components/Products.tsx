@@ -81,7 +81,9 @@ export default function Products() {
                     alt={product.title}
                     fill
                     loading="lazy"
-                    sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
+                    fetchPriority="low"
+                    quality={60}
+                    sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, calc(100vw - 2rem)"
                     className="object-cover"
                   />
                   {product.badge && (

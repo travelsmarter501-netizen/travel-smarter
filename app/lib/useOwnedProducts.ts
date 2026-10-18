@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createClient } from "../../utils/supabase/client";
 import { useAuthStatus } from "./useAuthStatus";
 import { ownedCartIds } from "./commerce/ownership";
 
@@ -35,12 +34,16 @@ export function useOwnedProducts(): OwnedProductsState {
   useEffect(() => {
     if (auth !== "signedIn") return;
     let cancelled = false;
-    const supabase = createClient();
 
-    Promise.all([
-      supabase.from("user_entitlements").select("products!inner(slug, active)").eq("products.active", true).returns<{ products: { slug: string } | { slug: string }[] }[]>(),
-      supabase.from("personalized_plan_requests").select("id, source, orders(status)").limit(50),
-    ])
+    // The Supabase browser client is loaded on demand: only a visitor who has a session ever reaches this code (see useAuthStatus).
+    import("../../utils/supabase/client")
+      .then(({ createClient }) => {
+        const supabase = createClient();
+        return Promise.all([
+          supabase.from("user_entitlements").select("products!inner(slug, active)").eq("products.active", true).returns<{ products: { slug: string } | { slug: string }[] }[]>(),
+          supabase.from("personalized_plan_requests").select("id, source, orders(status)").limit(50),
+        ]);
+      })
       .then(([entitlements, requests]) => {
         if (cancelled) return;
         const slugs = (entitlements.data ?? []).flatMap((row) => (Array.isArray(row.products) ? row.products.map((p) => p.slug) : [row.products.slug]));

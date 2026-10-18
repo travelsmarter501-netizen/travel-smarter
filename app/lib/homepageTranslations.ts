@@ -7,7 +7,6 @@
 
 import { PRODUCT_PRICES_ILS } from "./commerce/pricing";
 import type { CheckoutErrorCode } from "./commerce/checkoutErrors";
-import { plannerCopyAr, plannerCopyEn, type PlannerCopy } from "./plannerCopy";
 
 export type Language = "ar" | "en";
 
@@ -139,7 +138,6 @@ export type HomepageCopy = {
     includedInPlan: string;
     alreadyOwned: string;
   };
-  planner: PlannerCopy;
   /** "Included with your plan" card on the 3-day and 5-day Ready Plan pages -- not shown on the 1-day plan. */
   productPage: {
     includedGuide: { badge: string; title: string; cta: string };
@@ -344,7 +342,6 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
       includedInPlan: "مشمول ضمن خطتك",
       alreadyOwned: "لديك هذا المنتج مسبقًا",
     },
-    planner: plannerCopyAr,
     productPage: {
       includedGuide: {
         badge: "🎁 مشمول مع خطتك",
@@ -545,7 +542,6 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
       includedInPlan: "Included with your plan",
       alreadyOwned: "Already yours",
     },
-    planner: plannerCopyEn,
     productPage: {
       includedGuide: {
         badge: "🎁 Included with your plan",

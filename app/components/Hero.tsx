@@ -47,6 +47,7 @@ export default function Hero() {
             alt={t.hero.imageAlt}
             fill
             priority
+            quality={60}
             sizes="(min-width: 768px) 480px, 90vw"
             className="object-cover"
           />
