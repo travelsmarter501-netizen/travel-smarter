@@ -5,9 +5,11 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import Container from "../components/Container";
 import GoogleAuthButton from "../components/auth/GoogleAuthButton";
+import ClaimBrowserNotice from "../components/auth/ClaimBrowserNotice";
 import { createClient } from "../../utils/supabase/client";
 import { forgotPasswordHref, safeNextPath, signupHref } from "../lib/authRedirect";
 import { currentPlatformForWording } from "../lib/inAppBrowser";
+import { recoverPurchasesAction } from "../claim-purchase/recoverAction";
 import { authCopy } from "../lib/authCopy";
 import { loginErrorKey } from "../lib/authErrors";
 import { useLanguage } from "../lib/language";
@@ -47,6 +49,14 @@ function LoginForm() {
       return;
     }
 
+    // Attach any guest purchase made with this verified email before landing anywhere. Server-side and best effort: a failure here never
+    // blocks the sign-in (the next sign-in, or a visit to /account, tries again).
+    try {
+      await recoverPurchasesAction();
+    } catch {
+      // nothing to do
+    }
+
     router.push(next);
     router.refresh();
   }
@@ -57,6 +67,7 @@ function LoginForm() {
         <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
           <h1 className="text-2xl font-bold text-slate-900">{c.login.title}</h1>
           <p className="mt-1.5 text-sm text-slate-600">{c.login.subtitle}</p>
+          <ClaimBrowserNotice next={next} />
 
           <form onSubmit={handleSubmit} className="mt-6 space-y-4">
             <div>

@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { createClient } from "../../utils/supabase/server";
 import { createServiceRoleClient } from "../../utils/supabase/service-role";
 import { hashClaimToken, isWellFormedClaimToken } from "../lib/commerce/claimToken";
 import { claimEmailVerdict } from "../lib/commerce/claimEmail";
 import { claimedOrderDestination } from "../lib/commerce/claimDestination";
 import { readPendingClaimCookie } from "./pendingClaimCookie";
+import { recoverGuestPurchases } from "../lib/commerce/recoverGuestPurchases";
+import { hasLinkedNoticeCookie } from "../lib/commerce/linkedNoticeCookie";
 import ClaimPurchaseClient, { type ClaimViewState } from "./ClaimPurchaseClient";
 
 /**
@@ -32,14 +35,20 @@ export default async function ClaimPurchasePage({ searchParams }: { searchParams
   // A fresh link in the URL always wins; otherwise resume from the HttpOnly cookie.
   const token = urlToken ?? (await readPendingClaimCookie());
 
-  if (!token) {
-    return <ClaimPurchaseClient state="invalid" />;
-  }
-
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  if (!token) {
+    // No claim link here -- what rescues a buyer who continued in a different browser and no longer has it: a signed-in visitor with a VERIFIED
+    // email gets any guest purchase made with that email attached (see recoverGuestPurchases), then goes straight to their account. A visitor who
+    // does hold the claim link never reaches this branch: the link claim below is untouched. The flag cookie covers the sign-in step having
+    // already linked them in an earlier request (the destination can be rendered more than once).
+    const recoveredByEmail = await recoverGuestPurchases(user);
+    if (recoveredByEmail > 0 || (await hasLinkedNoticeCookie())) redirect("/account");
+    return <ClaimPurchaseClient state="invalid" />;
+  }
 
   // Read-only coarse state; the (server-verified) viewer id lets the owner re-open their own claimed link.
   const serviceRole = createServiceRoleClient();

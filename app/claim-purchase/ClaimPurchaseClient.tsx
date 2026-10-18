@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Container from "../components/Container";
 import GoogleAuthButton from "../components/auth/GoogleAuthButton";
+import { useClaimNoticeText } from "../components/auth/ClaimBrowserNotice";
+import { useEmbeddedBrowser } from "../lib/useEmbeddedBrowser";
 import { useCart } from "../lib/cart";
 import { useLanguage } from "../lib/language";
 import { createClient } from "../../utils/supabase/client";
@@ -36,6 +38,7 @@ const copy = {
     retry: "حاول مرة أخرى",
     invalidTitle: "الرابط غير صالح",
     invalidBody: "هذا الرابط غير صالح أو انتهت صلاحيته أو تم استخدامه من قبل. إذا دفعت ولا تقدر تصل لمشترياتك، تواصل معنا وبنساعدك.",
+    invalidOtherBrowser: "إذا دفعت من متصفح آخر (مثل تيك توك) ثم فتحت الموقع هنا، فلا يمكن ربط الشراء تلقائيًا من هذا المتصفح. افتح رابط تأكيد الدفع في المتصفح الذي دفعت منه، أو تواصل معنا وسنربط مشترياتك بحسابك.",
     contact: "تواصل معنا",
     notYet: "ما وصلنا تأكيد الدفع بعد. انتظر لحظات وحاول مرة ثانية.",
     failed: "تعذّرت إضافة المشتريات. جرّب مرة ثانية، وإذا استمرت المشكلة تواصل معنا.",
@@ -61,6 +64,7 @@ const copy = {
     retry: "Try again",
     invalidTitle: "This link isn't valid",
     invalidBody: "This link is invalid, has expired, or has already been used. If you paid and can't access your purchase, contact us and we'll help.",
+    invalidOtherBrowser: "If you paid in a different browser (like TikTok) and opened the site here, your purchase can't be linked automatically from this browser. Open the payment confirmation page in the browser you paid from, or contact us and we'll link it to your account.",
     contact: "Contact us",
     notYet: "We haven't received the payment confirmation yet. Wait a moment and try again.",
     failed: "We couldn't add your purchase. Please try again, and contact us if it keeps failing.",
@@ -89,6 +93,9 @@ export default function ClaimPurchaseClient({
   const { clearCart } = useCart();
   const router = useRouter();
   const c = copy[language === "en" ? "en" : "ar"];
+  // In an embedded browser (TikTok, Instagram, ...) the buyer is likely to switch browsers: say so, and carry the claim link along (see claimNext).
+  const embedded = useEmbeddedBrowser();
+  const notice = useClaimNoticeText();
   const [message, setMessage] = useState<string | null>(null);
   const [mismatch, setMismatch] = useState<"email_mismatch" | "email_unverified" | null>(null);
   const [attempt, setAttempt] = useState(0);
@@ -126,7 +133,10 @@ export default function ClaimPurchaseClient({
   // Where sign-in / sign-up send the buyer back to. Once the server holds the token in its HttpOnly cookie
   // (or the token never was in the URL), the return path is just "/claim-purchase"; until then it also
   // carries the token so a slow or failed cookie write can never lose the purchase.
-  const claimNext = claimReturnPath(token, cookieReady);
+  // Inside an embedded browser the token also stays in the return path even once the cookie is stored: the sign-in / sign-up pages then keep the
+  // claim link in THEIR address bar, so "open in browser" from any of those pages still opens the purchase. (The token is no more exposed than in
+  // this page's own address bar, and a claim still needs a signed-in account whose verified email is the checkout email.)
+  const claimNext = claimReturnPath(token, cookieReady && !embedded);
 
   // The payment is still being confirmed: after a minute say so honestly instead of repeating "a few moments".
   useEffect(() => {
@@ -200,6 +210,7 @@ export default function ClaimPurchaseClient({
               <p className="text-4xl">⚠️</p>
               <h1 className="mt-3 text-2xl font-bold text-slate-900">{c.invalidTitle}</h1>
               <p className="mt-2 text-sm leading-6 text-slate-600">{c.invalidBody}</p>
+              <p className="mt-2 text-sm leading-6 text-slate-600">{c.invalidOtherBrowser}</p>
               <a
                 href={`mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent("Purchase access")}`}
                 className="mt-6 inline-block text-sm font-semibold text-teal-700 hover:text-teal-800"
@@ -254,10 +265,12 @@ export default function ClaimPurchaseClient({
             </>
           ) : effectiveState === "signin" ? (
             <>
-              <h1 className="mt-3 text-2xl font-bold text-slate-900">{c.confirmedTitle}</h1>
-              <p className="mt-2 text-sm leading-6 text-slate-600">{c.signinBody}</p>
+              <h1 className="mt-3 text-2xl font-bold text-slate-900">{embedded ? notice.title : c.confirmedTitle}</h1>
+              <p className="mt-2 text-sm leading-6 text-slate-600">{embedded ? notice.body : c.signinBody}</p>
+              {embedded && <p className="mt-2 text-sm leading-6 text-slate-600">{notice.google}</p>}
               <div className="mt-6 flex flex-col gap-2.5">
-                <GoogleAuthButton label={language === "en" ? "Continue with Google" : "متابعة عبر Google"} next={claimNext} />
+                {/* Normal browsers: Google first, as before. Embedded browsers: email + password is the primary way in, Google (disabled there) last. */}
+                {!embedded && <GoogleAuthButton label={language === "en" ? "Continue with Google" : "متابعة عبر Google"} next={claimNext} />}
                 <Link
                   href={loginHref(claimNext)}
                   className="flex w-full items-center justify-center rounded-full bg-teal-700 px-5 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-teal-800"
@@ -270,6 +283,7 @@ export default function ClaimPurchaseClient({
                 >
                   {c.signUp}
                 </Link>
+                {embedded && <GoogleAuthButton label={language === "en" ? "Continue with Google" : "متابعة عبر Google"} next={claimNext} />}
               </div>
             </>
           ) : (

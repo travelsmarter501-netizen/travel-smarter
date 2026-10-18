@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import Container from "../components/Container";
 import GoogleAuthButton from "../components/auth/GoogleAuthButton";
+import ClaimBrowserNotice from "../components/auth/ClaimBrowserNotice";
 import { createClient } from "../../utils/supabase/client";
 import { authCallbackUrl, loginHref, safeNextPath } from "../lib/authRedirect";
 import { authCopy } from "../lib/authCopy";
@@ -109,6 +110,7 @@ function SignupForm() {
             </p>
             <p className="mt-2 text-sm leading-6 text-slate-600">{check.confirmThenReturn}</p>
             <p className="mt-2 text-xs leading-5 text-slate-500">{check.spam}</p>
+            <ClaimBrowserNotice next={next} />
 
             <button
               type="button"
@@ -136,6 +138,7 @@ function SignupForm() {
         <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
           <h1 className="text-2xl font-bold text-slate-900">{c.signup.title}</h1>
           <p className="mt-1.5 text-sm text-slate-600">{c.signup.subtitle}</p>
+          <ClaimBrowserNotice next={next} />
 
           <form onSubmit={handleSubmit} className="mt-6 space-y-4">
             <div>

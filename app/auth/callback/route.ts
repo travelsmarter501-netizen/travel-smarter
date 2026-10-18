@@ -2,12 +2,18 @@ import { NextResponse } from "next/server";
 import type { EmailOtpType } from "@supabase/supabase-js";
 import { createClient } from "../../../utils/supabase/server";
 import { loginHref, safeNextPath } from "../../lib/authRedirect";
+import { recoverGuestPurchases, type RecoverableUser } from "../../lib/commerce/recoverGuestPurchases";
 
 const EMAIL_OTP_TYPES: readonly string[] = ["signup", "invite", "magiclink", "recovery", "email_change", "email"];
 
 // What Supabase answers when the PKCE verifier of the browser that STARTED the sign-in is not the one finishing it: no verifier cookie at all
 // (the sign-in began in another browser, e.g. TikTok -> Safari) or one that does not match the authorization code.
 const BROWSER_MISMATCH_CODES: readonly string[] = ["pkce_code_verifier_not_found", "bad_code_verifier"];
+
+// Once the visitor is signed in, attach any guest purchase made with their VERIFIED email (see recoverGuestPurchases) before they land.
+async function recoverAfterSignIn(user: RecoverableUser | null | undefined) {
+  await recoverGuestPurchases(user, { canWriteCookies: true });
+}
 
 // Handles the redirect back from Supabase for Google sign-in, the email-confirmation link and the password-reset link.
 // Turns what Supabase hands back into a session, then sends the visitor on to where they were headed.
@@ -33,13 +39,19 @@ export async function GET(request: Request) {
     const supabase = await createClient();
 
     if (code) {
-      const { error } = await supabase.auth.exchangeCodeForSession(code);
-      if (!error) return NextResponse.redirect(`${origin}${next}`);
+      const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+      if (!error) {
+        await recoverAfterSignIn(data?.user);
+        return NextResponse.redirect(`${origin}${next}`);
+      }
       browserMismatch = BROWSER_MISMATCH_CODES.includes(error.code ?? "") || error.name === "AuthPKCECodeVerifierMissingError";
       console.warn("[auth] callback: code exchange failed:", error.code ?? "no-code");
     } else if (tokenHash && type && EMAIL_OTP_TYPES.includes(type)) {
-      const { error } = await supabase.auth.verifyOtp({ type: type as EmailOtpType, token_hash: tokenHash });
-      if (!error) return NextResponse.redirect(`${origin}${next}`);
+      const { data, error } = await supabase.auth.verifyOtp({ type: type as EmailOtpType, token_hash: tokenHash });
+      if (!error) {
+        await recoverAfterSignIn(data?.user);
+        return NextResponse.redirect(`${origin}${next}`);
+      }
       console.warn("[auth] callback: email link verification failed:", error.code ?? "no-code");
     }
   } else {

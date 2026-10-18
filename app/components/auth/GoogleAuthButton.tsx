@@ -5,6 +5,7 @@ import { createClient } from "../../../utils/supabase/client";
 import { authCallbackUrl } from "../../lib/authRedirect";
 import { authCopy } from "../../lib/authCopy";
 import { currentEmbeddedBrowser, suggestedBrowser, type EmbeddedBrowserPlatform } from "../../lib/inAppBrowser";
+import { isClaimNext } from "../../lib/useEmbeddedBrowser";
 import { useLanguage } from "../../lib/language";
 
 // Inside an embedded browser (TikTok, Instagram, ...) Google sign-in cannot work: Google refuses OAuth in embedded webviews, TikTok does not even
@@ -81,6 +82,7 @@ export default function GoogleAuthButton({ label, next }: { label: string; next?
         <div role="note" className="mt-2 space-y-1 rounded-xl bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-800">
           <p className="font-semibold">{copy.googleEmbeddedOpenIn.replace("{browser}", browser)}</p>
           <p>{copy.googleEmbeddedUseEmail}</p>
+          {isClaimNext(next) && <p>{copy.googleEmbeddedClaimWarning}</p>}
         </div>
       </div>
     );

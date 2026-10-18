@@ -11,6 +11,9 @@ import { getUserEntitlements, GUIDE_BUNDLE_PRODUCT_SLUGS } from "../lib/entitlem
 import { buildAccountPurchases } from "../lib/accountView";
 import { plannerEditPlanHref } from "../lib/planner/planLinks";
 import PendingClaimBanner from "../components/account/PendingClaimBanner";
+import PurchasesLinkedNotice from "../components/account/PurchasesLinkedNotice";
+import { recoverGuestPurchases } from "../lib/commerce/recoverGuestPurchases";
+import { hasLinkedNoticeCookie } from "../lib/commerce/linkedNoticeCookie";
 import { getUserCustomPlanRequests } from "../lib/customPlanRequests";
 import { CUSTOM_PLAN_REQUEST_STATUS_LABELS } from "../lib/customPlanRequest";
 import { inclusiveDayCount } from "../lib/planner/dateOnly";
@@ -49,6 +52,9 @@ export default async function AccountPage() {
   }
 
   const name = typeof user.user_metadata?.full_name === "string" ? user.user_metadata.full_name : null;
+  // Attach any guest purchase made with this account's VERIFIED email first (server-side, idempotent), so it shows up below straight away.
+  const linkedPurchases = await recoverGuestPurchases(user);
+  const linkedFlag = await hasLinkedNoticeCookie();
   const ownedProducts = await getUserEntitlements();
 
   // A qualifying bundle product (5-day Ready Plan, Smart Planner) also grants Guide access
@@ -119,6 +125,8 @@ export default async function AccountPage() {
               </p>
             </div>
           </div>
+
+          <PurchasesLinkedNotice show={linkedPurchases > 0 || linkedFlag} />
 
           <PendingClaimBanner />
 

@@ -17,6 +17,12 @@ export type AuthCopy = {
     googleEmbeddedUseEmail: string;
     /** Names used for {browser}. */
     browserNames: { safari: string; chrome: string; any: string };
+    /** Embedded browser + a purchase waiting to be linked: finish in THIS browser (title / explanation / Google hint; {browser} = Safari / Chrome). */
+    claimSameBrowserTitle: string;
+    claimSameBrowserBody: string;
+    claimSameBrowserGoogle: string;
+    /** Extra line under the disabled Google action when a purchase is waiting to be linked. */
+    googleEmbeddedClaimWarning: string;
     backToLogin: string;
   };
   login: {
@@ -101,6 +107,10 @@ export const authCopy: Record<Language, AuthCopy> = {
       googleEmbeddedOpenIn: "للمتابعة عبر Google، افتح الموقع في {browser}.",
       googleEmbeddedUseEmail: "أو استخدم البريد الإلكتروني وكلمة المرور من هنا.",
       browserNames: { safari: "Safari", chrome: "Chrome", any: "متصفح هاتفك (Safari أو Chrome)" },
+      claimSameBrowserTitle: "تم الدفع بنجاح ✓",
+      claimSameBrowserBody: "لربط مشترياتك بحسابك، أكمل تسجيل الدخول أو إنشاء الحساب من نفس المتصفح.",
+      claimSameBrowserGoogle: "إذا أردت استخدام Google، افتح {browser} قبل بدء عملية الشراء.",
+      googleEmbeddedClaimWarning: "ملاحظة: إذا انتقلت إلى متصفح آخر بعد الدفع، فقد لا يرتبط شراؤك تلقائيًا إلا إذا فتحت رابط هذه الصفحة نفسه في ذلك المتصفح.",
       backToLogin: "العودة لتسجيل الدخول",
     },
     login: {
@@ -189,6 +199,10 @@ export const authCopy: Record<Language, AuthCopy> = {
       googleEmbeddedOpenIn: "To continue with Google, open the site in {browser}.",
       googleEmbeddedUseEmail: "Or use your email and password here.",
       browserNames: { safari: "Safari", chrome: "Chrome", any: "your phone's browser (Safari or Chrome)" },
+      claimSameBrowserTitle: "Payment successful ✓",
+      claimSameBrowserBody: "To link your purchase to your account, finish signing in or creating your account in this same browser.",
+      claimSameBrowserGoogle: "If you want to use Google, open {browser} before starting the purchase.",
+      googleEmbeddedClaimWarning: "Note: if you switch browsers after paying, your purchase may not link automatically unless you open this page's link in the other browser.",
       backToLogin: "Back to sign in",
     },
     login: {
