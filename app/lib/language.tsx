@@ -6,7 +6,12 @@ import { homepageTranslations, type HomepageCopy, type Language } from "./homepa
 const STORAGE_KEY = "travel-smarter-language";
 const listeners = new Set<() => void>();
 
+// When the browser refuses localStorage writes (see the same note in cart.tsx) the visitor's choice is kept here for the rest of the
+// page session, so tapping EN / العربية still switches the site instead of silently doing nothing.
+let memoryLanguage: Language | null = null;
+
 function readStoredLanguage(): Language {
+  if (memoryLanguage) return memoryLanguage;
   try {
     const stored = window.localStorage.getItem(STORAGE_KEY);
     return stored === "en" ? "en" : "ar";
@@ -38,8 +43,10 @@ function getServerSnapshot(): Language {
 function writeLanguage(next: Language) {
   try {
     window.localStorage.setItem(STORAGE_KEY, next);
+    memoryLanguage = null;
   } catch {
-    // localStorage unavailable (private mode / disabled) -- language still works for this session
+    // localStorage unavailable (private mode / blocked storage) -- the choice is kept in memory for this session
+    memoryLanguage = next;
   }
   listeners.forEach((listener) => listener());
 }

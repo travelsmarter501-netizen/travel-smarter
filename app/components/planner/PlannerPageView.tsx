@@ -80,7 +80,7 @@ export default function PlannerPageView({
       {/* Whatever this tab remembers from an earlier questionnaire is stale on a fresh visit: only "Edit answers" (?edit=1) restores it. */}
       {!restoreDraft && <ClearPlannerDraft />}
       <div className="mx-auto w-full max-w-3xl px-5 pt-4 sm:px-8 lg:px-10">
-        <Link href="/" className="inline-flex items-center gap-1 text-sm font-semibold text-teal-700 hover:text-teal-800">
+        <Link href="/" className="touch-target inline-flex items-center gap-1 text-sm font-semibold text-teal-700 hover:text-teal-800">
           {copy.page.backHome}
         </Link>
 
@@ -92,7 +92,7 @@ export default function PlannerPageView({
           <>
             {owner && (
               <p className="mt-3">
-                <Link href={PLANNER_MY_PLANS} className="text-sm font-semibold text-teal-700 hover:text-teal-800">
+                <Link href={PLANNER_MY_PLANS} className="touch-target text-sm font-semibold text-teal-700 hover:text-teal-800">
                   {copy.mine.title}
                 </Link>
               </p>

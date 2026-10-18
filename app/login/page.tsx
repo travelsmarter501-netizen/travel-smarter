@@ -74,7 +74,7 @@ function LoginForm() {
                 <label htmlFor="password" className="block text-sm font-semibold text-slate-800">
                   {c.common.password}
                 </label>
-                <Link href={forgotPasswordHref(next)} className="text-xs font-semibold text-teal-700 hover:text-teal-800">
+                <Link href={forgotPasswordHref(next)} className="touch-target text-xs font-semibold text-teal-700 hover:text-teal-800">
                   {c.login.forgot}
                 </Link>
               </div>
@@ -100,7 +100,7 @@ function LoginForm() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-full bg-teal-700 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-teal-800 disabled:opacity-60"
+              className="w-full rounded-full bg-teal-700 px-5 py-2.5 pointer-coarse:py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-teal-800 disabled:opacity-60"
             >
               {loading ? c.login.submitting : c.login.submit}
             </button>
@@ -116,7 +116,7 @@ function LoginForm() {
 
           <p className="mt-6 text-center text-sm text-slate-600">
             {c.login.noAccount}{" "}
-            <Link href={signupHref(next)} className="font-semibold text-teal-700 hover:text-teal-800">
+            <Link href={signupHref(next)} className="touch-target font-semibold text-teal-700 hover:text-teal-800">
               {c.login.signupLink}
             </Link>
           </p>

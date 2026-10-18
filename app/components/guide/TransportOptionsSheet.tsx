@@ -68,14 +68,14 @@ export default function TransportOptionsSheet({
       <div className="mt-4 flex flex-col gap-2">
         <ExternalLink
           href={buildDirectionsUrl(from, to, selectedMode)}
-          className="flex w-full items-center justify-center gap-1.5 rounded-full bg-teal-700 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-teal-800"
+          className="flex w-full items-center justify-center gap-1.5 rounded-full bg-teal-700 px-4 py-2.5 pointer-coarse:py-3 text-sm font-semibold text-white transition-colors hover:bg-teal-800"
         >
           فتح الطريق في Google Maps
           <IconExternalLink className="h-3.5 w-3.5 opacity-80" />
         </ExternalLink>
         <ExternalLink
           href={buildAppleMapsDirectionsUrl(from, to, selectedMode)}
-          className="flex w-full items-center justify-center gap-1.5 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:border-teal-300"
+          className="flex w-full items-center justify-center gap-1.5 rounded-full border border-slate-200 bg-white px-4 py-2.5 pointer-coarse:py-3 text-sm font-semibold text-slate-700 transition-colors hover:border-teal-300"
         >
           فتح الطريق في Apple Maps
           <IconExternalLink className="h-3.5 w-3.5 opacity-60" />

@@ -20,6 +20,41 @@ body {
   color: var(--foreground);
 }
 
+/*
+ * iOS Safari (and the in-app browsers built on it, e.g. TikTok's) zooms the whole page when a text field with a font-size below 16px
+ * gets focus, and does not always zoom back out. On touch devices every text-entry control therefore uses 16px; desktop (mouse)
+ * sizing is untouched. Unlayered on purpose: it must win over the Tailwind utilities (text-sm, ...) that set the smaller size.
+ */
+@media (pointer: coarse) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="color"]):not([type="file"]),
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}
+
+/*
+ * .touch-target: grows the TAPPABLE area of a small control to at least 44x44px (Apple's minimum) without changing how it looks or
+ * how the page is laid out -- an invisible, centered extension of the control itself. Touch devices only. The base rule lives in the
+ * components layer so a utility such as `absolute` on the same element still wins.
+ */
+@layer components {
+  .touch-target {
+    position: relative;
+  }
+}
+@media (pointer: coarse) {
+  .touch-target::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: max(100%, 44px);
+    height: max(100%, 44px);
+    transform: translate(-50%, -50%);
+  }
+}
+
 @keyframes splashFadeOut {
   0% {
     opacity: 1;

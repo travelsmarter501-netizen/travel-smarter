@@ -25,7 +25,7 @@ import { IconClose, IconShoppingBag } from "./icons";
  * backdrop. >= 640px: the original right-hand side drawer.
  */
 export default function CartWidget() {
-  const { items, removeItem, clearCart, totalILS, getPriceILS, isIncludedInBundle } = useCart();
+  const { items, removeItem, clearCart, totalILS, getPriceILS, isIncludedInBundle, storageAvailable } = useCart();
   const { language, t } = useLanguage();
   const { currency } = useCurrency();
   const [open, setOpen] = useState(false);
@@ -78,7 +78,7 @@ export default function CartWidget() {
         type="button"
         onClick={() => setOpen(true)}
         aria-label={t.cartButton.ariaLabel}
-        className="relative inline-flex h-10 w-10 items-center justify-center rounded-full text-slate-700 hover:bg-slate-100"
+        className="relative inline-flex h-10 w-10 items-center justify-center rounded-full text-slate-700 hover:bg-slate-100 pointer-coarse:h-11 pointer-coarse:w-11"
       >
         <IconShoppingBag className="h-5 w-5" />
         {items.length > 0 && (
@@ -109,13 +109,18 @@ export default function CartWidget() {
                 type="button"
                 onClick={() => setOpen(false)}
                 aria-label={t.cart.close}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100 pointer-coarse:h-11 pointer-coarse:w-11"
               >
                 <IconClose className="h-5 w-5" />
               </button>
             </div>
 
             <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-4">
+              {items.length > 0 && !storageAvailable && (
+                <p role="status" className="mb-3 rounded-xl bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-800">
+                  {t.cart.sessionOnly}
+                </p>
+              )}
               {items.length === 0 ? (
                 <p className="py-10 text-center text-sm text-slate-500">{t.cart.empty}</p>
               ) : (
@@ -140,7 +145,7 @@ export default function CartWidget() {
                       <button
                         type="button"
                         onClick={() => removeItem(item.id)}
-                        className="shrink-0 text-xs font-semibold text-slate-500 hover:text-red-600"
+                        className="shrink-0 text-xs font-semibold text-slate-500 hover:text-red-600 pointer-coarse:inline-flex pointer-coarse:min-h-11 pointer-coarse:min-w-11 pointer-coarse:items-center pointer-coarse:justify-center"
                       >
                         {t.cart.remove}
                       </button>
@@ -168,7 +173,7 @@ export default function CartWidget() {
                 <button
                   type="button"
                   onClick={clearCart}
-                  className="mt-2 w-full text-center text-xs font-semibold text-slate-500 hover:text-slate-700"
+                  className="mt-2 w-full text-center text-xs font-semibold text-slate-500 hover:text-slate-700 pointer-coarse:py-3.5"
                 >
                   {t.cart.clear}
                 </button>

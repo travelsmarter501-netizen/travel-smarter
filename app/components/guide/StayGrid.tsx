@@ -45,14 +45,14 @@ export default function StayGrid({ areas }: { areas: StayArea[] }) {
             <div className="mt-3 flex flex-wrap gap-2">
               <ExternalLink
                 href={area.mapsUrl}
-                className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:border-teal-300"
+                className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 pointer-coarse:min-h-11 text-xs font-semibold text-slate-700 hover:border-teal-300"
               >
                 <IconMapPin className="h-3.5 w-3.5" />
                 Google Maps
               </ExternalLink>
               <ExternalLink
                 href={area.appleMapsUrl}
-                className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:border-teal-300"
+                className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 pointer-coarse:min-h-11 text-xs font-semibold text-slate-700 hover:border-teal-300"
               >
                 <IconMapPin className="h-3.5 w-3.5" />
                 Apple Maps

@@ -37,13 +37,26 @@ function currentPriceILS(item: CartItem): number {
 let cachedRaw: string | null = null;
 let cachedCart: CartItem[] = EMPTY_CART;
 
-function readStoredCart(): CartItem[] {
-  let raw: string | null;
+// Some browsers (Safari with "Block All Cookies", in-app browsers with restricted storage, a full quota) throw on localStorage.setItem
+// or even getItem. Previously the cart was then silently empty after "Add to cart". Once storage has refused us, the in-memory copy
+// below is the source of truth for the rest of this page session (client-side navigation keeps it), and `storageFailed` lets the
+// cart say plainly that it will not be remembered after the page is closed.
+let storageFailed = false;
+let memoryRaw: string | null = null;
+
+function readRaw(): string | null {
+  if (storageFailed) return memoryRaw;
   try {
-    raw = window.localStorage.getItem(STORAGE_KEY);
+    return window.localStorage.getItem(STORAGE_KEY);
   } catch {
-    return EMPTY_CART;
+    storageFailed = true;
+    memoryRaw = null;
+    return null;
   }
+}
+
+function readStoredCart(): CartItem[] {
+  const raw = readRaw();
   if (raw === cachedRaw) return cachedCart;
   cachedRaw = raw;
   try {
@@ -79,8 +92,12 @@ function writeCart(items: CartItem[]) {
   const serialized = JSON.stringify(items);
   try {
     window.localStorage.setItem(STORAGE_KEY, serialized);
+    storageFailed = false;
+    memoryRaw = null;
   } catch {
-    // localStorage unavailable -- cart still works for this session
+    // localStorage refused the write: keep the cart in memory for this session (see readRaw) instead of losing it.
+    storageFailed = true;
+    memoryRaw = serialized;
   }
   // Update the cache directly (not just relying on the next readStoredCart call) so the
   // very next render sees this exact array reference, matching what was just written.
@@ -101,6 +118,8 @@ type CartContextValue = {
   getPriceILS: (item: CartItem) => number;
   /** True for a stand-alone Guide line that is already included in a 3-day/5-day plan in the cart (not charged separately). Display only. */
   isIncludedInBundle: (item: CartItem) => boolean;
+  /** False when the browser would not let us save the cart: it still works for this visit, but is forgotten once the page is closed. */
+  storageAvailable: boolean;
 };
 
 const CartContext = createContext<CartContextValue | null>(null);
@@ -113,6 +132,7 @@ const CartContext = createContext<CartContextValue | null>(null);
  */
 export function CartProvider({ children }: { children: ReactNode }) {
   const items = useSyncExternalStore(subscribe, readStoredCart, getServerSnapshot);
+  const storageAvailable = useSyncExternalStore(subscribe, () => !storageFailed, () => true);
 
   const addItem = (item: CartItem) => {
     if (items.some((existing) => existing.id === item.id)) return false;
@@ -134,7 +154,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   return (
     <CartContext.Provider
-      value={{ items, addItem, removeItem, clearCart, totalILS, isInCart, getPriceILS: currentPriceILS, isIncludedInBundle }}
+      value={{ items, addItem, removeItem, clearCart, totalILS, isInCart, getPriceILS: currentPriceILS, isIncludedInBundle, storageAvailable }}
     >
       {children}
     </CartContext.Provider>

@@ -121,7 +121,7 @@ export default function CheckoutClient({
                       )}
                     </p>
                   </div>
-                  <button type="button" onClick={() => removeItem(item.id)} className="text-xs font-semibold text-slate-500 hover:text-red-600">
+                  <button type="button" onClick={() => removeItem(item.id)} className="text-xs font-semibold text-slate-500 hover:text-red-600 pointer-coarse:inline-flex pointer-coarse:min-h-11 pointer-coarse:min-w-11 pointer-coarse:items-center pointer-coarse:justify-center">
                     {t.cart.remove}
                   </button>
                 </li>

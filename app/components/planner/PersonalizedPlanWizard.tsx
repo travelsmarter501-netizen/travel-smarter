@@ -221,7 +221,7 @@ export default function PersonalizedPlanWizard({
                     type="button"
                     aria-pressed={count === durationDays}
                     onClick={() => setDurationDays(count)}
-                    className={`rounded-xl border px-2 py-2.5 text-xs font-bold transition-colors ${choiceClass(count === durationDays)}`}
+                    className={`rounded-xl border px-2 py-2.5 pointer-coarse:min-h-11 text-xs font-bold transition-colors ${choiceClass(count === durationDays)}`}
                   >
                     {count} {count === 1 ? wizard.dayOne : wizard.dayMany}
                   </button>

@@ -132,7 +132,7 @@ export const barcelonaGuide: DestinationGuideContent = {
       mapsUrl: "https://www.google.com/maps/search/?api=1&query=Park+Guell+Barcelona",
       appleMapsUrl: "https://maps.apple.com/?q=Park+Guell+Barcelona",
       officialUrl: "https://parkguell.barcelona",
-      ticketsUrl: "https://parkguell.barcelona/en/tickets",
+      ticketsUrl: "https://parkguell.barcelona/en/buy-tickets",
       priceText: "من €18",
       hours: {
         type: "fixed",
@@ -641,7 +641,7 @@ export const barcelonaGuide: DestinationGuideContent = {
       mapsUrl: "https://www.google.com/maps/search/?api=1&query=Palau+de+la+Musica+Catalana",
       appleMapsUrl: "https://maps.apple.com/?q=Palau+de+la+Musica+Catalana",
       officialUrl: "https://www.palaumusica.cat",
-      ticketsUrl: "https://www.palaumusica.cat/en/visit-palau",
+      ticketsUrl: "https://www.palaumusica.cat/en/discover-the-palau_1633301",
       priceText: "من €20 (جولة ذاتية) — من €24 (جولة مع مرشد)",
       hours: {
         type: "variable",
@@ -3271,7 +3271,7 @@ export const barcelonaGuide: DestinationGuideContent = {
       why: "بوتيك حلويات لأحد أشهر شيفات الحلويات في إسبانيا — للي يبحث عن شي مميز.",
       mapsUrl: "https://www.google.com/maps/search/?api=1&query=Oriol+Balaguer+Placa+Sant+Gregori+Taumaturg+Barcelona",
       appleMapsUrl: "https://maps.apple.com/?q=Oriol+Balaguer+Placa+Sant+Gregori+Taumaturg+Barcelona",
-      officialUrl: "https://oriolbalaguershop.com/es/stores",
+      officialUrl: "https://oriolbalaguer.com/content/8-tiendas",
       hours: {
         type: "fixed",
         schedule: {

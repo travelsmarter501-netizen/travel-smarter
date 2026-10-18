@@ -60,7 +60,7 @@ export default function BottomSheet({
               type="button"
               onClick={onClose}
               aria-label="إغلاق"
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100 hover:text-slate-800"
+              className="touch-target flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100 hover:text-slate-800"
             >
               <IconClose className="h-4.5 w-4.5" />
             </button>

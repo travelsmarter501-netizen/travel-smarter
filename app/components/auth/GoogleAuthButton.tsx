@@ -1,13 +1,27 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { createClient } from "../../../utils/supabase/client";
 import { authCallbackUrl } from "../../lib/authRedirect";
 import { authCopy } from "../../lib/authCopy";
 import { useLanguage } from "../../lib/language";
 
+// Google refuses OAuth sign-in inside embedded webviews ("disallowed_useragent"), and the in-app browsers of TikTok, Instagram, Facebook, Snapchat
+// and Android WebViews are exactly that. Detection only drives an advisory note: the button and the sign-in flow itself are unchanged.
+const IN_APP_BROWSER = /musical_ly|bytedance|tiktok|trill|instagram|FBAN|FBAV|FB_IAB|snapchat|wv/i;
+const noopSubscribe = () => () => {};
+function isInAppBrowser(): boolean {
+  try {
+    return IN_APP_BROWSER.test(navigator.userAgent);
+  } catch {
+    return false;
+  }
+}
+
 export default function GoogleAuthButton({ label, next }: { label: string; next?: string }) {
   const { language } = useLanguage();
+  // false on the server and during hydration, then the real answer -- no markup mismatch.
+  const inApp = useSyncExternalStore(noopSubscribe, isInAppBrowser, () => false);
   const [loading, setLoading] = useState(false);
   const [failed, setFailed] = useState(false);
 
@@ -35,7 +49,7 @@ export default function GoogleAuthButton({ label, next }: { label: string; next?
         type="button"
         onClick={handleClick}
         disabled={loading}
-        className="inline-flex w-full items-center justify-center gap-2.5 rounded-full border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-900 transition-colors hover:border-slate-400 hover:bg-slate-50 disabled:opacity-60"
+        className="inline-flex w-full items-center justify-center gap-2.5 rounded-full border border-slate-300 bg-white px-5 py-2.5 pointer-coarse:py-3 text-sm font-semibold text-slate-900 transition-colors hover:border-slate-400 hover:bg-slate-50 disabled:opacity-60"
       >
         <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden="true">
           <path
@@ -57,6 +71,11 @@ export default function GoogleAuthButton({ label, next }: { label: string; next?
         </svg>
         {loading ? (language === "en" ? "Redirecting..." : "جاري التحويل...") : label}
       </button>
+      {inApp && (
+        <p role="note" className="mt-2 rounded-xl bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-800">
+          {authCopy[language === "en" ? "en" : "ar"].common.googleInAppNotice}
+        </p>
+      )}
       {failed && <p role="alert" className="mt-2 text-center text-xs text-red-600">{authCopy[language === "en" ? "en" : "ar"].common.googleStartFailed}</p>}
     </div>
   );

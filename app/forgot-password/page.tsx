@@ -91,7 +91,7 @@ function ForgotPasswordForm() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full rounded-full bg-teal-700 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-teal-800 disabled:opacity-60"
+                  className="w-full rounded-full bg-teal-700 px-5 py-2.5 pointer-coarse:py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-teal-800 disabled:opacity-60"
                 >
                   {loading ? c.forgot.submitting : c.forgot.submit}
                 </button>

@@ -114,6 +114,8 @@ export type HomepageCopy = {
     clear: string;
     alreadyInCart: string;
     close: string;
+    /** Shown when the browser will not let us save the cart (blocked storage): it works for this visit only. */
+    sessionOnly: string;
   };
   /** Checkout page chrome (title, pay button, Allpay test-mode wording). */
   checkout: {
@@ -308,6 +310,7 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
       clear: "تفريغ السلة",
       alreadyInCart: "هذا المنتج موجود بالسلة",
       close: "إغلاق السلة",
+      sessionOnly: "متصفحك ما بسمح بحفظ السلة، فهي بتضل متاحة طول ما الصفحة مفتوحة بس. أكمل الطلب هلأ.",
     },
     checkout: {
       title: "إتمام الشراء",
@@ -508,6 +511,7 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
       clear: "Clear cart",
       alreadyInCart: "This product is already in your cart",
       close: "Close cart",
+      sessionOnly: "Your browser won't let us save the cart, so it only lasts while this page stays open. Complete your order now.",
     },
     checkout: {
       title: "Checkout",

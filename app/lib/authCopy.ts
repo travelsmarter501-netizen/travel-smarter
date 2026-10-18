@@ -12,6 +12,8 @@ export type AuthCopy = {
     password: string;
     passwordPlaceholder: string;
     googleStartFailed: string;
+    /** Shown under the Google button inside in-app browsers (TikTok, Instagram, ...), where Google refuses to sign anyone in. */
+    googleInAppNotice: string;
     backToLogin: string;
   };
   login: {
@@ -91,6 +93,7 @@ export const authCopy: Record<Language, AuthCopy> = {
       password: "كلمة المرور",
       passwordPlaceholder: "••••••••",
       googleStartFailed: "تعذّر بدء تسجيل الدخول عبر Google. حاول مرة أخرى.",
+      googleInAppNotice: "تسجيل الدخول عبر Google ما بيشتغل داخل متصفح التطبيقات (مثل تيك توك وإنستغرام). افتح الصفحة في Safari أو Chrome من قائمة ⋯ ← «فتح في المتصفح»، أو كمّل بالبريد الإلكتروني.",
       backToLogin: "العودة لتسجيل الدخول",
     },
     login: {
@@ -175,6 +178,7 @@ export const authCopy: Record<Language, AuthCopy> = {
       password: "Password",
       passwordPlaceholder: "••••••••",
       googleStartFailed: "We couldn't start Google sign-in. Please try again.",
+      googleInAppNotice: "Google sign-in doesn't work inside in-app browsers (like TikTok or Instagram). Open this page in Safari or Chrome (⋯ menu → “Open in browser”), or continue with email.",
       backToLogin: "Back to sign in",
     },
     login: {

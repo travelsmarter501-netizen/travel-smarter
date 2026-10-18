@@ -68,7 +68,7 @@ export default function CopyButton({ text, className }: { text: string; classNam
       type="button"
       onClick={handleCopy}
       aria-label="نسخ الموقع"
-      className={`relative inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition-colors hover:border-teal-300 hover:text-teal-700 ${className ?? ""}`}
+      className={`touch-target relative inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition-colors hover:border-teal-300 hover:text-teal-700 ${className ?? ""}`}
     >
       {copied ? <IconCheck className="h-3.5 w-3.5 text-teal-600" /> : <IconCopy className="h-3.5 w-3.5" />}
       {copied && (

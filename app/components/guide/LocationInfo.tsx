@@ -61,14 +61,14 @@ export default function LocationInfo({
       <div className="mt-2 grid grid-cols-2 gap-2">
         <ExternalLink
           href={mapsUrl}
-          className="inline-flex items-center justify-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:border-teal-300 hover:text-teal-700"
+          className="inline-flex items-center justify-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 pointer-coarse:min-h-11 text-xs font-semibold text-slate-700 transition-colors hover:border-teal-300 hover:text-teal-700"
         >
           <IconMapPin className="h-3.5 w-3.5" />
           Google Maps
         </ExternalLink>
         <ExternalLink
           href={appleMapsUrl}
-          className="inline-flex items-center justify-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:border-teal-300 hover:text-teal-700"
+          className="inline-flex items-center justify-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 pointer-coarse:min-h-11 text-xs font-semibold text-slate-700 transition-colors hover:border-teal-300 hover:text-teal-700"
         >
           <IconMapPin className="h-3.5 w-3.5" />
           Apple Maps

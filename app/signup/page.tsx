@@ -198,7 +198,7 @@ function SignupForm() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-full bg-teal-700 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-teal-800 disabled:opacity-60"
+              className="w-full rounded-full bg-teal-700 px-5 py-2.5 pointer-coarse:py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-teal-800 disabled:opacity-60"
             >
               {loading ? c.signup.submitting : c.signup.submit}
             </button>
@@ -214,7 +214,7 @@ function SignupForm() {
 
           <p className="mt-6 text-center text-sm text-slate-600">
             {c.signup.haveAccount}{" "}
-            <Link href={loginHref(next)} className="font-semibold text-teal-700 hover:text-teal-800">
+            <Link href={loginHref(next)} className="touch-target font-semibold text-teal-700 hover:text-teal-800">
               {c.signup.loginLink}
             </Link>
           </p>

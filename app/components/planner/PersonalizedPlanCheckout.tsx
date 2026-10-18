@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useSyncExternalStore } from "react";
+import { useCallback, useMemo, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Price from "../Price";
@@ -11,6 +11,7 @@ import PlanGeneratingScreen from "./PlanGeneratingScreen";
 import ScrollToTop from "../ScrollToTop";
 import { useLanguage } from "../../lib/language";
 import { usePlannerCopy } from "../../lib/usePlannerCopy";
+import { useResetOnPageShow } from "../../lib/useResetOnPageShow";
 import { fillCopy, type PlannerGenerateErrorCode } from "../../lib/plannerCopy";
 import { clearPlannerDraft, parsePlannerDraft, readPlannerDraftRaw } from "../../lib/planner/plannerDraft";
 import { destinationIncludesGuide } from "../../lib/planner/personalizedPlanAnswers";
@@ -63,6 +64,10 @@ export default function PersonalizedPlanCheckout({
   // Once the request exists, a retry only re-runs the build -- it never creates a second request.
   const [createdRequestId, setCreatedRequestId] = useState<string | null>(null);
 
+  // Back from the payment page can restore this page from Safari's back/forward cache with the button still in its processing state.
+  const resetLoading = useCallback(() => setLoading(false), []);
+  useResetOnPageShow(resetLoading);
+
   async function handlePay() {
     if (!draft) return;
     setLoading(true);
@@ -75,6 +80,8 @@ export default function PersonalizedPlanCheckout({
         return;
       }
       window.location.href = result.paymentUrl;
+      // If the browser never actually leaves (an in-app browser that blocks the navigation), do not leave the button disabled forever.
+      window.setTimeout(() => setLoading(false), 15000);
     } catch {
       setLoading(false);
       setError({ message: copy.generateErrors.unexpected });

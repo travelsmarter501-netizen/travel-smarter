@@ -123,7 +123,7 @@ export default function Products() {
                       // prefetch the whole route as soon as the card scrolls into view: tapping it then opens the questionnaire from the
                       // client cache. A signed-out visitor never gets this link, so nothing planner-related is fetched for them.
                       prefetch={isPlanner ? true : undefined}
-                      className="mt-4 flex items-center justify-center rounded-full bg-teal-700 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-teal-800"
+                      className="mt-4 flex items-center justify-center rounded-full bg-teal-700 px-4 py-2.5 pointer-coarse:py-3 text-sm font-semibold text-white transition-colors hover:bg-teal-800"
                     >
                       {isPlanner ? t.products.personalizedOpen : t.products.ownedCta}
                     </Link>
@@ -141,7 +141,7 @@ export default function Products() {
                       <button
                         type="button"
                         onClick={() => buyNow(product)}
-                        className="mt-3 flex items-center justify-center rounded-full bg-teal-700 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-teal-800"
+                        className="mt-3 flex items-center justify-center rounded-full bg-teal-700 px-4 py-2.5 pointer-coarse:py-3 text-sm font-semibold text-white transition-colors hover:bg-teal-800"
                       >
                         {product.ctaLabel}
                       </button>
@@ -155,7 +155,7 @@ export default function Products() {
                           type="button"
                           onClick={() => addProductToCart(product)}
                           disabled={inCart}
-                          className="mt-2 flex items-center justify-center rounded-full border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:border-slate-400 hover:bg-slate-50 disabled:cursor-default disabled:border-teal-200 disabled:bg-teal-50 disabled:text-teal-700"
+                          className="mt-2 flex items-center justify-center rounded-full border border-slate-300 px-4 py-2.5 pointer-coarse:py-3 text-sm font-semibold text-slate-700 transition-colors hover:border-slate-400 hover:bg-slate-50 disabled:cursor-default disabled:border-teal-200 disabled:bg-teal-50 disabled:text-teal-700"
                         >
                           {inCart ? t.cart.alreadyInCart : product.addToCartLabel}
                         </button>
