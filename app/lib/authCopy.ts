@@ -12,8 +12,11 @@ export type AuthCopy = {
     password: string;
     passwordPlaceholder: string;
     googleStartFailed: string;
-    /** Shown under the Google button inside in-app browsers (TikTok, Instagram, ...), where Google refuses to sign anyone in. */
-    googleInAppNotice: string;
+    /** Inside an embedded browser (TikTok, Instagram, ...) the Google action is replaced by these two lines. {browser} = Safari / Chrome. */
+    googleEmbeddedOpenIn: string;
+    googleEmbeddedUseEmail: string;
+    /** Names used for {browser}. */
+    browserNames: { safari: string; chrome: string; any: string };
     backToLogin: string;
   };
   login: {
@@ -30,6 +33,8 @@ export type AuthCopy = {
     genericError: string;
     /** /auth/callback sent the visitor back because Google / the email link did not complete. */
     callbackFailed: string;
+    /** ...specifically because the sign-in was started in a different browser than the one that returned (e.g. TikTok -> Safari). {browser} = Safari / Chrome. */
+    callbackBrowserMismatch: string;
   };
   signup: {
     title: string;
@@ -93,7 +98,9 @@ export const authCopy: Record<Language, AuthCopy> = {
       password: "كلمة المرور",
       passwordPlaceholder: "••••••••",
       googleStartFailed: "تعذّر بدء تسجيل الدخول عبر Google. حاول مرة أخرى.",
-      googleInAppNotice: "تسجيل الدخول عبر Google ما بيشتغل داخل متصفح التطبيقات (مثل تيك توك وإنستغرام). افتح الصفحة في Safari أو Chrome من قائمة ⋯ ← «فتح في المتصفح»، أو كمّل بالبريد الإلكتروني.",
+      googleEmbeddedOpenIn: "للمتابعة عبر Google، افتح الموقع في {browser}.",
+      googleEmbeddedUseEmail: "أو استخدم البريد الإلكتروني وكلمة المرور من هنا.",
+      browserNames: { safari: "Safari", chrome: "Chrome", any: "متصفح هاتفك (Safari أو Chrome)" },
       backToLogin: "العودة لتسجيل الدخول",
     },
     login: {
@@ -109,6 +116,7 @@ export const authCopy: Record<Language, AuthCopy> = {
       emailNotConfirmed: "لم يتم تأكيد بريدك الإلكتروني بعد. افتح رسالة التأكيد التي أرسلناها لك ثم سجّل دخولك.",
       genericError: "تعذّر تسجيل الدخول. حاول مرة أخرى.",
       callbackFailed: "تعذّر إكمال تسجيل الدخول. إذا كنت قد أكدت بريدك الإلكتروني للتو، سجّل دخولك الآن وسنكمل من حيث توقفت. وإلا حاول مرة أخرى.",
+      callbackBrowserMismatch: "بدأ تسجيل الدخول في متصفح مختلف. افتح Travel Smarter في {browser} وابدأ تسجيل الدخول عبر Google من هناك.",
     },
     signup: {
       title: "إنشاء حساب",
@@ -178,7 +186,9 @@ export const authCopy: Record<Language, AuthCopy> = {
       password: "Password",
       passwordPlaceholder: "••••••••",
       googleStartFailed: "We couldn't start Google sign-in. Please try again.",
-      googleInAppNotice: "Google sign-in doesn't work inside in-app browsers (like TikTok or Instagram). Open this page in Safari or Chrome (⋯ menu → “Open in browser”), or continue with email.",
+      googleEmbeddedOpenIn: "To continue with Google, open the site in {browser}.",
+      googleEmbeddedUseEmail: "Or use your email and password here.",
+      browserNames: { safari: "Safari", chrome: "Chrome", any: "your phone's browser (Safari or Chrome)" },
       backToLogin: "Back to sign in",
     },
     login: {
@@ -194,6 +204,7 @@ export const authCopy: Record<Language, AuthCopy> = {
       emailNotConfirmed: "Your email isn't confirmed yet. Open the confirmation email we sent you, then sign in.",
       genericError: "We couldn't sign you in. Please try again.",
       callbackFailed: "We couldn't finish signing you in. If you just confirmed your email, sign in now and we'll continue where you left off. Otherwise please try again.",
+      callbackBrowserMismatch: "Sign-in was started in a different browser. Open Travel Smarter in {browser} and start the Google sign-in from there.",
     },
     signup: {
       title: "Create an account",

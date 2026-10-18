@@ -5,6 +5,10 @@ import { loginHref, safeNextPath } from "../../lib/authRedirect";
 
 const EMAIL_OTP_TYPES: readonly string[] = ["signup", "invite", "magiclink", "recovery", "email_change", "email"];
 
+// What Supabase answers when the PKCE verifier of the browser that STARTED the sign-in is not the one finishing it: no verifier cookie at all
+// (the sign-in began in another browser, e.g. TikTok -> Safari) or one that does not match the authorization code.
+const BROWSER_MISMATCH_CODES: readonly string[] = ["pkce_code_verifier_not_found", "bad_code_verifier"];
+
 // Handles the redirect back from Supabase for Google sign-in, the email-confirmation link and the password-reset link.
 // Turns what Supabase hands back into a session, then sends the visitor on to where they were headed.
 //   - `?code=`                  the normal (PKCE) return: exchanged for a session. The browser that STARTED the flow holds the
@@ -22,6 +26,8 @@ export async function GET(request: Request) {
 
   // Google / Supabase reported a failure itself (e.g. the visitor cancelled): don't try to exchange anything.
   const providerFailed = searchParams.has("error") || searchParams.has("error_code") || searchParams.has("error_description");
+  // Set when the failure was specifically "this browser is not the one that started the sign-in" (see BROWSER_MISMATCH_CODES).
+  let browserMismatch = false;
 
   if (!providerFailed) {
     const supabase = await createClient();
@@ -29,6 +35,7 @@ export async function GET(request: Request) {
     if (code) {
       const { error } = await supabase.auth.exchangeCodeForSession(code);
       if (!error) return NextResponse.redirect(`${origin}${next}`);
+      browserMismatch = BROWSER_MISMATCH_CODES.includes(error.code ?? "") || error.name === "AuthPKCECodeVerifierMissingError";
       console.warn("[auth] callback: code exchange failed:", error.code ?? "no-code");
     } else if (tokenHash && type && EMAIL_OTP_TYPES.includes(type)) {
       const { error } = await supabase.auth.verifyOtp({ type: type as EmailOtpType, token_hash: tokenHash });
@@ -46,6 +53,7 @@ export async function GET(request: Request) {
 
   // Sign-in did not complete: back to the login page, keeping where the user was headed (e.g. /claim-purchase).
   const retry = new URL(loginHref(next), origin);
-  retry.searchParams.set("error", "auth");
+  // A specific, friendly message for "started in another browser"; the generic one for everything else. Nothing technical is put in the URL.
+  retry.searchParams.set("error", browserMismatch ? "browser" : "auth");
   return NextResponse.redirect(retry);
 }

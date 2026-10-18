@@ -1,12 +1,13 @@
 "use client";
 
-import { Suspense, useState, type FormEvent } from "react";
+import { Suspense, useState, useSyncExternalStore, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import Container from "../components/Container";
 import GoogleAuthButton from "../components/auth/GoogleAuthButton";
 import { createClient } from "../../utils/supabase/client";
 import { forgotPasswordHref, safeNextPath, signupHref } from "../lib/authRedirect";
+import { currentPlatformForWording } from "../lib/inAppBrowser";
 import { authCopy } from "../lib/authCopy";
 import { loginErrorKey } from "../lib/authErrors";
 import { useLanguage } from "../lib/language";
@@ -21,9 +22,15 @@ function LoginForm() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   // /auth/callback sends the user back here with ?error=auth when Google / email confirmation did not complete.
-  const [errorKey, setErrorKey] = useState<"callbackFailed" | "wrongCredentials" | "emailNotConfirmed" | "genericError" | null>(
-    searchParams.get("error") === "auth" ? "callbackFailed" : null
+  const [errorKey, setErrorKey] = useState<"callbackFailed" | "browserMismatch" | "wrongCredentials" | "emailNotConfirmed" | "genericError" | null>(
+    searchParams.get("error") === "auth" ? "callbackFailed" : searchParams.get("error") === "browser" ? "browserMismatch" : null
   );
+  // Wording only: Safari on iPhone/iPad, Chrome on Android (the server render assumes iPhone, then the client corrects it).
+  const otherBrowser = useSyncExternalStore(
+    () => () => {},
+    currentPlatformForWording,
+    () => "ios" as const
+  ) === "android" ? c.common.browserNames.chrome : c.common.browserNames.safari;
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -93,7 +100,11 @@ function LoginForm() {
 
             {errorKey && (
               <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm leading-6 text-red-700">
-                {errorKey === "callbackFailed" ? c.login.callbackFailed : c.login[errorKey]}
+                {errorKey === "callbackFailed"
+                  ? c.login.callbackFailed
+                  : errorKey === "browserMismatch"
+                    ? c.login.callbackBrowserMismatch.replace("{browser}", otherBrowser)
+                    : c.login[errorKey]}
               </p>
             )}
 
