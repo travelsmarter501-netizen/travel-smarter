@@ -31,11 +31,6 @@ export default function Footer() {
     {
       title: t.footer.contactHeading,
       links: [{ label: BUSINESS_CONTACT.email, href: `mailto:${BUSINESS_CONTACT.email}` }],
-      extra: [
-        <span key="phone">
-          {t.footer.phoneLabel}: <span dir="ltr">{BUSINESS_CONTACT.phone}</span>
-        </span>,
-      ],
     },
   ];
 

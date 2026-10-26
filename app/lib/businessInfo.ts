@@ -9,7 +9,6 @@
 export const BUSINESS_CONTACT = {
   name: "Travel Smarter",
   email: "travelsmarter501@gmail.com",
-  phone: "0532249914",
 } as const;
 
-export const BUSINESS_ADDRESS = "I'billin 1, Israel";
+export const BUSINESS_ADDRESS = "Israel";

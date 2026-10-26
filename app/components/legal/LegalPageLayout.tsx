@@ -53,7 +53,6 @@ export function LegalContactBlock() {
           {BUSINESS_CONTACT.email}
         </a>
       </p>
-      <p>Phone / WhatsApp: {BUSINESS_CONTACT.phone}</p>
       <p>Business address: {BUSINESS_ADDRESS}</p>
     </address>
   );

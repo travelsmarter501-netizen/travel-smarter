@@ -155,7 +155,6 @@ export type HomepageCopy = {
     descriptor: string;
     /** Arabic mode only: the same description in English, shown beneath the Arabic line. */
     descriptorSecondary?: string;
-    phoneLabel: string;
     privacyLabel: string;
     termsLabel: string;
   };
@@ -361,7 +360,6 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
       rights: "© 2026 Travel Smarter. جميع الحقوق محفوظة.",
       descriptor: "أدلة سفر رقمية، خطط رحلات جاهزة، وتخطيط رحلات مخصص.",
       descriptorSecondary: "Digital travel guides, ready-made itineraries, and personalized trip planning.",
-      phoneLabel: "الهاتف / واتساب",
       privacyLabel: "Privacy Policy · سياسة الخصوصية",
       termsLabel: "Terms of Service · شروط الخدمة",
     },
@@ -561,7 +559,6 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
       faqLabel: "FAQ",
       rights: "© 2026 Travel Smarter. All rights reserved.",
       descriptor: "Digital travel guides, ready-made itineraries, and personalized trip planning.",
-      phoneLabel: "Phone / WhatsApp",
       privacyLabel: "Privacy Policy",
       termsLabel: "Terms of Service",
     },
