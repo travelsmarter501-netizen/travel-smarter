@@ -12,7 +12,7 @@ const linkClass = "font-semibold text-teal-700 hover:underline";
 
 export default function PrivacyPolicyPage() {
   return (
-    <LegalPageLayout title="Privacy Policy" lastUpdated="October 14, 2026">
+    <LegalPageLayout title="Privacy Policy" lastUpdated="October 28, 2026">
       <p>
         This Privacy Policy explains how Travel Smarter (“Travel Smarter”, “we”, “us”) collects, uses and protects personal
         data when you visit our website, create an account, buy our products or contact us. By using the website you
@@ -125,9 +125,16 @@ export default function PrivacyPolicyPage() {
           browser local storage that remembers your language choice, the items in your cart, and your saved favorites and
           checklist (tick) states in the guide, and a temporary copy of your planner answers in your browser session while you move
           from the planner to checkout (it is removed once your purchase is confirmed or the tab is closed). We do not currently
-          use advertising cookies or
-          third-party analytics trackers. You can clear cookies and local storage in your browser settings; doing so may
+          use advertising cookies or cross-site tracking. You can clear cookies and local storage in your browser settings; doing so may
           sign you out and empty your cart.
+        </p>
+        <p>
+          <strong>Website analytics:</strong> we use Vercel Web Analytics to understand, in aggregate, how the website is used (for
+          example which pages are viewed, the referring site, the visitor&apos;s approximate country or region, and the device type,
+          operating system and browser). It is cookieless: it does not set cookies on your device, does not follow you across other
+          websites or apps, and does not tell us who an individual visitor is. Page addresses are reduced to the page path before they
+          are sent, so query strings and fragments are not included. The data is used only for aggregate traffic statistics and to
+          improve the website.
         </p>
       </LegalSection>
 
