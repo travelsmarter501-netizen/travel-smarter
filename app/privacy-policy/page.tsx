@@ -108,7 +108,8 @@ export default function PrivacyPolicyPage() {
             that text may be sent to Geoapify when your plan is generated, to find its location on the map.
           </li>
           <li>
-            <strong>Website hosting and infrastructure providers (currently Vercel):</strong> to serve the website.
+            <strong>Website hosting and infrastructure providers (currently Vercel):</strong> to serve the website and, through Vercel
+            Web Analytics, to provide aggregate website analytics (see Section 6).
           </li>
         </LegalList>
         <p>
@@ -124,7 +125,10 @@ export default function PrivacyPolicyPage() {
           a short-lived secure cookie that remembers a purchase made without an account while you sign in to add it to your account,
           browser local storage that remembers your language choice, the items in your cart, and your saved favorites and
           checklist (tick) states in the guide, and a temporary copy of your planner answers in your browser session while you move
-          from the planner to checkout (it is removed once your purchase is confirmed or the tab is closed). We do not currently
+          from the planner to checkout (it is removed once your purchase is confirmed or the tab is closed). When a purchase you made
+          without an account is automatically added to your account after you sign in, we also set a short-lived functional cookie
+          named <code>ts_purchases_linked</code> so the website can show you a one-time confirmation message. It contains only the
+          value &ldquo;1&rdquo; (no personal data), expires after 5 minutes, and is deleted as soon as the message has been shown. We do not currently
           use advertising cookies or cross-site tracking. You can clear cookies and local storage in your browser settings; doing so may
           sign you out and empty your cart.
         </p>
