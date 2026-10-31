@@ -137,12 +137,15 @@ export default function PrivacyPolicyPage() {
           example which pages are viewed, the referring site, the visitor&apos;s approximate country or region, and the device type,
           operating system and browser). It is cookieless: it does not set cookies on your device, does not follow you across other
           websites or apps, and does not tell us who an individual visitor is. Page addresses are reduced to the page path before they
-          are sent; the only query-string values kept are the standard marketing-campaign tags (utm_source, utm_medium, utm_campaign,
-          utm_content and utm_term) when a link we share carries them, so we can see which campaign brought visitors. Any other query
-          string or fragment is not included. We also record a few anonymous interaction events, such as choosing a product, opening
-          the personalized planner questionnaire, or starting checkout, labelled only with the type of product; they never include your
-          name, email address, order details or any payment information. The data is used only for aggregate traffic statistics and to
+          are sent, so query strings and fragments are not included. The data is used only for aggregate traffic statistics and to
           improve the website.
+        </p>
+        <p>
+          <strong>Campaign measurement:</strong> if you arrive from a marketing link that carries campaign tags (such as utm_source and
+          utm_campaign), the website keeps a short campaign label (for example &ldquo;tiktok&rdquo;) in your browser&apos;s session storage
+          for that browser tab only. If you then start a checkout, the label is saved together with the order so we can see which
+          campaigns lead to sales. It is not a cookie, contains no personal data and no visitor identifier, and is removed when you close
+          the tab.
         </p>
       </LegalSection>
 

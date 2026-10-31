@@ -5,6 +5,7 @@ import { createPendingOrder, createGuestPendingOrder } from "../lib/orders";
 import { generateClaimToken, normalizeGuestEmail } from "../lib/commerce/claimToken";
 import { createCustomPlanPendingOrder } from "../lib/customPlanCommerce";
 import { createAllpayRedirectCheckout } from "../lib/allpay/createPayment";
+import { finishAttribution, recordOrderAttribution } from "../lib/commerce/orderAttribution";
 import { resolveCheckoutProductSlugs, PRODUCT_SLUGS } from "../lib/commerce/catalog";
 import type { CheckoutErrorCode } from "../lib/commerce/checkoutErrors";
 
@@ -29,7 +30,7 @@ function clientProfile(user: { email?: string | null; user_metadata?: Record<str
  * Prices and product metadata are never read from the browser: only cart ids / known slugs come in,
  * and the database computes the total.
  */
-export async function startCartCheckout(input: { cartIds?: string[]; productSlugs?: string[]; email?: string }): Promise<StartCheckoutResult> {
+export async function startCartCheckout(input: { cartIds?: string[]; productSlugs?: string[]; email?: string; attribution?: unknown }): Promise<StartCheckoutResult> {
   const supabase = await createClient();
   const {
     data: { user },
@@ -57,7 +58,11 @@ export async function startCartCheckout(input: { cartIds?: string[]; productSlug
       return { ok: false, error: order.error, code: order.code };
     }
 
-    return createAllpayRedirectCheckout(order.data.id, clientProfile(user));
+    // Campaign attribution: best effort, bounded, runs alongside the payment-page request (see lib/commerce/orderAttribution.ts).
+    const attribution = recordOrderAttribution(order.data.id, input.attribution);
+    const result = await createAllpayRedirectCheckout(order.data.id, clientProfile(user));
+    await finishAttribution(attribution);
+    return result;
   }
 
   // ---- Guest checkout ----
@@ -72,7 +77,10 @@ export async function startCartCheckout(input: { cartIds?: string[]; productSlug
     return { ok: false, error: order.error, code: order.code };
   }
 
-  return createAllpayRedirectCheckout(order.data.id, { email }, { claimToken });
+  const attribution = recordOrderAttribution(order.data.id, input.attribution);
+  const result = await createAllpayRedirectCheckout(order.data.id, { email }, { claimToken });
+  await finishAttribution(attribution);
+  return result;
 }
 
 export async function startCustomPlanAllpayCheckout(requestId: string): Promise<StartCheckoutResult> {

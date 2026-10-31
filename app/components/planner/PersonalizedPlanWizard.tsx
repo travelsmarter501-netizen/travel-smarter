@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import V2InterestSelector from "../smart-planner-v2/V2InterestSelector";
 import { useLanguage } from "../../lib/language";
@@ -10,7 +10,6 @@ import { inclusiveDayCount } from "../../lib/planner/dateOnly";
 import { writePlannerDraft, type PlannerAccommodationStatus, type PlannerDraft } from "../../lib/planner/plannerDraft";
 import { CHECKOUT_PERSONALIZED } from "../../lib/planner/planLinks";
 import { generateOwnerPlanAction } from "../../planner/actions";
-import { trackPlannerStarted } from "../../lib/analyticsEvents";
 import PlanGeneratingScreen from "./PlanGeneratingScreen";
 import type { V2PlannerInterest } from "../../lib/planner/v2PlannerTypes";
 import { PLANNER_DESTINATIONS, DEFAULT_PLANNER_DESTINATION_ID, isAvailablePlannerDestinationId } from "../../lib/planner/plannerDestinations";
@@ -72,12 +71,6 @@ export default function PersonalizedPlanWizard({
   const [saveFailed, setSaveFailed] = useState(false);
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState<PlannerGenerateErrorCode | null>(null);
-
-  // A brand-new questionnaire (not "Edit answers" on a saved draft, not editing an existing plan) was opened: report it once.
-  useEffect(() => {
-    if (!initialDraft && !editPlanId) trackPlannerStarted(owner);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- a start is reported once per page load, whatever the props do afterwards
-  }, []);
 
   const inputDir = language === "ar" ? "rtl" : "ltr";
 

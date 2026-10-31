@@ -14,7 +14,7 @@ import { usePlannerCopy } from "../../lib/usePlannerCopy";
 import { useResetOnPageShow } from "../../lib/useResetOnPageShow";
 import { fillCopy, type PlannerGenerateErrorCode } from "../../lib/plannerCopy";
 import { clearPlannerDraft, parsePlannerDraft, readPlannerDraftRaw } from "../../lib/planner/plannerDraft";
-import { trackCheckoutStarted } from "../../lib/analyticsEvents";
+import { readAttribution } from "../../lib/attribution";
 import { destinationIncludesGuide } from "../../lib/planner/personalizedPlanAnswers";
 import { V2_INTEREST_DISPLAY_GROUPS, isV2DisplayGroupActive } from "../../lib/planner/v2PlannerTypes";
 import type { CheckoutErrorCode } from "../../lib/commerce/checkoutErrors";
@@ -74,13 +74,12 @@ export default function PersonalizedPlanCheckout({
     setLoading(true);
     setError(null);
     try {
-      const result = await startPersonalizedPlanCheckout({ destinationId: draft.destinationId, answers: draft.rawAnswers, email: signedIn ? undefined : email });
+      const result = await startPersonalizedPlanCheckout({ destinationId: draft.destinationId, answers: draft.rawAnswers, email: signedIn ? undefined : email, attribution: readAttribution() });
       if (!result.ok) {
         setLoading(false);
         setError({ code: result.code, message: result.error });
         return;
       }
-      trackCheckoutStarted(["personalized-trip-plan"], signedIn);
       window.location.href = result.paymentUrl;
       // If the browser never actually leaves (an in-app browser that blocks the navigation), do not leave the button disabled forever.
       window.setTimeout(() => setLoading(false), 15000);

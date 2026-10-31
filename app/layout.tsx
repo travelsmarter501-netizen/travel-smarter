@@ -8,6 +8,7 @@ import Footer from "./components/Footer";
 import LoadingSplash from "./components/LoadingSplash";
 import NavigationIntentTracker from "./components/NavigationIntentTracker";
 import WebAnalytics from "./components/WebAnalytics";
+import AttributionCapture from "./components/AttributionCapture";
 import "./globals.css";
 
 const cairo = Cairo({
@@ -48,6 +49,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           </CurrencyProvider>
         </LanguageProvider>
         <WebAnalytics />
+        <AttributionCapture />
       </body>
     </html>
   );

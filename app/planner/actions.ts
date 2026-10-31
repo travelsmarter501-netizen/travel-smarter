@@ -2,6 +2,7 @@
 
 import { createClient } from "../../utils/supabase/server";
 import { createAllpayRedirectCheckout } from "../lib/allpay/createPayment";
+import { finishAttribution, recordOrderAttribution } from "../lib/commerce/orderAttribution";
 import { generateClaimToken, hashClaimToken, normalizeGuestEmail } from "../lib/commerce/claimToken";
 import {
   createComplimentaryPlanRequest,
@@ -28,7 +29,7 @@ import type { StartCheckoutResult } from "../checkout/actions";
  * stored answers are created in one SQL transaction. Nothing is granted by this action; entitlements still come
  * only from the verified Allpay webhook (signed-in) or the guest claim.
  */
-export async function startPersonalizedPlanCheckout(input: { destinationId?: unknown; answers?: unknown; email?: unknown }): Promise<StartCheckoutResult> {
+export async function startPersonalizedPlanCheckout(input: { destinationId?: unknown; answers?: unknown; email?: unknown; attribution?: unknown }): Promise<StartCheckoutResult> {
   const normalized = normalizePersonalizedAnswers(input?.answers, input?.destinationId);
   if (!normalized.ok) {
     return { ok: false, error: "بيانات الخطة غير صالحة. راجع إجاباتك وحاول مرة أخرى.", code: "invalid_planner_answers" };
@@ -49,7 +50,11 @@ export async function startPersonalizedPlanCheckout(input: { destinationId?: unk
     if (!order.ok) return { ok: false, error: order.error, code: order.code };
 
     const name = typeof user.user_metadata?.full_name === "string" ? user.user_metadata.full_name : null;
-    return createAllpayRedirectCheckout(order.orderId, { name, email: user.email ?? null });
+    // Campaign attribution: best effort, bounded, alongside the payment-page request (see lib/commerce/orderAttribution.ts).
+    const attribution = recordOrderAttribution(order.orderId, input?.attribution);
+    const result = await createAllpayRedirectCheckout(order.orderId, { name, email: user.email ?? null });
+    await finishAttribution(attribution);
+    return result;
   }
 
   // ---- Guest: same model as the cart checkout (email = receipt only; one-time claim token, only its hash is stored) ----
@@ -68,7 +73,10 @@ export async function startPersonalizedPlanCheckout(input: { destinationId?: unk
   });
   if (!order.ok) return { ok: false, error: order.error, code: order.code };
 
-  return createAllpayRedirectCheckout(order.orderId, { email }, { claimToken });
+  const attribution = recordOrderAttribution(order.orderId, input?.attribution);
+  const result = await createAllpayRedirectCheckout(order.orderId, { email }, { claimToken });
+  await finishAttribution(attribution);
+  return result;
 }
 
 /**
