@@ -26,9 +26,16 @@
 --
 -- READING THE REPORTS (SQL Editor):  select * from reporting.sales_overview;  select * from reporting.sales_summary_daily;  etc.
 --
--- ROLLBACK (removes only what this file created; orders and everything else are unaffected):
---   drop schema if exists reporting cascade;
---   drop table  if exists public.order_attribution;
+-- ROLLBACK -- attribution data is PRESERVED by default; orders and everything else are never affected:
+--   Level 1 (normally enough): revert the application commit. Nothing writes to order_attribution any more; the table and its rows stay.
+--   Level 2 (also hide the reports): drop only the views and the cutoff function -- the attribution rows and the exclusion lists stay:
+--       drop view if exists reporting.sales_by_product_campaign, reporting.sales_by_product, reporting.sales_by_campaign,
+--                           reporting.checkout_conversion_daily, reporting.sales_summary_daily, reporting.sales_overview, reporting.real_orders;
+--       drop function if exists reporting.sales_start();
+--   Level 3 (DESTRUCTIVE -- deletes attribution rows and exclusion lists; only if explicitly necessary and approved, after exporting
+--   public.order_attribution, reporting.excluded_orders and reporting.excluded_users to CSV):
+--       drop schema if exists reporting cascade;
+--       drop table  if exists public.order_attribution;
 
 -- ---------------------------------------------------------------------------------------------------------------------------------------
 -- 1. Attribution
