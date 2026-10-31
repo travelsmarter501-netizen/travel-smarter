@@ -147,15 +147,17 @@ from reporting.real_orders
 group by channel, coalesce(campaign, '(none)')
 order by revenue_ils desc, checkouts_started desc;
 
--- Sales by product. Revenue is the price snapshot on the order line, so product revenues add up to order revenue.
--- A multi-product order appears once in each of its products' rows.
+-- Sales by product. Revenue is the sum of the price snapshots on the order lines, so product revenues add up to order revenue.
+-- A multi-product order appears once in each of its products' rows. Orders are counted DISTINCTLY: even if an order ever held several
+-- lines for the same product (order_items is unique per (order, product) today), it still counts as one order, while every line's price is
+-- still added to the revenue.
 create or replace view reporting.sales_by_product with (security_invoker = true) as
 select p.slug as product, p.name,
-       count(*) filter (where r.checkout_started)                  as checkouts_started,
-       count(*) filter (where r.is_paid)                           as paid_orders,
+       count(distinct r.order_id) filter (where r.checkout_started)                  as checkouts_started,
+       count(distinct r.order_id) filter (where r.is_paid)                           as paid_orders,
        coalesce(sum(i.price_ils_at_purchase) filter (where r.is_paid), 0) as revenue_ils,
-       round(100.0 * count(*) filter (where r.is_paid and r.checkout_started)
-             / nullif(count(*) filter (where r.checkout_started), 0), 1) as checkout_to_paid_pct
+       round(100.0 * count(distinct r.order_id) filter (where r.is_paid and r.checkout_started)
+             / nullif(count(distinct r.order_id) filter (where r.checkout_started), 0), 1) as checkout_to_paid_pct
 from reporting.real_orders r
 join public.order_items i on i.order_id = r.order_id
 join public.products p on p.id = i.product_id
@@ -165,8 +167,8 @@ order by revenue_ils desc, checkouts_started desc;
 -- Sales by product AND campaign.
 create or replace view reporting.sales_by_product_campaign with (security_invoker = true) as
 select r.channel, coalesce(r.campaign, '(none)') as campaign, p.slug as product,
-       count(*) filter (where r.checkout_started)                  as checkouts_started,
-       count(*) filter (where r.is_paid)                           as paid_orders,
+       count(distinct r.order_id) filter (where r.checkout_started)                  as checkouts_started,
+       count(distinct r.order_id) filter (where r.is_paid)                           as paid_orders,
        coalesce(sum(i.price_ils_at_purchase) filter (where r.is_paid), 0) as revenue_ils
 from reporting.real_orders r
 join public.order_items i on i.order_id = r.order_id
