@@ -8,6 +8,7 @@ import { useLanguage } from "../lib/language";
 import { usePlannerCopy } from "../lib/usePlannerCopy";
 import { formatPrice } from "../lib/currency";
 import { CART_ID_TO_PRODUCT_SLUG } from "../lib/commerce/catalog";
+import { trackCheckoutStarted } from "../lib/analyticsEvents";
 import { referencePriceIfDiscounted } from "../lib/commerce/pricing";
 import { quoteCheckout, type CheckoutQuote } from "./quote";
 import { startCartCheckout } from "./actions";
@@ -73,6 +74,10 @@ export default function CheckoutClient({
       return;
     }
 
+    // The server created the order and an Allpay page: a checkout has started (never a completed payment).
+    const slugToCartId = new Map(Object.entries(CART_ID_TO_PRODUCT_SLUG).map(([cartId, slug]) => [slug, cartId]));
+    const extraId = extraProductSlug ? slugToCartId.get(extraProductSlug) : undefined;
+    trackCheckoutStarted([...items.map((item) => item.id), ...(extraId ? [extraId] : [])], signedIn);
     window.location.href = result.paymentUrl;
   }
 

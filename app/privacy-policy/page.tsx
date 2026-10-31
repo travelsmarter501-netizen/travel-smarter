@@ -12,7 +12,7 @@ const linkClass = "font-semibold text-teal-700 hover:underline";
 
 export default function PrivacyPolicyPage() {
   return (
-    <LegalPageLayout title="Privacy Policy" lastUpdated="October 28, 2026">
+    <LegalPageLayout title="Privacy Policy" lastUpdated="October 31, 2026">
       <p>
         This Privacy Policy explains how Travel Smarter (“Travel Smarter”, “we”, “us”) collects, uses and protects personal
         data when you visit our website, create an account, buy our products or contact us. By using the website you
@@ -137,7 +137,11 @@ export default function PrivacyPolicyPage() {
           example which pages are viewed, the referring site, the visitor&apos;s approximate country or region, and the device type,
           operating system and browser). It is cookieless: it does not set cookies on your device, does not follow you across other
           websites or apps, and does not tell us who an individual visitor is. Page addresses are reduced to the page path before they
-          are sent, so query strings and fragments are not included. The data is used only for aggregate traffic statistics and to
+          are sent; the only query-string values kept are the standard marketing-campaign tags (utm_source, utm_medium, utm_campaign,
+          utm_content and utm_term) when a link we share carries them, so we can see which campaign brought visitors. Any other query
+          string or fragment is not included. We also record a few anonymous interaction events, such as choosing a product, opening
+          the personalized planner questionnaire, or starting checkout, labelled only with the type of product; they never include your
+          name, email address, order details or any payment information. The data is used only for aggregate traffic statistics and to
           improve the website.
         </p>
       </LegalSection>

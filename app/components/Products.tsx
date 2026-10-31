@@ -12,6 +12,7 @@ import { useOwnedProducts } from "../lib/useOwnedProducts";
 import { PLANNER_NEW_PLAN } from "../lib/planner/planLinks";
 import { homepageTranslations } from "../lib/homepageTranslations";
 import { destinations } from "../lib/content";
+import { trackProductSelected } from "../lib/analyticsEvents";
 
 const barcelonaImage = destinations.find((destination) => destination.slug === "barcelona")?.image ?? "";
 
@@ -48,6 +49,7 @@ export default function Products() {
 
   // "Buy now": normal shoppers never open the protected content route -- they go product -> checkout.
   function buyNow(product: (typeof t.products.items)[number]) {
+    trackProductSelected(product.id, "buy_now");
     // The Personalized Plan is the one product that is never bought from the cart: its questionnaire comes first
     // (/planner -> review -> pay), so its card just opens the planner.
     if (product.id === "personalized-trip-plan") {
@@ -153,7 +155,10 @@ export default function Products() {
                       {product.addToCartLabel && (
                         <button
                           type="button"
-                          onClick={() => addProductToCart(product)}
+                          onClick={() => {
+                            trackProductSelected(product.id, "add_to_cart");
+                            addProductToCart(product);
+                          }}
                           disabled={inCart}
                           className="mt-2 flex items-center justify-center rounded-full border border-slate-300 px-4 py-2.5 pointer-coarse:py-3 text-sm font-semibold text-slate-700 transition-colors hover:border-slate-400 hover:bg-slate-50 disabled:cursor-default disabled:border-teal-200 disabled:bg-teal-50 disabled:text-teal-700"
                         >
