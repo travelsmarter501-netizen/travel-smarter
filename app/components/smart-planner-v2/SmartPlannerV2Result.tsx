@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { interestGroupLabelForDestination, plannerDestinationName } from "../../lib/planner/plannerDestinations";
 import SmartPlannerV2Day from "./SmartPlannerV2Day";
 import { v2DisplayInterestsLabel } from "../../lib/planner/v2PlannerTypes";
 import { formatArabicDayMonth } from "../../lib/planner/dateOnly";
@@ -59,17 +60,17 @@ export default function SmartPlannerV2Result({
 
   return (
     <div>
-      <h1 className="text-xl font-bold text-slate-900">خطتك المخصصة لبرشلونة ✨</h1>
+      <h1 className="text-xl font-bold text-slate-900">خطتك المخصصة ل{plannerDestinationName(plan.destination)} ✨</h1>
 
       <div className="mt-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
         <p className="text-sm font-bold text-slate-900">
-          {plan.daysGenerated} {plan.daysGenerated === 1 ? "يوم" : "أيام"} في برشلونة
+          {plan.daysGenerated} {plan.daysGenerated === 1 ? "يوم" : "أيام"} في {plannerDestinationName(plan.destination)}
         </p>
         {dateRangeLabel && <p className="mt-0.5 text-xs text-slate-500">{dateRangeLabel}</p>}
         {plan.surpriseMe ? (
           <p className="mt-1 text-xs text-slate-600">فاجئني ✨</p>
         ) : (
-          interests.length > 0 && <p className="mt-1 text-xs text-slate-600">{v2DisplayInterestsLabel(interests)}</p>
+          interests.length > 0 && <p className="mt-1 text-xs text-slate-600">{v2DisplayInterestsLabel(interests, (groupId) => interestGroupLabelForDestination(plan.destination, groupId, "ar"))}</p>
         )}
         {accommodation?.booked && accommodation.text && <p className="mt-1 text-xs text-slate-500">السكن: {accommodation.text}</p>}
         {plan.accommodationOrderedTrip && <p className="mt-1 text-xs font-medium text-teal-700">رتبنا بداية رحلتك حسب مكان سكنك 📍</p>}

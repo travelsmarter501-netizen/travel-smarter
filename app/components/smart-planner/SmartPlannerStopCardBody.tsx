@@ -28,7 +28,7 @@ export type StopCardFoodMeta = {
   mealTypeIcon: string;
   mealTypeLabel: string;
   cuisineLabel: string;
-  priceLevel: string;
+  priceLevel?: string;
   rating?: number;
 };
 
@@ -102,8 +102,12 @@ export default function SmartPlannerStopCardBody({
               </p>
               <p dir="auto" className="mt-0.5 flex flex-wrap items-center gap-x-1 text-[11px] text-slate-500">
                 <span>{foodMeta.cuisineLabel}</span>
-                <span>·</span>
-                <span>{foodMeta.priceLevel}</span>
+                {foodMeta.priceLevel && (
+                  <>
+                    <span>·</span>
+                    <span>{foodMeta.priceLevel}</span>
+                  </>
+                )}
                 {typeof foodMeta.rating === "number" && (
                   <>
                     <span>·</span>

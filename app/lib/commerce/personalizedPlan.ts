@@ -11,6 +11,14 @@ import { inclusiveDayCount } from "../planner/dateOnly";
 import { isComplimentaryUser } from "./complimentary";
 import { randomUUID } from "crypto";
 import { normalizePersonalizedAnswers } from "../planner/personalizedPlanAnswers";
+import { isAvailablePlannerDestinationId } from "../planner/plannerDestinations";
+import { getCityPlannerModule } from "../planner/cityPlannerRegistry";
+
+/** Multi-city foundation: the planner can build this city (it has an engine module) AND customers may choose it
+ * (publicly available, or the local-only preview switch -- see plannerDestinations.ts). Barcelona: always true. */
+function isGeneratableDestination(destinationId: string): boolean {
+  return isAvailablePlannerDestinationId(destinationId) && getCityPlannerModule(destinationId) !== null;
+}
 import type { TripDetailsInput } from "../planner/personalizedSummary";
 
 /**
@@ -117,14 +125,14 @@ export type GeneratePersonalizedPlanResult =
 
 type BeginRow = { state: string; request_destination: string | null; request_answers: PersonalizedPlanAnswers | null };
 
-function buildSavedPreferences(answers: PersonalizedPlanAnswers): SmartPlannerV2SavedPreferences {
+function buildSavedPreferences(answers: PersonalizedPlanAnswers, destinationId: string): SmartPlannerV2SavedPreferences {
   const accommodation = answers.accommodation.booked ? { booked: true, text: answers.accommodation.text } : { booked: false };
   if (answers.dateMode === "flexible") {
-    return { plannerVersion: "v2", destinationId: "barcelona", dateMode: "flexible", durationDays: answers.durationDays, interests: answers.interests, surpriseMe: answers.surpriseMe, accommodation };
+    return { plannerVersion: "v2", destinationId, dateMode: "flexible", durationDays: answers.durationDays, interests: answers.interests, surpriseMe: answers.surpriseMe, accommodation };
   }
   return {
     plannerVersion: "v2",
-    destinationId: "barcelona",
+    destinationId,
     dateMode: "specific",
     arrivalDate: answers.arrivalDate,
     departureDate: answers.departureDate,
@@ -181,7 +189,7 @@ export async function generatePersonalizedPlanForRequest(requestId: unknown): Pr
   if (begin.state !== "granted" || !begin.request_answers || !begin.request_destination) return { ok: false, code: "not_found" };
 
   // From here on this call holds the generation lease: release it on every failure path.
-  if (begin.request_destination !== "barcelona") {
+  if (!isGeneratableDestination(begin.request_destination)) {
     await releaseLease(serviceRole, requestId);
     return { ok: false, code: "unsupported_destination" };
   }
@@ -205,13 +213,13 @@ export async function generatePersonalizedPlanForRequest(requestId: unknown): Pr
 
   // Save the plan under the verified user. The request id inside preferences_json is backed by a partial unique
   // index, so a request can never own two saved plans -- a lost race simply finds the winner's row.
-  const preferences = { ...normalizeSmartPlannerV2Preferences(buildSavedPreferences(answers)), personalizedPlanRequestId: requestId };
+  const preferences = { ...normalizeSmartPlannerV2Preferences(buildSavedPreferences(answers, begin.request_destination)), personalizedPlanRequestId: requestId };
   const { data: inserted, error: insertError } = await serviceRole
     .from("smart_planner_saved_plans")
     .insert({
       user_id: user.id,
       product_slug: V2_SAVED_PLAN_PRODUCT_SLUG,
-      destination_slug: "barcelona",
+      destination_slug: begin.request_destination,
       preferences_json: preferences,
       generated_plan_json: { plan: generated.data },
     })
@@ -316,7 +324,21 @@ export async function generateOwnerPersonalizedPlan(input: { destinationId?: unk
 
   // From here on this call holds the generation lease: it is released on every path out.
   try {
-    if (normalized.destinationId !== "barcelona") return { ok: false, code: "unsupported_destination" };
+    if (!isGeneratableDestination(normalized.destinationId)) return { ok: false, code: "unsupported_destination" };
+    if (replaceId) {
+      // "Edit plan" keeps the plan's city: the stored row's destination_slug is not rewritten by replace_owned_plan_content,
+      // so a different city here would leave a row whose city and content disagree. Read with the service role but scoped to
+      // this user and the V2 tag, exactly like the replace RPC itself.
+      const { data: existing } = await serviceRole
+        .from("smart_planner_saved_plans")
+        .select("destination_slug")
+        .eq("id", replaceId)
+        .eq("user_id", user.id)
+        .eq("product_slug", V2_SAVED_PLAN_PRODUCT_SLUG)
+        .maybeSingle<{ destination_slug: string }>();
+      if (!existing) return { ok: false, code: "not_found" };
+      if (existing.destination_slug !== normalized.destinationId) return { ok: false, code: "invalid_answers" };
+    }
 
     const answers = normalized.answers;
     const generated = await generateBarcelonaPlanV2({
@@ -334,7 +356,7 @@ export async function generateOwnerPersonalizedPlan(input: { destinationId?: unk
       return { ok: false, code: "generation_failed" };
     }
 
-    const preferences = normalizeSmartPlannerV2Preferences(buildSavedPreferences(answers));
+    const preferences = normalizeSmartPlannerV2Preferences(buildSavedPreferences(answers, normalized.destinationId));
 
     if (replaceId) {
       const { data: replaced, error: replaceError } = await serviceRole.rpc("replace_owned_plan_content", {
@@ -355,7 +377,7 @@ export async function generateOwnerPersonalizedPlan(input: { destinationId?: unk
       .insert({
         user_id: user.id,
         product_slug: V2_SAVED_PLAN_PRODUCT_SLUG,
-        destination_slug: "barcelona",
+        destination_slug: normalized.destinationId,
         // planGeneration makes every owner-created plan distinct, so the table's identical-preferences rule never rejects a repeat.
         preferences_json: { ...preferences, planGeneration: randomUUID() },
         generated_plan_json: { plan: generated.data },
@@ -532,6 +554,7 @@ export async function loadMyPersonalizedPlans(userId: string, options: { pending
       days,
       createdAt: row.created_at,
       details: {
+        destinationId: row.destination_slug,
         surpriseMe: p.surpriseMe === true,
         interests: Array.isArray(p.interests) ? (p.interests as TripDetailsInput["interests"]) : [],
         accommodation: p.accommodation ? { booked: p.accommodation.booked === true, text: typeof p.accommodation.text === "string" ? p.accommodation.text : undefined } : null,

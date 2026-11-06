@@ -72,7 +72,7 @@ const KNOWN_BASELINE = {
 };
 
 let s1TotalLegInstances = 0;
-const s1StatusCounts: Record<RouteLegSourceStatus, number> = { verified: 0, "existing-project-data": 0, unresolved: 0 };
+const s1StatusCounts: Record<RouteLegSourceStatus, number> = { verified: 0, "existing-project-data": 0, estimated: 0, unresolved: 0 };
 const s1UniquePairs = new Set<string>();
 const s1UnresolvedPairs = new Set<string>();
 let s1ValidationFailures = 0;

@@ -68,8 +68,15 @@ function shoppingScore(area: ShoppingArea): number {
   return typeof area.rating === "number" ? area.rating : 0;
 }
 
-function toSummary(placeId: string, type: "food" | "shopping" | "nightlife"): ResolvedPlaceSummary | null {
-  const resolved = resolvePlace(placeId, type, barcelonaGuide);
+/** Multi-city foundation: the place lists this layer reads for one city (Barcelona: barcelonaGuide, unchanged). */
+export type SupplementaryCityPlaces = {
+  foodPlaces: FoodPlace[];
+  shoppingAreas: ShoppingArea[];
+  nightlifeVenues: NightlifeVenue[];
+};
+
+function toSummary(places: SupplementaryCityPlaces, placeId: string, type: "food" | "shopping" | "nightlife"): ResolvedPlaceSummary | null {
+  const resolved = resolvePlace(placeId, type, { attractions: [], experiences: [], areas: [], ...places });
   return resolved ? summarizeResolvedPlace(resolved) : null;
 }
 
@@ -91,6 +98,16 @@ export function buildBarcelonaSupplementaryForDay(
   v2Interests: V2PlannerInterest[],
   usedPlaceIds: Set<string>
 ): DaySupplementaryResult {
+  return buildSupplementaryForDay(barcelonaGuide, weekday, v2Interests, usedPlaceIds);
+}
+
+/** City-independent version of buildBarcelonaSupplementaryForDay (same rules, any city's place lists). */
+export function buildSupplementaryForDay(
+  places: SupplementaryCityPlaces,
+  weekday: Weekday | null,
+  v2Interests: V2PlannerInterest[],
+  usedPlaceIds: Set<string>
+): DaySupplementaryResult {
   const food: V2FoodSuggestion[] = [];
   const shopping: V2ShoppingSuggestion[] = [];
   const nightlife: V2NightlifeSuggestion[] = [];
@@ -99,9 +116,9 @@ export function buildBarcelonaSupplementaryForDay(
     const mealTypes: ("lunch" | "dinner")[] = ["lunch", "dinner"];
     for (const mealType of mealTypes) {
       if (food.length >= MAX_FOOD_PER_DAY) break;
-      const picked = pickBestEligible(barcelonaGuide.foodPlaces, usedPlaceIds, weekday, foodScore);
+      const picked = pickBestEligible(places.foodPlaces, usedPlaceIds, weekday, foodScore);
       if (!picked) continue;
-      const summary = toSummary(picked.id, "food");
+      const summary = toSummary(places, picked.id, "food");
       if (!summary) continue;
       usedPlaceIds.add(picked.id);
       food.push({ ...summary, kind: "food", mealType });
@@ -109,9 +126,9 @@ export function buildBarcelonaSupplementaryForDay(
   }
 
   if (v2Interests.includes("shopping")) {
-    const picked = pickBestEligible(barcelonaGuide.shoppingAreas, usedPlaceIds, weekday, shoppingScore);
+    const picked = pickBestEligible(places.shoppingAreas, usedPlaceIds, weekday, shoppingScore);
     if (picked) {
-      const summary = toSummary(picked.id, "shopping");
+      const summary = toSummary(places, picked.id, "shopping");
       if (summary) {
         usedPlaceIds.add(picked.id);
         shopping.push({ ...summary, kind: "shopping", bestFor: picked.bestFor });
@@ -120,9 +137,9 @@ export function buildBarcelonaSupplementaryForDay(
   }
 
   if (v2Interests.includes("nightlife")) {
-    const picked = pickBestEligible(barcelonaGuide.nightlifeVenues, usedPlaceIds, weekday, nightlifeScore);
+    const picked = pickBestEligible(places.nightlifeVenues, usedPlaceIds, weekday, nightlifeScore);
     if (picked) {
-      const summary = toSummary(picked.id, "nightlife");
+      const summary = toSummary(places, picked.id, "nightlife");
       if (summary) {
         usedPlaceIds.add(picked.id);
         nightlife.push({ ...summary, kind: "nightlife" });

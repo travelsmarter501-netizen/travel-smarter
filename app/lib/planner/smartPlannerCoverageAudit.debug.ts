@@ -33,7 +33,7 @@ console.log(`Total profiles generated: ${ALL_PROFILES.length} (expect 41: 6 + 15
 
 // -- Global transport-coverage aggregation --------------------------------------------
 let totalLegInstances = 0;
-const statusCounts: Record<RouteLegSourceStatus, number> = { verified: 0, "existing-project-data": 0, unresolved: 0 };
+const statusCounts: Record<RouteLegSourceStatus, number> = { verified: 0, "existing-project-data": 0, estimated: 0, unresolved: 0 };
 const unresolvedPairCounts = new Map<string, number>();
 const routeInventory = new Map<string, { from: string; to: string; sourceStatus: RouteLegSourceStatus; occurrenceCount: number }>();
 

@@ -24,6 +24,9 @@ export type RouteLegSourceStatus =
   | "verified"
   /** Reused from other already-verified project data (e.g. the Ready Plan) — not re-verified in the current task. */
   | "existing-project-data"
+  /** Multi-city foundation: computed from the straight-line distance between two places with verified coordinates (see
+   * lib/planner/estimatedRouteLegs.ts) -- NOT checked against a maps service. Always shown to the customer as an estimate. */
+  | "estimated"
   /** No known/verified data for this exact pair — never fabricated. */
   | "unresolved";
 

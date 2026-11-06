@@ -2,6 +2,7 @@ import "server-only";
 import { resolveBarcelonaAccommodationCluster } from "./barcelonaAccommodationClusters";
 import { isWithinBarcelonaBounds, nearestBarcelonaCluster } from "./barcelonaClusterCentroids";
 import type { GeoPoint } from "./geoDistance";
+import type { CityAccommodationRules } from "./cityPlannerModule";
 
 /**
  * Accommodation Geo Intelligence -- server-side accommodation location resolver.
@@ -49,6 +50,16 @@ const LOCATION_BIAS_RADIUS_METERS = 20000;
 // candidate's own (un-stripped) name/address text. Deliberately small and conservative.
 const GENERIC_ACCOMMODATION_WORDS = new Set(["hotel", "hotels", "apartment", "apartments", "spa", "barcelona", "spain", "the", "el", "la"]);
 
+/** Multi-city foundation: Barcelona's accommodation rules (the exact constants/functions this file used before). Every
+ * exported resolver below defaults to these, so existing callers are unchanged; another city passes its own. */
+export const BARCELONA_ACCOMMODATION_RULES: CityAccommodationRules = {
+  center: BARCELONA_CENTER,
+  genericWords: GENERIC_ACCOMMODATION_WORDS,
+  isWithinBounds: isWithinBarcelonaBounds,
+  nearestCluster: nearestBarcelonaCluster,
+  keywordCluster: resolveBarcelonaAccommodationCluster,
+};
+
 // Built from explicit code points (rather than a literal character class in source) to avoid any
 // ambiguity about which combining-diacritic characters are actually present in this file --
 // U+0300 to U+036F is the full "Combining Diacritical Marks" Unicode block.
@@ -83,8 +94,8 @@ function normalizeToTokens(value: string): string[] {
  * Familia, and both real addresses; rejects the garbage-input case. Like every other gate here,
  * this can only ever make resolution MORE conservative, never invent a coordinate.
  */
-function matchesInputCloselyEnough(inputText: string, candidateName: string | undefined, candidateFormatted: string | undefined): boolean {
-  const meaningfulInputTokens = normalizeToTokens(inputText).filter((token) => !GENERIC_ACCOMMODATION_WORDS.has(token));
+function matchesInputCloselyEnough(inputText: string, candidateName: string | undefined, candidateFormatted: string | undefined, genericWords: ReadonlySet<string> = GENERIC_ACCOMMODATION_WORDS): boolean {
+  const meaningfulInputTokens = normalizeToTokens(inputText).filter((token) => !genericWords.has(token));
   if (meaningfulInputTokens.length === 0) return false; // input was purely generic words -- too vague to trust any match
 
   const candidateTokens = new Set(normalizeToTokens([candidateName, candidateFormatted].filter(Boolean).join(" ")));
@@ -115,7 +126,8 @@ function matchesInputCloselyEnough(inputText: string, candidateName: string | un
  * typed, or a network/parse exception all return `{ status: "unresolved" }` -- never a thrown
  * error (which would abort plan generation) and never a guessed coordinate.
  */
-async function resolveViaGeoapify(text: string): Promise<AccommodationLocationResult> {
+async function resolveViaGeoapify(text: string, rules: CityAccommodationRules): Promise<AccommodationLocationResult> {
+  const center = rules.center;
   const apiKey = process.env.GEOAPIFY_API_KEY;
   if (!apiKey) return { status: "unresolved", source: "not_configured" };
 
@@ -123,8 +135,8 @@ async function resolveViaGeoapify(text: string): Promise<AccommodationLocationRe
     const params = new URLSearchParams({
       text,
       type: "amenity",
-      filter: `circle:${BARCELONA_CENTER.lng},${BARCELONA_CENTER.lat},${LOCATION_BIAS_RADIUS_METERS}`,
-      bias: `proximity:${BARCELONA_CENTER.lng},${BARCELONA_CENTER.lat}`,
+      filter: `circle:${center.lng},${center.lat},${LOCATION_BIAS_RADIUS_METERS}`,
+      bias: `proximity:${center.lng},${center.lat}`,
       limit: "1",
       format: "json",
       apiKey,
@@ -141,14 +153,14 @@ async function resolveViaGeoapify(text: string): Promise<AccommodationLocationRe
       return { status: "unresolved", source: "geoapify" };
     }
     const point: GeoPoint = { lat: result.lat, lng: result.lon };
-    if (!isWithinBarcelonaBounds(point)) {
-      // Section 4: never trust a result outside Barcelona, regardless of Geoapify's own filter.
+    if (!rules.isWithinBounds(point)) {
+      // Section 4: never trust a result outside the city, regardless of Geoapify's own filter.
       return { status: "unresolved", source: "geoapify" };
     }
 
     const displayName = typeof result.name === "string" ? result.name : typeof result.address_line1 === "string" ? result.address_line1 : undefined;
     const formattedAddress = typeof result.formatted === "string" ? result.formatted : undefined;
-    if (!matchesInputCloselyEnough(text, displayName, formattedAddress)) {
+    if (!matchesInputCloselyEnough(text, displayName, formattedAddress, rules.genericWords)) {
       // Geoapify returned SOMETHING, but it doesn't genuinely resemble what the customer typed --
       // never trust a low-quality fuzzy fallback match. See this function's own doc comment.
       return { status: "unresolved", source: "geoapify" };
@@ -183,7 +195,8 @@ async function resolveViaGeoapify(text: string): Promise<AccommodationLocationRe
  * `{ status: "unresolved" }` -- never a thrown error (which would abort plan generation) and
  * never a guessed coordinate.
  */
-export async function resolveViaGooglePlaces(text: string): Promise<AccommodationLocationResult> {
+export async function resolveViaGooglePlaces(text: string, rules: CityAccommodationRules = BARCELONA_ACCOMMODATION_RULES): Promise<AccommodationLocationResult> {
+  const center = rules.center;
   const apiKey = process.env.GOOGLE_MAPS_API_KEY;
   if (!apiKey) return { status: "unresolved", source: "not_configured" };
 
@@ -192,7 +205,7 @@ export async function resolveViaGooglePlaces(text: string): Promise<Accommodatio
       input: text,
       inputtype: "textquery",
       fields: "name,formatted_address,geometry",
-      locationbias: `circle:${LOCATION_BIAS_RADIUS_METERS}@${BARCELONA_CENTER.lat},${BARCELONA_CENTER.lng}`,
+      locationbias: `circle:${LOCATION_BIAS_RADIUS_METERS}@${center.lat},${center.lng}`,
       key: apiKey,
     });
     const response = await fetch(`https://maps.googleapis.com/maps/api/place/findplacefromtext/json?${params.toString()}`);
@@ -209,8 +222,8 @@ export async function resolveViaGooglePlaces(text: string): Promise<Accommodatio
       return { status: "unresolved", source: "google_places" };
     }
     const point: GeoPoint = { lat: rawPoint.lat, lng: rawPoint.lng };
-    if (!isWithinBarcelonaBounds(point)) {
-      // Section 4: never trust a result outside Barcelona, regardless of Google's own confidence.
+    if (!rules.isWithinBounds(point)) {
+      // Section 4: never trust a result outside the city, regardless of Google's own confidence.
       return { status: "unresolved", source: "google_places" };
     }
 
@@ -240,17 +253,17 @@ export async function resolveViaGooglePlaces(text: string): Promise<Accommodatio
  *
  * Never throws; safe to call unconditionally whenever the customer entered accommodation text.
  */
-export async function resolveAccommodationLocation(text: string): Promise<AccommodationLocationResult> {
+export async function resolveAccommodationLocation(text: string, rules: CityAccommodationRules = BARCELONA_ACCOMMODATION_RULES): Promise<AccommodationLocationResult> {
   const trimmed = text.trim();
   if (!trimmed) return { status: "unresolved" };
 
-  const geoapifyResult = await resolveViaGeoapify(trimmed);
+  const geoapifyResult = await resolveViaGeoapify(trimmed, rules);
   if (geoapifyResult.status === "resolved" && geoapifyResult.latitude !== undefined && geoapifyResult.longitude !== undefined) {
-    const nearest = nearestBarcelonaCluster({ lat: geoapifyResult.latitude, lng: geoapifyResult.longitude });
+    const nearest = rules.nearestCluster({ lat: geoapifyResult.latitude, lng: geoapifyResult.longitude });
     return { ...geoapifyResult, plannerCluster: nearest.cluster };
   }
 
-  const keywordCluster = resolveBarcelonaAccommodationCluster(trimmed);
+  const keywordCluster = rules.keywordCluster(trimmed);
   if (keywordCluster) {
     return { status: "resolved", plannerCluster: keywordCluster, source: "keyword", confidence: "medium" };
   }

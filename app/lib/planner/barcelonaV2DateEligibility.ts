@@ -51,10 +51,22 @@ export function isPlaceClosedOnWeekday(hours: HoursInfo | undefined, weekday: We
   return !intervals || intervals.length === 0;
 }
 
+/** Multi-city foundation: placeId -> real hours for one city's main stops. Every function below defaults to Barcelona's. */
+export type HoursLookup = (placeId: string) => HoursInfo | undefined;
+
 function getHoursForPlaceId(placeId: string): HoursInfo | undefined {
   const resolved = resolvePlannerPlace(placeId, barcelonaGuide);
   if (!resolved) return undefined;
   return (resolved.place as { hours?: HoursInfo }).hours;
+}
+
+/** Builds an HoursLookup for any city's planner place data (main-stop types only, same resolution order as Barcelona's). */
+export function hoursLookupForPlaces(places: Parameters<typeof resolvePlannerPlace>[1]): HoursLookup {
+  return (placeId: string) => {
+    const resolved = resolvePlannerPlace(placeId, places);
+    if (!resolved) return undefined;
+    return (resolved.place as { hours?: HoursInfo }).hours;
+  };
 }
 
 /**
@@ -63,6 +75,10 @@ function getHoursForPlaceId(placeId: string): HoursInfo | undefined {
  * date before reaching here, but this stays defensive rather than throwing.
  */
 export function buildBarcelonaDateEligibility(arrivalDateIso: string): ((placeId: string, dayNumber: number) => boolean) | null {
+  return buildDateEligibility(arrivalDateIso, getHoursForPlaceId);
+}
+
+export function buildDateEligibility(arrivalDateIso: string, getHours: HoursLookup): ((placeId: string, dayNumber: number) => boolean) | null {
   if (!weekdayOfIsoDate(arrivalDateIso)) return null;
 
   return (placeId: string, dayNumber: number): boolean => {
@@ -71,7 +87,7 @@ export function buildBarcelonaDateEligibility(arrivalDateIso: string): ((placeId
     const weekday = weekdayOfIsoDate(dateForDay);
     if (!weekday) return true;
 
-    const hours = getHoursForPlaceId(placeId);
+    const hours = getHours(placeId);
     return !isPlaceClosedOnWeekday(hours, weekday);
   };
 }
@@ -92,7 +108,8 @@ export type DatedPlanClosureViolation = { placeId: string; dayNumber: number; da
  */
 export function findDatedPlanClosureViolations(
   days: { dayNumber: number; stops: { placeId: string }[] }[],
-  arrivalDateIso: string
+  arrivalDateIso: string,
+  getHours: HoursLookup = getHoursForPlaceId
 ): DatedPlanClosureViolation[] {
   const violations: DatedPlanClosureViolation[] = [];
   for (const day of days) {
@@ -100,7 +117,7 @@ export function findDatedPlanClosureViolations(
     const weekday = date ? weekdayOfIsoDate(date) : null;
     if (!date || !weekday) continue;
     for (const stop of day.stops) {
-      const hours = getHoursForPlaceId(stop.placeId);
+      const hours = getHours(stop.placeId);
       if (isPlaceClosedOnWeekday(hours, weekday)) {
         violations.push({ placeId: stop.placeId, dayNumber: day.dayNumber, date, weekday });
       }
@@ -126,12 +143,13 @@ export function findDatedPlanClosureViolations(
 export function repairDatedPlanClosureViolations<Day extends { dayNumber: number; stops: { placeId: string }[] }, Legs>(
   days: Day[],
   legsByDay: Legs[],
-  arrivalDateIso: string
+  arrivalDateIso: string,
+  getHours: HoursLookup = getHoursForPlaceId
 ): { days: Day[]; legsByDay: Legs[]; unrepaired: DatedPlanClosureViolation[] } {
   const isValidAtDate = (day: Day, date: string): boolean => {
     const weekday = weekdayOfIsoDate(date);
     if (!weekday) return true;
-    return day.stops.every((stop) => !isPlaceClosedOnWeekday(getHoursForPlaceId(stop.placeId), weekday));
+    return day.stops.every((stop) => !isPlaceClosedOnWeekday(getHours(stop.placeId), weekday));
   };
   const dateAtPosition = (index: number): string | null => addDaysToIsoDate(arrivalDateIso, index);
 
@@ -158,7 +176,8 @@ export function repairDatedPlanClosureViolations<Day extends { dayNumber: number
   const renumbered = resultDays.map((day, index) => ({ ...day, dayNumber: index + 1 }));
   const unrepaired = findDatedPlanClosureViolations(
     renumbered.map((d) => ({ dayNumber: d.dayNumber, stops: d.stops })),
-    arrivalDateIso
+    arrivalDateIso,
+    getHours
   );
   return { days: renumbered, legsByDay: resultLegs, unrepaired };
 }

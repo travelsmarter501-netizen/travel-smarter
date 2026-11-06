@@ -1,5 +1,6 @@
 import { classifyDayDensity } from "./barcelonaV2Density";
-import { buildBarcelonaPlannerRouteLegs, buildBarcelonaPlannerPlanRouteLegs } from "./barcelona-planner-route-legs";
+import { buildBarcelonaPlannerRouteLegs } from "./barcelona-planner-route-legs";
+import type { DayRouteLegsBuilder } from "./plannerNaturalClusterReclaim";
 import { optimizeDayRoute } from "./plannerRouteOptimizer";
 import type { RouteConfig } from "./plannerRouteOptimizer";
 import { dayCategorySignals, jaccardSimilarity, isProtectedFlagshipPlace } from "./plannerCategorySignal";
@@ -108,7 +109,8 @@ function enumerateCandidates(
   isPlaceEligibleForDay: ((placeId: string, dayNumber: number) => boolean) | undefined,
   accommodation: TripCompositionAccommodationInfo | null | undefined,
   flaggedPairIndex: number,
-  categorySets: Set<V2PlannerInterest>[]
+  categorySets: Set<V2PlannerInterest>[],
+  buildDayLegs: DayRouteLegsBuilder
 ): Candidate[] {
   const metaById = new Map(places.map((p) => [p.placeId, p]));
 
@@ -159,7 +161,7 @@ function enumerateCandidates(
   function reoptimize(dayNumber: number, stopIds: string[], scoreByPlaceId: Map<string, number>) {
     const rawDay = buildDay(dayNumber, stopIds, scoreByPlaceId);
     const optimized = optimizeDayRoute(rawDay, places, routeConfig);
-    const legs = buildBarcelonaPlannerRouteLegs(optimized);
+    const legs = buildDayLegs(optimized);
     const unresolvedCount = legs.filter((l) => l.sourceStatus === "unresolved").length;
     const density = classifyDayDensity(optimized.stops.length, optimized.totalVisitMinutes);
     return { day: optimized, unresolvedCount, density };
@@ -296,7 +298,8 @@ export function applyTripCompositionPass(
   routeConfig: RouteConfig,
   isPlaceEligibleForDay: ((placeId: string, dayNumber: number) => boolean) | undefined,
   accommodation: TripCompositionAccommodationInfo | null | undefined,
-  surpriseMe: boolean
+  surpriseMe: boolean,
+  buildDayLegs: DayRouteLegsBuilder = buildBarcelonaPlannerRouteLegs
 ): { plan: GeneratedPlannerPlan; legsByDay: PlannerRouteLeg[][] } {
   if (!ENABLE_TRIP_COMPOSITION_PASS || !surpriseMe || plan.days.length < 2) return { plan, legsByDay };
 
@@ -313,7 +316,7 @@ export function applyTripCompositionPass(
   if (flaggedPairIndex === -1) return { plan, legsByDay };
 
   const originalJaccard = jaccardSimilarity(categorySets[flaggedPairIndex], categorySets[flaggedPairIndex + 1]);
-  const candidates = enumerateCandidates(plan, legsByDay, places, routeConfig, isPlaceEligibleForDay, accommodation, flaggedPairIndex, categorySets);
+  const candidates = enumerateCandidates(plan, legsByDay, places, routeConfig, isPlaceEligibleForDay, accommodation, flaggedPairIndex, categorySets, buildDayLegs);
 
   const improving = candidates.filter((c) => c.resultingFlaggedPairJaccard < originalJaccard);
   if (improving.length === 0) return { plan, legsByDay }; // no clearly better option -- do not force one
@@ -335,5 +338,5 @@ export function applyTripCompositionPass(
   const newPlan: GeneratedPlannerPlan = { days: newDays };
   // The cap of "at most 1 composition adjustment per trip" is enforced structurally: exactly one
   // candidate is ever chosen and applied here, and this function runs at most once per request.
-  return { plan: newPlan, legsByDay: buildBarcelonaPlannerPlanRouteLegs(newPlan) };
+  return { plan: newPlan, legsByDay: newPlan.days.map((day) => buildDayLegs(day)) };
 }

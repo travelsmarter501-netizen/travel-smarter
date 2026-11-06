@@ -119,10 +119,13 @@ function buildDay(dayNumber: number, stopIds: string[], scoreByPlaceId: Map<stri
   return { dayNumber, stops, totalVisitMinutes: computeVisitMinutes(stopIds, metaById), clusters: computeClusters(stopIds, metaById) };
 }
 
-function reoptimizeAndScore(dayNumber: number, stopIds: string[], scoreByPlaceId: Map<string, number>, places: PlannerPlaceMetadata[], metaById: Map<string, PlannerPlaceMetadata>, routeConfig: RouteConfig) {
+/** Multi-city foundation: builds one day's route legs for the CITY being planned. Defaults to Barcelona's checked route table (the only behaviour before multi-city support). */
+export type DayRouteLegsBuilder = (day: PlannerDay) => PlannerRouteLeg[];
+
+function reoptimizeAndScore(dayNumber: number, stopIds: string[], scoreByPlaceId: Map<string, number>, places: PlannerPlaceMetadata[], metaById: Map<string, PlannerPlaceMetadata>, routeConfig: RouteConfig, buildDayLegs: DayRouteLegsBuilder) {
   const rawDay = buildDay(dayNumber, stopIds, scoreByPlaceId, metaById);
   const optimized = optimizeDayRoute(rawDay, places, routeConfig);
-  const legs = buildBarcelonaPlannerRouteLegs(optimized);
+  const legs = buildDayLegs(optimized);
   return { day: optimized, metrics: metricsForDay(optimized, legs) };
 }
 
@@ -157,7 +160,8 @@ export function enumerateReclaimCandidates(
   routeConfig: RouteConfig,
   clusterCompatibilityMap: ClusterCompatibilityMap,
   isPlaceEligibleForDay: ((placeId: string, dayNumber: number) => boolean) | undefined,
-  accommodation: CrossDayAccommodationInfo | null | undefined
+  accommodation: CrossDayAccommodationInfo | null | undefined,
+  buildDayLegs: DayRouteLegsBuilder = buildBarcelonaPlannerRouteLegs
 ): ReclaimCandidate[] {
   const metaById = new Map(places.map((p) => [p.placeId, p]));
   const scoreByPlaceId = new Map<string, number>();
@@ -219,8 +223,8 @@ export function enumerateReclaimCandidates(
         if (!dayIsStructurallyValid(newDonorIds) || !dayIsStructurallyValid(newReceiverIds)) continue;
         if (violatesAccommodationSafety(donorIndex, receiverIndex, newDonorIds, newReceiverIds)) continue;
 
-        const resDonor = reoptimizeAndScore(donorDay.dayNumber, newDonorIds, scoreByPlaceId, places, metaById, routeConfig);
-        const resReceiver = reoptimizeAndScore(receiverDay.dayNumber, newReceiverIds, scoreByPlaceId, places, metaById, routeConfig);
+        const resDonor = reoptimizeAndScore(donorDay.dayNumber, newDonorIds, scoreByPlaceId, places, metaById, routeConfig, buildDayLegs);
+        const resReceiver = reoptimizeAndScore(receiverDay.dayNumber, newReceiverIds, scoreByPlaceId, places, metaById, routeConfig, buildDayLegs);
         const afterDonor = resDonor.metrics;
         const afterReceiver = resReceiver.metrics;
 
@@ -316,9 +320,10 @@ export function computeNaturalClusterReclaim(
   routeConfig: RouteConfig,
   clusterCompatibilityMap: ClusterCompatibilityMap,
   isPlaceEligibleForDay: ((placeId: string, dayNumber: number) => boolean) | undefined,
-  accommodation: CrossDayAccommodationInfo | null | undefined
+  accommodation: CrossDayAccommodationInfo | null | undefined,
+  buildDayLegs: DayRouteLegsBuilder = buildBarcelonaPlannerRouteLegs
 ): { plan: GeneratedPlannerPlan; legsByDay: PlannerRouteLeg[][]; applied: ReclaimCandidate[]; allCandidates: ReclaimCandidate[] } {
-  const allCandidates = enumerateReclaimCandidates(plan, legsByDay, places, routeConfig, clusterCompatibilityMap, isPlaceEligibleForDay, accommodation);
+  const allCandidates = enumerateReclaimCandidates(plan, legsByDay, places, routeConfig, clusterCompatibilityMap, isPlaceEligibleForDay, accommodation, buildDayLegs);
   const applied = selectReclaimMoves(allCandidates);
   if (applied.length === 0) return { plan, legsByDay, applied, allCandidates };
 
@@ -328,7 +333,7 @@ export function computeNaturalClusterReclaim(
     return touched.donorDayIndex === i ? touched.afterDonorDay : touched.afterReceiverDay;
   });
   const newPlan: GeneratedPlannerPlan = { days: newDays };
-  const newLegsByDay = newDays.map((day) => buildBarcelonaPlannerRouteLegs(day));
+  const newLegsByDay = newDays.map((day) => buildDayLegs(day));
   return { plan: newPlan, legsByDay: newLegsByDay, applied, allCandidates };
 }
 
@@ -345,9 +350,10 @@ export function applyNaturalClusterReclaim(
   routeConfig: RouteConfig,
   clusterCompatibilityMap: ClusterCompatibilityMap,
   isPlaceEligibleForDay: ((placeId: string, dayNumber: number) => boolean) | undefined,
-  accommodation: CrossDayAccommodationInfo | null | undefined
+  accommodation: CrossDayAccommodationInfo | null | undefined,
+  buildDayLegs: DayRouteLegsBuilder = buildBarcelonaPlannerRouteLegs
 ): { plan: GeneratedPlannerPlan; legsByDay: PlannerRouteLeg[][] } {
   if (!ENABLE_NATURAL_CLUSTER_RECLAIM) return { plan, legsByDay };
-  const result = computeNaturalClusterReclaim(plan, legsByDay, places, routeConfig, clusterCompatibilityMap, isPlaceEligibleForDay, accommodation);
+  const result = computeNaturalClusterReclaim(plan, legsByDay, places, routeConfig, clusterCompatibilityMap, isPlaceEligibleForDay, accommodation, buildDayLegs);
   return { plan: result.plan, legsByDay: result.legsByDay };
 }

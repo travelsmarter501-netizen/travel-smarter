@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { plannerDestinationName } from "../../lib/planner/plannerDestinations";
 import { useRouter } from "next/navigation";
 import Button from "../Button";
 import { useLanguage } from "../../lib/language";
@@ -21,7 +22,6 @@ export type PlanCardData = {
   editHref?: string;
 };
 
-const DESTINATION_NAMES = { ar: { barcelona: "برشلونة" }, en: { barcelona: "Barcelona" } } as const;
 
 const copy = {
   ar: {
@@ -74,7 +74,7 @@ export default function PlanCard({ plan }: { plan: PlanCardData }) {
   const [gone, setGone] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const destination = (DESTINATION_NAMES[lang] as Record<string, string>)[plan.destinationId] ?? plan.destinationId;
+  const destination = plannerDestinationName(plan.destinationId, lang);
   const days = plan.days === null ? null : plan.days === 1 ? `1 ${c.dayOne}` : fillCopy(c.daysCount, { n: plan.days });
   const trip = personalizedTripDetails(plan.details, lang);
   const interests = plan.interestsLine ?? trip.interests;

@@ -1,6 +1,7 @@
 import { V2_PLANNER_INTERESTS } from "./v2PlannerTypes";
 import type { V2PlannerInterest } from "./v2PlannerTypes";
 import type { V2Plan } from "./barcelonaV2Resolve";
+import { isKnownPlannerDestinationId } from "./plannerDestinations";
 
 /**
  * Smart Planner V2 Phase 5 -- saved-plan persistence, mirroring the shape/conventions of
@@ -27,7 +28,8 @@ import type { V2Plan } from "./barcelonaV2Resolve";
 
 export type SmartPlannerV2SavedPreferences = {
   plannerVersion: "v2";
-  destinationId: "barcelona";
+  /** Multi-city foundation: the plan's city. Every row saved before multi-city support is "barcelona". */
+  destinationId: string;
   dateMode: "flexible" | "specific";
   durationDays?: number;
   arrivalDate?: string;
@@ -58,13 +60,19 @@ export type SmartPlannerV2SavedPlanRow = {
   id: string;
   user_id: string;
   product_slug: "barcelona-smart-planner-v2";
-  destination_slug: "barcelona";
+  destination_slug: string;
   preferences_json: SmartPlannerV2SavedPreferences;
   generated_plan_json: SmartPlannerV2GeneratedPlanJson;
   created_at: string;
   updated_at: string;
 };
 
+/**
+ * The V2 planner's row tag for EVERY city (multi-city foundation). Kept as-is on purpose: the database's 30-plan cap,
+ * edit-in-place and delete rules (begin_owner_plan_generation, replace_owned_plan_content, delete_saved_plan) all key on
+ * this value, so one shared tag means one shared 30-plan limit across cities and no database change. The city itself is
+ * `destination_slug` (and `preferences_json.destinationId` / `generated_plan_json.plan.destination`).
+ */
 export const V2_SAVED_PLAN_PRODUCT_SLUG = "barcelona-smart-planner-v2" as const;
 
 /** Sorts `interests` and drops the inapplicable date-mode pair of fields (never sets them to
@@ -76,7 +84,7 @@ export function normalizeSmartPlannerV2Preferences(preferences: SmartPlannerV2Sa
   const trimmedAccommodationText = preferences.accommodation.text?.trim();
   const base = {
     plannerVersion: "v2" as const,
-    destinationId: "barcelona" as const,
+    destinationId: preferences.destinationId || "barcelona",
     dateMode: preferences.dateMode,
     interests: [...preferences.interests].sort(),
     surpriseMe: !!preferences.surpriseMe,
@@ -105,7 +113,7 @@ export function isValidSmartPlannerV2SavedPlanRow(row: unknown): row is SmartPla
   const candidate = row as Record<string, unknown>;
 
   if (candidate.product_slug !== V2_SAVED_PLAN_PRODUCT_SLUG) return false;
-  if (candidate.destination_slug !== "barcelona") return false;
+  if (typeof candidate.destination_slug !== "string" || !isKnownPlannerDestinationId(candidate.destination_slug)) return false;
   if (typeof candidate.id !== "string" || typeof candidate.created_at !== "string") return false;
 
   const preferences = candidate.preferences_json;
@@ -125,7 +133,7 @@ export function isValidSmartPlannerV2SavedPlanRow(row: unknown): row is SmartPla
   const plan = (generatedPlan as Record<string, unknown>).plan;
   if (!plan || typeof plan !== "object") return false;
   const planRecord = plan as Record<string, unknown>;
-  if (planRecord.destination !== "barcelona" || !Array.isArray(planRecord.days)) return false;
+  if (planRecord.destination !== candidate.destination_slug || !Array.isArray(planRecord.days)) return false;
 
   return true;
 }

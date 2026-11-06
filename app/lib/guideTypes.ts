@@ -140,7 +140,8 @@ export type FoodPlace = ImageCredit &
     area: string;
     /** Real, verified street address — omit rather than invent one when unknown. */
     address?: string;
-    priceLevel: "$" | "$$" | "$$$";
+    /** Optional (multi-city foundation): omitted when no verified price range exists -- never guessed. Every Barcelona place has one. */
+    priceLevel?: "$" | "$$" | "$$$";
     why: string;
     mapsUrl: string;
     appleMapsUrl: string;

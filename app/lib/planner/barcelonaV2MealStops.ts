@@ -4,7 +4,9 @@ import { resolvePlace, summarizeResolvedPlace, type ResolvedPlaceSummary } from 
 import { isPlaceClosedOnWeekday } from "./barcelonaV2DateEligibility";
 import { isLikelyOpenForMealType, type MealType } from "./barcelonaV2Timeline";
 import { BARCELONA_CLUSTER_COMPATIBILITY } from "./barcelona-planner-day-builder";
-import type { FoodPlace } from "../guideTypes";
+import type { FoodCategory, FoodPlace } from "../guideTypes";
+import type { ClusterCompatibilityMap } from "./plannerDayBuilder";
+import type { CityMealStopRules } from "./cityPlannerModule";
 import type { HoursInfo, Weekday } from "../hours";
 import type { V2PlannerInterest } from "./v2PlannerTypes";
 
@@ -91,10 +93,6 @@ export type V2MealStop = ResolvedPlaceSummary & {
   hours?: HoursInfo;
 };
 
-const BREAKFAST_CATEGORY_PREFERENCE = ["breakfast", "cafes"];
-const LUNCH_CATEGORY_PREFERENCE = ["local", "tapas", "casual", "restaurants"];
-const EVENING_TAPAS_CATEGORY = "tapas";
-const EVENING_DINNER_CATEGORY_PREFERENCE = ["local", "restaurants", "casual", "view"];
 
 /**
  * Real Guide `area` -> planner cluster id, for every UNAMBIGUOUS area tag (one tag, one real
@@ -140,10 +138,38 @@ const FOOD_PLACE_CLUSTER_OVERRIDE: Record<string, string | null> = {
   "oriol-balaguer": null, // Sant Gervasi -- no planner cluster covers this district
 };
 
-function clusterForFoodPlace(place: FoodPlace): string | null {
+function barcelonaClusterForFoodPlace(place: FoodPlace): string | null {
   if (place.id in FOOD_PLACE_CLUSTER_OVERRIDE) return FOOD_PLACE_CLUSTER_OVERRIDE[place.id];
   return AREA_TO_CLUSTER[place.area] ?? null;
 }
+
+/** Barcelona's meal-stop rules (multi-city foundation: the values that used to be file-level constants here, unchanged). */
+export const BARCELONA_MEAL_STOP_RULES: CityMealStopRules = {
+  clusterForFoodPlace: barcelonaClusterForFoodPlace,
+  breakfastCategories: ["breakfast", "cafes"],
+  lunchCategories: ["local", "tapas", "casual", "restaurants"],
+  eveningSpecialCategory: "tapas",
+  dinnerCategories: ["local", "restaurants", "casual", "view"],
+};
+
+/**
+ * Multi-city foundation: everything the meal-stop logic below reads about one city. Barcelona's context is built from
+ * barcelonaGuide + BARCELONA_MEAL_STOP_RULES + BARCELONA_CLUSTER_COMPATIBILITY (exactly the data this file used before);
+ * another city passes its own (see cityPlannerModule.ts).
+ */
+export type MealStopCityContext = {
+  foodPlaces: readonly FoodPlace[];
+  foodCategories: readonly FoodCategory[];
+  clusterCompatibility: ClusterCompatibilityMap;
+  rules: CityMealStopRules;
+};
+
+const BARCELONA_MEAL_STOP_CONTEXT: MealStopCityContext = {
+  foodPlaces: barcelonaGuide.foodPlaces,
+  foodCategories: barcelonaGuide.foodCategories,
+  clusterCompatibility: BARCELONA_CLUSTER_COMPATIBILITY,
+  rules: BARCELONA_MEAL_STOP_RULES,
+};
 
 /**
  * Timeline Final Customer-Experience Polish -- real-world geographic fit between two clusters,
@@ -152,9 +178,9 @@ function clusterForFoodPlace(place: FoodPlace): string | null {
  * already uses to decide which clusters may share a day at all.
  */
 const CLUSTER_FIT_SCORE: Record<"strong" | "medium" | "weak", number> = { strong: 3, medium: 2, weak: 1 };
-function clusterFit(a: string, b: string): number {
+function clusterFit(city: MealStopCityContext, a: string, b: string): number {
   if (a === b) return 4;
-  const level = BARCELONA_CLUSTER_COMPATIBILITY[a]?.[b] ?? BARCELONA_CLUSTER_COMPATIBILITY[b]?.[a];
+  const level = city.clusterCompatibility[a]?.[b] ?? city.clusterCompatibility[b]?.[a];
   return level ? CLUSTER_FIT_SCORE[level] : 0;
 }
 
@@ -205,6 +231,7 @@ function foodScore(place: FoodPlace, usedFoodCategoryIds: ReadonlySet<string>): 
  * one real neighboring stop).
  */
 function pickBestForSlot(
+  city: MealStopCityContext,
   candidateCategoryIds: readonly string[],
   beforeCluster: string | null,
   afterCluster: string | null,
@@ -217,14 +244,14 @@ function pickBestForSlot(
   const primaryAnchor = beforeCluster ?? afterCluster!;
   const secondaryAnchor = beforeCluster !== null ? afterCluster : null;
 
-  const eligible = barcelonaGuide.foodPlaces.filter((place) => {
+  const eligible = city.foodPlaces.filter((place) => {
     if (usedPlaceIds.has(place.id)) return false;
     if (!candidateCategoryIds.includes(place.categoryId)) return false;
-    const cluster = clusterForFoodPlace(place);
+    const cluster = city.rules.clusterForFoodPlace(place);
     if (!cluster) return false;
     if (preferSameClusterOnly) {
       if (cluster !== beforeCluster && cluster !== afterCluster) return false;
-    } else if (clusterFit(cluster, primaryAnchor) === 0) {
+    } else if (clusterFit(city, cluster, primaryAnchor) === 0) {
       return false; // not even weakly reachable from where the customer currently is
     }
     if (!isEligibleNow(place.hours, weekday)) return false;
@@ -238,8 +265,8 @@ function pickBestForSlot(
   if (eligible.length === 0) return null;
 
   const scored = eligible.map((place) => {
-    const cluster = clusterForFoodPlace(place)!;
-    const geoScore = clusterFit(cluster, primaryAnchor) + clusterFit(cluster, secondaryAnchor ?? primaryAnchor);
+    const cluster = city.rules.clusterForFoodPlace(place)!;
+    const geoScore = clusterFit(city, cluster, primaryAnchor) + clusterFit(city, cluster, secondaryAnchor ?? primaryAnchor);
     return { place, geoScore, score: foodScore(place, usedFoodCategoryIds) };
   });
   scored.sort((a, b) => b.geoScore - a.geoScore || b.score - a.score || a.place.id.localeCompare(b.place.id));
@@ -249,21 +276,21 @@ function pickBestForSlot(
   // but the winning candidate sits in neither -- a genuine detour. Signal "try same-cluster-only"
   // to the caller instead of silently accepting it. Never fires for breakfast/evening (one side
   // is null there, so they can never be "equal").
-  if (!preferSameClusterOnly && beforeCluster !== null && beforeCluster === afterCluster && clusterForFoodPlace(winner.place) !== beforeCluster) {
-    return pickBestForSlot(candidateCategoryIds, beforeCluster, afterCluster, usedPlaceIds, usedFoodCategoryIds, weekday, mealType, true);
+  if (!preferSameClusterOnly && beforeCluster !== null && beforeCluster === afterCluster && city.rules.clusterForFoodPlace(winner.place) !== beforeCluster) {
+    return pickBestForSlot(city, candidateCategoryIds, beforeCluster, afterCluster, usedPlaceIds, usedFoodCategoryIds, weekday, mealType, true);
   }
   return winner.place;
 }
 
-function categoryIconAndLabel(categoryId: string): { icon: string; label: string } {
-  const category = barcelonaGuide.foodCategories.find((c) => c.id === categoryId);
+function categoryIconAndLabel(city: MealStopCityContext, categoryId: string): { icon: string; label: string } {
+  const category = city.foodCategories.find((c) => c.id === categoryId);
   return category ? { icon: category.icon, label: category.label } : { icon: "🍽️", label: categoryId };
 }
 
-function toMealStop(place: FoodPlace, mealType: V2MealStop["mealType"], afterStopIndex: number, reason: string): V2MealStop | null {
-  const resolved = resolvePlace(place.id, "food", barcelonaGuide);
+function toMealStop(city: MealStopCityContext, place: FoodPlace, mealType: V2MealStop["mealType"], afterStopIndex: number, reason: string): V2MealStop | null {
+  const resolved = resolvePlace(place.id, "food", { attractions: [], experiences: [], areas: [], foodPlaces: [...city.foodPlaces] });
   if (!resolved) return null;
-  const { icon, label } = categoryIconAndLabel(place.categoryId);
+  const { icon, label } = categoryIconAndLabel(city, place.categoryId);
   return {
     ...summarizeResolvedPlace(resolved),
     kind: "meal",
@@ -311,6 +338,20 @@ export function buildBarcelonaMealStopsForDay(
   usedFoodCategoryIds: Set<string>,
   surpriseMe = false
 ): V2MealStop[] {
+  return buildMealStopsForDay(BARCELONA_MEAL_STOP_CONTEXT, stopClusters, weekday, v2Interests, usedPlaceIds, usedFoodCategoryIds, surpriseMe);
+}
+
+/** The city-independent meal-stop builder (see buildBarcelonaMealStopsForDay above for the full behaviour description). */
+export function buildMealStopsForDay(
+  city: MealStopCityContext,
+  stopClusters: string[],
+  weekday: Weekday | null,
+  v2Interests: V2PlannerInterest[],
+  usedPlaceIds: Set<string>,
+  usedFoodCategoryIds: Set<string>,
+  surpriseMe = false
+): V2MealStop[] {
+  const rules = city.rules;
   const mainStopCount = stopClusters.length;
   if ((!v2Interests.includes("food") && !surpriseMe) || mainStopCount === 0) return [];
 
@@ -318,9 +359,9 @@ export function buildBarcelonaMealStopsForDay(
 
   // Slot 0: BREAKFAST -- before the day's first stop, judged purely against that first stop's
   // own cluster (no "previous" stop exists yet).
-  const breakfastPlace = pickBestForSlot(BREAKFAST_CATEGORY_PREFERENCE, null, stopClusters[0], usedPlaceIds, usedFoodCategoryIds, weekday, "breakfast", false);
+  const breakfastPlace = pickBestForSlot(city, rules.breakfastCategories, null, stopClusters[0], usedPlaceIds, usedFoodCategoryIds, weekday, "breakfast", false);
   if (breakfastPlace) {
-    const stop = toMealStop(breakfastPlace, "breakfast", -1, REASON_BY_MEAL_TYPE.breakfast);
+    const stop = toMealStop(city, breakfastPlace, "breakfast", -1, REASON_BY_MEAL_TYPE.breakfast);
     if (stop) {
       mealStops.push(stop);
       usedPlaceIds.add(breakfastPlace.id);
@@ -335,9 +376,9 @@ export function buildBarcelonaMealStopsForDay(
     const lunchAfterIndex = Math.floor((mainStopCount - 1) / 2);
     const lunchPrevCluster = stopClusters[lunchAfterIndex];
     const lunchNextCluster = stopClusters[lunchAfterIndex + 1] ?? null;
-    const lunchPlace = pickBestForSlot(LUNCH_CATEGORY_PREFERENCE, lunchPrevCluster, lunchNextCluster, usedPlaceIds, usedFoodCategoryIds, weekday, "lunch", false);
+    const lunchPlace = pickBestForSlot(city, rules.lunchCategories, lunchPrevCluster, lunchNextCluster, usedPlaceIds, usedFoodCategoryIds, weekday, "lunch", false);
     if (lunchPlace) {
-      const stop = toMealStop(lunchPlace, "lunch", lunchAfterIndex, REASON_BY_MEAL_TYPE.lunch);
+      const stop = toMealStop(city, lunchPlace, "lunch", lunchAfterIndex, REASON_BY_MEAL_TYPE.lunch);
       if (stop) {
         mealStops.push(stop);
         usedPlaceIds.add(lunchPlace.id);
@@ -350,11 +391,12 @@ export function buildBarcelonaMealStopsForDay(
   // positioned after the day's last stop, so there is no "next" stop to consider (nextCluster is
   // null, meaning pickBestForSlot judges it purely against the previous/last stop).
   const eveningPrevCluster = stopClusters[mainStopCount - 1];
-  const tapasPlace = pickBestForSlot([EVENING_TAPAS_CATEGORY], eveningPrevCluster, null, usedPlaceIds, usedFoodCategoryIds, weekday, "tapas", false);
-  const eveningPlace = tapasPlace ?? pickBestForSlot(EVENING_DINNER_CATEGORY_PREFERENCE, eveningPrevCluster, null, usedPlaceIds, usedFoodCategoryIds, weekday, "dinner", false);
+  const special = rules.eveningSpecialCategory;
+  const tapasPlace = special ? pickBestForSlot(city, [special], eveningPrevCluster, null, usedPlaceIds, usedFoodCategoryIds, weekday, "tapas", false) : null;
+  const eveningPlace = tapasPlace ?? pickBestForSlot(city, rules.dinnerCategories, eveningPrevCluster, null, usedPlaceIds, usedFoodCategoryIds, weekday, "dinner", false);
   if (eveningPlace) {
-    const mealType: V2MealStop["mealType"] = eveningPlace.categoryId === EVENING_TAPAS_CATEGORY ? "tapas" : "dinner";
-    const stop = toMealStop(eveningPlace, mealType, mainStopCount - 1, REASON_BY_MEAL_TYPE[mealType]);
+    const mealType: V2MealStop["mealType"] = special !== null && eveningPlace.categoryId === special ? "tapas" : "dinner";
+    const stop = toMealStop(city, eveningPlace, mealType, mainStopCount - 1, REASON_BY_MEAL_TYPE[mealType]);
     if (stop) {
       mealStops.push(stop);
       usedPlaceIds.add(eveningPlace.id);

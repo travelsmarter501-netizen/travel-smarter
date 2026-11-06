@@ -32,7 +32,7 @@ export default function FoodCategoryView({
 
   const sorted = [...filtered].sort((a, b) => {
     if (sort === "rating") return (b.rating ?? 0) - (a.rating ?? 0);
-    if (sort === "budget") return a.priceLevel.length - b.priceLevel.length;
+    if (sort === "budget") return (a.priceLevel ?? "$$").length - (b.priceLevel ?? "$$").length;
     return 0;
   });
 

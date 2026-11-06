@@ -54,6 +54,7 @@ export default function SmartPlannerTransportConnector({
           <span className="flex items-center gap-1 font-semibold text-slate-500">
             <span>{PLANNER_TRANSPORT_MODE_META[selectedMode].icon}</span>
             <span>{formatPlannerTransportOptionLabel(option)}</span>
+            {leg.sourceStatus === "estimated" && <span className="font-medium text-slate-400">· تقدير تقريبي</span>}
           </span>
         ) : (
           <span className="font-semibold text-slate-400">التنقل بين هالمكانين غير محسوب بدقة</span>

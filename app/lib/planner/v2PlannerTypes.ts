@@ -110,8 +110,8 @@ export function toggleV2DisplayGroup(selected: readonly V2PlannerInterest[], gro
 /** Customer-facing label for a set of internal interests, using the new 6-group names -- a
  * combined group (natureViews+beachRelax, footballExperiences+nightlife) is named ONCE, never
  * as two separate old labels, regardless of whether one or both of its keys are present. */
-export function v2DisplayInterestsLabel(interests: readonly V2PlannerInterest[]): string {
+export function v2DisplayInterestsLabel(interests: readonly V2PlannerInterest[], labelOverride?: (groupId: string) => string | undefined): string {
   return V2_INTEREST_DISPLAY_GROUPS.filter((group) => isV2DisplayGroupActive(interests, group))
-    .map((group) => group.label)
+    .map((group) => labelOverride?.(group.id) ?? group.label)
     .join(" + ");
 }

@@ -1,14 +1,12 @@
 import "server-only";
 import { resolvePlace, resolvePlannerPlace, summarizeResolvedPlace, type ResolvedPlace, type ResolvedPlaceSummary } from "../readyPlan";
-import { barcelonaGuide } from "../barcelona-guide";
-import { getBarcelonaV2PlannerMetadataById } from "./barcelonaV2Metadata";
-import { getBarcelonaPlannerOperationalWarnings, type PlannerOperationalWarning } from "./barcelonaPlannerOperationalWarnings";
+import type { PlannerOperationalWarning } from "./barcelonaPlannerOperationalWarnings";
 import { addDaysToIsoDate, weekdayOfIsoDate } from "./dateOnly";
-import { buildBarcelonaSupplementaryForDay, type V2FoodSuggestion, type V2ShoppingSuggestion, type V2NightlifeSuggestion } from "./barcelonaV2Supplementary";
-import { buildBarcelonaMealStopsForDay, type V2MealStop } from "./barcelonaV2MealStops";
+import { buildSupplementaryForDay, type V2FoodSuggestion, type V2ShoppingSuggestion, type V2NightlifeSuggestion } from "./barcelonaV2Supplementary";
+import { buildMealStopsForDay, type MealStopCityContext, type V2MealStop } from "./barcelonaV2MealStops";
+import type { CityPlannerModule } from "./cityPlannerModule";
 import { classifyDayDensity, buildDensitySummary, type PlannerDayDensity } from "./barcelonaV2Density";
 import { buildBarcelonaDayTimeline, type DayTimeline, type TimelineStopInput, type TimelineMealInput } from "./barcelonaV2Timeline";
-import { getBarcelonaRouteLeg } from "./barcelona-planner-route-legs";
 import { buildUnifiedTimelineEntries, type UnifiedTimelineEntry } from "./v2TimelineItems";
 import type { GeneratedPlannerPlan } from "./plannerDayBuilder";
 import type { PlannerRouteLeg } from "./plannerTransportTypes";
@@ -104,7 +102,8 @@ export type V2Day = {
 };
 
 export type V2Plan = {
-  destination: "barcelona";
+  /** Destination id (multi-city foundation). Every plan generated or saved before multi-city support is "barcelona". */
+  destination: string;
   daysRequested: number;
   daysGenerated: number;
   /** Arabic warning text when daysGenerated < daysRequested; null otherwise. Never invented --
@@ -170,8 +169,8 @@ function getHoursForResolved(resolved: ResolvedPlace | undefined): HoursInfo | u
   return resolved ? (resolved.place as { hours?: HoursInfo }).hours : undefined;
 }
 
-function resolveStop(placeId: string, score: number, placeDetails: Record<string, ResolvedPlace>, weekday?: Weekday | null): V2ResolvedStop {
-  const resolved = resolvePlannerPlace(placeId, barcelonaGuide);
+function resolveStop(city: CityPlannerModule, placeId: string, score: number, placeDetails: Record<string, ResolvedPlace>, weekday?: Weekday | null): V2ResolvedStop {
+  const resolved = resolvePlannerPlace(placeId, city.places);
   if (resolved) {
     placeDetails[placeId] = resolved;
   } else if (process.env.NODE_ENV !== "production") {
@@ -182,11 +181,11 @@ function resolveStop(placeId: string, score: number, placeDetails: Record<string
     console.error(`Smart Planner V2: main stop "${placeId}" did not resolve against any known guide collection (attraction/beach/shopping/experience).`);
   }
   const summary: ResolvedPlaceSummary = resolved ? summarizeResolvedPlace(resolved) : { id: placeId, name: placeId, categoryLabel: "" };
-  const metadata = getBarcelonaV2PlannerMetadataById(placeId);
+  const metadata = city.metadataById(placeId);
   // Round 3A Exact-Date Hours Safety Fix: threads the day's real weekday (when known) through so
   // a weekday-conditional warning (e.g. Cathedral's Sunday note) is suppressed on a day that's
   // provably NOT that weekday -- see getBarcelonaPlannerOperationalWarnings's own doc comment.
-  const warnings = getBarcelonaPlannerOperationalWarnings(placeId, weekday) ?? [];
+  const warnings = city.operationalWarnings(placeId, weekday) ?? [];
 
   return {
     ...summary,
@@ -205,9 +204,9 @@ function resolveStop(placeId: string, score: number, placeDetails: Record<string
 // still can't be resolved is dropped rather than shown with invented/blank data.
 const NEARBY_RESOLUTION_ORDER: ReadyPlanPlaceType[] = ["attraction", "food", "experience", "nightlife"];
 
-function resolveOptionalNearby(suggestion: PlannerOptionalSuggestion, placeDetails: Record<string, ResolvedPlace>): V2ResolvedNearby | null {
+function resolveOptionalNearby(city: CityPlannerModule, suggestion: PlannerOptionalSuggestion, placeDetails: Record<string, ResolvedPlace>): V2ResolvedNearby | null {
   for (const placeType of NEARBY_RESOLUTION_ORDER) {
-    const resolved = resolvePlace(suggestion.placeId, placeType, barcelonaGuide);
+    const resolved = resolvePlace(suggestion.placeId, placeType, city.places);
     if (resolved) {
       placeDetails[suggestion.placeId] = resolved;
       return { ...summarizeResolvedPlace(resolved), type: suggestion.type, reason: suggestion.reason };
@@ -229,7 +228,7 @@ function resolveOptionalNearby(suggestion: PlannerOptionalSuggestion, placeDetai
  * main-stop legs (`getBarcelonaRouteLeg`), skipping only the place-to-place pairs `day.legs`
  * already covers.
  */
-function buildMealAdjacentLegs(day: V2Day): Record<string, PlannerRouteLeg> {
+function buildMealAdjacentLegs(city: CityPlannerModule, day: V2Day): Record<string, PlannerRouteLeg> {
   const entries = buildUnifiedTimelineEntries(day);
   const idOf = (entry: UnifiedTimelineEntry): string | null => (entry.kind === "place" ? entry.place.id : entry.kind === "meal" ? entry.meal.id : null);
 
@@ -242,12 +241,13 @@ function buildMealAdjacentLegs(day: V2Day): Record<string, PlannerRouteLeg> {
     const fromId = idOf(entry);
     const toId = idOf(next);
     if (!fromId || !toId) continue;
-    legs[`${fromId}::${toId}`] = getBarcelonaRouteLeg(fromId, toId);
+    legs[`${fromId}::${toId}`] = city.routeLeg(fromId, toId);
   }
   return legs;
 }
 
-export function resolveBarcelonaV2Plan(
+export function resolveV2Plan(
+  city: CityPlannerModule,
   daysRequested: number,
   plan: GeneratedPlannerPlan,
   legsByDay: PlannerRouteLeg[][],
@@ -275,6 +275,13 @@ export function resolveBarcelonaV2Plan(
   // own doc comment.
   const usedFoodCategoryIds = new Set<string>();
 
+  const mealStopCity: MealStopCityContext = {
+    foodPlaces: city.places.foodPlaces,
+    foodCategories: city.places.foodCategories,
+    clusterCompatibility: city.destinationConfig.dayBuilderConfig.clusterCompatibility,
+    rules: city.mealStops,
+  };
+
   const days: V2Day[] = plan.days.map((day, index) => {
     const presentation = presentedPlan.byDay[index];
     const dateForDay = arrivalDate ? addDaysToIsoDate(arrivalDate, day.dayNumber - 1) : null;
@@ -297,10 +304,10 @@ export function resolveBarcelonaV2Plan(
     // aggregated/de-duplicated cluster set) -- lets buildBarcelonaMealStopsForDay judge each meal
     // slot against the specific stops immediately before/after it, not "any cluster this day
     // happens to touch somewhere" (see that function's own doc comment for the detour it fixes).
-    const stopClusters = day.stops.map((stop) => getBarcelonaV2PlannerMetadataById(stop.placeId)?.cluster ?? "");
-    const mealStops = buildBarcelonaMealStopsForDay(stopClusters, weekday ?? null, v2Interests, usedPlaceIds, usedFoodCategoryIds, surpriseMe);
+    const stopClusters = day.stops.map((stop) => city.metadataById(stop.placeId)?.cluster ?? "");
+    const mealStops = buildMealStopsForDay(mealStopCity, stopClusters, weekday ?? null, v2Interests, usedPlaceIds, usedFoodCategoryIds, surpriseMe);
     for (const meal of mealStops) {
-      const resolved = resolvePlace(meal.id, "food", barcelonaGuide);
+      const resolved = resolvePlace(meal.id, "food", city.places);
       if (resolved) placeDetails[meal.id] = resolved;
     }
 
@@ -310,7 +317,7 @@ export function resolveBarcelonaV2Plan(
     // (once as a real scheduled meal card, once again as a "قريب منك" chip).
     const optionalNearby = (presentation?.optionalNearby ?? [])
       .filter((suggestion) => !usedPlaceIds.has(suggestion.placeId))
-      .map((suggestion) => resolveOptionalNearby(suggestion, placeDetails))
+      .map((suggestion) => resolveOptionalNearby(city, suggestion, placeDetails))
       .filter((entry): entry is V2ResolvedNearby => entry !== null);
     for (const nearby of optionalNearby) usedPlaceIds.add(nearby.id);
 
@@ -320,21 +327,21 @@ export function resolveBarcelonaV2Plan(
     // interest gate to skip food suggestions, without touching that file or wasting a food
     // candidate that was never going to be shown.
     const supplementaryInterests = mealStops.length > 0 ? v2Interests.filter((interest) => interest !== "food") : v2Interests;
-    const supplementary = buildBarcelonaSupplementaryForDay(weekday ?? null, supplementaryInterests, usedPlaceIds);
+    const supplementary = buildSupplementaryForDay(city.places, weekday ?? null, supplementaryInterests, usedPlaceIds);
     // Supplementary items already resolved once inside buildBarcelonaSupplementaryForDay to
     // build their summaries -- re-resolving here (same pure, side-effect-free `resolvePlace`
     // call) only to also capture the full record is cheaper and less invasive than changing
     // that function's return shape for every one of its other callers.
     for (const food of supplementary.food) {
-      const resolved = resolvePlace(food.id, "food", barcelonaGuide);
+      const resolved = resolvePlace(food.id, "food", city.places);
       if (resolved) placeDetails[food.id] = resolved;
     }
     for (const shop of supplementary.shopping) {
-      const resolved = resolvePlace(shop.id, "shopping", barcelonaGuide);
+      const resolved = resolvePlace(shop.id, "shopping", city.places);
       if (resolved) placeDetails[shop.id] = resolved;
     }
     for (const venue of supplementary.nightlife) {
-      const resolved = resolvePlace(venue.id, "nightlife", barcelonaGuide);
+      const resolved = resolvePlace(venue.id, "nightlife", city.places);
       if (resolved) placeDetails[venue.id] = resolved;
     }
 
@@ -342,7 +349,7 @@ export function resolveBarcelonaV2Plan(
     // are added above, and never derived from them (they're supplementary, never counted here).
     // Meal stops are equally excluded -- see mealStops' own doc comment on V2Day.
     const density = classifyDayDensity(day.stops.length, day.totalVisitMinutes);
-    const resolvedStops = day.stops.map((stop) => resolveStop(stop.placeId, stop.score, placeDetails, weekday ?? null));
+    const resolvedStops = day.stops.map((stop) => resolveStop(city, stop.placeId, stop.score, placeDetails, weekday ?? null));
     const legs = legsByDay[index] ?? [];
 
     // Build Real Daily Timeline: computed from this day's ALREADY-FINAL stops/legs/mealStops --
@@ -354,7 +361,7 @@ export function resolveBarcelonaV2Plan(
       placeId: stop.placeId,
       visitDurationMinutes: resolvedStops[i].visitDurationMinutes,
       hours: resolvedStops[i].hours,
-      preferredTime: getBarcelonaV2PlannerMetadataById(stop.placeId)?.preferredTime ?? "anytime",
+      preferredTime: city.metadataById(stop.placeId)?.preferredTime ?? "anytime",
     }));
     const timelineMeals: TimelineMealInput[] = mealStops.map((meal) => ({
       placeId: meal.id,
@@ -385,18 +392,15 @@ export function resolveBarcelonaV2Plan(
     };
     // Fix Meal-Adjacent Transport Connectors: computed from the day object above (needs its
     // final stops/mealStops/timeline to reproduce the client's own chronological adjacency).
-    return { ...resolvedDay, mealLegs: buildMealAdjacentLegs(resolvedDay) };
+    return { ...resolvedDay, mealLegs: buildMealAdjacentLegs(city, resolvedDay) };
   });
 
-  const capacityWarning =
-    daysGenerated < daysRequested
-      ? `قدرنا نبني خطة قوية لـ ${daysGenerated} أيام من البيانات المتاحة حاليًا لبرشلونة. عم نوسّع المحتوى للأيام الأطول.`
-      : null;
+  const capacityWarning = daysGenerated < daysRequested ? city.capacityWarning(daysGenerated) : null;
 
   const densitySummary = buildDensitySummary(days.map((day) => ({ dayNumber: day.dayNumber, density: day.density })));
 
   return {
-    destination: "barcelona",
+    destination: city.id,
     daysRequested,
     daysGenerated,
     capacityWarning,
@@ -404,7 +408,8 @@ export function resolveBarcelonaV2Plan(
     accommodationOrderedTrip,
     accommodationResolutionFailed,
     surpriseMe,
-    routeFirstApplied: days.some((day) => day.legs.some((leg) => leg.sourceStatus !== "unresolved")),
+    // Only real route data counts here (verified / existing project data) -- a distance-based estimate never claims it.
+    routeFirstApplied: days.some((day) => day.legs.some((leg) => leg.sourceStatus === "verified" || leg.sourceStatus === "existing-project-data")),
     days,
     placeDetails,
   };

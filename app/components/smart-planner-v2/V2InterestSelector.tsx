@@ -4,6 +4,8 @@ import { V2_INTEREST_DISPLAY_GROUPS, isV2DisplayGroupActive, toggleV2DisplayGrou
 import type { V2PlannerInterest } from "../../lib/planner/v2PlannerTypes";
 import { usePlannerCopy } from "../../lib/usePlannerCopy";
 import { fillCopy } from "../../lib/plannerCopy";
+import { interestGroupLabelForDestination } from "../../lib/planner/plannerDestinations";
+import { useLanguage } from "../../lib/language";
 
 /**
  * Interests UI Simplification -- 6 customer-facing display groups (down from the original 8
@@ -32,13 +34,18 @@ export default function V2InterestSelector({
   onChange,
   surpriseMeActive,
   onSurpriseMe,
+  destinationId,
 }: {
+  /** Optional: lets a city reword a group (see interestGroupLabelForDestination). */
+  destinationId?: string;
   selected: V2PlannerInterest[];
   onChange: (next: V2PlannerInterest[]) => void;
   surpriseMeActive: boolean;
   onSurpriseMe: () => void;
 }) {
   const copy = usePlannerCopy().wizard;
+  const { language } = useLanguage();
+  const lang = language === "en" ? "en" : "ar";
   const activeGroupCount = surpriseMeActive ? 0 : V2_INTEREST_DISPLAY_GROUPS.filter((group) => isV2DisplayGroupActive(selected, group)).length;
 
   return (
@@ -66,7 +73,7 @@ export default function V2InterestSelector({
               }`}
             >
               <span className="text-xl">{group.emoji}</span>
-              <span>{copy.interestGroups[group.id] ?? group.label}</span>
+              <span>{interestGroupLabelForDestination(destinationId, group.id, lang) ?? copy.interestGroups[group.id] ?? group.label}</span>
             </button>
           );
         })}

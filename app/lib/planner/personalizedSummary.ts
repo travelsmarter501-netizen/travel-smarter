@@ -1,5 +1,6 @@
 import { V2_INTEREST_DISPLAY_GROUPS, isV2DisplayGroupActive, type V2PlannerInterest } from "./v2PlannerTypes";
 import { fillCopy, plannerCopyAr, plannerCopyEn } from "../plannerCopy";
+import { interestGroupLabelForDestination } from "./plannerDestinations";
 
 /**
  * The trip details of a Personalized Plan as short, ready-to-show lines -- the same wording the checkout summary uses:
@@ -11,6 +12,8 @@ export type TripDetailsInput = {
   surpriseMe?: boolean;
   interests?: readonly V2PlannerInterest[];
   accommodation?: { booked?: boolean; text?: string } | null;
+  /** Optional: the trip's city, for city-specific group wording (e.g. Prague "طبيعة وإطلالات"). */
+  destinationId?: string;
 };
 
 export type TripDetails = { interests: string | null; accommodation: string | null };
@@ -22,7 +25,7 @@ export function personalizedTripDetails(input: TripDetailsInput | null | undefin
   const interestNames = input.surpriseMe
     ? copy.wizard.surpriseMe
     : V2_INTEREST_DISPLAY_GROUPS.filter((group) => isV2DisplayGroupActive(input.interests ?? [], group))
-        .map((group) => copy.wizard.interestGroups[group.id] ?? group.label)
+        .map((group) => interestGroupLabelForDestination(input.destinationId, group.id, language) ?? copy.wizard.interestGroups[group.id] ?? group.label)
         .join(language === "ar" ? "، " : ", ");
 
   const accommodationText = input.accommodation?.booked ? (input.accommodation.text ?? "").trim() : copy.checkoutSummary.accommodationNotBooked;

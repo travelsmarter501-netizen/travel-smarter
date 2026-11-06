@@ -41,7 +41,7 @@ import { PRODUCT_SLUGS } from "../../../../lib/commerce/catalog";
  */
 
 export const metadata: Metadata = {
-  title: "خطتك المحفوظة (V2) — برشلونة | Travel Smarter",
+  title: "خطتك المحفوظة | Travel Smarter",
 };
 
 export default async function SavedSmartPlanV2Page(props: PageProps<"/smart-planner/barcelona-v2/saved/[id]">) {

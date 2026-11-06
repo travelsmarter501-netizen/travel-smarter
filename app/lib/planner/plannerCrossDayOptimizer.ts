@@ -1,6 +1,7 @@
 import { classifyDayDensity } from "./barcelonaV2Density";
 import type { PlannerDayDensity } from "./barcelonaV2Density";
-import { buildBarcelonaPlannerRouteLegs, buildBarcelonaPlannerPlanRouteLegs } from "./barcelona-planner-route-legs";
+import { buildBarcelonaPlannerRouteLegs } from "./barcelona-planner-route-legs";
+import type { DayRouteLegsBuilder } from "./plannerNaturalClusterReclaim";
 import { optimizeDayRoute } from "./plannerRouteOptimizer";
 import type { RouteConfig } from "./plannerRouteOptimizer";
 import type { PlannerDay, PlannerDayStop, GeneratedPlannerPlan, ClusterCompatibilityMap } from "./plannerDayBuilder";
@@ -110,7 +111,8 @@ function enumerateCandidates(
   places: PlannerPlaceMetadata[],
   routeConfig: RouteConfig,
   isPlaceEligibleForDay: ((placeId: string, dayNumber: number) => boolean) | undefined,
-  accommodation: CrossDayAccommodationInfo | null | undefined
+  accommodation: CrossDayAccommodationInfo | null | undefined,
+  buildDayLegs: DayRouteLegsBuilder = buildBarcelonaPlannerRouteLegs
 ): Candidate[] {
   const metaById = new Map(places.map((p) => [p.placeId, p]));
 
@@ -161,7 +163,7 @@ function enumerateCandidates(
   function reoptimizeAndScore(dayNumber: number, stopIds: string[], scoreByPlaceId: Map<string, number>) {
     const rawDay = buildDay(dayNumber, stopIds, scoreByPlaceId);
     const optimized = optimizeDayRoute(rawDay, places, routeConfig);
-    const legs = buildBarcelonaPlannerRouteLegs(optimized);
+    const legs = buildDayLegs(optimized);
     return { day: optimized, metrics: metricsForDay(optimized, legs) };
   }
   function toCandidate(ai: number, bi: number, beforeA: DayMetrics, beforeB: DayMetrics, resA: ReturnType<typeof reoptimizeAndScore>, resB: ReturnType<typeof reoptimizeAndScore>): Candidate {
@@ -250,11 +252,12 @@ export function applyCrossDayOptimization(
   places: PlannerPlaceMetadata[],
   routeConfig: RouteConfig,
   isPlaceEligibleForDay: ((placeId: string, dayNumber: number) => boolean) | undefined,
-  accommodation: CrossDayAccommodationInfo | null | undefined
+  accommodation: CrossDayAccommodationInfo | null | undefined,
+  buildDayLegs: DayRouteLegsBuilder = buildBarcelonaPlannerRouteLegs
 ): { plan: GeneratedPlannerPlan; legsByDay: PlannerRouteLeg[][] } {
   if (!ENABLE_CROSS_DAY_OPTIMIZATION) return { plan, legsByDay };
 
-  const candidates = enumerateCandidates(plan, legsByDay, places, routeConfig, isPlaceEligibleForDay, accommodation);
+  const candidates = enumerateCandidates(plan, legsByDay, places, routeConfig, isPlaceEligibleForDay, accommodation, buildDayLegs);
   const applied = selectBoundedImprovements(candidates);
   if (applied.length === 0) return { plan, legsByDay };
 
@@ -264,5 +267,5 @@ export function applyCrossDayOptimization(
     return touched.dayAIndex === i ? touched.afterDayA : touched.afterDayB;
   });
   const newPlan: GeneratedPlannerPlan = { days: newDays };
-  return { plan: newPlan, legsByDay: buildBarcelonaPlannerPlanRouteLegs(newPlan) };
+  return { plan: newPlan, legsByDay: newPlan.days.map((day) => buildDayLegs(day)) };
 }

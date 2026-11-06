@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { plannerDestinationName } from "../lib/planner/plannerDestinations";
 import Container from "../components/Container";
 import Button from "../components/Button";
 import SignOutButton from "../components/auth/SignOutButton";
@@ -19,10 +20,6 @@ import { CUSTOM_PLAN_REQUEST_STATUS_LABELS } from "../lib/customPlanRequest";
 import { inclusiveDayCount } from "../lib/planner/dateOnly";
 import { isValidSmartPlannerV2SavedPlanRow } from "../lib/planner/smartPlannerV2SavedPlans";
 import { isValidSmartPlannerSavedPlanRow } from "../lib/planner/smartPlannerSavedPlans";
-
-const DESTINATION_LABELS: Record<string, string> = {
-  barcelona: "Barcelona",
-};
 
 
 function interestsLabel(interests: string[]): string {
@@ -149,7 +146,7 @@ export default async function AccountPage() {
                   <li key={request.id} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3.5">
                     <div>
                       <p className="font-semibold text-slate-900">
-                        {DESTINATION_LABELS[request.destination] ?? request.destination} · {request.durationDays} أيام
+                        {plannerDestinationName(request.destination, "en")} · {request.durationDays} أيام
                       </p>
                       <p className="mt-0.5 text-xs text-slate-400">
                         {new Intl.DateTimeFormat("ar-EG", { dateStyle: "medium" }).format(new Date(request.createdAt))} · رقم الطلب:{" "}
