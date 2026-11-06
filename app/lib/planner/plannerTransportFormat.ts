@@ -1,5 +1,4 @@
-import { formatDistanceAr } from "../geo";
-import { formatMinutesAr } from "../readyPlan";
+import { formatDistance, formatMinutesRange, PLAN_TEXT, type PlanLanguage } from "../i18n/planText";
 import type { TransportMode, TransportOption } from "./plannerTransportTypes";
 
 /**
@@ -16,14 +15,14 @@ export const PLANNER_TRANSPORT_MODE_META: Record<TransportMode, { icon: string; 
 
 export const PLANNER_TRANSPORT_MODE_ORDER: TransportMode[] = ["walking", "transit", "car"];
 
-/** "15–20 دقيقة · 1.1 كم" style label, or a single value ("دقيقتان") when min === max. */
-export function formatPlannerTransportOptionLabel(option: TransportOption): string {
-  const durationLabel =
-    option.durationMinutesMin === option.durationMinutesMax
-      ? formatMinutesAr(option.durationMinutesMin)
-      : `${option.durationMinutesMin}–${option.durationMinutesMax} دقيقة`;
-
-  const parts = [durationLabel];
-  if (option.distanceKm !== undefined) parts.push(formatDistanceAr(option.distanceKm));
+/** "15–20 دقيقة · 1.1 كم" style label, or a single value ("دقيقتان") when min === max. Arabic by default (unchanged output). */
+export function formatPlannerTransportOptionLabel(option: TransportOption, lang: PlanLanguage = "ar"): string {
+  const parts = [formatMinutesRange(lang, option.durationMinutesMin, option.durationMinutesMax)];
+  if (option.distanceKm !== undefined) parts.push(formatDistance(lang, option.distanceKm));
   return parts.join(" · ");
+}
+
+/** Mode name in the plan's display language (icons stay in PLANNER_TRANSPORT_MODE_META). */
+export function plannerTransportModeLabel(mode: TransportMode, lang: PlanLanguage = "ar"): string {
+  return lang === "ar" ? PLANNER_TRANSPORT_MODE_META[mode].label : PLAN_TEXT[lang].modes[mode];
 }

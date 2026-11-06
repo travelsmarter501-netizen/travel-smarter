@@ -13,11 +13,14 @@ export default function BottomSheet({
   onClose,
   title,
   children,
+  closeLabel = "إغلاق",
 }: {
   open: boolean;
   onClose: () => void;
   title?: string;
   children: ReactNode;
+  /** Accessible name of the close controls (plan view passes the current language). */
+  closeLabel?: string;
 }) {
   useEffect(() => {
     if (!open) return;
@@ -42,7 +45,7 @@ export default function BottomSheet({
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
       <button
         type="button"
-        aria-label="إغلاق"
+        aria-label={closeLabel}
         onClick={onClose}
         className="absolute inset-0 bg-slate-900/50 backdrop-blur-[1px]"
       />
@@ -59,7 +62,7 @@ export default function BottomSheet({
             <button
               type="button"
               onClick={onClose}
-              aria-label="إغلاق"
+              aria-label={closeLabel}
               className="touch-target flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100 hover:text-slate-800"
             >
               <IconClose className="h-4.5 w-4.5" />

@@ -35,11 +35,24 @@ const copy = {
     plansEmpty: "You don't have any plan yet.",
     createPlan: "Create a new plan",
   },
+  he: {
+    purchasesTitle: "הרכישות שלי",
+    purchasesEmpty: "עוד לא קניתם כלום.",
+    purchasedOn: "נרכש ב־{date}",
+    open: "פתיחה",
+    openPlanner: "פתיחת המתכנן",
+    includedWith: "כלול עם {name} — בלי רכישה נפרדת",
+    guideName: "מדריך הטיולים לברצלונה",
+    openGuide: "פתיחת המדריך",
+    plansTitle: "התוכניות שלי",
+    plansEmpty: "עוד אין לכם תוכנית.",
+    createPlan: "יצירת תוכנית חדשה",
+  },
 } as const;
 
 export function AccountPurchases({ purchases, inheritedGuideFrom }: { purchases: AccountPurchase[]; inheritedGuideFrom: { slug: string; name: string } | null }) {
   const { language } = useLanguage();
-  const lang = language === "en" ? "en" : "ar";
+  const lang = language;
   const c = copy[lang];
 
   return (
@@ -93,7 +106,7 @@ export function AccountPurchases({ purchases, inheritedGuideFrom }: { purchases:
 /** "My plans" on the account page: the same cards as /planner (destination, days, trip details, Open plan, Edit plan, Delete). */
 export function AccountPlans({ plans, canCreate = false }: { plans: PlanCardData[]; canCreate?: boolean }) {
   const { language } = useLanguage();
-  const c = copy[language === "en" ? "en" : "ar"];
+  const c = copy[language];
 
   return (
     <div className="mt-8 border-t border-slate-100 pt-6">

@@ -54,6 +54,21 @@ const copy = {
     loginAgain: "Your session ended. Sign in again and try once more.",
     notFound: "We couldn't find this plan in your account. Refresh the page and try again.",
   },
+  he: {
+    planTitle: "תוכנית ל{destination}",
+    daysCount: "{n} ימים",
+    dayOne: "יום",
+    open: "פתיחת התוכנית",
+    edit: "עריכת התוכנית",
+    delete: "מחיקה",
+    deleting: "מוחקים...",
+    confirm: "למחוק את התוכנית הזו לצמיתות? אי אפשר לבטל את הפעולה.",
+    confirmYes: "כן, למחוק לצמיתות",
+    cancel: "ביטול",
+    failed: "לא הצלחנו להשלים את הפעולה. נסו שוב.",
+    loginAgain: "החיבור שלכם הסתיים. התחברו שוב ונסו פעם נוספת.",
+    notFound: "לא מצאנו את התוכנית הזו בחשבון שלכם. רעננו את הדף ונסו שוב.",
+  },
 } as const;
 
 /**
@@ -66,7 +81,7 @@ const copy = {
  */
 export default function PlanCard({ plan }: { plan: PlanCardData }) {
   const { language } = useLanguage();
-  const lang = language === "en" ? "en" : "ar";
+  const lang = language;
   const c = copy[lang];
   const router = useRouter();
   const [confirming, setConfirming] = useState(false);

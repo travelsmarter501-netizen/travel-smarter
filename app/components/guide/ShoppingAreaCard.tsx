@@ -6,6 +6,7 @@ import OpeningHours from "./OpeningHours";
 import RatingBadge from "./RatingBadge";
 import type { ShoppingArea } from "../../lib/guideTypes";
 import type { Weekday } from "../../lib/hours";
+import { PLACE_CARD_TEXT, type PlanLanguage } from "../../lib/i18n/planText";
 
 /**
  * Single-place detail card for a `ShoppingArea` — same visual/data pattern as AttractionCard,
@@ -18,15 +19,19 @@ export default function ShoppingAreaCard({
   isFavorite,
   onToggleFavorite,
   plannedWeekday,
+  lang = "ar",
 }: {
   area: ShoppingArea;
   isFavorite: boolean;
   onToggleFavorite: () => void;
   /** See PlaceDetailsSheet.tsx's own doc comment. Omitted outside a dated itinerary. */
   plannedWeekday?: Weekday;
+  /** Display language (plan view); the guide pages omit it and stay Arabic. */
+  lang?: PlanLanguage;
 }) {
+  const ui = PLACE_CARD_TEXT[lang];
   const imageLinkHref = area.officialUrl ?? area.mapsUrl;
-  const imageLinkLabel = area.officialUrl ? `افتح الموقع الرسمي لـ ${area.name}` : `افتح ${area.name} في خرائط جوجل`;
+  const imageLinkLabel = area.officialUrl ? ui.openOfficial(area.name) : ui.openMaps(area.name);
 
   return (
     <article className="flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -40,7 +45,7 @@ export default function ShoppingAreaCard({
         ) : (
           <div className="flex h-full w-full flex-col items-center justify-center gap-1 bg-gradient-to-br from-slate-100 to-slate-200 text-slate-400">
             <span className="text-2xl">🛍️</span>
-            <span className="text-[11px] font-medium">لا توجد صورة موثقة</span>
+            <span className="text-[11px] font-medium">{ui.noImage}</span>
           </div>
         )}
         <button
@@ -51,7 +56,7 @@ export default function ShoppingAreaCard({
             onToggleFavorite();
           }}
           aria-pressed={isFavorite}
-          aria-label={isFavorite ? "إزالة من المفضلة" : "حفظ في المفضلة"}
+          aria-label={isFavorite ? ui.favoriteRemove : ui.favoriteAdd}
           className="absolute left-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-rose-600 shadow-sm backdrop-blur-sm transition-transform hover:scale-105"
         >
           <IconHeart filled={isFavorite} className="h-4.5 w-4.5" />
@@ -65,7 +70,7 @@ export default function ShoppingAreaCard({
           </p>
           <span className="rounded-full bg-teal-50 px-2.5 py-0.5 text-xs font-semibold text-teal-700">{area.bestFor}</span>
         </div>
-        <RatingBadge
+        <RatingBadge lang={lang}
           rating={area.rating}
           reviewCount={area.reviewCount}
           ratingSource={area.ratingSource}
@@ -75,11 +80,11 @@ export default function ShoppingAreaCard({
         <p className="mt-1 text-sm leading-6 text-slate-600">{area.description}</p>
 
         <div className="mt-3">
-          <OpeningHours hours={area.hours} plannedWeekday={plannedWeekday} />
+          <OpeningHours lang={lang} hours={area.hours} plannedWeekday={plannedWeekday} />
         </div>
 
         <div className="mt-3">
-          <LocationInfo address={area.address} phone={area.phone} mapsUrl={area.mapsUrl} appleMapsUrl={area.appleMapsUrl} label={area.locationLabel} />
+          <LocationInfo lang={lang} address={area.address} phone={area.phone} mapsUrl={area.mapsUrl} appleMapsUrl={area.appleMapsUrl} label={area.locationLabel} />
         </div>
 
         {area.officialUrl && (
@@ -88,7 +93,7 @@ export default function ShoppingAreaCard({
               href={area.officialUrl}
               className="inline-flex items-center justify-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition-colors hover:border-teal-300 hover:text-teal-700"
             >
-              🌐 الموقع الرسمي
+              {ui.official}
               <IconExternalLink className="h-3 w-3 opacity-60" />
             </ExternalLink>
           </div>

@@ -14,7 +14,7 @@ function readStoredLanguage(): Language {
   if (memoryLanguage) return memoryLanguage;
   try {
     const stored = window.localStorage.getItem(STORAGE_KEY);
-    return stored === "en" ? "en" : "ar";
+    return stored === "en" || stored === "he" ? stored : "ar";
   } catch {
     return "ar";
   }

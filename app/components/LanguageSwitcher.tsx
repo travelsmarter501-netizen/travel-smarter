@@ -11,6 +11,7 @@ export default function LanguageSwitcher({ className = "" }: { className?: strin
   const options: { value: Language; label: string }[] = [
     { value: "ar", label: t.languageSwitcher.ar },
     { value: "en", label: t.languageSwitcher.en },
+    { value: "he", label: t.languageSwitcher.he },
   ];
 
   return (

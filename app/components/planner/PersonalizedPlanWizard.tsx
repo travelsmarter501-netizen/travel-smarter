@@ -74,7 +74,7 @@ export default function PersonalizedPlanWizard({
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState<PlannerGenerateErrorCode | null>(null);
 
-  const inputDir = language === "ar" ? "rtl" : "ltr";
+  const inputDir = language === "en" ? "ltr" : "rtl";
 
   // Client-side preview only; the server recomputes and re-validates everything.
   const previewDays = dateMode === "specific" && arrivalDate && departureDate ? inclusiveDayCount(arrivalDate, departureDate) : null;

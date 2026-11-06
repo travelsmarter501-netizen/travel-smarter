@@ -6,6 +6,7 @@ import OpeningHours from "./OpeningHours";
 import RatingBadge from "./RatingBadge";
 import type { Attraction } from "../../lib/guideTypes";
 import type { Weekday } from "../../lib/hours";
+import { PLACE_CARD_TEXT, bookingStatusText, type PlanLanguage } from "../../lib/i18n/planText";
 
 const bookingNeeded = new Set(["ضروري مسبقًا", "يفضل مسبقًا"]);
 
@@ -15,6 +16,7 @@ export default function AttractionCard({
   isFavorite,
   onToggleFavorite,
   plannedWeekday,
+  lang = "ar",
 }: {
   attraction: Attraction;
   areaName: string;
@@ -22,11 +24,12 @@ export default function AttractionCard({
   onToggleFavorite: () => void;
   /** See PlaceDetailsSheet.tsx's own doc comment. Omitted outside a dated itinerary. */
   plannedWeekday?: Weekday;
+  /** Display language (plan view); the guide pages omit it and stay Arabic. */
+  lang?: PlanLanguage;
 }) {
+  const ui = PLACE_CARD_TEXT[lang];
   const imageLinkHref = attraction.officialUrl ?? attraction.mapsUrl;
-  const imageLinkLabel = attraction.officialUrl
-    ? `افتح الموقع الرسمي لـ ${attraction.name}`
-    : `افتح ${attraction.name} في خرائط جوجل`;
+  const imageLinkLabel = attraction.officialUrl ? ui.openOfficial(attraction.name) : ui.openMaps(attraction.name);
 
   return (
     <article className="flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -47,7 +50,7 @@ export default function AttractionCard({
         ) : (
           <div className="flex h-full w-full flex-col items-center justify-center gap-1 bg-gradient-to-br from-slate-100 to-slate-200 text-slate-400">
             <span className="text-2xl">🏛️</span>
-            <span className="text-[11px] font-medium">لا توجد صورة موثقة</span>
+            <span className="text-[11px] font-medium">{ui.noImage}</span>
           </div>
         )}
         <button
@@ -58,7 +61,7 @@ export default function AttractionCard({
             onToggleFavorite();
           }}
           aria-pressed={isFavorite}
-          aria-label={isFavorite ? "إزالة من المفضلة" : "حفظ في المفضلة"}
+          aria-label={isFavorite ? ui.favoriteRemove : ui.favoriteAdd}
           className="absolute left-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-rose-600 shadow-sm backdrop-blur-sm transition-transform hover:scale-105"
         >
           <IconHeart filled={isFavorite} className="h-4.5 w-4.5" />
@@ -75,7 +78,7 @@ export default function AttractionCard({
         <p dir="ltr" className="text-base font-bold text-slate-900">
           {attraction.name}
         </p>
-        <RatingBadge
+        <RatingBadge lang={lang}
           rating={attraction.rating}
           reviewCount={attraction.reviewCount}
           ratingSource={attraction.ratingSource}
@@ -85,7 +88,7 @@ export default function AttractionCard({
         <p className="mt-1 text-sm leading-6 text-slate-600">{attraction.description}</p>
 
         <div className="mt-3">
-          <LocationInfo
+          <LocationInfo lang={lang}
             area={areaName || undefined}
             address={attraction.address}
             mapsUrl={attraction.mapsUrl}
@@ -102,17 +105,17 @@ export default function AttractionCard({
           {bookingNeeded.has(attraction.bookingStatus) && (
             <p className="flex items-center gap-1.5 text-slate-700">
               <span>📅</span>
-              <span>{attraction.bookingStatus}</span>
+              <span>{bookingStatusText(attraction.bookingStatus, lang)}</span>
             </p>
           )}
         </div>
 
         <div className="mt-2">
-          <OpeningHours hours={attraction.hours} plannedWeekday={plannedWeekday} />
+          <OpeningHours lang={lang} hours={attraction.hours} plannedWeekday={plannedWeekday} />
         </div>
 
         <div className="mt-3 rounded-xl bg-teal-50 p-3">
-          <p className="text-xs font-bold text-teal-800">Travel Smarter Tip</p>
+          <p className="text-xs font-bold text-teal-800">{ui.tip}</p>
           <p className="mt-1 text-xs leading-5 text-teal-700">{attraction.tip}</p>
         </div>
 
@@ -123,7 +126,7 @@ export default function AttractionCard({
                 href={attraction.officialUrl}
                 className="inline-flex items-center justify-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition-colors hover:border-teal-300 hover:text-teal-700"
               >
-                🌐 الموقع الرسمي
+                {ui.official}
                 <IconExternalLink className="h-3 w-3 opacity-60" />
               </ExternalLink>
             )}
@@ -132,7 +135,7 @@ export default function AttractionCard({
                 href={attraction.ticketsUrl}
                 className="inline-flex items-center justify-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800 transition-colors hover:border-amber-300"
               >
-                🎟 التذاكر الرسمية
+                {ui.tickets}
               </ExternalLink>
             )}
           </div>

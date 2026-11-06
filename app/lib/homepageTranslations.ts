@@ -8,7 +8,12 @@
 import { PRODUCT_PRICES_ILS } from "./commerce/pricing";
 import type { CheckoutErrorCode } from "./commerce/checkoutErrors";
 
-export type Language = "ar" | "en";
+export type Language = "ar" | "en" | "he";
+
+/** Right-to-left languages (Arabic, Hebrew). */
+export function isRtlLanguage(language: Language): boolean {
+  return language !== "en";
+}
 
 type Product = {
   id: string;
@@ -71,7 +76,7 @@ export type HomepageCopy = {
     signIn: string;
     account: string;
   };
-  languageSwitcher: { ar: string; en: string; ariaLabel: string };
+  languageSwitcher: { ar: string; en: string; he: string; ariaLabel: string };
   cartButton: { ariaLabel: string };
   mobileMenu: { open: string; close: string };
   loadingSplash: { ariaLabel: string };
@@ -113,8 +118,6 @@ export type HomepageCopy = {
       play: string;
       posterAlt: string;
       unavailable: string;
-      /** Shown only where the plan text language differs from the page language. */
-      languageNote?: string;
     };
     offer: { title: string; text: string; includes: string; availability: string };
     /**
@@ -239,7 +242,7 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
       signIn: "تسجيل الدخول",
       account: "حسابي",
     },
-    languageSwitcher: { ar: "العربية", en: "EN", ariaLabel: "اختيار اللغة" },
+    languageSwitcher: { ar: "العربية", en: "EN", he: "עברית", ariaLabel: "اختيار اللغة" },
     cartButton: { ariaLabel: "السلة" },
     mobileMenu: { open: "فتح القائمة", close: "إغلاق القائمة" },
     loadingSplash: { ariaLabel: "جاري التحميل" },
@@ -510,7 +513,7 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
       signIn: "Sign in",
       account: "My Account",
     },
-    languageSwitcher: { ar: "عربي", en: "EN", ariaLabel: "Select language" },
+    languageSwitcher: { ar: "عربي", en: "EN", he: "עברית", ariaLabel: "Select language" },
     cartButton: { ariaLabel: "Cart" },
     mobileMenu: { open: "Open menu", close: "Close menu" },
     loadingSplash: { ariaLabel: "Loading" },
@@ -631,7 +634,6 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
         play: "Play the video",
         posterAlt: "An excerpt of an example plan: the days of the trip and their places",
         unavailable: "The video isn't available right now.",
-        languageNote: "Plans are currently written in Arabic.",
       },
       offer: {
         title: "Your plan, your way",
@@ -755,6 +757,273 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
       descriptor: "Personalized trip plans built around your days, interests and where you stay.",
       privacyLabel: "Privacy Policy",
       termsLabel: "Terms of Service",
+    },
+  },
+  he: {
+    htmlLang: "he",
+    dir: "rtl",
+    seo: {
+      title: "Travel Smarter | תוכנית טיול אישית, יום אחרי יום",
+      description: "עונים על כמה שאלות ומקבלים תוכנית טיול לפי הימים, תחומי העניין ומקום הלינה שלכם, עם מקומות, מסעדות וזמני הגעה. זמין עכשיו לברצלונה.",
+    },
+    nav: {
+      home: "דף הבית",
+      products: "מוצרים",
+      destinations: "יעדים",
+      about: "עלינו",
+      faq: "שאלות נפוצות",
+      contact: "צור קשר",
+      ctaPlanTrip: "התחילו את התוכנית",
+      howItWorks: "איך זה עובד",
+      price: "מחיר",
+      myPlans: "התוכניות שלי",
+      signIn: "התחברות",
+      account: "החשבון שלי",
+    },
+    languageSwitcher: { ar: "عربي", en: "EN", he: "עברית", ariaLabel: "בחירת שפה" },
+    cartButton: { ariaLabel: "עגלה" },
+    mobileMenu: { open: "פתיחת התפריט", close: "סגירת התפריט" },
+    loadingSplash: { ariaLabel: "טוען" },
+    products: {
+      eyebrow: "מוצרים",
+      title: "בחרו את התוכנית שמתאימה לטיול שלכם",
+      startingFromLabel: "החל מ־",
+      ownedBadge: "נרכש ✓",
+      ownedCta: "פתיחה",
+      personalizedOpen: "פתיחת מתכנן הטיול האישי",
+      items: [
+        {
+          id: "personalized-trip-plan",
+          title: "תוכנית הטיול האישית שלכם ✨",
+          description: "עונים קודם על כמה שאלות, ואנחנו בונים לכם תוכנית חכמה לטיול.",
+          priceILS: PRODUCT_PRICES_ILS["personalized-trip-plan"].launch,
+          referencePriceILS: PRODUCT_PRICES_ILS["personalized-trip-plan"].reference,
+          route: "/planner",
+          ctaLabel: "התחילו את התוכנית",
+          includesGuideLabel: "+ מדריך ברצלונה",
+          badge: "מיידי",
+          comparisonHint: "ברצלונה זמינה עכשיו — יעדים חדשים בקרוב.",
+        },
+        {
+          id: "barcelona-1day",
+          title: "ברצלונה ביום אחד",
+          description: "האטרקציות החשובות של ברצלונה ביום אחד מסודר.",
+          priceILS: PRODUCT_PRICES_ILS["barcelona-1day"].launch,
+          referencePriceILS: PRODUCT_PRICES_ILS["barcelona-1day"].reference,
+          route: "/ready-plans/barcelona/1-day",
+          ctaLabel: "לקנייה",
+          addToCartLabel: "הוספה לעגלה",
+        },
+        {
+          id: "barcelona-guide",
+          title: "מדריך הטיולים לברצלונה",
+          description: "מקומות, מסעדות, מלונות, קניות ובילויים במדריך אחד.",
+          priceILS: PRODUCT_PRICES_ILS["barcelona-guide"].launch,
+          referencePriceILS: PRODUCT_PRICES_ILS["barcelona-guide"].reference,
+          route: "/guides/barcelona",
+          ctaLabel: "לקנייה",
+          addToCartLabel: "הוספה לעגלה",
+        },
+        {
+          id: "barcelona-3day",
+          title: "ברצלונה — 3 ימים",
+          description: "האטרקציות של ברצלונה, מסודרות ב־3 ימים בקצב נוח.",
+          priceILS: PRODUCT_PRICES_ILS["barcelona-3day"].launch,
+          referencePriceILS: PRODUCT_PRICES_ILS["barcelona-3day"].reference,
+          route: "/ready-plans/barcelona/3-days",
+          ctaLabel: "לקנייה",
+          addToCartLabel: "הוספה לעגלה",
+          includesGuideLabel: "+ מדריך ברצלונה",
+        },
+        {
+          id: "barcelona-5day",
+          title: "ברצלונה — 5 ימים",
+          description: "מסלול מלא ל־5 ימים עם מסלולים ותחבורה מסודרים.",
+          priceILS: PRODUCT_PRICES_ILS["barcelona-5day"].launch,
+          referencePriceILS: PRODUCT_PRICES_ILS["barcelona-5day"].reference,
+          route: "/ready-plans/barcelona",
+          ctaLabel: "לקנייה",
+          addToCartLabel: "הוספה לעגלה",
+          includesGuideLabel: "+ מדריך ברצלונה",
+        },
+      ],
+    },
+    destinations: {
+      title: "יעדים זמינים",
+      barcelona: { badge: "זמין עכשיו", cta: "לגלות את ברצלונה" },
+      comingSoonBadge: "בקרוב",
+      items: [
+        { slug: "barcelona", name: "ברצלונה" },
+        { slug: "rome", name: "רומא" },
+        { slug: "prague", name: "פראג" },
+        { slug: "budapest", name: "בודפשט" },
+        { slug: "dubai", name: "דובאי" },
+        { slug: "batumi", name: "בטומי" },
+      ],
+    },
+    trust: {
+      title: "למה Travel Smarter?",
+      items: [
+        { title: "ניסיון טיולים אמיתי", description: "הניסיון שלנו מגיע מביקור ביותר מ־15 מדינות." },
+        { title: "חוסכים זמן", description: "בלי שעות של חיפושים, הכול מסודר בשבילכם." },
+        { title: "מסלולים חכמים יותר", description: "מקומות מסודרים כך שפחות זמן הולך על הדרכים." },
+      ],
+    },
+    faq: {
+      title: "שאלות נפוצות",
+      items: [
+        {
+          question: "מה כוללת התוכנית?",
+          answer: "תוכנית יום אחרי יום עם שעות, מקומות, מסעדות וזמני הגעה בין התחנות, ופרטים על כל מקום: שעות פתיחה וקישורים ל־Google / Apple Maps, לפי התשובות שלכם.",
+        },
+        {
+          question: "איך פותחים את התוכנית?",
+          answer: "לשאלות ולתשלום לא צריך חשבון. אחרי התשלום מתחברים או פותחים חשבון עם האימייל ששילמתם איתו, ולוחצים על \"בנו את התוכנית שלי\".",
+        },
+        {
+          question: "אפשר להכין יותר מתוכנית אחת?",
+          answer: "כן. אפשר ליצור תוכניות חדשות ולערוך כל תוכנית (אנחנו בונים אותה מחדש לפי התשובות) בלי תשלום נוסף, עד 30 תוכניות שמורות.",
+        },
+        {
+          question: "טיסות, מלונות וכרטיסים כלולים?",
+          answer: "לא, מחיר התוכנית לא כולל טיסות, מלונות או כרטיסים. התוכנית מציגה מידע על מחירים ומציינת כשמקום דורש הזמנה מראש.",
+        },
+      ],
+    },
+    home: {
+      bottomCta: { buy: "לקנייה", owner: "יצירת תוכנית חדשה" },
+      intro: {
+        headline: "פחות תכנון, יותר הנאה",
+        description: "תוכנית טיול יומית לפי הימים, תחומי העניין ומקום הלינה שלכם.",
+      },
+      video: {
+        title: "תראו איך התוכנית שלכם נבנית",
+        play: "הפעלת הסרטון",
+        posterAlt: "קטע מתוכנית לדוגמה: ימי הטיול והמקומות שלהם",
+        unavailable: "הסרטון לא זמין כרגע.",
+      },
+      offer: {
+        title: "התוכנית שלכם, בדרך שלכם",
+        text: "בוחרים לאן נוסעים, כמה ימים, מה אוהבים ואיפה ישנים.",
+        includes: "מקומות, מסעדות ודרכי הגעה — מסודרים יום אחרי יום.",
+        availability: "זמין עכשיו לברצלונה",
+      },
+      problems: {
+        title: "מכירים את זה?",
+        items: [
+          "חזרנו מהטיול… וגילינו מקומות שלא ידענו עליהם!",
+          "כל בוקר: לאן הולכים? והזמן עובר בחיפושים.",
+          "שמנו מקומות רחוקים באותו יום… והזמן הלך על הדרכים.",
+          "הגענו למקום… והוא היה סגור.",
+        ],
+        bridge: "תשמרו את הזמן לטיול, ואת התכנון תשאירו לנו.",
+      },
+      product: {
+        title: "התוכנית האישית שלכם",
+        schedule: "היום שלכם, לפי הסדר",
+        details: "פרטים על כל מקום",
+        transport: "הדרך בין התחנות",
+        recommended: "מומלץ",
+        previous: "הסצנה הקודמת",
+        next: "הסצנה הבאה",
+      },
+      example: {
+        entry: "לצפייה בדוגמה",
+        badge: "דוגמה לברצלונה",
+        summary: "3 ימים · תרבות ואוכל",
+        hint: "זו דוגמה מוכנה, לא התוכנית שלכם. התוכנית שלכם נבנית מהתשובות שלכם.",
+        inputsTitle: "נתוני הדוגמה",
+        inputs: [
+          { label: "יעד", value: "ברצלונה" },
+          { label: "משך", value: "3 ימים" },
+          { label: "תחומי עניין", value: "תרבות והיסטוריה, אוכל" },
+          { label: "לינה", value: "עוד לא הוזמנה" },
+        ],
+        dayLabel: "יום {n}",
+        detailsHint: "פרטי המקום",
+        sheetPrice: "מחיר",
+        sheetBooking: "הזמנה",
+        start: "התחילו את התוכנית",
+      },
+      pricing: {
+        title: "{price} פעם אחת",
+        points: [
+          "יוצרים יותר מתוכנית אחת, עורכים ובונים מחדש בלי תשלום נוסף, עד 30 תוכניות שמורות.",
+          "תשלום אחד פותח את כל הערים הנתמכות. זמינה עכשיו: ברצלונה.",
+          "המדריך המלא לברצלונה כלול בתוכניות לברצלונה.",
+        ],
+        notIncluded: "המחיר הוא על התוכנית בלבד, ולא כולל טיסות, לינה או כרטיסי כניסה.",
+        ownerTitle: "התוכנית האישית שלכם פתוחה ✓",
+        ownerBody: "צרו תוכנית חדשה או ערכו את התוכניות שלכם בלי תשלום נוסף, עד 30 תוכניות שמורות.",
+        myPlans: "התוכניות שלי",
+      },
+      support: { text: "לא מצאתם תשובה? כתבו לנו:", refund: "מדיניות החזרים" },
+    },
+    cart: {
+      title: "עגלה",
+      empty: "העגלה ריקה",
+      remove: "הסרה",
+      subtotal: "סכום ביניים",
+      continueCta: "לתשלום",
+      clear: "ריקון העגלה",
+      alreadyInCart: "המוצר הזה כבר בעגלה",
+      close: "סגירת העגלה",
+      sessionOnly: "הדפדפן לא מאפשר לשמור את העגלה, אז היא נשמרת רק כל עוד הדף פתוח. השלימו את ההזמנה עכשיו.",
+    },
+    checkout: {
+      title: "תשלום",
+      payButton: "תשלום ב־Allpay",
+      payButtonTest: "תשלום ב־Allpay (בדיקה)",
+      testBadge: "מצב בדיקה של Allpay — אין חיוב אמיתי",
+      redirecting: "מעבירים אתכם לתשלום...",
+      selectedProduct: "המוצר שנבחר",
+      errors: {
+        invalid_product: "יש בעגלה מוצר לא תקין.",
+        empty_cart: "העגלה ריקה.",
+        invalid_email: "הזינו כתובת אימייל תקינה — לשם נשלח את אישור התשלום.",
+        no_product_selected: "לא נבחר מוצר לרכישה.",
+        already_owned: "כל המוצרים שביקשתם כבר שלכם או כלולים במוצר שכבר רכשתם.",
+        login_required: "התחברו כדי להשלים את הרכישה.",
+        order_create_failed: "לא הצלחנו ליצור את ההזמנה. נסו שוב.",
+        order_load_failed: "לא הצלחנו לטעון את פרטי ההזמנה אחרי שנוצרה.",
+        order_not_found: "ההזמנה לא נמצאה.",
+        order_not_pending: "ההזמנה הזו כבר לא ממתינה לתשלום.",
+        order_items_failed: "לא הצלחנו לטעון את המוצרים בהזמנה.",
+        payment_page_failed: "לא הצלחנו לפתוח את דף התשלום. נסו שוב.",
+        payment_setup_failed: "לא הצלחנו להכין את התשלום כרגע. נסו שוב בעוד כמה רגעים, ואם הבעיה נמשכת צרו איתנו קשר.",
+        planner_answers_required: "התוכנית האישית מתחילה בדף המתכנן: עונים קודם על השאלות, ואז ממשיכים לתשלום.",
+        invalid_planner_answers: "פרטי התוכנית לא תקינים. בדקו את התשובות ונסו שוב.",
+        planner_already_unlocked: "מתכנן הטיול האישי שלכם כבר פתוח — צרו תוכנית בלי תשלום חדש.",
+      },
+    },
+    pricing: {
+      previousPrice: "מחיר קודם",
+      amountToPay: "הסכום לחיוב היום",
+      chargedInIls: "החיוב בשקלים (₪)",
+      includedInPlan: "כלול בתוכנית שלכם",
+      alreadyOwned: "כבר שלכם",
+    },
+    productPage: {
+      includedGuide: {
+        badge: "🎁 כלול בתוכנית שלכם",
+        title: "המדריך המלא לברצלונה",
+        cta: "פתיחת מדריך ברצלונה",
+      },
+    },
+    footer: {
+      brandLine: "יותר לטייל. פחות לתכנן.",
+      planHeading: "תוכנית אישית",
+      accountHeading: "החשבון שלכם",
+      contactHeading: "צור קשר",
+      faqLabel: "שאלות נפוצות",
+      linkStart: "התחילו את התוכנית",
+      linkHow: "איך זה עובד",
+      linkPrice: "מחיר",
+      linkAccount: "החשבון והתוכניות שלי",
+      rights: "© 2026 Travel Smarter. כל הזכויות שמורות.",
+      descriptor: "תוכניות טיול אישיות לפי הימים, תחומי העניין ומקום הלינה שלכם.",
+      privacyLabel: "מדיניות פרטיות",
+      termsLabel: "תנאי שימוש",
     },
   },
 };

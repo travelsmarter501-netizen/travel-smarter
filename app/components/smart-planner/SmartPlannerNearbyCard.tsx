@@ -30,7 +30,7 @@ export default function SmartPlannerNearbyCard({
     <button
       type="button"
       onClick={onClick}
-      className="flex w-36 shrink-0 flex-col gap-1.5 rounded-2xl border border-slate-200 bg-white p-2.5 text-right transition-colors hover:border-teal-300"
+      className="flex w-36 shrink-0 flex-col gap-1.5 rounded-2xl border border-slate-200 bg-white p-2.5 text-start transition-colors hover:border-teal-300"
     >
       <div className="relative h-20 w-full overflow-hidden rounded-xl bg-slate-100">
         {summary.image ? (

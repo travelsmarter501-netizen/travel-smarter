@@ -2,6 +2,7 @@
 
 import { IconStar } from "../icons";
 import ExternalLink from "./ExternalLink";
+import { PLACE_CARD_TEXT, type PlanLanguage } from "../../lib/i18n/planText";
 
 /** "1240" → "1.2K", "12400" → "12.4K", "307491" → "307K". Raw number is always kept in data — this is display-only. */
 export function formatReviewCount(n: number): string {
@@ -24,13 +25,16 @@ export default function RatingBadge({
   ratingSource,
   ratingUrl,
   className,
+  lang = "ar",
 }: {
   rating?: number;
   reviewCount?: number;
   ratingSource?: string;
   ratingUrl?: string;
   className?: string;
+  lang?: PlanLanguage;
 }) {
+  const ui = PLACE_CARD_TEXT[lang];
   if (!rating) return null;
 
   const content = (
@@ -48,7 +52,7 @@ export default function RatingBadge({
     <ExternalLink
       href={ratingUrl}
       onClick={(event) => event.stopPropagation()}
-      aria-label={`قراءة المراجعات على ${ratingSource ?? "الخريطة"}`}
+      aria-label={ui.readReviews(ratingSource ?? ui.mapFallback)}
       className="w-fit hover:underline"
     >
       {content}

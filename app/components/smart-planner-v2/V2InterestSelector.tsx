@@ -45,7 +45,7 @@ export default function V2InterestSelector({
 }) {
   const copy = usePlannerCopy().wizard;
   const { language } = useLanguage();
-  const lang = language === "en" ? "en" : "ar";
+  const lang = language;
   const activeGroupCount = surpriseMeActive ? 0 : V2_INTEREST_DISPLAY_GROUPS.filter((group) => isV2DisplayGroupActive(selected, group)).length;
 
   return (

@@ -16,6 +16,12 @@ const copy = {
     body: "Places, restaurants, shopping and more",
     cta: "Open Barcelona Guide",
   },
+  he: {
+    badge: "🎁 כלול בתוכנית שלכם",
+    title: "המדריך המלא לברצלונה",
+    body: "מקומות, מסעדות, קניות ועוד",
+    cta: "פתיחת מדריך ברצלונה",
+  },
 } as const;
 
 /**
@@ -24,7 +30,7 @@ const copy = {
  */
 export default function IncludedGuideCard() {
   const { language } = useLanguage();
-  const c = copy[language === "en" ? "en" : "ar"];
+  const c = copy[language];
 
   return (
     <section className="rounded-2xl border border-teal-200 bg-teal-50/70 p-5 sm:p-6">

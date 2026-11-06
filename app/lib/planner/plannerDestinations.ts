@@ -17,6 +17,7 @@ export type PlannerDestinationOption = {
   id: string;
   name: string;
   nameEn: string;
+  nameHe: string;
   flag: string;
   /** PUBLIC purchase availability. Only a city whose generation, saving, display, editing and quality checks all pass gets true. */
   available: boolean;
@@ -27,17 +28,17 @@ export type PlannerDestinationOption = {
  * entry is shown for real product positioning ("more cities are coming") but is never
  * selectable and never routes anywhere -- selecting one is a no-op in the UI. */
 export const PLANNER_DESTINATIONS: PlannerDestinationOption[] = [
-  { id: "barcelona", name: "برشلونة", nameEn: "Barcelona", flag: "🇪🇸", available: true },
-  { id: "rome", name: "روما", nameEn: "Rome", flag: "🇮🇹", available: false },
+  { id: "barcelona", name: "برشلونة", nameEn: "Barcelona", nameHe: "ברצלונה", flag: "🇪🇸", available: true },
+  { id: "rome", name: "روما", nameEn: "Rome", nameHe: "רומא", flag: "🇮🇹", available: false },
   // Prague: planner data + engine module exist (lib/planner/prague/); NOT public until its launch checks pass (docs/PROJECT_PLAN.md).
-  { id: "prague", name: "براغ", nameEn: "Prague", flag: "🇨🇿", available: false },
-  { id: "budapest", name: "بودابست", nameEn: "Budapest", flag: "🇭🇺", available: false },
-  { id: "dubai", name: "دبي", nameEn: "Dubai", flag: "🇦🇪", available: false },
-  { id: "batumi", name: "باتومي", nameEn: "Batumi", flag: "🇬🇪", available: false },
-  { id: "istanbul", name: "إسطنبول", nameEn: "Istanbul", flag: "🇹🇷", available: false },
-  { id: "vienna", name: "فيينا", nameEn: "Vienna", flag: "🇦🇹", available: false },
-  { id: "paris", name: "باريس", nameEn: "Paris", flag: "🇫🇷", available: false },
-  { id: "london", name: "لندن", nameEn: "London", flag: "🇬🇧", available: false },
+  { id: "prague", name: "براغ", nameEn: "Prague", nameHe: "פראג", flag: "🇨🇿", available: false },
+  { id: "budapest", name: "بودابست", nameEn: "Budapest", nameHe: "בודפשט", flag: "🇭🇺", available: false },
+  { id: "dubai", name: "دبي", nameEn: "Dubai", nameHe: "דובאי", flag: "🇦🇪", available: false },
+  { id: "batumi", name: "باتومي", nameEn: "Batumi", nameHe: "בטומי", flag: "🇬🇪", available: false },
+  { id: "istanbul", name: "إسطنبول", nameEn: "Istanbul", nameHe: "איסטנבול", flag: "🇹🇷", available: false },
+  { id: "vienna", name: "فيينا", nameEn: "Vienna", nameHe: "וינה", flag: "🇦🇹", available: false },
+  { id: "paris", name: "باريس", nameEn: "Paris", nameHe: "פריז", flag: "🇫🇷", available: false },
+  { id: "london", name: "لندن", nameEn: "London", nameHe: "לונדון", flag: "🇬🇧", available: false },
 ];
 
 export const DEFAULT_PLANNER_DESTINATION_ID = "barcelona";
@@ -77,17 +78,17 @@ export function isPreviewPlannerDestinationId(value: string | null | undefined):
  * Per-city wording for an interest group whose default label does not fit the city (Prague has no beaches, so the
  * "طبيعة وشواطئ" group -- still the same two internal keys -- reads "طبيعة وإطلالات" there). Display only.
  */
-const INTEREST_GROUP_LABEL_OVERRIDES: Record<string, { ar: Record<string, string>; en: Record<string, string> }> = {
-  prague: { ar: { natureBeaches: "طبيعة وإطلالات" }, en: { natureBeaches: "Nature & views" } },
+const INTEREST_GROUP_LABEL_OVERRIDES: Record<string, { ar: Record<string, string>; en: Record<string, string>; he: Record<string, string> }> = {
+  prague: { ar: { natureBeaches: "طبيعة وإطلالات" }, en: { natureBeaches: "Nature & views" }, he: { natureBeaches: "טבע ונופים" } },
 };
 
-export function interestGroupLabelForDestination(destinationId: string | null | undefined, groupId: string, language: "ar" | "en"): string | undefined {
+export function interestGroupLabelForDestination(destinationId: string | null | undefined, groupId: string, language: "ar" | "en" | "he"): string | undefined {
   if (!destinationId) return undefined;
   return INTEREST_GROUP_LABEL_OVERRIDES[destinationId]?.[language]?.[groupId];
 }
 
-export function plannerDestinationName(id: string, language: "ar" | "en" = "ar"): string {
+export function plannerDestinationName(id: string, language: "ar" | "en" | "he" = "ar"): string {
   const destination = PLANNER_DESTINATIONS.find((d) => d.id === id);
   if (!destination) return id;
-  return language === "en" ? destination.nameEn : destination.name;
+  return language === "en" ? destination.nameEn : language === "he" ? destination.nameHe : destination.name;
 }

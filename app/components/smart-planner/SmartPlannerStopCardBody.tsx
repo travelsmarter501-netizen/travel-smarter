@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { IconArrowRight, IconClock } from "../icons";
-import { formatMinutesAr } from "../../lib/readyPlan";
+import { formatMinutes, PLAN_TEXT, type PlanLanguage } from "../../lib/i18n/planText";
 import type { ResolvedPlaceSummary } from "../../lib/readyPlan";
 import type { PlannerOperationalWarning } from "../../lib/planner/barcelonaPlannerOperationalWarnings";
 
@@ -41,6 +41,7 @@ export default function SmartPlannerStopCardBody({
   onClick,
   priority,
   foodMeta,
+  lang = "ar",
 }: {
   summary: ResolvedPlaceSummary;
   areaName?: string;
@@ -50,13 +51,15 @@ export default function SmartPlannerStopCardBody({
   onClick: () => void;
   priority?: boolean;
   foodMeta?: StopCardFoodMeta;
+  /** Display language (plan view). V1 and other callers omit it = Arabic. */
+  lang?: PlanLanguage;
 }) {
   const [loaded, setLoaded] = useState(false);
   return (
     <button
       type="button"
       onClick={onClick}
-      className="flex w-full flex-1 flex-col gap-2.5 rounded-2xl border border-slate-200 bg-white p-3 text-right shadow-sm transition-shadow hover:shadow-md active:scale-[0.99]"
+      className="flex w-full flex-1 flex-col gap-2.5 rounded-2xl border border-slate-200 bg-white p-3 text-start shadow-sm transition-shadow hover:shadow-md active:scale-[0.99]"
     >
       <div className="flex items-center gap-3">
         <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-xl bg-slate-100">
@@ -120,7 +123,7 @@ export default function SmartPlannerStopCardBody({
             visitDurationMinutes !== undefined && (
               <p className="mt-1 flex items-center gap-1 text-[11px] font-semibold text-teal-700">
                 <IconClock className="h-3 w-3" />
-                {formatMinutesAr(visitDurationMinutes)}
+                {formatMinutes(lang, visitDurationMinutes)}
               </p>
             )
           )}
@@ -140,8 +143,8 @@ export default function SmartPlannerStopCardBody({
       )}
 
       <span className="flex items-center gap-1 self-start text-xs font-bold text-teal-700">
-        تفاصيل المكان
-        <IconArrowRight className="h-3.5 w-3.5 rotate-180" aria-hidden="true" />
+        {PLAN_TEXT[lang].placeDetails}
+        <IconArrowRight className="h-3.5 w-3.5 rtl:rotate-180" aria-hidden="true" />
       </span>
     </button>
   );

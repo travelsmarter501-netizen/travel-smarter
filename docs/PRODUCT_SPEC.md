@@ -75,7 +75,7 @@ Server-side validation and the stored shape: `app/lib/planner/personalizedPlanAn
 - Place details sheet: address (copyable), weekday-aware opening hours, rating, price information, place phone, Google Maps and Apple Maps links.
 - The Barcelona Guide is included with a Barcelona plan.
 - **Not implemented:** PDF/download, print, sharing, total trip cost, in-plan editing (editing is done from "My plans" by re-running the questionnaire), built-in ticket booking.
-- The plan view is **Arabic-only** and has "Barcelona" hard-coded in its title and summary (`app/components/smart-planner-v2/SmartPlannerV2Result.tsx`).
+- The plan view follows the site language: **Arabic, English or Hebrew** (phase 5L, `docs/PROJECT_PLAN.md`). The stored plan is never changed; `app/lib/i18n/localizePlan.ts` translates a display copy from reviewed translations in `app/lib/i18n/planCatalog.ts` and `planText.ts`. Stops, order, times, prices and links are identical in every language; a stored text without a reviewed translation is shown as stored. Barcelona transport notes are stored in English and shown in English in every language. The title names the plan's own city.
 
 ### 2.5 Price, payment, access
 

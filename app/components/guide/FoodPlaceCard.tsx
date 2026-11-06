@@ -6,6 +6,7 @@ import OpeningHours from "./OpeningHours";
 import RatingBadge from "./RatingBadge";
 import type { DietaryTag, FoodBadge, FoodPlace } from "../../lib/guideTypes";
 import type { Weekday } from "../../lib/hours";
+import { PLACE_CARD_TEXT, foodBadgeText, type PlanLanguage } from "../../lib/i18n/planText";
 
 const dietaryIcons: Record<DietaryTag, string> = {
   "pork-maybe": "🐷",
@@ -32,15 +33,19 @@ export default function FoodPlaceCard({
   isFavorite,
   onToggleFavorite,
   plannedWeekday,
+  lang = "ar",
 }: {
   place: FoodPlace;
   isFavorite: boolean;
   onToggleFavorite: () => void;
   /** See PlaceDetailsSheet.tsx's own doc comment. Omitted outside a dated itinerary. */
   plannedWeekday?: Weekday;
+  /** Display language (plan view); the guide pages omit it and stay Arabic. */
+  lang?: PlanLanguage;
 }) {
+  const ui = PLACE_CARD_TEXT[lang];
   const imageLinkHref = place.officialUrl ?? place.mapsUrl;
-  const imageLinkLabel = place.officialUrl ? `افتح الموقع الرسمي لـ ${place.name}` : `افتح ${place.name} في خرائط جوجل`;
+  const imageLinkLabel = place.officialUrl ? ui.openOfficial(place.name) : ui.openMaps(place.name);
 
   return (
     <article className="flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -61,7 +66,7 @@ export default function FoodPlaceCard({
         ) : (
           <div className="flex h-full w-full items-center justify-center gap-2 bg-gradient-to-br from-slate-50 to-slate-100 text-slate-400">
             <span className="text-xl">🍴</span>
-            <span className="text-[11px] font-medium text-slate-400">بدون صورة موثقة</span>
+            <span className="text-[11px] font-medium text-slate-400">{ui.noImageFood}</span>
           </div>
         )}
         <button
@@ -72,7 +77,7 @@ export default function FoodPlaceCard({
             onToggleFavorite();
           }}
           aria-pressed={isFavorite}
-          aria-label={isFavorite ? "إزالة من المفضلة" : "حفظ في المفضلة"}
+          aria-label={isFavorite ? ui.favoriteRemove : ui.favoriteAdd}
           className="absolute left-2.5 top-2.5 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-rose-600 shadow-sm backdrop-blur-sm transition-transform hover:scale-105"
         >
           <IconHeart filled={isFavorite} className="h-4 w-4" />
@@ -91,13 +96,13 @@ export default function FoodPlaceCard({
           <div className="mt-1.5 flex flex-wrap gap-1.5">
             {place.badges.map((badge) => (
               <span key={badge} className="rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-bold text-amber-800">
-                {badgeLabels[badge]}
+                {foodBadgeText(badge, badgeLabels[badge], lang)}
               </span>
             ))}
           </div>
         )}
 
-        <RatingBadge
+        <RatingBadge lang={lang}
           rating={place.rating}
           reviewCount={place.reviewCount}
           ratingSource={place.ratingSource}
@@ -118,11 +123,11 @@ export default function FoodPlaceCard({
         )}
 
         <div className="mt-2">
-          <OpeningHours hours={place.hours} plannedWeekday={plannedWeekday} />
+          <OpeningHours lang={lang} hours={place.hours} plannedWeekday={plannedWeekday} />
         </div>
 
         <div className="mt-3">
-          <LocationInfo area={place.area} address={place.address} phone={place.phone} mapsUrl={place.mapsUrl} appleMapsUrl={place.appleMapsUrl} />
+          <LocationInfo lang={lang} area={place.area} address={place.address} phone={place.phone} mapsUrl={place.mapsUrl} appleMapsUrl={place.appleMapsUrl} />
         </div>
 
         {place.officialUrl && (
@@ -131,7 +136,7 @@ export default function FoodPlaceCard({
               href={place.officialUrl}
               className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:border-teal-300"
             >
-              🌐 الموقع الرسمي
+              {ui.official}
               <IconExternalLink className="h-3 w-3 opacity-60" />
             </ExternalLink>
           </div>

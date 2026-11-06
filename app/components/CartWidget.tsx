@@ -138,7 +138,7 @@ export default function CartWidget() {
                     >
                       <div className="min-w-0 flex-1">
                         <p dir="auto" className="truncate text-sm font-semibold text-slate-900">
-                          {language === "ar" ? item.titleAr : item.titleEn}
+                          {language === "ar" ? item.titleAr : language === "he" ? (t.products.items.find((product) => product.id === item.id)?.title ?? item.titleEn) : item.titleEn}
                         </p>
                         <p className="mt-1 text-xs font-semibold text-brand">
                           {isIncludedInBundle(item) ? (

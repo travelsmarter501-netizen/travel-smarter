@@ -18,7 +18,7 @@ function SignupForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { language } = useLanguage();
-  const c = authCopy[language === "en" ? "en" : "ar"];
+  const c = authCopy[language];
   const next = safeNextPath(searchParams.get("next"));
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");

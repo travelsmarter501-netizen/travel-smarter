@@ -5,11 +5,9 @@ import SmartPlannerStopCardBody from "../smart-planner/SmartPlannerStopCardBody"
 import SmartPlannerTransportConnector from "../smart-planner/SmartPlannerTransportConnector";
 import SmartPlannerNearbyCard from "../smart-planner/SmartPlannerNearbyCard";
 import PlaceDetailsSheet from "../guide/PlaceDetailsSheet";
-import { WEEKDAY_LABELS_AR } from "../../lib/hours";
-import { ARABIC_MONTH_NAMES } from "../../lib/planner/dateOnly";
-import { buildUnifiedTimelineEntries, formatMealCountAr, formatPlaceCountAr, type UnifiedTimelineEntry } from "../../lib/planner/v2TimelineItems";
+import { buildUnifiedTimelineEntries, type UnifiedTimelineEntry } from "../../lib/planner/v2TimelineItems";
+import { PLAN_TEXT, formatDayHeader, formatMealCount, formatPlaceCount, storedTextDir, type PlanLanguage } from "../../lib/i18n/planText";
 import { formatTimelineClock } from "../../lib/planner/barcelonaV2Timeline";
-import type { Weekday } from "../../lib/hours";
 import type { ResolvedPlace } from "../../lib/readyPlan";
 import type { V2Day } from "../../lib/planner/barcelonaV2Resolve";
 import type { V2MealStop } from "../../lib/planner/barcelonaV2MealStops";
@@ -42,34 +40,15 @@ import type { PlannerOptionalSuggestion } from "../../lib/planner/plannerPresent
 // squeezed the card enough to truncate long place names.
 const RAIL_WIDTH = "w-11 sm:w-12";
 
-const SUGGESTION_TYPE_LABEL: Record<PlannerOptionalSuggestion["type"], string> = {
-  food: "اقتراح أكل",
-  cafe: "كافيه",
-  nightlife: "اقتراح سهرة",
-  experience: "تجربة",
-  photo: "بقعة تصوير",
-  local: "تجربة محلية",
+// Labels for the optional-suggestion types and meal types come from PLAN_TEXT[lang] (lib/i18n/planText.ts).
+const MEAL_TYPE_ICON: Record<V2MealStop["mealType"], string> = {
+  breakfast: "🍳",
+  lunch: "🍽️",
+  tapas: "🍢",
+  dinner: "🌙",
 };
-
-const FOOD_MEAL_LABEL: Record<V2FoodSuggestion["mealType"], string> = {
-  lunch: "اقتراح غداء",
-  dinner: "اقتراح عشاء",
-};
-
-const MEAL_TYPE_BADGE: Record<V2MealStop["mealType"], { icon: string; label: string }> = {
-  breakfast: { icon: "🍳", label: "فطور" },
-  lunch: { icon: "🍽️", label: "غداء" },
-  tapas: { icon: "🍢", label: "تاباس" },
-  dinner: { icon: "🌙", label: "عشاء" },
-};
-
-function formatDateHeader(actualDate: string, weekday: Weekday): string {
-  const parts = actualDate.split("-").map(Number);
-  const month = parts[1];
-  const day = parts[2];
-  const monthName = ARABIC_MONTH_NAMES[month - 1] ?? "";
-  return `${WEEKDAY_LABELS_AR[weekday]}، ${day} ${monthName}`;
-}
+type SuggestionType = PlannerOptionalSuggestion["type"];
+type FoodMeal = V2FoodSuggestion["mealType"];
 
 /** A numbered stop's own rail segment: time label + numbered dot + connecting line stub. The
  * line is a `flex-1` element so it stretches to fill this row's full height, matching the
@@ -96,13 +75,17 @@ export default function SmartPlannerV2Day({
   day,
   guideSlug,
   placeDetails,
+  lang = "ar",
 }: {
   day: V2Day;
   guideSlug: string;
   /** Optional -- absent on an old saved plan frozen before this field existed. Undefined is
    * treated identically to an empty map, never crashes (see this file's own header comment). */
   placeDetails?: Record<string, ResolvedPlace>;
+  /** Display language. The day passed in is already the translated display copy (localizePlan). */
+  lang?: PlanLanguage;
 }) {
+  const ui = PLAN_TEXT[lang];
   const [activePlaceId, setActivePlaceId] = useState<string | null>(null);
   const activeResolved = activePlaceId ? placeDetails?.[activePlaceId] : undefined;
 
@@ -120,12 +103,12 @@ export default function SmartPlannerV2Day({
   return (
     <div>
       <h2 className="text-lg font-bold text-slate-900">
-        اليوم {day.dayNumber}
-        {day.actualDate && day.weekday && <span className="font-semibold text-slate-500"> — {formatDateHeader(day.actualDate, day.weekday)}</span>}
+        {ui.dayTab(day.dayNumber)}
+        {day.actualDate && day.weekday && <span className="font-semibold text-slate-500"> — {formatDayHeader(lang, day.actualDate, day.weekday)}</span>}
       </h2>
-      <p className="mt-1 text-base font-semibold text-slate-800">{day.title}</p>
-      <p className="mt-1 text-sm text-slate-600">{day.summary}</p>
-      {day.highlight && <p className="mt-2 rounded-xl bg-teal-50 px-3 py-2 text-xs font-semibold text-teal-700">{day.highlight}</p>}
+      <p dir={storedTextDir(day.title, lang)} className="mt-1 text-base font-semibold text-slate-800">{day.title}</p>
+      <p dir={storedTextDir(day.summary, lang)} className="mt-1 text-sm text-slate-600">{day.summary}</p>
+      {day.highlight && <p dir={storedTextDir(day.highlight, lang)} className="mt-2 rounded-xl bg-teal-50 px-3 py-2 text-xs font-semibold text-teal-700">{day.highlight}</p>}
 
       {/* Day summary -- start/finish clock, place/meal counts, a transport-mode summary ONLY
           when every leg on this day is actually resolved (never a fake total when some legs are
@@ -133,11 +116,11 @@ export default function SmartPlannerV2Day({
       {day.timeline && day.stops.length > 0 && (
         <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 rounded-xl bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-600">
           <span>
-            ⏰ ابدأ يومك: {formatTimelineClock(day.timeline.dayStartMinutes)} · ينتهي تقريبًا: {formatTimelineClock(day.timeline.dayEndMinutes)}
-            {day.timeline.approximate && <span className="text-slate-400"> (الوقت تقريبي)</span>}
+            {ui.dayStart} <bdi dir="ltr">{formatTimelineClock(day.timeline.dayStartMinutes)}</bdi> · {ui.dayEnd} <bdi dir="ltr">{formatTimelineClock(day.timeline.dayEndMinutes)}</bdi>
+            {day.timeline.approximate && <span className="text-slate-400"> {ui.approximate}</span>}
           </span>
-          <span>📍 {formatPlaceCountAr(day.stops.length)}</span>
-          {(day.mealStops?.length ?? 0) > 0 && <span>🍽️ {formatMealCountAr(day.mealStops!.length)}</span>}
+          <span>📍 {formatPlaceCount(lang, day.stops.length)}</span>
+          {(day.mealStops?.length ?? 0) > 0 && <span>🍽️ {formatMealCount(lang, day.mealStops!.length)}</span>}
           {(() => {
             const resolvedLegs = day.legs.filter((leg) => leg.sourceStatus !== "unresolved" && leg.recommendedMode);
             if (day.legs.length === 0 || resolvedLegs.length !== day.legs.length) return null;
@@ -149,7 +132,7 @@ export default function SmartPlannerV2Day({
             const dominantIcon = walkingCount >= resolvedLegs.length / 2 ? "🚶" : "🚇";
             return (
               <span>
-                {dominantIcon} إجمالي التنقل تقريبًا {totalMinutes} دقيقة
+                {dominantIcon} {ui.totalTransit(totalMinutes)}
               </span>
             );
           })()}
@@ -191,12 +174,12 @@ export default function SmartPlannerV2Day({
                       </span>
                       <span className="mt-1 w-px flex-1 border-r border-dashed border-slate-300" aria-hidden="true" />
                     </div>
-                    <div className="mb-3 flex-1 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-3 py-2.5 text-right">
+                    <div className="mb-3 flex-1 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-3 py-2.5 text-start">
                       <p dir="ltr" className="text-xs font-bold text-slate-500">
                         {formatTimelineClock(entry.block.startMinutes)}–{formatTimelineClock(entry.block.endMinutes)}
                       </p>
-                      <p className="mt-0.5 text-xs font-bold text-slate-600">🕒 وقت حر</p>
-                      <p className="mt-0.5 text-[11px] leading-4 text-slate-400">استراحة، رجوع للفندق، أو وقت مفتوح قبل المحطة التالية</p>
+                      <p className="mt-0.5 text-xs font-bold text-slate-600">{ui.freeTime}</p>
+                      <p className="mt-0.5 text-[11px] leading-4 text-slate-400">{ui.freeTimeNote}</p>
                     </div>
                   </>
                 ) : (
@@ -210,14 +193,16 @@ export default function SmartPlannerV2Day({
                           warnings={entry.place.warnings}
                           onClick={() => setActivePlaceId(entry.place.id)}
                           priority={entry.number <= 2}
+                          lang={lang}
                         />
                       ) : (
                         <SmartPlannerStopCardBody
                           summary={entry.meal}
                           onClick={() => setActivePlaceId(entry.meal.id)}
+                          lang={lang}
                           foodMeta={{
-                            mealTypeIcon: MEAL_TYPE_BADGE[entry.meal.mealType].icon,
-                            mealTypeLabel: MEAL_TYPE_BADGE[entry.meal.mealType].label,
+                            mealTypeIcon: MEAL_TYPE_ICON[entry.meal.mealType],
+                            mealTypeLabel: ui.mealType[entry.meal.mealType],
                             cuisineLabel: `${entry.meal.categoryIcon} ${entry.meal.categoryLabel}`,
                             priceLevel: entry.meal.priceLevel,
                             rating: entry.meal.rating,
@@ -228,7 +213,7 @@ export default function SmartPlannerV2Day({
                   </>
                 )}
               </div>
-              {needsConnector && leg && fromSummary && toSummary && <SmartPlannerTransportConnector leg={leg} from={fromSummary} to={toSummary} railWidth={RAIL_WIDTH} />}
+              {needsConnector && leg && fromSummary && toSummary && <SmartPlannerTransportConnector leg={leg} from={fromSummary} to={toSummary} railWidth={RAIL_WIDTH} lang={lang} />}
             </Fragment>
           );
         })}
@@ -236,10 +221,10 @@ export default function SmartPlannerV2Day({
 
       {day.foodSuggestions.length > 0 && (
         <div className="mt-4">
-          <p className="mb-2 text-xs font-bold text-slate-500">اقتراحات أكل</p>
+          <p className="mb-2 text-xs font-bold text-slate-500">{ui.foodSuggestions}</p>
           <div className="flex gap-2.5 overflow-x-auto pb-1">
             {day.foodSuggestions.map((food) => (
-              <SmartPlannerNearbyCard key={food.id} summary={food} typeLabel={FOOD_MEAL_LABEL[food.mealType]} onClick={() => setActivePlaceId(food.id)} />
+              <SmartPlannerNearbyCard key={food.id} summary={food} typeLabel={ui.foodMeal[food.mealType as FoodMeal]} onClick={() => setActivePlaceId(food.id)} />
             ))}
           </div>
         </div>
@@ -247,10 +232,10 @@ export default function SmartPlannerV2Day({
 
       {day.shoppingSuggestions.length > 0 && (
         <div className="mt-4">
-          <p className="mb-2 text-xs font-bold text-slate-500">تسوق</p>
+          <p className="mb-2 text-xs font-bold text-slate-500">{ui.shopping}</p>
           <div className="flex gap-2.5 overflow-x-auto pb-1">
             {day.shoppingSuggestions.map((shop) => (
-              <SmartPlannerNearbyCard key={shop.id} summary={shop} typeLabel="تسوق" reason={shop.bestFor} onClick={() => setActivePlaceId(shop.id)} />
+              <SmartPlannerNearbyCard key={shop.id} summary={shop} typeLabel={ui.shopping} reason={shop.bestFor} onClick={() => setActivePlaceId(shop.id)} />
             ))}
           </div>
         </div>
@@ -258,10 +243,10 @@ export default function SmartPlannerV2Day({
 
       {day.nightlifeSuggestions.length > 0 && (
         <div className="mt-4">
-          <p className="mb-2 text-xs font-bold text-slate-500">اقتراح سهرة</p>
+          <p className="mb-2 text-xs font-bold text-slate-500">{ui.nightlife}</p>
           <div className="flex gap-2.5 overflow-x-auto pb-1">
             {day.nightlifeSuggestions.map((venue) => (
-              <SmartPlannerNearbyCard key={venue.id} summary={venue} typeLabel="اقتراح سهرة" reason="عادة بعد الساعة 22:00" onClick={() => setActivePlaceId(venue.id)} />
+              <SmartPlannerNearbyCard key={venue.id} summary={venue} typeLabel={ui.nightlife} reason={ui.nightlifeReason} onClick={() => setActivePlaceId(venue.id)} />
             ))}
           </div>
         </div>
@@ -269,16 +254,16 @@ export default function SmartPlannerV2Day({
 
       {day.optionalNearby.length > 0 && (
         <div className="mt-4">
-          <p className="mb-2 text-xs font-bold text-slate-500">اقتراحات قريبة منك</p>
+          <p className="mb-2 text-xs font-bold text-slate-500">{ui.nearby}</p>
           <div className="flex gap-2.5 overflow-x-auto pb-1">
             {day.optionalNearby.map((nearby) => (
-              <SmartPlannerNearbyCard key={nearby.id} summary={nearby} typeLabel={SUGGESTION_TYPE_LABEL[nearby.type]} reason={nearby.reason} onClick={() => setActivePlaceId(nearby.id)} />
+              <SmartPlannerNearbyCard key={nearby.id} summary={nearby} typeLabel={ui.suggestionType[nearby.type as SuggestionType]} reason={nearby.reason} onClick={() => setActivePlaceId(nearby.id)} />
             ))}
           </div>
         </div>
       )}
 
-      <PlaceDetailsSheet guideSlug={guideSlug} resolved={activeResolved} open={!!activePlaceId} onClose={() => setActivePlaceId(null)} plannedWeekday={day.weekday} />
+      <PlaceDetailsSheet guideSlug={guideSlug} resolved={activeResolved} open={!!activePlaceId} onClose={() => setActivePlaceId(null)} plannedWeekday={day.weekday} lang={lang} />
     </div>
   );
 }

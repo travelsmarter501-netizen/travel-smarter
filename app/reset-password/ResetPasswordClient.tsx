@@ -14,7 +14,7 @@ const MIN_PASSWORD_LENGTH = 6;
 export default function ResetPasswordClient({ hasSession, continueTo, next }: { hasSession: boolean; continueTo: string; next: string }) {
   const router = useRouter();
   const { language } = useLanguage();
-  const c = authCopy[language === "en" ? "en" : "ar"];
+  const c = authCopy[language];
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);

@@ -112,7 +112,7 @@ export default function CheckoutClient({
                 <li key={item.id} className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 px-4 py-3">
                   <div className="min-w-0">
                     <p dir="auto" className="truncate text-sm font-semibold text-slate-900">
-                      {language === "ar" ? item.titleAr : item.titleEn}
+                      {language === "ar" ? item.titleAr : language === "he" ? (t.products.items.find((product) => product.id === item.id)?.title ?? item.titleEn) : item.titleEn}
                     </p>
                     <p className="mt-1 text-xs font-semibold text-teal-700">
                       {notCharged === "included" ? (
@@ -148,7 +148,7 @@ export default function CheckoutClient({
           {!signedIn && (
             <div className="mt-6">
               <label htmlFor="checkout-email" className="mb-1.5 block text-sm font-semibold text-slate-800">
-                {language === "ar" ? "البريد الإلكتروني" : "Email"}
+                {language === "ar" ? "البريد الإلكتروني" : language === "he" ? "אימייל" : "Email"}
               </label>
               <input
                 id="checkout-email"
@@ -163,7 +163,7 @@ export default function CheckoutClient({
                 className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm text-slate-900 outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100"
               />
               <p className="mt-2 text-xs leading-5 text-slate-500">
-                {language === "ar" ? "سنستخدم بريدك لإرسال تفاصيل الطلب." : "We’ll use your email to send your order details."}
+                {language === "ar" ? "سنستخدم بريدك لإرسال تفاصيل الطلب." : language === "he" ? "נשתמש באימייל שלכם כדי לשלוח את פרטי ההזמנה." : "We’ll use your email to send your order details."}
               </p>
             </div>
           )}

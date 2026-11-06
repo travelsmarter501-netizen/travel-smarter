@@ -6,22 +6,27 @@ import OpeningHours from "./OpeningHours";
 import RatingBadge from "./RatingBadge";
 import type { Experience } from "../../lib/guideTypes";
 import type { Weekday } from "../../lib/hours";
+import { PLACE_CARD_TEXT, type PlanLanguage } from "../../lib/i18n/planText";
 
 export default function ExperienceCard({
   experience,
   isFavorite,
   onToggleFavorite,
   plannedWeekday,
+  lang = "ar",
 }: {
   experience: Experience;
   isFavorite: boolean;
   onToggleFavorite: () => void;
   /** See PlaceDetailsSheet.tsx's own doc comment. Omitted outside a dated itinerary. */
   plannedWeekday?: Weekday;
+  /** Display language (plan view); the guide pages omit it and stay Arabic. */
+  lang?: PlanLanguage;
 }) {
+  const ui = PLACE_CARD_TEXT[lang];
   const websiteHref = experience.bookingUrl ?? experience.officialUrl;
   const imageLinkHref = websiteHref ?? experience.mapsUrl;
-  const imageLinkLabel = websiteHref ? `افتح صفحة حجز ${experience.name}` : `افتح ${experience.name} في خرائط جوجل`;
+  const imageLinkLabel = websiteHref ? ui.openBooking(experience.name) : ui.openMaps(experience.name);
 
   return (
     <article className="flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -43,7 +48,7 @@ export default function ExperienceCard({
           ) : (
             <div className="flex h-full w-full flex-col items-center justify-center gap-1 bg-gradient-to-br from-slate-100 to-slate-200 text-slate-400">
               <span className="text-2xl">🔥</span>
-              <span className="text-[11px] font-medium">لا توجد صورة موثقة</span>
+              <span className="text-[11px] font-medium">{ui.noImage}</span>
             </div>
           )}
           <button
@@ -54,7 +59,7 @@ export default function ExperienceCard({
               onToggleFavorite();
             }}
             aria-pressed={isFavorite}
-            aria-label={isFavorite ? "إزالة من المفضلة" : "حفظ في المفضلة"}
+            aria-label={isFavorite ? ui.favoriteRemove : ui.favoriteAdd}
             className="absolute left-2.5 top-2.5 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-rose-600 shadow-sm backdrop-blur-sm transition-transform hover:scale-105"
           >
             <IconHeart filled={isFavorite} className="h-4 w-4" />
@@ -67,7 +72,7 @@ export default function ExperienceCard({
             type="button"
             onClick={onToggleFavorite}
             aria-pressed={isFavorite}
-            aria-label={isFavorite ? "إزالة من المفضلة" : "حفظ في المفضلة"}
+            aria-label={isFavorite ? ui.favoriteRemove : ui.favoriteAdd}
             className="absolute left-2.5 top-2.5 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-rose-600 shadow-sm backdrop-blur-sm"
           >
             <IconHeart filled={isFavorite} className="h-4 w-4" />
@@ -85,7 +90,7 @@ export default function ExperienceCard({
           </span>
         </div>
 
-        <RatingBadge
+        <RatingBadge lang={lang}
           rating={experience.rating}
           reviewCount={experience.reviewCount}
           ratingSource={experience.ratingSource}
@@ -106,37 +111,37 @@ export default function ExperienceCard({
         <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
           {experience.duration && (
             <div className="rounded-lg bg-slate-50 px-2.5 py-2">
-              <p className="text-slate-500">⏱ المدة</p>
+              <p className="text-slate-500">{ui.duration}</p>
               <p className="mt-0.5 font-semibold text-slate-800">{experience.duration}</p>
             </div>
           )}
           <div className="rounded-lg bg-slate-50 px-2.5 py-2">
-            <p className="text-slate-500">📅 الحجز</p>
-            <p className="mt-0.5 font-semibold text-slate-800">{experience.bookingRequired ? "ضروري مسبقًا" : "غالبًا بدون حجز"}</p>
+            <p className="text-slate-500">{ui.booking}</p>
+            <p className="mt-0.5 font-semibold text-slate-800">{experience.bookingRequired ? ui.bookingRequired : ui.bookingUsuallyNot}</p>
           </div>
           {experience.ageRequirement && (
             <div className="rounded-lg bg-slate-50 px-2.5 py-2">
-              <p className="text-slate-500">🔞 العمر</p>
+              <p className="text-slate-500">{ui.age}</p>
               <p className="mt-0.5 font-semibold text-slate-800">{experience.ageRequirement}</p>
             </div>
           )}
           {experience.priceVaries && (
             <div className="rounded-lg bg-amber-50 px-2.5 py-2">
-              <p className="text-amber-700">⚠️ السعر يتغير</p>
-              <p className="mt-0.5 font-semibold text-amber-800">حسب الموسم/الباقة</p>
+              <p className="text-amber-700">{ui.priceVaries}</p>
+              <p className="mt-0.5 font-semibold text-amber-800">{ui.priceVariesNote}</p>
             </div>
           )}
         </div>
 
         {experience.hours && (
           <div className="mt-3">
-            <OpeningHours hours={experience.hours} plannedWeekday={plannedWeekday} />
+            <OpeningHours lang={lang} hours={experience.hours} plannedWeekday={plannedWeekday} />
           </div>
         )}
 
         {experience.mapsUrl && experience.appleMapsUrl && (
           <div className="mt-3">
-            <LocationInfo area={experience.area} address={experience.address} mapsUrl={experience.mapsUrl} appleMapsUrl={experience.appleMapsUrl} />
+            <LocationInfo lang={lang} area={experience.area} address={experience.address} mapsUrl={experience.mapsUrl} appleMapsUrl={experience.appleMapsUrl} />
           </div>
         )}
 
@@ -147,7 +152,7 @@ export default function ExperienceCard({
                 href={experience.officialUrl}
                 className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:border-teal-300"
               >
-                🌐 الموقع الرسمي
+                {ui.official}
                 <IconExternalLink className="h-3 w-3 opacity-60" />
               </ExternalLink>
             )}
@@ -156,7 +161,7 @@ export default function ExperienceCard({
                 href={experience.bookingUrl}
                 className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-800 hover:border-amber-300"
               >
-                🎟 احجز الآن
+                {ui.bookNow}
               </ExternalLink>
             )}
           </div>

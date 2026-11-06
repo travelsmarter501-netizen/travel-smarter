@@ -1,5 +1,5 @@
 import { V2_INTEREST_DISPLAY_GROUPS, isV2DisplayGroupActive, type V2PlannerInterest } from "./v2PlannerTypes";
-import { fillCopy, plannerCopyAr, plannerCopyEn } from "../plannerCopy";
+import { fillCopy, plannerCopyAr, plannerCopyEn, plannerCopyHe } from "../plannerCopy";
 import { interestGroupLabelForDestination } from "./plannerDestinations";
 
 /**
@@ -18,9 +18,9 @@ export type TripDetailsInput = {
 
 export type TripDetails = { interests: string | null; accommodation: string | null };
 
-export function personalizedTripDetails(input: TripDetailsInput | null | undefined, language: "ar" | "en"): TripDetails {
+export function personalizedTripDetails(input: TripDetailsInput | null | undefined, language: "ar" | "en" | "he"): TripDetails {
   if (!input) return { interests: null, accommodation: null };
-  const copy = language === "en" ? plannerCopyEn : plannerCopyAr;
+  const copy = language === "en" ? plannerCopyEn : language === "he" ? plannerCopyHe : plannerCopyAr;
 
   const interestNames = input.surpriseMe
     ? copy.wizard.surpriseMe

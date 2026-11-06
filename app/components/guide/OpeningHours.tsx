@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import { IconChevronDown } from "../icons";
-import { formatIntervals, getNowInTimeZone, isOpenNow, ORDERED_WEEKDAYS, WEEKDAY_LABELS_AR } from "../../lib/hours";
+import { getNowInTimeZone, isOpenNow, ORDERED_WEEKDAYS } from "../../lib/hours";
+import { PLACE_CARD_TEXT, weekdayLabel, type PlanLanguage } from "../../lib/i18n/planText";
+import type { TimeRange } from "../../lib/hours";
 import type { HoursInfo, Weekday } from "../../lib/hours";
 
 /**
@@ -20,8 +22,12 @@ import type { HoursInfo, Weekday } from "../../lib/hours";
  * old saved plan with no `weekday` field): behavior is 100% identical to before this prop
  * existed -- real "right now" hours/status, exactly as a Guide visitor browsing today expects.
  */
-export default function OpeningHours({ hours, timeZone = "Europe/Madrid", plannedWeekday }: { hours?: HoursInfo; timeZone?: string; plannedWeekday?: Weekday }) {
+export default function OpeningHours({ hours, timeZone = "Europe/Madrid", plannedWeekday, lang = "ar" }: { hours?: HoursInfo; timeZone?: string; plannedWeekday?: Weekday; lang?: PlanLanguage }) {
   const [expanded, setExpanded] = useState(false);
+  const ui = PLACE_CARD_TEXT[lang].hours;
+  /** Same format as hours.ts formatIntervals (Arabic output identical). */
+  const formatIntervals = (intervals: TimeRange[] | undefined): string =>
+    !intervals || intervals.length === 0 ? ui.closed : intervals.map((iv) => `${iv.open}–${iv.close}`).join(" · ");
 
   if (!hours) return null;
 
@@ -29,7 +35,7 @@ export default function OpeningHours({ hours, timeZone = "Europe/Madrid", planne
     return (
       <p className="flex items-center gap-1.5 text-sm text-slate-700">
         <span>🕒</span>
-        <span>مفتوح 24 ساعة</span>
+        <span>{ui.open24}</span>
       </p>
     );
   }
@@ -38,7 +44,7 @@ export default function OpeningHours({ hours, timeZone = "Europe/Madrid", planne
     return (
       <p className="flex items-center gap-1.5 text-sm text-slate-700">
         <span>🕒</span>
-        <span>{hours.display ?? "حسب الفعالية"}</span>
+        <span>{hours.display ?? ui.byEvent}</span>
       </p>
     );
   }
@@ -59,7 +65,7 @@ export default function OpeningHours({ hours, timeZone = "Europe/Madrid", planne
           type="button"
           onClick={() => setExpanded((v) => !v)}
           aria-expanded={expanded}
-          aria-label="عرض الساعات الموسمية"
+          aria-label={ui.seasonalAria}
           className="flex w-full items-center justify-between gap-2 rounded-lg bg-slate-50 px-2.5 py-2 text-start"
         >
           <span className="flex items-center gap-1.5 text-sm text-slate-700">
@@ -85,7 +91,7 @@ export default function OpeningHours({ hours, timeZone = "Europe/Madrid", planne
     return (
       <div className="flex items-center gap-2 text-sm font-medium text-red-600">
         <span>🔴</span>
-        <span>{hours.display ?? "مغلق مؤقتًا"}</span>
+        <span>{hours.display ?? ui.tempClosed}</span>
       </div>
     );
   }
@@ -97,10 +103,10 @@ export default function OpeningHours({ hours, timeZone = "Europe/Madrid", planne
   // have any interval at all) -- never a live "right now" status, which has no honest meaning
   // for a date that may not be today. `isOpenNow` (real-time) is only computed/used when there is
   // no planned day at all.
-  const openOnPlannedDay = displayText !== "مغلق";
+  const openOnPlannedDay = (hours.schedule[displayDay]?.length ?? 0) > 0;
   const openNow = !isPlanned && isOpenNow(hours.schedule, timeZone);
   const isOpenForDisplay = isPlanned ? openOnPlannedDay : openNow;
-  const statusLabel = isPlanned ? (openOnPlannedDay ? "مفتوح هذا اليوم" : "مغلق هذا اليوم") : openNow ? "مفتوح الآن" : "مغلق الآن";
+  const statusLabel = isPlanned ? (openOnPlannedDay ? ui.openThisDay : ui.closedThisDay) : openNow ? ui.openNow : ui.closedNow;
 
   return (
     <div>
@@ -108,12 +114,12 @@ export default function OpeningHours({ hours, timeZone = "Europe/Madrid", planne
         type="button"
         onClick={() => setExpanded((v) => !v)}
         aria-expanded={expanded}
-        aria-label="عرض ساعات العمل للأسبوع"
+        aria-label={ui.weekAria}
         className="flex w-full items-center justify-between gap-2 rounded-lg bg-slate-50 px-2.5 py-2 text-start"
       >
         <span className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
           <span className="text-slate-700">
-            <span className="text-slate-500">{isPlanned ? `🕒 ساعات يوم ${WEEKDAY_LABELS_AR[displayDay]}: ` : "🕒 اليوم: "}</span>
+            <span className="text-slate-500">{isPlanned ? ui.plannedDay(weekdayLabel(lang, displayDay)) : ui.today}</span>
             <span className="font-semibold text-slate-900">{displayText}</span>
           </span>
           <span className={`inline-flex items-center gap-1 text-xs font-semibold ${isOpenForDisplay ? "text-teal-700" : "text-slate-400"}`}>
@@ -129,9 +135,9 @@ export default function OpeningHours({ hours, timeZone = "Europe/Madrid", planne
           {ORDERED_WEEKDAYS.map((day) => (
             <div key={day} className={`flex items-center justify-between rounded px-1.5 py-1 ${day === displayDay ? "bg-teal-50" : ""}`}>
               <span className={`flex items-center gap-1.5 ${day === displayDay ? "font-semibold text-teal-800" : "text-slate-600"}`}>
-                {WEEKDAY_LABELS_AR[day]}
+                {weekdayLabel(lang, day)}
                 {day === displayDay && (
-                  <span className="rounded-full bg-teal-100 px-1.5 py-0.5 text-[10px] text-teal-700">{isPlanned ? "يوم رحلتك" : "اليوم"}</span>
+                  <span className="rounded-full bg-teal-100 px-1.5 py-0.5 text-[10px] text-teal-700">{isPlanned ? ui.yourTripDay : ui.todayBadge}</span>
                 )}
               </span>
               <span className={day === displayDay ? "font-semibold text-teal-800" : "text-slate-700"}>{formatIntervals(hours.schedule[day])}</span>

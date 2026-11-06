@@ -1,7 +1,7 @@
 "use client";
 
 import { useLanguage } from "./language";
-import { plannerCopyAr, plannerCopyEn, type PlannerCopy } from "./plannerCopy";
+import { plannerCopyAr, plannerCopyEn, plannerCopyHe, type PlannerCopy } from "./plannerCopy";
 
 /**
  * The planner / checkout wording for the current language.
@@ -12,5 +12,5 @@ import { plannerCopyAr, plannerCopyEn, type PlannerCopy } from "./plannerCopy";
  */
 export function usePlannerCopy(): PlannerCopy {
   const { language } = useLanguage();
-  return language === "en" ? plannerCopyEn : plannerCopyAr;
+  return language === "en" ? plannerCopyEn : language === "he" ? plannerCopyHe : plannerCopyAr;
 }

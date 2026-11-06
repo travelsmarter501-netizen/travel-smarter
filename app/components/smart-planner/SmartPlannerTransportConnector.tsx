@@ -4,6 +4,7 @@ import { useState } from "react";
 import SmartPlannerTransportSheet from "./SmartPlannerTransportSheet";
 import { IconChevronDown } from "../icons";
 import { PLANNER_TRANSPORT_MODE_META, formatPlannerTransportOptionLabel } from "../../lib/planner/plannerTransportFormat";
+import { PLAN_TEXT, type PlanLanguage } from "../../lib/i18n/planText";
 import type { ResolvedPlaceSummary } from "../../lib/readyPlan";
 import type { PlannerRouteLeg, TransportMode } from "../../lib/planner/plannerTransportTypes";
 
@@ -28,12 +29,15 @@ export default function SmartPlannerTransportConnector({
   from,
   to,
   railWidth,
+  lang = "ar",
 }: {
   leg: PlannerRouteLeg;
   from: ResolvedPlaceSummary;
   to: ResolvedPlaceSummary;
   railWidth?: string;
+  lang?: PlanLanguage;
 }) {
+  const ui = PLAN_TEXT[lang];
   const [selectedMode, setSelectedMode] = useState<TransportMode | null>(leg.recommendedMode);
   const [sheetOpen, setSheetOpen] = useState(false);
 
@@ -48,16 +52,16 @@ export default function SmartPlannerTransportConnector({
       <button
         type="button"
         onClick={() => setSheetOpen(true)}
-        className="flex min-h-11 flex-1 items-center gap-1 py-1.5 text-right text-xs text-slate-500 transition-colors hover:text-slate-700"
+        className="flex min-h-11 flex-1 items-center gap-1 py-1.5 text-start text-xs text-slate-500 transition-colors hover:text-slate-700"
       >
         {selectedMode && option ? (
           <span className="flex items-center gap-1 font-semibold text-slate-500">
             <span>{PLANNER_TRANSPORT_MODE_META[selectedMode].icon}</span>
-            <span>{formatPlannerTransportOptionLabel(option)}</span>
-            {leg.sourceStatus === "estimated" && <span className="font-medium text-slate-400">· تقدير تقريبي</span>}
+            <span>{formatPlannerTransportOptionLabel(option, lang)}</span>
+            {leg.sourceStatus === "estimated" && <span className="font-medium text-slate-400">{ui.estimate}</span>}
           </span>
         ) : (
-          <span className="font-semibold text-slate-400">التنقل بين هالمكانين غير محسوب بدقة</span>
+          <span className="font-semibold text-slate-400">{ui.transportUnknown}</span>
         )}
         <IconChevronDown className="h-3 w-3 text-slate-300" />
       </button>
@@ -70,6 +74,7 @@ export default function SmartPlannerTransportConnector({
         to={to}
         selectedMode={selectedMode}
         onSelect={setSelectedMode}
+        lang={lang}
       />
     </div>
   );

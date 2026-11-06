@@ -25,7 +25,7 @@ export default function PurchasesLinkedNotice({ show }: { show: boolean }) {
   if (!seen) return null;
   return (
     <p role="status" className="mt-5 rounded-2xl bg-teal-50 px-4 py-3 text-sm font-semibold text-teal-800">
-      {language === "en" ? "Your purchases were linked to your account ✓" : "تم ربط مشترياتك بحسابك ✓"}
+      {language === "en" ? "Your purchases were linked to your account ✓" : language === "he" ? "הרכישות שלכם קושרו לחשבון ✓" : "تم ربط مشترياتك بحسابك ✓"}
     </p>
   );
 }

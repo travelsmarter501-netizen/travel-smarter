@@ -2,6 +2,7 @@ import { IconMapPin } from "../icons";
 import CopyButton from "./CopyButton";
 import ExternalLink from "./ExternalLink";
 import type { LocationLabel } from "../../lib/guideTypes";
+import { locationLabelText, type PlanLanguage } from "../../lib/i18n/planText";
 
 /**
  * Reusable location block for any real physical place across any destination guide:
@@ -17,6 +18,7 @@ export default function LocationInfo({
   mapsUrl,
   appleMapsUrl,
   label = "الموقع",
+  lang = "ar",
 }: {
   area?: string;
   address?: string;
@@ -25,13 +27,15 @@ export default function LocationInfo({
   mapsUrl: string;
   appleMapsUrl: string;
   label?: LocationLabel;
+  /** Display language (plan view); omitted elsewhere = Arabic. */
+  lang?: PlanLanguage;
 }) {
   return (
     <div>
       <div className="flex items-center justify-between gap-2">
         <p className="flex items-center gap-1 text-xs font-semibold text-slate-500">
           <span>📍</span>
-          <span>{label}</span>
+          <span>{locationLabelText(label, lang)}</span>
         </p>
         {area && (
           <span dir="auto" className="max-w-[60%] truncate rounded-full bg-slate-50 px-2 py-0.5 text-[11px] font-medium text-slate-500">
@@ -45,7 +49,7 @@ export default function LocationInfo({
           <p dir="auto" className="min-w-0 flex-1 break-words text-sm leading-5 text-slate-700">
             {address}
           </p>
-          <CopyButton text={address} />
+          <CopyButton text={address} lang={lang} />
         </div>
       )}
 

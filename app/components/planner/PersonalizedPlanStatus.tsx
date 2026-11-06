@@ -16,6 +16,11 @@ const copy = {
     body: "You already bought it — create and edit your plan whenever you like, with no new payment.",
     open: "Open my personalized planner",
   },
+  he: {
+    title: "מתכנן הטיול האישי שלכם פתוח ✅",
+    body: "כבר רכשתם אותו — צרו וערכו את התוכנית מתי שתרצו, בלי תשלום חדש.",
+    open: "פתיחת מתכנן הטיול האישי",
+  },
 } as const;
 
 /**
@@ -24,7 +29,7 @@ const copy = {
  */
 export default function PersonalizedPlanStatus() {
   const { language } = useLanguage();
-  const c = copy[language === "en" ? "en" : "ar"];
+  const c = copy[language];
 
   return (
     <main className="theme-brand py-10">

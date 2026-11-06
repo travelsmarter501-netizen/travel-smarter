@@ -10,6 +10,7 @@ import ShoppingAreaCard from "./ShoppingAreaCard";
 import { useFavorites } from "../../lib/useFavorites";
 import type { ResolvedPlace } from "../../lib/readyPlan";
 import type { Weekday } from "../../lib/hours";
+import { PLACE_CARD_TEXT, type PlanLanguage } from "../../lib/i18n/planText";
 
 /**
  * Opens the SAME place-card component already used throughout the Barcelona Guide
@@ -32,17 +33,20 @@ export default function PlaceDetailsSheet({
   open,
   onClose,
   plannedWeekday,
+  lang = "ar",
 }: {
   guideSlug: string;
   resolved: ResolvedPlace | undefined;
   open: boolean;
   onClose: () => void;
   plannedWeekday?: Weekday;
+  /** Display language (plan view). Omitted by the guide = Arabic. */
+  lang?: PlanLanguage;
 }) {
   const { isFavorite, toggleFavorite } = useFavorites(guideSlug);
 
   return (
-    <BottomSheet open={open && !!resolved} onClose={onClose} title={resolved?.place.name}>
+    <BottomSheet open={open && !!resolved} onClose={onClose} title={resolved?.place.name} closeLabel={PLACE_CARD_TEXT[lang].close}>
       {resolved?.type === "attraction" && (
         <AttractionCard
           attraction={resolved.place}
@@ -50,6 +54,7 @@ export default function PlaceDetailsSheet({
           isFavorite={isFavorite("attraction", resolved.place.id)}
           onToggleFavorite={() => toggleFavorite("attraction", resolved.place.id)}
           plannedWeekday={plannedWeekday}
+          lang={lang}
         />
       )}
       {resolved?.type === "food" && (
@@ -58,6 +63,7 @@ export default function PlaceDetailsSheet({
           isFavorite={isFavorite("food", resolved.place.id)}
           onToggleFavorite={() => toggleFavorite("food", resolved.place.id)}
           plannedWeekday={plannedWeekday}
+          lang={lang}
         />
       )}
       {resolved?.type === "experience" && (
@@ -66,6 +72,7 @@ export default function PlaceDetailsSheet({
           isFavorite={isFavorite("experience", resolved.place.id)}
           onToggleFavorite={() => toggleFavorite("experience", resolved.place.id)}
           plannedWeekday={plannedWeekday}
+          lang={lang}
         />
       )}
       {resolved?.type === "nightlife" && (
@@ -74,6 +81,7 @@ export default function PlaceDetailsSheet({
           isFavorite={isFavorite("nightlife", resolved.place.id)}
           onToggleFavorite={() => toggleFavorite("nightlife", resolved.place.id)}
           plannedWeekday={plannedWeekday}
+          lang={lang}
         />
       )}
       {resolved?.type === "beach" && (
@@ -81,6 +89,7 @@ export default function PlaceDetailsSheet({
           beach={resolved.place}
           isFavorite={isFavorite("beach", resolved.place.id)}
           onToggleFavorite={() => toggleFavorite("beach", resolved.place.id)}
+          lang={lang}
         />
       )}
       {resolved?.type === "shopping" && (
@@ -89,6 +98,7 @@ export default function PlaceDetailsSheet({
           isFavorite={isFavorite("shopping", resolved.place.id)}
           onToggleFavorite={() => toggleFavorite("shopping", resolved.place.id)}
           plannedWeekday={plannedWeekday}
+          lang={lang}
         />
       )}
     </BottomSheet>

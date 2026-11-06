@@ -66,7 +66,7 @@ export default function GoogleAuthButton({ label, next }: { label: string; next?
   }
 
   if (embedded) {
-    const copy = authCopy[language === "en" ? "en" : "ar"].common;
+    const copy = authCopy[language].common;
     const browser = copy.browserNames[suggestedBrowser(embedded)];
     return (
       <div>
@@ -97,9 +97,9 @@ export default function GoogleAuthButton({ label, next }: { label: string; next?
         className="inline-flex w-full items-center justify-center gap-2.5 rounded-full border border-slate-300 bg-white px-5 py-2.5 pointer-coarse:py-3 text-sm font-semibold text-slate-900 transition-colors hover:border-slate-400 hover:bg-slate-50 disabled:opacity-60"
       >
         {GOOGLE_MARK}
-        {loading ? (language === "en" ? "Redirecting..." : "جاري التحويل...") : label}
+        {loading ? (language === "en" ? "Redirecting..." : language === "he" ? "מעבירים..." : "جاري التحويل...") : label}
       </button>
-      {failed && <p role="alert" className="mt-2 text-center text-xs text-red-600">{authCopy[language === "en" ? "en" : "ar"].common.googleStartFailed}</p>}
+      {failed && <p role="alert" className="mt-2 text-center text-xs text-red-600">{authCopy[language].common.googleStartFailed}</p>}
     </div>
   );
 }

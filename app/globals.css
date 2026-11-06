@@ -66,6 +66,12 @@
   --font-display: var(--font-noto-kufi), var(--font-cairo);
 }
 
+/* Hebrew pages: Rubik for body text and headlines (Cairo / Noto Kufi have no Hebrew letters). Arabic and English are unaffected. */
+html[lang="he"] {
+  --font-cairo: var(--font-rubik);
+  --font-noto-kufi: var(--font-rubik);
+}
+
 /* Headlines in the customer journey use the display face; body text, buttons and inputs stay Cairo. */
 .theme-brand :is(h1, h2) {
   font-family: var(--font-display);

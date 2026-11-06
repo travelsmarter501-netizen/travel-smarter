@@ -2,6 +2,7 @@
 
 import { useState, type MouseEvent } from "react";
 import { IconCheck, IconCopy } from "../icons";
+import { PLACE_CARD_TEXT, type PlanLanguage } from "../../lib/i18n/planText";
 
 /**
  * Copies text using the modern Clipboard API when available (HTTPS or localhost),
@@ -50,7 +51,8 @@ async function copyToClipboard(text: string): Promise<boolean> {
  * Reusable copy-to-clipboard button. Used by LocationInfo, and safe to reuse anywhere
  * else a piece of text (address, phone number, etc.) should be copyable.
  */
-export default function CopyButton({ text, className }: { text: string; className?: string }) {
+export default function CopyButton({ text, className, lang = "ar" }: { text: string; className?: string; lang?: PlanLanguage }) {
+  const ui = PLACE_CARD_TEXT[lang];
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async (event: MouseEvent<HTMLButtonElement>) => {
@@ -67,13 +69,13 @@ export default function CopyButton({ text, className }: { text: string; classNam
     <button
       type="button"
       onClick={handleCopy}
-      aria-label="نسخ الموقع"
+      aria-label={ui.copyAddress}
       className={`touch-target relative inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition-colors hover:border-teal-300 hover:text-teal-700 ${className ?? ""}`}
     >
       {copied ? <IconCheck className="h-3.5 w-3.5 text-teal-600" /> : <IconCopy className="h-3.5 w-3.5" />}
       {copied && (
         <span className="pointer-events-none absolute -top-8 right-1/2 z-10 translate-x-1/2 whitespace-nowrap rounded-md bg-slate-900 px-2 py-1 text-[11px] font-medium text-white shadow-sm">
-          تم نسخ العنوان ✓
+          {ui.copied}
         </span>
       )}
     </button>

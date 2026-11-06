@@ -18,7 +18,7 @@ import { isClaimNext, useEmbeddedBrowser } from "../../lib/useEmbeddedBrowser";
 export function useClaimNoticeText() {
   const { language } = useLanguage();
   const platform = useEmbeddedBrowser();
-  const c = authCopy[language === "en" ? "en" : "ar"].common;
+  const c = authCopy[language].common;
   const browser = c.browserNames[suggestedBrowser(platform)];
   return { title: c.claimSameBrowserTitle, body: c.claimSameBrowserBody, google: c.claimSameBrowserGoogle.replace("{browser}", browser) };
 }

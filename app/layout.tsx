@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Cairo, Noto_Kufi_Arabic } from "next/font/google";
+import { Cairo, Noto_Kufi_Arabic, Rubik } from "next/font/google";
 import { CurrencyProvider } from "./lib/currency";
 import { LanguageProvider } from "./lib/language";
 import { CartProvider } from "./lib/cart";
@@ -18,6 +18,13 @@ const cairo = Cairo({
 
 // Arabic headlines of the customer journey (h1 / h2 inside .theme-brand, see globals.css): a readable geometric Kufi with real weight, clearly different
 // from Cairo body text. It has no Latin glyphs, so English headlines fall back to Cairo.
+// Hebrew: neither Cairo nor Noto Kufi has Hebrew letters. Rubik (Hebrew + Latin) takes over body text and headlines only while the page is
+// in Hebrew (html[lang="he"] in globals.css), so Arabic and English pages render exactly as before.
+const rubik = Rubik({
+  variable: "--font-rubik",
+  subsets: ["hebrew", "latin"],
+});
+
 const notoKufi = Noto_Kufi_Arabic({
   variable: "--font-noto-kufi",
   subsets: ["arabic"],
@@ -40,7 +47,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="ar"
       dir="rtl"
       data-scroll-behavior="smooth"
-      className={`${cairo.variable} ${notoKufi.variable} h-full scroll-smooth antialiased`}
+      className={`${cairo.variable} ${notoKufi.variable} ${rubik.variable} h-full scroll-smooth antialiased`}
       suppressHydrationWarning
     >
       <body className="flex min-h-full flex-col font-sans">

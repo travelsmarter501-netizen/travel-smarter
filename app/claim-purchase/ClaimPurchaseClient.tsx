@@ -75,6 +75,32 @@ const copy = {
     unverifiedTitle: "Confirm your email first",
     unverifiedBody: "Open the confirmation email we sent you, then come back to this page and your purchase will be added to your account automatically.",
   },
+  he: {
+    pendingTitle: "מאשרים את התשלום",
+    pendingBody: "התשלום שלכם יאושר בעוד כמה רגעים.",
+    pendingSlow: "האישור לוקח יותר זמן מהרגיל. התשלום שלכם שמור — הישארו בדף הזה ונמשיך אוטומטית, ואם זה נמשך צרו איתנו קשר.",
+    confirmedTitle: "התשלום אושר ✅",
+    signinBody: "התחברו או פתחו חשבון, והרכישה תתווסף אליו אוטומטית.",
+    signIn: "התחברות עם אימייל",
+    signUp: "פתיחת חשבון",
+    addingBody: "מוסיפים את הרכישה לחשבון שלכם...",
+    openingBody: "פותחים את הרכישה שלכם...",
+    openNow: "לפתוח עכשיו",
+    account: "החשבון שלי",
+    retry: "לנסות שוב",
+    invalidTitle: "הקישור הזה לא תקין",
+    invalidBody: "הקישור לא תקין, פג תוקפו או שכבר השתמשו בו. אם שילמתם ואין לכם גישה לרכישה, צרו איתנו קשר ונעזור.",
+    invalidOtherBrowser: "אם שילמתם בדפדפן אחר (כמו TikTok) ופתחתם את האתר כאן, אי אפשר לקשר את הרכישה אוטומטית מהדפדפן הזה. פתחו את דף אישור התשלום בדפדפן ששילמתם בו, או צרו איתנו קשר ונקשר אותה לחשבון שלכם.",
+    contact: "צרו קשר",
+    notYet: "עוד לא קיבלנו את אישור התשלום. חכו רגע ונסו שוב.",
+    failed: "לא הצלחנו להוסיף את הרכישה. נסו שוב, ואם זה ממשיך להיכשל צרו איתנו קשר.",
+    mismatchTitle: "החשבון הזה לא תואם לאימייל של הרכישה",
+    mismatchBody: "כדי לשמור על הרכישה שלכם, אפשר להוסיף אותה רק לחשבון שהאימייל המאומת שלו הוא אותו אימייל ששימש בתשלום. התחברו לחשבון הנכון, או צרו איתנו קשר אם צריך עזרה.",
+    signedInAs: "אתם מחוברים בתור",
+    switchAccount: "להתנתק ולהשתמש בחשבון אחר",
+    unverifiedTitle: "אמתו קודם את האימייל",
+    unverifiedBody: "פתחו את מייל האימות ששלחנו לכם, חזרו לדף הזה, והרכישה תתווסף לחשבון אוטומטית.",
+  },
 } as const;
 
 export default function ClaimPurchaseClient({
@@ -92,7 +118,7 @@ export default function ClaimPurchaseClient({
   const { language } = useLanguage();
   const { clearCart } = useCart();
   const router = useRouter();
-  const c = copy[language === "en" ? "en" : "ar"];
+  const c = copy[language];
   // In an embedded browser (TikTok, Instagram, ...) the buyer is likely to switch browsers: say so, and carry the claim link along (see claimNext).
   const embedded = useEmbeddedBrowser();
   const notice = useClaimNoticeText();
@@ -270,7 +296,7 @@ export default function ClaimPurchaseClient({
               {embedded && <p className="mt-2 text-sm leading-6 text-slate-600">{notice.google}</p>}
               <div className="mt-6 flex flex-col gap-2.5">
                 {/* Normal browsers: Google first, as before. Embedded browsers: email + password is the primary way in, Google (disabled there) last. */}
-                {!embedded && <GoogleAuthButton label={language === "en" ? "Continue with Google" : "متابعة عبر Google"} next={claimNext} />}
+                {!embedded && <GoogleAuthButton label={language === "en" ? "Continue with Google" : language === "he" ? "המשך עם Google" : "متابعة عبر Google"} next={claimNext} />}
                 <Link
                   href={loginHref(claimNext)}
                   className="flex w-full items-center justify-center rounded-full bg-teal-700 px-5 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-teal-800"
@@ -283,7 +309,7 @@ export default function ClaimPurchaseClient({
                 >
                   {c.signUp}
                 </Link>
-                {embedded && <GoogleAuthButton label={language === "en" ? "Continue with Google" : "متابعة عبر Google"} next={claimNext} />}
+                {embedded && <GoogleAuthButton label={language === "en" ? "Continue with Google" : language === "he" ? "המשך עם Google" : "متابعة عبر Google"} next={claimNext} />}
               </div>
             </>
           ) : (

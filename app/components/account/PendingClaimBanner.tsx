@@ -21,6 +21,13 @@ const copy = {
     differentEmail: "You have a paid purchase linked to a different email than this account's, so it wasn't added automatically.",
     details: "Details",
   },
+  he: {
+    paid: "מוסיפים את הרכישה לחשבון שלכם...",
+    pending: "התשלום שלכם עדיין בתהליך אישור. נוסיף את הרכישה לחשבון אוטומטית ברגע שיאושר.",
+    cta: "המשך",
+    differentEmail: "יש לכם רכישה ששולמה ומקושרת לאימייל אחר מזה של החשבון, ולכן היא לא נוספה אוטומטית.",
+    details: "פרטים",
+  },
 } as const;
 
 /**
@@ -32,7 +39,7 @@ const copy = {
  */
 export default function PendingClaimBanner() {
   const { language } = useLanguage();
-  const c = copy[language === "en" ? "en" : "ar"];
+  const c = copy[language];
   const router = useRouter();
   const [waiting, setWaiting] = useState<"paid" | "pending" | "different" | null>(null);
 

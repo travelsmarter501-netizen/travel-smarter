@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { redirect } from "next/navigation";
-import BackLink from "../../../../components/detail/BackLink";
 import ScrollToTop from "../../../../components/ScrollToTop";
 import SmartPlannerV2Result from "../../../../components/smart-planner-v2/SmartPlannerV2Result";
+import { SavedPlanNav, SavedPlanNotFound } from "../../../../components/smart-planner-v2/SavedPlanNav";
 import { createClient } from "../../../../../utils/supabase/server";
 import { isValidSmartPlannerV2SavedPlanRow } from "../../../../lib/planner/smartPlannerV2SavedPlans";
 import IncludedGuideCard from "../../../../components/planner/IncludedGuideCard";
@@ -63,10 +62,7 @@ export default async function SavedSmartPlanV2Page(props: PageProps<"/smart-plan
     return (
       <main className="theme-brand pb-10">
         <div className="mx-auto w-full max-w-3xl px-5 pt-4 sm:px-8 lg:px-10">
-          <BackLink href="/account" label="حسابي" />
-          <div className="mt-8 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-6 py-10 text-center">
-            <p className="text-sm font-semibold text-slate-600">ما لقينا هاي الخطة. ممكن تكون انحذفت.</p>
-          </div>
+          <SavedPlanNotFound />
         </div>
       </main>
     );
@@ -79,12 +75,7 @@ export default async function SavedSmartPlanV2Page(props: PageProps<"/smart-plan
       <ScrollToTop />
       <div className="mx-auto w-full max-w-3xl px-5 pt-4 sm:px-8 lg:px-10">
         {/* Opening a saved plan is separate from starting a new one: back to the list, or a fresh questionnaire. */}
-        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-          <BackLink href="/planner" label="خططي" />
-          <Link href="/planner?new=1" className="text-sm font-semibold text-teal-700 hover:text-teal-800">
-            ＋ خطة جديدة
-          </Link>
-        </div>
+        <SavedPlanNav />
         {showIncludedGuide && (
           <div className="mt-4">
             <IncludedGuideCard />

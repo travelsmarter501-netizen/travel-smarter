@@ -132,7 +132,7 @@ export default function PersonalizedPlanCheckout({
     : draft.answers.surpriseMe
       ? copy.wizard.surpriseMe
       : V2_INTEREST_DISPLAY_GROUPS.filter((group) => isV2DisplayGroupActive(draft.answers.interests, group))
-          .map((group) => interestGroupLabelForDestination(draft.destinationId, group.id, language === "en" ? "en" : "ar") ?? copy.wizard.interestGroups[group.id] ?? group.label)
+          .map((group) => interestGroupLabelForDestination(draft.destinationId, group.id, language) ?? copy.wizard.interestGroups[group.id] ?? group.label)
           .join(language === "ar" ? "، " : ", ");
   const accommodationText = draft?.answers.accommodation.booked ? (draft.answers.accommodation.text ?? "") : summary.accommodationNotBooked;
 

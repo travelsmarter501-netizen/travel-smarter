@@ -13,7 +13,7 @@ import { useLanguage } from "../lib/language";
 function ForgotPasswordForm() {
   const searchParams = useSearchParams();
   const { language } = useLanguage();
-  const c = authCopy[language === "en" ? "en" : "ar"];
+  const c = authCopy[language];
   const next = safeNextPath(searchParams.get("next"));
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);

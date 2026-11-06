@@ -1,10 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { interestGroupLabelForDestination, plannerDestinationName } from "../../lib/planner/plannerDestinations";
 import SmartPlannerV2Day from "./SmartPlannerV2Day";
 import { v2DisplayInterestsLabel } from "../../lib/planner/v2PlannerTypes";
 import { formatArabicDayMonth } from "../../lib/planner/dateOnly";
+import { useLanguage } from "../../lib/language";
+import { usePlannerCopy } from "../../lib/usePlannerCopy";
+import { localizePlan } from "../../lib/i18n/localizePlan";
+import { PLAN_TEXT, formatDayMonth, formatDays, storedTextDir } from "../../lib/i18n/planText";
 import type { ReactNode } from "react";
 import type { V2Plan } from "../../lib/planner/barcelonaV2Resolve";
 import type { V2PlannerInterest } from "../../lib/planner/v2PlannerTypes";
@@ -27,10 +31,13 @@ import type { V2PlannerInterest } from "../../lib/planner/v2PlannerTypes";
  * server-side, true only when this specific plan actually has real resolved route data
  * between at least two main stops) shows a subtle, factual note about reduced travel time --
  * never a "shortest route" claim.
+ *
+ * Languages: the stored plan is shown through localizePlan (a display-only translated copy; Arabic = the stored object
+ * itself), so switching language never regenerates, re-saves or changes stops, order, times or prices.
  */
 
 export default function SmartPlannerV2Result({
-  plan,
+  plan: storedPlan,
   interests,
   accommodation,
   onEditSelections,
@@ -46,48 +53,57 @@ export default function SmartPlannerV2Result({
   regenerating?: boolean;
   saveAction?: ReactNode;
 }) {
+  const { language } = useLanguage();
+  const plannerCopy = usePlannerCopy();
+  const ui = PLAN_TEXT[language];
+  const view = useMemo(() => localizePlan(storedPlan, language), [storedPlan, language]);
+  const plan = view;
   const [activeDayIndex, setActiveDayIndex] = useState(0);
   const activeDay = plan.days[activeDayIndex];
+  const dayMonth = (iso: string) => (language === "ar" ? formatArabicDayMonth(iso) : formatDayMonth(language, iso));
+  const cityName = plannerDestinationName(plan.destination, language);
+  const groupLabel = (groupId: string) =>
+    interestGroupLabelForDestination(plan.destination, groupId, language) ?? (language === "ar" ? undefined : plannerCopy.wizard.interestGroups[groupId]);
 
   const firstDate = plan.days.find((day) => day.actualDate)?.actualDate;
   const lastDate = [...plan.days].reverse().find((day) => day.actualDate)?.actualDate;
   const dateRangeLabel =
     firstDate && lastDate
       ? firstDate === lastDate
-        ? formatArabicDayMonth(firstDate)
-        : `${formatArabicDayMonth(firstDate)} – ${formatArabicDayMonth(lastDate)}`
+        ? dayMonth(firstDate)
+        : `${dayMonth(firstDate)} – ${dayMonth(lastDate)}`
       : null;
 
   return (
     <div>
-      <h1 className="text-xl font-bold text-slate-900">خطتك المخصصة ل{plannerDestinationName(plan.destination)} ✨</h1>
+      <h1 className="text-xl font-bold text-slate-900">{ui.title(cityName)}</h1>
 
       <div className="mt-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
         <p className="text-sm font-bold text-slate-900">
-          {plan.daysGenerated} {plan.daysGenerated === 1 ? "يوم" : "أيام"} في {plannerDestinationName(plan.destination)}
+          {ui.daysIn(formatDays(language, plan.daysGenerated), cityName)}
         </p>
         {dateRangeLabel && <p className="mt-0.5 text-xs text-slate-500">{dateRangeLabel}</p>}
         {plan.surpriseMe ? (
-          <p className="mt-1 text-xs text-slate-600">فاجئني ✨</p>
+          <p className="mt-1 text-xs text-slate-600">{ui.surpriseMe}</p>
         ) : (
-          interests.length > 0 && <p className="mt-1 text-xs text-slate-600">{v2DisplayInterestsLabel(interests, (groupId) => interestGroupLabelForDestination(plan.destination, groupId, "ar"))}</p>
+          interests.length > 0 && <p className="mt-1 text-xs text-slate-600">{v2DisplayInterestsLabel(interests, groupLabel)}</p>
         )}
-        {accommodation?.booked && accommodation.text && <p className="mt-1 text-xs text-slate-500">السكن: {accommodation.text}</p>}
-        {plan.accommodationOrderedTrip && <p className="mt-1 text-xs font-medium text-teal-700">رتبنا بداية رحلتك حسب مكان سكنك 📍</p>}
+        {accommodation?.booked && accommodation.text && <p className="mt-1 text-xs text-slate-500">{ui.accommodation(accommodation.text)}</p>}
+        {plan.accommodationOrderedTrip && <p className="mt-1 text-xs font-medium text-teal-700">{ui.orderedByStay}</p>}
         {plan.accommodationResolutionFailed && (
-          <p className="mt-1 text-xs text-slate-500">ما قدرنا نتعرف على موقع سكنك من النص المدخل، فخططنا رحلتك بدون هالمعلومة.</p>
+          <p className="mt-1 text-xs text-slate-500">{ui.stayUnresolved}</p>
         )}
-        {plan.routeFirstApplied && <p className="mt-1 text-xs font-medium text-teal-700">رتبنا يومك حتى تقلّل وقت التنقل بين الأماكن 📍</p>}
+        {plan.routeFirstApplied && <p className="mt-1 text-xs font-medium text-teal-700">{ui.routeFirst}</p>}
       </div>
 
       {plan.capacityWarning && (
-        <p className="mt-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold leading-5 text-amber-800">
+        <p dir={storedTextDir(plan.capacityWarning, language)} className="mt-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold leading-5 text-amber-800">
           {plan.capacityWarning}
         </p>
       )}
 
       {plan.densityWarning && (
-        <p className="mt-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-medium leading-5 text-slate-600">
+        <p dir={storedTextDir(plan.densityWarning, language)} className="mt-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-medium leading-5 text-slate-600">
           {plan.densityWarning}
         </p>
       )}
@@ -100,7 +116,7 @@ export default function SmartPlannerV2Result({
               onClick={onEditSelections}
               className="rounded-full border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 transition-colors hover:border-slate-300"
             >
-              تعديل الاختيارات
+              {ui.editSelections}
             </button>
           )}
           {onRegenerate && (
@@ -110,7 +126,7 @@ export default function SmartPlannerV2Result({
               disabled={regenerating}
               className="rounded-full border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 transition-colors hover:border-slate-300 disabled:opacity-60"
             >
-              {regenerating ? "عم نعيد البناء..." : "إعادة بناء الخطة"}
+              {regenerating ? ui.regenerating : ui.regenerate}
             </button>
           )}
         </div>
@@ -128,12 +144,12 @@ export default function SmartPlannerV2Result({
               index === activeDayIndex ? "bg-teal-700 text-white" : "border border-slate-200 bg-white text-slate-700 hover:border-slate-300"
             }`}
           >
-            اليوم {day.dayNumber}
+            {ui.dayTab(day.dayNumber)}
           </button>
         ))}
       </div>
 
-      <div className="mt-4">{activeDay && <SmartPlannerV2Day day={activeDay} guideSlug={plan.destination} placeDetails={plan.placeDetails} />}</div>
+      <div className="mt-4">{activeDay && <SmartPlannerV2Day day={activeDay} guideSlug={plan.destination} placeDetails={plan.placeDetails} lang={language} />}</div>
     </div>
   );
 }

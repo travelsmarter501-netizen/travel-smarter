@@ -30,6 +30,16 @@ const copy = {
     pendingTitle: "Confirming payment",
     pendingBody: "Your purchase opens as soon as we receive the payment confirmation. Wait a moment, this page updates by itself.",
   },
+  he: {
+    confirmedTitle: "התשלום אושר ✅",
+    confirmedBody: "הרכישה שלכם מוכנה בחשבון.",
+    opening: "פותחים את הרכישה שלכם...",
+    open: "לפתוח עכשיו",
+    account: "החשבון שלי",
+    home: "דף הבית",
+    pendingTitle: "מאשרים את התשלום",
+    pendingBody: "הרכישה תיפתח ברגע שנקבל את אישור התשלום. חכו רגע, הדף מתעדכן לבד.",
+  },
 } as const;
 
 /**
@@ -40,7 +50,7 @@ const copy = {
 export default function PaymentConfirmed({ paid, orderId, nextPath, clearDraft }: { paid: boolean; orderId?: string; nextPath: string; clearDraft: boolean }) {
   const { language } = useLanguage();
   const router = useRouter();
-  const c = copy[language === "en" ? "en" : "ar"];
+  const c = copy[language];
 
   useEffect(() => {
     if (!paid) return;
