@@ -57,25 +57,28 @@ export default function MyPersonalizedPlans({ plans, requests, owner = false }: 
       <div>
         <h1 className="text-2xl font-bold text-slate-900 sm:text-3xl">{copy.mine.title}</h1>
         <p className="mt-2 text-sm leading-6 text-slate-600 sm:text-base">{copy.mine.subtitle}</p>
-        <div className="mt-4">
-          <Button href="/planner?new=1" size="md" className="w-full sm:w-auto">
-            ＋ {copy.mine.createNew}
-          </Button>
-          {owner && <p className="mt-2 text-xs text-slate-500">{copy.mine.newPlanNote}</p>}
-        </div>
       </div>
 
+      {/* A paid plan waiting to be built (or a payment being confirmed) comes first: it is what the customer most likely came for. */}
       {requests.map((request) =>
         request.state === "ready" ? (
           <ReadyRequestCard key={request.id} request={request} destinationLabel={destinationName(request.destinationId)} />
         ) : (
-          <section key={request.id} className="rounded-3xl border border-amber-200 bg-amber-50/70 p-5">
+          <section key={request.id} className="rounded-2xl border border-amber-200 bg-amber-50/70 p-5">
             <p className="text-sm font-bold text-amber-800">{copy.mine.pendingBadge}</p>
             <h2 className="mt-1 text-lg font-bold text-slate-900">{copy.mine.pendingTitle}</h2>
             <p className="mt-1 text-sm leading-6 text-slate-600">{copy.mine.pendingBody}</p>
           </section>
         )
       )}
+
+      {/* Starting a NEW plan (a fresh questionnaire) is a different action from opening a saved one below. */}
+      <div>
+        <Button href="/planner?new=1" size="md" variant={requests.some((r) => r.state === "ready") ? "secondary" : "primary"} className="w-full sm:w-auto">
+          ＋ {copy.mine.createNew}
+        </Button>
+        {owner && <p className="mt-2 text-xs text-slate-500">{copy.mine.newPlanNote}</p>}
+      </div>
 
       {plans.length > 0 ? (
         <section aria-label={copy.mine.plansHeading}>
@@ -125,7 +128,7 @@ function ReadyRequestCard({ request, destinationLabel }: { request: PlannerReque
   }
 
   return (
-    <section className="rounded-3xl border border-teal-200 bg-teal-50/70 p-5 sm:p-6">
+    <section className="rounded-2xl border border-teal-200 bg-teal-50/70 p-5 sm:p-6">
       <p className="text-sm font-bold text-teal-800">{request.complimentary ? copy.mine.complimentaryBadge : copy.mine.readyBadge}</p>
       <h2 className="mt-1 text-lg font-bold text-slate-900">{copy.mine.readyTitle}</h2>
       <p className="mt-1 text-sm leading-6 text-slate-600">

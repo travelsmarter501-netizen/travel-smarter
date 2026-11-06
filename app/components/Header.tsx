@@ -1,91 +1,95 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Container from "./Container";
-import Button from "./Button";
-import CartWidget from "./CartWidget";
 import AccountNavLink from "./AccountNavLink";
+import CurrencySwitcher from "./CurrencySwitcher";
 import LanguageSwitcher from "./LanguageSwitcher";
 import Logo from "./Logo";
 import { IconClose, IconMenu } from "./icons";
+import { MY_PLANS_HREF } from "./home/homeOffer";
+import { useAuthStatus } from "../lib/useAuthStatus";
 import { useLanguage } from "../lib/language";
 
+const FOCUS = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand";
+const MENU_ITEM = `rounded-lg px-3 py-2.5 text-sm font-medium text-ink hover:bg-surface pointer-coarse:py-3 ${FOCUS}`;
+
+/**
+ * Minimal header: the logo and one compact menu button, on every screen size. The menu holds the essential links (video, price, FAQ), "My plans"
+ * for a signed-in customer, the account entry, and the language and currency switchers. There is no cart icon or cart drawer here any more:
+ * the storefront is one product that is bought through the questionnaire. The cart itself, /checkout and every legacy product route are untouched
+ * (a visitor who already holds items can still reach /checkout), and CartWidget.tsx is simply no longer mounted.
+ *
+ * The open menu has id="mobile-menu" (the floating purchase button hides while it is open) and closes with Escape, a tap outside, or a link.
+ */
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { t } = useLanguage();
+  const signedIn = useAuthStatus() === "signedIn";
+  const headerRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMenuOpen(false);
+    };
+    const onPointerDown = (event: PointerEvent) => {
+      if (headerRef.current && !headerRef.current.contains(event.target as Node)) setMenuOpen(false);
+    };
+    document.addEventListener("keydown", onKeyDown);
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener("pointerdown", onPointerDown);
+    };
+  }, [menuOpen]);
 
   const navLinks = [
-    { label: t.nav.products, href: "/#products" },
-    { label: t.nav.destinations, href: "/#destinations" },
-    { label: t.nav.about, href: "/#about" },
+    { label: t.nav.howItWorks, href: "/#video" },
+    { label: t.nav.price, href: "/#price" },
     { label: t.nav.faq, href: "/#faq" },
-    { label: t.nav.contact, href: "/#contact" },
   ];
 
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/80 backdrop-blur-md">
-      <Container className="flex h-16 items-center justify-between md:h-20">
-        <Link href="/#hero" className="flex items-center">
+    <header ref={headerRef} className="sticky top-0 z-50 border-b border-line bg-white/95 backdrop-blur-md">
+      <Container className="flex h-16 items-center justify-between gap-3 md:h-20">
+        <Link href="/#video" className={`flex shrink-0 items-center rounded ${FOCUS}`}>
           <Logo />
         </Link>
 
-        <nav className="hidden items-center gap-5 lg:flex">
-          {navLinks.map((link) => (
-            <a
-              key={link.href}
-              href={link.href}
-              className="text-sm font-medium text-slate-600 transition-colors hover:text-slate-900"
-            >
-              {link.label}
-            </a>
-          ))}
-        </nav>
-
-        <div className="hidden items-center gap-3 lg:flex">
-          <LanguageSwitcher />
-          <AccountNavLink />
-          <CartWidget />
-          <Button href="/#products">{t.nav.ctaPlanTrip}</Button>
-        </div>
-
-        <div className="flex items-center gap-1 lg:hidden">
-          <CartWidget />
-          <button
-            type="button"
-            onClick={() => setMenuOpen((open) => !open)}
-            aria-expanded={menuOpen}
-            aria-controls="mobile-menu"
-            aria-label={menuOpen ? t.mobileMenu.close : t.mobileMenu.open}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-slate-700 hover:bg-slate-100 pointer-coarse:h-11 pointer-coarse:w-11"
-          >
-            {menuOpen ? <IconClose className="h-6 w-6" /> : <IconMenu className="h-6 w-6" />}
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={() => setMenuOpen((open) => !open)}
+          aria-expanded={menuOpen}
+          aria-controls="mobile-menu"
+          aria-label={menuOpen ? t.mobileMenu.close : t.mobileMenu.open}
+          className={`inline-flex h-11 w-11 items-center justify-center rounded-xl text-ink transition-colors hover:bg-surface ${FOCUS}`}
+        >
+          {menuOpen ? <IconClose className="h-6 w-6" /> : <IconMenu className="h-6 w-6" />}
+        </button>
       </Container>
 
       {menuOpen && (
-        <div id="mobile-menu" className="border-t border-slate-200 bg-white lg:hidden">
-          <Container className="flex flex-col gap-1 py-4">
+        <div id="mobile-menu" className="border-t border-line bg-white shadow-lg">
+          <Container className="flex flex-col gap-1 py-3 sm:max-w-sm sm:ms-auto sm:me-0 sm:px-4">
             {navLinks.map((link) => (
-              <a
-                key={link.href}
-                href={link.href}
-                onClick={() => setMenuOpen(false)}
-                className="rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 pointer-coarse:py-3"
-              >
+              <a key={link.href} href={link.href} onClick={() => setMenuOpen(false)} className={MENU_ITEM}>
                 {link.label}
               </a>
             ))}
-            <div className="mt-3 flex items-center justify-between gap-3">
-              <LanguageSwitcher />
-            </div>
-            <div className="mt-2">
+            {signedIn && (
+              <Link href={MY_PLANS_HREF} onClick={() => setMenuOpen(false)} className={MENU_ITEM}>
+                {t.nav.myPlans}
+              </Link>
+            )}
+            <div className="mt-1">
               <AccountNavLink variant="menu" onNavigate={() => setMenuOpen(false)} />
             </div>
-            <Button href="/#products" className="mt-2 w-full">
-              {t.nav.ctaPlanTrip}
-            </Button>
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-3">
+              <LanguageSwitcher />
+              <CurrencySwitcher />
+            </div>
           </Container>
         </div>
       )}

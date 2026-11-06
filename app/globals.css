@@ -5,14 +5,160 @@
   --foreground: #0f172a;
 }
 
+/*
+ * Homepage palette (confirmed 2026-11): white page, soft section background, royal blue for primary actions / selected states / small
+ * accents, navy text, muted secondary text, subtle borders. Contrast (WCAG): white on brand 6.2:1, brand on white 6.2:1, ink on white 15.5:1,
+ * muted on white 5.9:1 and on surface 5.5:1. Only the homepage, the header and the footer use these tokens; other pages keep their own styling.
+ */
+@theme {
+  --color-brand: #2855d9;
+  --color-brand-strong: #1f44b3;
+  --color-brand-tint: #eaf0ff;
+  --color-ink: #17243b;
+  --color-muted: #586579;
+  --color-line: #e3e8f1;
+  --color-surface: #f5f7fc;
+  /* Homepage accents (2026-11-03): a pale sky-blue section surface and a small apricot accent (decoration and chips with navy text only;
+     navy on apricot is 11.4:1). */
+  --color-sky-surface: #eef5ff;
+  --color-apricot: #ffd3a6;
+  /* Deep navy for two homepage bands only ("صارت معك؟" and the price): white headings (18.3:1) and #DCE5FA secondary text (14.2:1) on it. */
+  --color-brand-deep: #071343;
+  --color-on-deep: #dce5fa;
+}
+
+/*
+ * .theme-brand -- puts the customer journey in the same white / royal-blue palette without touching any component: the pages that opt in
+ * (homepage, questionnaire, sign-in / sign-up / password / claim screens, personalized checkout and payment states, account, My Plans and the saved
+ * itinerary) add this class to their <main>, and inside it the teal and slate palette variables that the existing components already use are
+ * re-pointed to the brand blue and the navy / muted / line neutrals. Legacy product pages (guide, ready plans, legacy cart checkout) do not opt in,
+ * so they look exactly as before. Contrast (WCAG): white on teal-700 6.2:1, teal-800 on teal-50 7.3:1, slate-400 on white 4.9:1, slate-500 5.9:1.
+ */
+.theme-brand {
+  --color-teal-50: #eaf0ff;
+  --color-teal-100: #dce6ff;
+  --color-teal-200: #c3d3fa;
+  --color-teal-300: #9db6f2;
+  --color-teal-400: #6f90e8;
+  --color-teal-500: #4a70e0;
+  --color-teal-600: #2f5bdb;
+  --color-teal-700: #2855d9;
+  --color-teal-800: #1f44b3;
+  --color-teal-900: #17348a;
+  --color-teal-950: #10265f;
+  --color-slate-50: #f5f7fc;
+  --color-slate-100: #edf1f8;
+  --color-slate-200: #e3e8f1;
+  --color-slate-300: #cdd5e3;
+  --color-slate-400: #657287;
+  --color-slate-500: #586579;
+  --color-slate-600: #46546b;
+  --color-slate-700: #2f3e57;
+  --color-slate-800: #1f2d45;
+  --color-slate-900: #17243b;
+  --color-slate-950: #101b2d;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-cairo);
+  --font-display: var(--font-noto-kufi), var(--font-cairo);
+}
+
+/* Headlines in the customer journey use the display face; body text, buttons and inputs stay Cairo. */
+.theme-brand :is(h1, h2) {
+  font-family: var(--font-display);
+}
+
+/*
+ * .home-page -- the homepage only (on its <main>, after .theme-brand): its soft section background is the pale sky blue #EEF5FF. Royal blue stays
+ * the primary colour and navy the text colour (white on royal blue 6.2:1, navy on #EEF5FF 14.3:1, muted on #EEF5FF 5.5:1).
+ */
+.home-page {
+  --color-surface: var(--color-sky-surface);
 }
 
 html {
   scroll-padding-top: 5rem;
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/*
+ * The homepage's floating purchase button (components/home/HomeBottomCta.tsx) sets data-home-cta on <body> while it is mounted, so the footer
+ * gets room for it: the last footer line is never covered. No other page has the attribute, so nothing else changes.
+ */
+body[data-home-cta] footer {
+  padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
+}
+
+/*
+ * Homepage motion. The headline and the video card rise once on load with plain CSS (so the first paint never waits for JavaScript); the photo
+ * parallax, the section reveals, the route between the example stops and the example's stagger run in GSAP (components/home/HomeMotion.tsx),
+ * only when the visitor has not asked for reduced motion. Without JavaScript, or with reduced motion, everything is simply visible.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes home-open {
+    from {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  details[open] > .home-details-body {
+    animation: home-open 0.2s ease-out;
+  }
+
+  @keyframes home-rise {
+    from {
+      opacity: 0;
+      transform: translateY(18px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  /* Intro load sequence: each .home-load element rises after its own delay (--d). */
+  /* The purchase button's shine: a 1 s sweep, then 6 s of rest (7 s cycle). Transform only; the button itself never moves or changes size. */
+  @keyframes home-cta-shine {
+    0% {
+      transform: translateX(-130%) skewX(-20deg);
+    }
+    14%,
+    100% {
+      transform: translateX(330%) skewX(-20deg);
+    }
+  }
+  .home-cta-shine::before {
+    content: "";
+    position: absolute;
+    inset-block: 0;
+    left: 0;
+    width: 35%;
+    background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.32), transparent);
+    transform: translateX(-130%) skewX(-20deg);
+    animation: home-cta-shine 7s ease-in-out 1.5s infinite;
+  }
+  .home-load {
+    animation: home-rise 0.85s var(--d, 0s) cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+}
+
+/* Printing and saving the page must never leave a section hidden by a scroll reveal that has not run yet. */
+@media print {
+  [data-reveal],
+  [data-showcase] > * {
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }
 
 body {

@@ -18,7 +18,7 @@ const copy = {
     account: "حسابي",
     home: "الرئيسية",
     pendingTitle: "جاري تأكيد الدفع",
-    pendingBody: "ما منفعّل المنتج إلا بعد وصول تأكيد Allpay الموقّع. انتظر لحظات — بنحدّث الحالة تلقائيًا.",
+    pendingBody: "بنفتح مشترياتك أول ما يوصلنا تأكيد الدفع. انتظر لحظات، الصفحة بتتحدّث لحالها.",
   },
   en: {
     confirmedTitle: "Payment confirmed ✅",
@@ -28,7 +28,7 @@ const copy = {
     account: "My account",
     home: "Home",
     pendingTitle: "Confirming payment",
-    pendingBody: "Nothing is unlocked until Allpay's signed confirmation arrives. Wait a moment — this page updates by itself.",
+    pendingBody: "Your purchase opens as soon as we receive the payment confirmation. Wait a moment, this page updates by itself.",
   },
 } as const;
 

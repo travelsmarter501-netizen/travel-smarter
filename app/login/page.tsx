@@ -62,9 +62,9 @@ function LoginForm() {
   }
 
   return (
-    <main className="flex min-h-[calc(100vh-4rem)] items-center py-12">
+    <main className="theme-brand flex min-h-[calc(100vh-4rem)] items-center py-12">
       <Container className="max-w-md">
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
           <h1 className="text-2xl font-bold text-slate-900">{c.login.title}</h1>
           <p className="mt-1.5 text-sm text-slate-600">{c.login.subtitle}</p>
           <ClaimBrowserNotice next={next} />

@@ -75,7 +75,7 @@ export default function PlannerPageView({
   const copy = usePlannerCopy();
 
   return (
-    <main className="pb-10">
+    <main className="theme-brand pb-10">
       <ScrollToTop />
       {/* Whatever this tab remembers from an earlier questionnaire is stale on a fresh visit: only "Edit answers" (?edit=1) restores it. */}
       {!restoreDraft && <ClearPlannerDraft />}

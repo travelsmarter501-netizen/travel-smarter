@@ -27,9 +27,9 @@ export default function PersonalizedPlanStatus() {
   const c = copy[language === "en" ? "en" : "ar"];
 
   return (
-    <main className="py-10">
+    <main className="theme-brand py-10">
       <Container className="max-w-lg">
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 text-center shadow-sm sm:p-8">
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-sm sm:p-8">
           <h1 className="text-2xl font-bold text-slate-900">{c.title}</h1>
           <p className="mt-2 text-sm leading-6 text-slate-600">{c.body}</p>
           <Link

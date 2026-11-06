@@ -14,9 +14,9 @@ export default async function CheckoutCancelledPage({ searchParams }: { searchPa
   }
 
   return (
-    <main className="py-10">
+    <main className="theme-brand py-10">
       <Container className="max-w-lg">
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 text-center shadow-sm sm:p-8">
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-sm sm:p-8">
           <p className="text-4xl">↩️</p>
           <h1 className="mt-3 text-2xl font-bold text-slate-900">رجعت بدون إتمام الدفع</h1>
           <p className="mt-2 text-sm leading-6 text-slate-600">

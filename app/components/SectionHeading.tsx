@@ -13,13 +13,9 @@ export default function SectionHeading({
 
   return (
     <div className={`max-w-2xl ${alignClass}`}>
-      {eyebrow && (
-        <span className="text-sm font-semibold tracking-wide text-teal-700">{eyebrow}</span>
-      )}
-      <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
-        {title}
-      </h2>
-      {description && <p className="mt-4 text-lg leading-8 text-slate-600">{description}</p>}
+      {eyebrow && <span className="text-sm font-semibold tracking-wide text-brand">{eyebrow}</span>}
+      <h2 className="mt-2 text-[1.75rem] font-bold leading-tight tracking-tight text-ink sm:text-4xl">{title}</h2>
+      {description && <p className="mt-3 text-base leading-7 text-muted sm:text-lg sm:leading-8">{description}</p>}
     </div>
   );
 }

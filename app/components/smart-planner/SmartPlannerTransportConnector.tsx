@@ -48,7 +48,7 @@ export default function SmartPlannerTransportConnector({
       <button
         type="button"
         onClick={() => setSheetOpen(true)}
-        className="flex flex-1 items-center gap-1 py-1.5 text-right text-[11px] text-slate-400 transition-colors hover:text-slate-600"
+        className="flex min-h-11 flex-1 items-center gap-1 py-1.5 text-right text-xs text-slate-500 transition-colors hover:text-slate-700"
       >
         {selectedMode && option ? (
           <span className="flex items-center gap-1 font-semibold text-slate-500">

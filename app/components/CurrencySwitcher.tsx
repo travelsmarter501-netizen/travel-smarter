@@ -7,6 +7,8 @@ const options: { value: Currency; label: string }[] = [
   { value: "USD", label: "$ USD" },
 ];
 
+const FOCUS_CLASS = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand";
+
 export default function CurrencySwitcher({ className = "" }: { className?: string }) {
   const { currency, setCurrency } = useCurrency();
 
@@ -15,7 +17,7 @@ export default function CurrencySwitcher({ className = "" }: { className?: strin
       dir="ltr"
       role="group"
       aria-label="اختيار العملة"
-      className={`inline-flex items-center rounded-full border border-slate-200 bg-slate-100 p-1 text-xs font-semibold ${className}`}
+      className={`inline-flex items-center rounded-full border border-line bg-surface p-1 text-xs font-semibold ${className}`}
     >
       {options.map((option) => (
         <button
@@ -23,10 +25,10 @@ export default function CurrencySwitcher({ className = "" }: { className?: strin
           type="button"
           onClick={() => setCurrency(option.value)}
           aria-pressed={currency === option.value}
-          className={`rounded-full px-3 py-1.5 transition-colors ${
+          className={`rounded-full px-3 py-1.5 transition-colors ${FOCUS_CLASS} ${
             currency === option.value
-              ? "bg-white text-teal-700 shadow-sm"
-              : "text-slate-500 hover:text-slate-700"
+              ? "bg-white text-brand shadow-sm"
+              : "text-muted hover:text-ink"
           }`}
         >
           {option.label}

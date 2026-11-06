@@ -38,7 +38,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
   }
 
   return (
-    <main className="py-10">
+    <main className="theme-brand py-10">
       <Container className="max-w-lg">
         <PaymentConfirmed paid={paid} orderId={orderId} nextPath={nextPath} clearDraft={paid && hasPlan} />
       </Container>

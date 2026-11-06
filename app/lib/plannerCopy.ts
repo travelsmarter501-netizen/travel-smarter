@@ -76,6 +76,8 @@ export type PlannerCopy = {
     back: string;
     next: string;
     continueToCheckout: string;
+    /** Under the questionnaire's last button for someone who has not bought yet. Placeholder: {price} */
+    priceNote: string;
     draftSaveFailed: string;
     /** An owner's last step: no payment -- the plan is created straight away. */
     createMyPlan: string;
@@ -96,6 +98,8 @@ export type PlannerCopy = {
     accommodationNotBooked: string;
     includesHeading: string;
     includedPlan: string;
+    /** One more line under "Includes": more than one plan, the saved-plan limit. */
+    includedPlans: string;
     /** Placeholder: {destination}. Shown only for destinations that include a guide. */
     includedGuide: string;
     price: string;
@@ -149,9 +153,9 @@ export function fillCopy(template: string, values: Record<string, string | numbe
 export const plannerCopyAr: PlannerCopy = {
   page: {
     title: "خطة مخصصة إلك ✨",
-    subtitle: "اختار وجهتك واهتماماتك، وإحنا بنبني لك خطة ذكية حسب رحلتك.",
-    tagline: "جاوب على كم سؤال، أكمل الدفع، وبنبني خطتك حسب أيامك، اهتماماتك ومكان سكنك.",
-    ownerTagline: "جاوب على كم سؤال وبنبني خطتك حسب أيامك، اهتماماتك ومكان سكنك.",
+    subtitle: "جاوب على 4 أسئلة قصيرة وبنبني لك خطة مرتّبة يوم بيوم.",
+    tagline: "الأسئلة مجانًا، والدفع بعد ما تخلّص.",
+    ownerTagline: "الخطط الجديدة بدون دفع إضافي.",
     backHome: "← الرئيسية",
     alreadyBought: "اشتريت من قبل؟ سجّل دخولك",
   },
@@ -161,7 +165,7 @@ export const plannerCopyAr: PlannerCopy = {
     stepLabels: ["وين مسافر؟", "متى؟", "شو بتحب؟", "السكن"],
     destinationTitle: "وين مسافر؟",
     comingSoon: "قريبًا",
-    availableNote: "برشلونة متاحة الآن — وجهات جديدة قريبًا.",
+    availableNote: "برشلونة متاحة الآن.",
     destinationNames: {
       barcelona: "برشلونة",
       rome: "روما",
@@ -208,10 +212,11 @@ export const plannerCopyAr: PlannerCopy = {
     back: "رجوع",
     next: "التالي",
     continueToCheckout: "المتابعة للدفع",
+    priceNote: "{price} مرة واحدة · أكثر من خطة · حتى 30 خطة محفوظة",
     draftSaveFailed: "تعذّر حفظ إجاباتك على هذا المتصفح. فعّل التخزين المؤقت أو جرّب متصفحًا آخر.",
     createMyPlan: "أنشئ خطتي ✨",
     updateMyPlan: "حدّث خطتي ✨",
-    ownerIntro: "عدّل تفاصيل رحلتك وأنشئ خطتك بالطريقة التي تناسبك.",
+    ownerIntro: "",
     editingNote: "إجاباتك الحالية محمّلة. عدّلها ثم حدّث الخطة — بدون أي دفع.",
   },
   checkoutSummary: {
@@ -221,10 +226,11 @@ export const plannerCopyAr: PlannerCopy = {
     accommodationNotBooked: "لسا ما حجزت",
     includesHeading: "يشمل:",
     includedPlan: "خطة سفر مخصصة مبنية على إجاباتك",
+    includedPlans: "أكثر من خطة بدون دفع إضافي، حتى 30 خطة محفوظة",
     includedGuide: "دليل {destination} الكامل",
     price: "السعر",
     emailLabel: "البريد الإلكتروني",
-    emailHint: "سنستخدم بريدك لإرسال تفاصيل الطلب.",
+    emailHint: "استخدم نفس البريد عند تسجيل الدخول عشان تفتح خطتك.",
     editAnswers: "تعديل الإجابات",
     missingTitle: "ما لقينا تفاصيل خطتك",
     missingBody: "ابدأ من صفحة المخطط: جاوب على الأسئلة وبترجع لهون لإتمام الدفع.",
@@ -280,9 +286,9 @@ export const plannerCopyAr: PlannerCopy = {
 export const plannerCopyEn: PlannerCopy = {
   page: {
     title: "Your Personalized Plan ✨",
-    subtitle: "Pick your destination and interests, and we’ll build a smart plan around your trip.",
-    tagline: "Answer a few questions, check out, and we build your plan around your days, interests and where you’re staying.",
-    ownerTagline: "Answer a few questions and we build your plan around your days, interests and where you’re staying.",
+    subtitle: "Answer 4 short questions and we’ll build you a plan arranged day by day.",
+    tagline: "The questions are free; payment comes after you finish.",
+    ownerTagline: "New plans cost nothing extra.",
     backHome: "← Home",
     alreadyBought: "Already bought? Sign in",
   },
@@ -292,7 +298,7 @@ export const plannerCopyEn: PlannerCopy = {
     stepLabels: ["Where to?", "When?", "What do you like?", "Accommodation"],
     destinationTitle: "Where are you going?",
     comingSoon: "Coming soon",
-    availableNote: "Barcelona is available now — more destinations coming soon.",
+    availableNote: "Barcelona is available now.",
     destinationNames: {
       barcelona: "Barcelona",
       rome: "Rome",
@@ -339,10 +345,11 @@ export const plannerCopyEn: PlannerCopy = {
     back: "Back",
     next: "Next",
     continueToCheckout: "Continue to checkout",
+    priceNote: "{price} once · more than one plan · up to 30 saved plans",
     draftSaveFailed: "We couldn’t save your answers in this browser. Enable site storage or try another browser.",
     createMyPlan: "Create my plan ✨",
     updateMyPlan: "Update my plan ✨",
-    ownerIntro: "Update your trip details and create a plan that fits you.",
+    ownerIntro: "",
     editingNote: "Your current answers are loaded. Change them and update the plan — no payment.",
   },
   checkoutSummary: {
@@ -352,10 +359,11 @@ export const plannerCopyEn: PlannerCopy = {
     accommodationNotBooked: "Not booked yet",
     includesHeading: "Includes:",
     includedPlan: "Personalized travel plan based on your answers",
+    includedPlans: "More than one plan at no extra cost, up to 30 saved plans",
     includedGuide: "Complete {destination} Travel Guide",
     price: "Price",
     emailLabel: "Email",
-    emailHint: "We’ll use your email to send your order details.",
+    emailHint: "Use the same email when you sign in, so you can open your plan.",
     editAnswers: "Edit answers",
     missingTitle: "We couldn’t find your plan details",
     missingBody: "Start from the planner: answer the questions and you’ll come back here to pay.",

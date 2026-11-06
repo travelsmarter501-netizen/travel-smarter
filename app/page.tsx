@@ -1,26 +1,36 @@
 import Hero from "./components/Hero";
-import Products from "./components/Products";
-import Destinations from "./components/Destinations";
-import WhyUs from "./components/WhyUs";
 import FAQ from "./components/FAQ";
+import { HomeAudienceProvider } from "./components/home/HomeAudience";
+import HomeBottomCta from "./components/home/HomeBottomCta";
+import HomeExample from "./components/home/HomeExample";
+import HomeOfferVisual from "./components/home/HomeOfferVisual";
+import HomePricing from "./components/home/HomePricing";
+import HomeProblems from "./components/home/HomeProblems";
+import HomeMotion from "./components/home/HomeMotion";
 
 /**
- * Homepage redesign (2026-08): target structure is Header / Hero / Products / Destinations /
- * Trust / FAQ / Contact+Footer (Header and Footer live in layout.tsx). "How it works" and the
- * old 3-card ProductCategories section were removed to keep the page short -- Products now
- * shows the 4 real products directly with exact prices/routes/cart actions, which already
- * covers what those sections used to explain. Neither component was deleted; they're just no
- * longer mounted here (ProductCategories.tsx, HowItWorks.tsx, ItineraryPreview.tsx,
- * ReadyPackages.tsx, TravelGuides.tsx all still exist, unused).
+ * Single-product homepage: Header (logo + compact menu) / product video / visual offer / free example / price / FAQ / footer (Header and
+ * Footer live in layout.tsx). It sells ONE product -- the personalized plan -- and every start button opens a new questionnaire (/planner?new=1),
+ * including the floating purchase button (HomeBottomCta), which exists on this page only.
+ *
+ * The old multi-product storefront is not shown here any more, but nothing was removed from the product: the 1-day / 3-day / 5-day plan and
+ * Guide routes, /checkout (including /checkout?product=...), carts that already hold items and every existing purchase work as before.
+ * Components.tsx files that are no longer mounted (Products, Destinations, WhyUs, ItineraryPreview, HowItWorks, ProductCategories,
+ * ReadyPackages, TravelGuides, PopularDestinations) still exist, unused.
  */
 export default function Home() {
   return (
-    <main>
-      <Hero />
-      <Products />
-      <Destinations />
-      <WhyUs />
-      <FAQ />
+    <main className="theme-brand home-page">
+      <HomeAudienceProvider>
+        <Hero />
+        <HomeProblems />
+        <HomeOfferVisual />
+        <HomeExample />
+        <HomePricing />
+        <FAQ />
+        <HomeBottomCta />
+        <HomeMotion />
+      </HomeAudienceProvider>
     </main>
   );
 }

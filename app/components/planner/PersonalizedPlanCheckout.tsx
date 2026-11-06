@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Price from "../Price";
 import { formatPrice } from "../../lib/currency";
-import { referencePriceIfDiscounted } from "../../lib/commerce/pricing";
 import { generatePersonalizedPlanAction, startComplimentaryPlan, startPersonalizedPlanCheckout } from "../../planner/actions";
 import PlanGeneratingScreen from "./PlanGeneratingScreen";
 import ScrollToTop from "../ScrollToTop";
@@ -139,7 +138,7 @@ export default function PersonalizedPlanCheckout({
   if (generating) return <PlanGeneratingScreen />;
 
   return (
-    <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
       <ScrollToTop />
       {testMode && <p className="inline-flex rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-amber-800">{t.checkout.testBadge}</p>}
       <h1 className="mt-4 text-2xl font-bold text-slate-900">{t.checkout.title}</h1>
@@ -174,6 +173,10 @@ export default function PersonalizedPlanCheckout({
                   <span aria-hidden="true">✓</span>
                   <span>{summary.includedPlan}</span>
                 </li>
+                <li className="flex gap-2">
+                  <span aria-hidden="true">✓</span>
+                  <span>{summary.includedPlans}</span>
+                </li>
                 {destinationIncludesGuide(draft.destinationId) && (
                   <li className="flex gap-2">
                     <span aria-hidden="true">✓</span>
@@ -186,7 +189,7 @@ export default function PersonalizedPlanCheckout({
             {priceIls !== null && (
               <div className="mt-4 flex items-center justify-between gap-3 border-t border-slate-100 pt-3 text-sm">
                 <span className="font-semibold text-slate-600">{summary.price}</span>
-                <Price ils={priceIls} referenceIls={referencePriceIfDiscounted("personalized-trip-plan", priceIls)} className="text-xl font-extrabold text-slate-900" />
+                <Price ils={priceIls} className="text-xl font-extrabold text-slate-900" />
               </div>
             )}
           </section>

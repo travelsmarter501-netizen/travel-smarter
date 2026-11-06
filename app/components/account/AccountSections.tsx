@@ -20,6 +20,7 @@ const copy = {
     openGuide: "افتح الدليل",
     plansTitle: "خططي",
     plansEmpty: "لسا ما عندك أي خطة.",
+    createPlan: "إنشاء خطة جديدة",
   },
   en: {
     purchasesTitle: "My purchases",
@@ -32,6 +33,7 @@ const copy = {
     openGuide: "Open guide",
     plansTitle: "My plans",
     plansEmpty: "You don't have any plan yet.",
+    createPlan: "Create a new plan",
   },
 } as const;
 
@@ -89,13 +91,21 @@ export function AccountPurchases({ purchases, inheritedGuideFrom }: { purchases:
 }
 
 /** "My plans" on the account page: the same cards as /planner (destination, days, trip details, Open plan, Edit plan, Delete). */
-export function AccountPlans({ plans }: { plans: PlanCardData[] }) {
+export function AccountPlans({ plans, canCreate = false }: { plans: PlanCardData[]; canCreate?: boolean }) {
   const { language } = useLanguage();
   const c = copy[language === "en" ? "en" : "ar"];
 
   return (
     <div className="mt-8 border-t border-slate-100 pt-6">
       <h2 className="text-lg font-bold text-slate-900">{c.plansTitle}</h2>
+
+      {canCreate && (
+        <div className="mt-3">
+          <Button href="/planner?new=1" size="md" className="w-full sm:w-auto">
+            ＋ {c.createPlan}
+          </Button>
+        </div>
+      )}
 
       <PlansLists plans={plans} emptyText={c.plansEmpty} />
     </div>

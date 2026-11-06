@@ -40,7 +40,7 @@ export default async function CheckoutPage({ searchParams }: { searchParams: Pro
     if (user && (await ownsPersonalizedPlan(user.id))) return <PersonalizedPlanStatus />;
 
     return (
-      <main className="py-10">
+      <main className="theme-brand py-10">
         <Container className="max-w-lg">
           <PersonalizedPlanCheckout
             testMode={testMode}

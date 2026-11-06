@@ -11,7 +11,9 @@ import { referencePriceIfDiscounted } from "../lib/commerce/pricing";
 import { IconClose, IconShoppingBag } from "./icons";
 
 /**
- * Cart icon + count badge (always visible in the header) plus the drawer it opens.
+ * Cart icon + count badge plus the drawer it opens. The icon is shown only while the cart holds items (or its drawer is open): the storefront
+ * is a single product that is not bought through the cart, so an empty cart is not offered, but a visitor who already has items keeps it.
+ * The server render has an empty cart, so nothing is rendered before hydration either (no flash of an icon that then disappears).
  * Kept as one client component so the open/close state and the button that triggers it stay
  * together -- Header only needs to render <CartWidget />.
  *
@@ -72,21 +74,25 @@ export default function CartWidget() {
     };
   }, [open]);
 
+  const showTrigger = items.length > 0 || open;
+
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        aria-label={t.cartButton.ariaLabel}
-        className="relative inline-flex h-10 w-10 items-center justify-center rounded-full text-slate-700 hover:bg-slate-100 pointer-coarse:h-11 pointer-coarse:w-11"
-      >
-        <IconShoppingBag className="h-5 w-5" />
-        {items.length > 0 && (
-          <span className="absolute -top-0.5 -end-0.5 flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-teal-700 px-1 text-[10px] font-bold text-white">
-            {items.length}
-          </span>
-        )}
-      </button>
+      {showTrigger && (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          aria-label={t.cartButton.ariaLabel}
+          className="relative inline-flex h-10 w-10 items-center justify-center rounded-full text-ink hover:bg-surface pointer-coarse:h-11 pointer-coarse:w-11 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+        >
+          <IconShoppingBag className="h-5 w-5" />
+          {items.length > 0 && (
+            <span className="absolute -top-0.5 -end-0.5 flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-brand px-1 text-[10px] font-bold text-white">
+              {items.length}
+            </span>
+          )}
+        </button>
+      )}
 
       {open &&
         createPortal(
@@ -134,11 +140,11 @@ export default function CartWidget() {
                         <p dir="auto" className="truncate text-sm font-semibold text-slate-900">
                           {language === "ar" ? item.titleAr : item.titleEn}
                         </p>
-                        <p className="mt-1 text-xs font-semibold text-teal-700">
+                        <p className="mt-1 text-xs font-semibold text-brand">
                           {isIncludedInBundle(item) ? (
                             t.pricing.includedInPlan
                           ) : (
-                            <Price ils={getPriceILS(item)} referenceIls={referencePriceIfDiscounted(item.id, getPriceILS(item))} className="text-sm font-bold text-teal-700" />
+                            <Price ils={getPriceILS(item)} referenceIls={referencePriceIfDiscounted(item.id, getPriceILS(item))} className="text-sm font-bold text-brand" />
                           )}
                         </p>
                       </div>
@@ -166,7 +172,7 @@ export default function CartWidget() {
                 <Link
                   href="/checkout"
                   onClick={() => setOpen(false)}
-                  className="mt-4 flex w-full items-center justify-center rounded-full bg-teal-700 px-5 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-teal-800"
+                  className="mt-4 flex w-full items-center justify-center rounded-full bg-brand px-5 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-strong focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
                 >
                   {t.cart.continueCta}
                 </Link>

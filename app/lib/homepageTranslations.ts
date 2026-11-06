@@ -49,7 +49,7 @@ type Destination = {
 type DestinationEntry = { slug: string; name: string };
 
 type TrustItem = { title: string; description: string };
-type FaqItem = { question: string; answer: string };
+type FaqItem = { question: string; answer: string; /** Optional link shown under the answer. */ link?: { label: string; href: string } };
 
 export type HomepageCopy = {
   htmlLang: string;
@@ -63,7 +63,11 @@ export type HomepageCopy = {
     faq: string;
     contact: string;
     ctaPlanTrip: string;
-    /** Header account entry: shown when signed out / signed in. */
+    howItWorks: string;
+    price: string;
+    /** Menu entry for signed-in customers: their plans. */
+    myPlans: string;
+    /** Account entry: shown when signed out / signed in. */
     signIn: string;
     account: string;
   };
@@ -71,14 +75,6 @@ export type HomepageCopy = {
   cartButton: { ariaLabel: string };
   mobileMenu: { open: string; close: string };
   loadingSplash: { ariaLabel: string };
-  hero: {
-    eyebrow: string;
-    headline: string;
-    supporting: string;
-    primaryCta: string;
-    secondaryCta: string;
-    imageAlt: string;
-  };
   products: {
     eyebrow: string;
     title: string;
@@ -104,6 +100,65 @@ export type HomepageCopy = {
   faq: {
     title: string;
     items: FaqItem[];
+  };
+  /** Single-product homepage sections that are not covered by the keys above. */
+  home: {
+    /** Floating purchase button (homepage only). The price comes from the shared price source, not from this copy. */
+    bottomCta: { buy: string; owner: string };
+    /** Short introduction at the top of the page (destination-neutral headline, one line, availability). */
+    intro: { headline: string; description: string };
+    video: {
+      /** The caption of the video itself. */
+      title: string;
+      play: string;
+      posterAlt: string;
+      unavailable: string;
+      /** Shown only where the plan text language differs from the page language. */
+      languageNote?: string;
+    };
+    offer: { title: string; text: string; includes: string; availability: string };
+    /**
+     * "صارت معك؟": everyday travel situations addressed to the visitor (written for the page; not customer messages or reviews) and the line that
+     * leads into the product.
+     */
+    problems: { title: string; items: string[]; bridge: string };
+    /** Product presentation: rendered fragments of the public sample with one short caption each. */
+    product: {
+      title: string;
+      schedule: string;
+      details: string;
+      transport: string;
+      recommended: string;
+      /** Gallery controls (phones and tablets): the screen-reader names of the arrows. */
+      previous: string;
+      next: string;
+    };
+    example: {
+      entry: string;
+      badge: string;
+      /** One short line under the badge before the example is opened (the full inputs are inside). */
+      summary: string;
+      hint: string;
+      inputsTitle: string;
+      inputs: { label: string; value: string }[];
+      /** "{n}" = day number. */
+      dayLabel: string;
+      detailsHint: string;
+      sheetPrice: string;
+      sheetBooking: string;
+      start: string;
+    };
+    pricing: {
+      /** "{price}" is replaced by the price in the visitor's currency. */
+      title: string;
+      points: string[];
+      /** One readable line under the points: what the price does not cover. */
+      notIncluded: string;
+      ownerTitle: string;
+      ownerBody: string;
+      myPlans: string;
+    };
+    support: { text: string; refund: string };
   };
   cart: {
     title: string;
@@ -146,14 +201,16 @@ export type HomepageCopy = {
   };
   footer: {
     brandLine: string;
-    productsHeading: string;
-    destinationsHeading: string;
+    planHeading: string;
+    accountHeading: string;
     contactHeading: string;
     faqLabel: string;
+    linkStart: string;
+    linkHow: string;
+    linkPrice: string;
+    linkAccount: string;
     rights: string;
-    /** One-line description of what Travel Smarter sells (shown in the footer on every page). */
     descriptor: string;
-    /** Arabic mode only: the same description in English, shown beneath the Arabic line. */
     descriptorSecondary?: string;
     privacyLabel: string;
     termsLabel: string;
@@ -165,17 +222,20 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
     htmlLang: "ar",
     dir: "rtl",
     seo: {
-      title: "Travel Smarter | تخطيط سفر ذكي — خطط برشلونة ودليل برشلونة",
-      description: "خطط سفر جاهزة ومخصصة لبرشلونة: دليل سياحي، رزمة يوم واحد، رزمة 5 أيام، وخطة مخصصة بالذكاء. سافر أكثر، خطّط أقل.",
+      title: "Travel Smarter | خطة رحلة مخصصة، يوم بيوم",
+      description: "جاوب على أسئلة قصيرة واحصل على خطة رحلة مخصصة حسب أيامك واهتماماتك ومكان سكنك، مع الأماكن والمطاعم وأوقات التنقل. متاح حاليًا لبرشلونة.",
     },
     nav: {
       home: "الرئيسية",
       products: "المنتجات",
       destinations: "الوجهات",
       about: "من نحن",
-      faq: "الأسئلة الشائعة",
+      faq: "الأسئلة",
       contact: "تواصل معنا",
-      ctaPlanTrip: "اختار خطتك",
+      ctaPlanTrip: "ابدأ خطتك",
+      howItWorks: "كيف بتشتغل",
+      price: "السعر",
+      myPlans: "خططي",
       signIn: "تسجيل الدخول",
       account: "حسابي",
     },
@@ -183,14 +243,6 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
     cartButton: { ariaLabel: "السلة" },
     mobileMenu: { open: "فتح القائمة", close: "إغلاق القائمة" },
     loadingSplash: { ariaLabel: "جاري التحميل" },
-    hero: {
-      eyebrow: "تخطيط سفر ذكي وسهل",
-      headline: "سافر أكثر. خطّط أقل.",
-      supporting: "خطط سفر جاهزة ومخصصة توفر عليك ساعات البحث وتخليك تستمتع برحلتك من أول يوم.",
-      primaryCta: "اختار خطتك",
-      secondaryCta: "تصفح المنتجات",
-      imageAlt: "سفر دولي — Travel Smarter",
-    },
     products: {
       eyebrow: "المنتجات",
       title: "اختار الخطة اللي تناسب رحلتك",
@@ -283,22 +335,91 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
       title: "الأسئلة الشائعة",
       items: [
         {
-          question: "شو الفرق بين الدليل والرزمة والخطة المخصصة؟",
-          answer: "الدليل معلومات شاملة عن الوجهة بدون برنامج يومي. الرزمة الجاهزة برنامج يوم بيوم مُعد مسبقًا. الخطة المخصصة تُبنى حسب اهتماماتك أنت تحديدًا.",
+          question: "شو بتشمل الخطة؟",
+          answer: "برنامج يومي بالأوقات والأماكن والمطاعم والتنقّل بين المحطات، مع تفاصيل كل مكان وساعات عمله وروابط خرائط Google / Apple، حسب إجاباتك.",
         },
         {
-          question: "هل الخطط مناسبة لأول زيارة لبرشلونة؟",
-          answer: "نعم، كل الخطط مصممة لتغطي أبرز المعالم والتجارب المناسبة لأول زيارة.",
+          question: "كيف بفتح خطتي؟",
+          answer: "الأسئلة والدفع بدون حساب. بعد الدفع سجّل دخولك أو افتح حساب بنفس إيميل الدفع، واضغط «ابنِ خطتي».",
         },
         {
-          question: "كيف بستلم الخطة بعد الشراء؟",
-          answer: "بعد تأكيد عملية الشراء، بيتفعّل المنتج على حسابك وبتقدر تفتحه من صفحة حسابي. إذا احتجت مساعدة، تواصل معنا مباشرة.",
+          question: "بقدر أعمل أكثر من خطة؟",
+          answer: "أكيد. اعمل خطط جديدة وعدّل أي خطة (بنعيد بناءها من إجاباتك) بدون دفع إضافي، حتى 30 خطة محفوظة.",
         },
         {
-          question: "هل بقدر أستخدم الخطة من الموبايل أثناء السفر؟",
-          answer: "نعم، الموقع مصمم ليشتغل بشكل مريح على الموبايل عشان تقدر تفتح خطتك خلال الرحلة.",
+          question: "الطيران والفنادق والتذاكر مشمولة؟",
+          answer: "لا، سعر الخطة ما بشمل الطيران ولا الفنادق ولا التذاكر. الخطة بتعرض معلومات الأسعار، وإذا المكان بده حجز مسبق بتشوف هاد.",
         },
       ],
+    },
+    home: {
+      bottomCta: { buy: "اشترِ الآن", owner: "اعمل خطة جديدة" },
+      intro: {
+        headline: "خطّط أقل، واستمتع أكثر",
+        description: "خطة سفر يومية حسب أيامك واهتماماتك ومكان سكنك.",
+      },
+      video: {
+        title: "شوف كيف بتكون خطتك",
+        play: "شغّل الفيديو",
+        posterAlt: "مقتطف من خطة مثال: أيام الرحلة وأماكنها",
+        unavailable: "الفيديو مش متاح هلأ.",
+      },
+      offer: {
+        title: "خطتك، على طريقتك",
+        text: "اختار وين مسافر، قديش يوم، شو بتحب ووين ساكن.",
+        includes: "أماكن، مطاعم وتنقّل — مرتّبين يوم بيوم.",
+        availability: "متاح حاليًا لبرشلونة",
+      },
+      problems: {
+        title: "صارت معك؟",
+        items: [
+          "رجعنا من السفرة… واكتشفنا أماكن ما كنا نعرف عنها!",
+          "كل صباح: وين نروح؟ ويضيع الوقت وإحنا ندوّر.",
+          "حطّينا أماكن بعيدة بنفس اليوم… وضاع الوقت بالمواصلات.",
+          "وصلنا عالمكان… وطلع مسكّر.",
+        ],
+        bridge: "خلّي وقتك للرحلة، والترتيب علينا.",
+      },
+      product: {
+        title: "الخطة المخصصة إلك",
+        schedule: "يومك بالترتيب",
+        details: "تفاصيل كل مكان",
+        transport: "التنقّل بين المحطات",
+        recommended: "مقترح",
+        previous: "المشهد السابق",
+        next: "المشهد التالي",
+      },
+      example: {
+        entry: "شوف مثال",
+        badge: "مثال لبرشلونة",
+        summary: "3 أيام · ثقافة وأكل",
+        hint: "هاد مثال جاهز، مش خطتك. خطتك بتنبني من إجاباتك أنت.",
+        inputsTitle: "مدخلات المثال",
+        inputs: [
+          { label: "الوجهة", value: "برشلونة" },
+          { label: "المدة", value: "3 أيام" },
+          { label: "الاهتمامات", value: "ثقافة وتاريخ، أكل ومطاعم" },
+          { label: "السكن", value: "لسا ما حجزت" },
+        ],
+        dayLabel: "اليوم {n}",
+        detailsHint: "تفاصيل المكان",
+        sheetPrice: "السعر",
+        sheetBooking: "الحجز",
+        start: "ابدأ خطتك",
+      },
+      pricing: {
+        title: "{price} مرة واحدة",
+        points: [
+          "اعمل أكثر من خطة، وعدّلها وأعد بناءها بدون دفع إضافي، حتى 30 خطة محفوظة.",
+          "بتفتح كل المدن المدعومة. حاليًا: برشلونة.",
+          "دليل برشلونة الكامل مرفق مع خطط برشلونة.",
+        ],
+        notIncluded: "السعر للخطة فقط، ومش شامل الطيران أو الإقامة أو تذاكر الأماكن.",
+        ownerTitle: "الخطة المخصصة إلك ✓",
+        ownerBody: "اعمل خطة جديدة أو عدّل خططك بدون دفع إضافي، حتى 30 خطة محفوظة.",
+        myPlans: "خططي",
+      },
+      support: { text: "ما لقيت جوابك؟ راسلنا:", refund: "سياسة الاسترجاع" },
     },
     cart: {
       title: "السلة",
@@ -353,13 +474,17 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
     },
     footer: {
       brandLine: "سافر أكثر. خطّط أقل.",
-      productsHeading: "المنتجات",
-      destinationsHeading: "الوجهات",
+      planHeading: "الخطة المخصصة",
+      accountHeading: "حسابك",
       contactHeading: "تواصل معنا",
       faqLabel: "الأسئلة الشائعة",
+      linkStart: "ابدأ خطتك",
+      linkHow: "كيف بتشتغل",
+      linkPrice: "السعر",
+      linkAccount: "حسابي وخططي",
       rights: "© 2026 Travel Smarter. جميع الحقوق محفوظة.",
-      descriptor: "أدلة سفر رقمية، خطط رحلات جاهزة، وتخطيط رحلات مخصص.",
-      descriptorSecondary: "Digital travel guides, ready-made itineraries, and personalized trip planning.",
+      descriptor: "خطط رحلات مخصصة حسب أيامك واهتماماتك ومكان سكنك.",
+      descriptorSecondary: "Personalized trip plans built around your days, interests and where you stay.",
       privacyLabel: "Privacy Policy · سياسة الخصوصية",
       termsLabel: "Terms of Service · شروط الخدمة",
     },
@@ -368,8 +493,8 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
     htmlLang: "en",
     dir: "ltr",
     seo: {
-      title: "Travel Smarter | Smart Travel Planning — Barcelona Plans & Guide",
-      description: "Ready-made and personalized Barcelona travel plans: travel guide, 1-day plan, 5-day itinerary, and smart AI planning. Travel more, plan less.",
+      title: "Travel Smarter | Personalized trip plans, day by day",
+      description: "Answer a few questions and get a trip plan built around your days, interests and where you stay, with places, restaurants and travel times. Available now for Barcelona.",
     },
     nav: {
       home: "Home",
@@ -378,7 +503,10 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
       about: "About",
       faq: "FAQ",
       contact: "Contact",
-      ctaPlanTrip: "Choose Your Plan",
+      ctaPlanTrip: "Start your plan",
+      howItWorks: "How it works",
+      price: "Price",
+      myPlans: "My plans",
       signIn: "Sign in",
       account: "My Account",
     },
@@ -386,14 +514,6 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
     cartButton: { ariaLabel: "Cart" },
     mobileMenu: { open: "Open menu", close: "Close menu" },
     loadingSplash: { ariaLabel: "Loading" },
-    hero: {
-      eyebrow: "Smart, easy travel planning",
-      headline: "Travel More. Plan Less.",
-      supporting: "Ready-made and personalized travel plans that save you hours of research.",
-      primaryCta: "Choose Your Plan",
-      secondaryCta: "Browse Products",
-      imageAlt: "International travel — Travel Smarter",
-    },
     products: {
       eyebrow: "Products",
       title: "Choose the Plan That Fits Your Trip",
@@ -483,22 +603,92 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
       title: "FAQ",
       items: [
         {
-          question: "What is the difference between the Guide, Ready Plan and Personalized Plan?",
-          answer: "The Guide is destination information without a daily schedule. The Ready Plan is a pre-built day-by-day itinerary. The Personalized Plan is built around your own interests.",
+          question: "What does the plan include?",
+          answer: "A day-by-day program with times, places, restaurants and travel time between stops, plus each place's details, opening hours and Google / Apple Maps links, based on your answers.",
         },
         {
-          question: "Are the plans suitable for a first trip to Barcelona?",
-          answer: "Yes, every plan is designed to cover the highlights and experiences best suited for a first visit.",
+          question: "How do I open my plan?",
+          answer: "The questions and the payment need no account. After paying, sign in or create an account with the email you paid with, then press \"ابنِ خطتي\" (Build my plan).",
         },
         {
-          question: "How do I receive my plan after purchase?",
-          answer: "Once your purchase is confirmed, the product is activated on your account and you can open it from your account page. If you need help, just contact us directly.",
+          question: "Can I make more than one plan?",
+          answer: "Yes. Create new plans and edit any plan (we rebuild it from your answers) at no extra cost, up to 30 saved plans.",
         },
         {
-          question: "Can I use the plan on my phone while traveling?",
-          answer: "Yes. The website is designed to work comfortably on mobile so you can access your plan during your trip.",
+          question: "Are flights, hotels and tickets included?",
+          answer: "No, the plan's price doesn't include flights, hotels or tickets. The plan shows price information and tells you when a place needs advance booking.",
         },
       ],
+    },
+    home: {
+      bottomCta: { buy: "Buy now", owner: "Create a new plan" },
+      intro: {
+        headline: "Plan less, enjoy more",
+        description: "A day-by-day travel plan built around your days, your interests and where you're staying.",
+      },
+      video: {
+        title: "See how your plan comes together",
+        play: "Play the video",
+        posterAlt: "An excerpt of an example plan: the days of the trip and their places",
+        unavailable: "The video isn't available right now.",
+        languageNote: "Plans are currently written in Arabic.",
+      },
+      offer: {
+        title: "Your plan, your way",
+        text: "Pick where you're going, how many days, what you like and where you're staying.",
+        includes: "Places, restaurants and getting around — arranged day by day.",
+        availability: "Available now for Barcelona",
+      },
+      problems: {
+        title: "Sound familiar?",
+        items: [
+          "We got back from the trip… and found places we never knew about!",
+          "Every morning: where do we go? And the time slips away while we search.",
+          "We put far-apart places in the same day… and lost the time getting around.",
+          "We got there… and it was closed.",
+        ],
+        bridge: "Keep your time for the trip, and leave the planning to us.",
+      },
+      product: {
+        title: "Your personalized plan",
+        schedule: "Your day, in order",
+        details: "Details for every place",
+        transport: "Getting between stops",
+        recommended: "Suggested",
+        previous: "Previous scene",
+        next: "Next scene",
+      },
+      example: {
+        entry: "See an example",
+        badge: "Example for Barcelona",
+        summary: "3 days · Culture & food",
+        hint: "This is a ready-made example, not your plan. Your plan is built from your own answers.",
+        inputsTitle: "Example inputs",
+        inputs: [
+          { label: "Destination", value: "Barcelona" },
+          { label: "Duration", value: "3 days" },
+          { label: "Interests", value: "Culture & history, Food" },
+          { label: "Accommodation", value: "Not booked yet" },
+        ],
+        dayLabel: "Day {n}",
+        detailsHint: "Place details",
+        sheetPrice: "Price",
+        sheetBooking: "Booking",
+        start: "Start your plan",
+      },
+      pricing: {
+        title: "{price} once",
+        points: [
+          "Create more than one plan, then edit and rebuild them at no extra cost, up to 30 saved plans.",
+          "One payment unlocks all supported cities. Available now: Barcelona.",
+          "The full Barcelona guide is included with Barcelona plans.",
+        ],
+        notIncluded: "The price is for the plan only. It doesn't include flights, accommodation or tickets for places.",
+        ownerTitle: "Your personalized plan is unlocked ✓",
+        ownerBody: "Create a new plan or edit your plans at no extra cost, up to 30 saved plans.",
+        myPlans: "My plans",
+      },
+      support: { text: "Didn't find your answer? Write to us:", refund: "Refund policy" },
     },
     cart: {
       title: "Cart",
@@ -553,12 +743,16 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
     },
     footer: {
       brandLine: "Travel More. Plan Less.",
-      productsHeading: "Products",
-      destinationsHeading: "Destinations",
+      planHeading: "Personalized plan",
+      accountHeading: "Your account",
       contactHeading: "Contact",
       faqLabel: "FAQ",
+      linkStart: "Start your plan",
+      linkHow: "How it works",
+      linkPrice: "Price",
+      linkAccount: "My account and plans",
       rights: "© 2026 Travel Smarter. All rights reserved.",
-      descriptor: "Digital travel guides, ready-made itineraries, and personalized trip planning.",
+      descriptor: "Personalized trip plans built around your days, interests and where you stay.",
       privacyLabel: "Privacy Policy",
       termsLabel: "Terms of Service",
     },

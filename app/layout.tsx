@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Cairo } from "next/font/google";
+import { Cairo, Noto_Kufi_Arabic } from "next/font/google";
 import { CurrencyProvider } from "./lib/currency";
 import { LanguageProvider } from "./lib/language";
 import { CartProvider } from "./lib/cart";
@@ -16,6 +16,13 @@ const cairo = Cairo({
   subsets: ["arabic", "latin"],
 });
 
+// Arabic headlines of the customer journey (h1 / h2 inside .theme-brand, see globals.css): a readable geometric Kufi with real weight, clearly different
+// from Cairo body text. It has no Latin glyphs, so English headlines fall back to Cairo.
+const notoKufi = Noto_Kufi_Arabic({
+  variable: "--font-noto-kufi",
+  subsets: ["arabic"],
+});
+
 export const metadata: Metadata = {
   // The custom domain is the one public origin. "./" resolves against each route's own pathname, so every
   // page gets <link rel="canonical" href="https://travelsmarters.com/<its path>"> (no query string, so a
@@ -23,8 +30,8 @@ export const metadata: Metadata = {
   // *.vercel.app domain) therefore points search engines back to the custom domain.
   metadataBase: new URL("https://travelsmarters.com"),
   alternates: { canonical: "./" },
-  title: "Travel Smarter | تخطيط سفر ذكي — خطط برشلونة ودليل برشلونة",
-  description: "خطط سفر جاهزة ومخصصة لبرشلونة: دليل سياحي، رزمة يوم واحد، رزمة 5 أيام، وخطة مخصصة بالذكاء. سافر أكثر، خطّط أقل.",
+  title: "Travel Smarter | خطة رحلة مخصصة، يوم بيوم",
+  description: "جاوب على أسئلة قصيرة واحصل على خطة رحلة مخصصة حسب أيامك واهتماماتك ومكان سكنك، مع الأماكن والمطاعم وأوقات التنقل. متاح حاليًا لبرشلونة.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -33,7 +40,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="ar"
       dir="rtl"
       data-scroll-behavior="smooth"
-      className={`${cairo.variable} h-full scroll-smooth antialiased`}
+      className={`${cairo.variable} ${notoKufi.variable} h-full scroll-smooth antialiased`}
       suppressHydrationWarning
     >
       <body className="flex min-h-full flex-col font-sans">

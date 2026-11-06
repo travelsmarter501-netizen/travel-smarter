@@ -202,9 +202,9 @@ export default function ClaimPurchaseClient({
   const effectiveState: ClaimViewState = mismatch === "email_mismatch" ? "mismatch" : mismatch === "email_unverified" ? "unverified" : state;
 
   return (
-    <main className="py-10">
+    <main className="theme-brand py-10">
       <Container className="max-w-lg">
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 text-center shadow-sm sm:p-8">
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-sm sm:p-8">
           {effectiveState === "invalid" ? (
             <>
               <p className="text-4xl">⚠️</p>

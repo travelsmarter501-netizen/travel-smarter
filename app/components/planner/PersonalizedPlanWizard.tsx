@@ -11,6 +11,8 @@ import { writePlannerDraft, type PlannerAccommodationStatus, type PlannerDraft }
 import { CHECKOUT_PERSONALIZED } from "../../lib/planner/planLinks";
 import { generateOwnerPlanAction } from "../../planner/actions";
 import PlanGeneratingScreen from "./PlanGeneratingScreen";
+import TextWithPrice from "../home/TextWithPrice";
+import { PLAN_PRICE_ILS } from "../home/homeOffer";
 import type { V2PlannerInterest } from "../../lib/planner/v2PlannerTypes";
 import { PLANNER_DESTINATIONS, DEFAULT_PLANNER_DESTINATION_ID, isAvailablePlannerDestinationId } from "../../lib/planner/plannerDestinations";
 import { MAX_ACCOMMODATION_TEXT_LENGTH, MAX_PERSONALIZED_PLAN_DAYS } from "../../lib/planner/personalizedPlanAnswers";
@@ -135,7 +137,9 @@ export default function PersonalizedPlanWizard({
 
   return (
     <div className="space-y-5">
-      {owner && <p className="rounded-2xl bg-teal-50 px-4 py-3 text-xs font-semibold leading-5 text-teal-800">{editPlanId ? wizard.editingNote : wizard.ownerIntro}</p>}
+      {owner && (editPlanId ? wizard.editingNote : wizard.ownerIntro) && (
+        <p className="rounded-xl bg-teal-50 px-4 py-3 text-xs font-semibold leading-5 text-teal-800">{editPlanId ? wizard.editingNote : wizard.ownerIntro}</p>
+      )}
       <div>
         <div className="flex items-center gap-1.5" role="list" aria-label={wizard.progressAria}>
           {([1, 2, 3, 4] as const).map((n) => (
@@ -155,37 +159,38 @@ export default function PersonalizedPlanWizard({
       {step === 1 && (
         <div>
           <h2 className="text-base font-bold text-slate-900">{wizard.destinationTitle}</h2>
-          <div className="mt-2 grid grid-cols-2 gap-2.5 sm:grid-cols-3">
-            {PLANNER_DESTINATIONS.map((destination) => {
+          <div className="mt-2 grid grid-cols-1 gap-2.5">
+            {PLANNER_DESTINATIONS.filter((destination) => destination.available).map((destination) => {
               const name = wizard.destinationNames[destination.id] ?? destination.name;
-              if (!destination.available) {
-                return (
-                  <div
-                    key={destination.id}
-                    aria-disabled="true"
-                    className="flex cursor-not-allowed flex-col items-center justify-center gap-1 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3 text-center opacity-60"
-                  >
-                    <span className="text-sm font-bold text-slate-500">
-                      {destination.flag} {name}
-                    </span>
-                    <span className="rounded-full bg-slate-200 px-2 py-0.5 text-[10px] font-bold text-slate-500">{wizard.comingSoon}</span>
-                  </div>
-                );
-              }
+              const selected = destination.id === destinationId;
               return (
                 <button
                   key={destination.id}
                   type="button"
-                  aria-pressed={destination.id === destinationId}
+                  aria-pressed={selected}
                   onClick={() => setDestinationId(destination.id)}
-                  className={`rounded-2xl border px-3 py-3 text-sm font-bold transition-colors ${choiceClass(destination.id === destinationId)}`}
+                  className={`flex items-center justify-between gap-2 rounded-xl border px-4 py-3.5 text-base font-bold transition-colors ${choiceClass(selected)}`}
                 >
-                  {destination.flag} {name}
+                  <span>
+                    {destination.flag} {name}
+                  </span>
+                  {selected && <span aria-hidden="true">✓</span>}
                 </button>
               );
             })}
           </div>
-          <p className="mt-2 text-xs text-slate-400">{wizard.availableNote}</p>
+          <p className="mt-2 text-xs text-slate-500">{wizard.availableNote}</p>
+          {/* The other target cities stay unavailable (nothing here can be selected): shown as small chips so they do not push the questions down. */}
+          <div aria-disabled="true" className="mt-4">
+            <p className="text-xs font-semibold text-slate-500">{wizard.comingSoon}</p>
+            <ul className="mt-2 flex flex-wrap gap-1.5">
+              {PLANNER_DESTINATIONS.filter((destination) => !destination.available).map((destination) => (
+                <li key={destination.id} className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-500">
+                  {destination.flag} {wizard.destinationNames[destination.id] ?? destination.name}
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       )}
 
@@ -370,6 +375,11 @@ export default function PersonalizedPlanWizard({
           </button>
         )}
       </div>
+      {step === 4 && !owner && (
+        <p className="text-center text-xs leading-5 text-slate-500">
+          <TextWithPrice text={wizard.priceNote} ils={PLAN_PRICE_ILS} priceClassName="font-semibold text-slate-700" />
+        </p>
+      )}
     </div>
   );
 }

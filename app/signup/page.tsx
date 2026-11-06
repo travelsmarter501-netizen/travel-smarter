@@ -98,9 +98,9 @@ function SignupForm() {
   if (confirmationSent) {
     const check = c.signup.checkEmail;
     return (
-      <main className="flex min-h-[calc(100vh-4rem)] items-center py-12">
+      <main className="theme-brand flex min-h-[calc(100vh-4rem)] items-center py-12">
         <Container className="max-w-md">
-          <div className="rounded-3xl border border-slate-200 bg-white p-6 text-center shadow-sm sm:p-8">
+          <div className="rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-sm sm:p-8">
             <p className="text-4xl" aria-hidden="true">
               ✉️
             </p>
@@ -133,9 +133,9 @@ function SignupForm() {
   }
 
   return (
-    <main className="flex min-h-[calc(100vh-4rem)] items-center py-12">
+    <main className="theme-brand flex min-h-[calc(100vh-4rem)] items-center py-12">
       <Container className="max-w-md">
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
           <h1 className="text-2xl font-bold text-slate-900">{c.signup.title}</h1>
           <p className="mt-1.5 text-sm text-slate-600">{c.signup.subtitle}</p>
           <ClaimBrowserNotice next={next} />

@@ -24,6 +24,7 @@ const DESTINATION_LABELS: Record<string, string> = {
   barcelona: "Barcelona",
 };
 
+
 function interestsLabel(interests: string[]): string {
   return INTEREST_OPTIONS.filter((option) => interests.includes(option.key))
     .map((option) => option.label)
@@ -109,9 +110,9 @@ export default async function AccountPage() {
   const customPlanRequests = await getUserCustomPlanRequests();
 
   return (
-    <main className="py-10">
+    <main className="theme-brand py-10">
       <Container className="max-w-2xl">
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
           <h1 className="text-2xl font-bold text-slate-900">حسابي</h1>
 
           <div className="mt-5 flex items-center gap-4">
@@ -132,7 +133,7 @@ export default async function AccountPage() {
 
           <AccountPurchases purchases={purchases} inheritedGuideFrom={hasInheritedGuideAccess && inheritedGuideFrom ? { slug: inheritedGuideFrom.productSlug, name: inheritedGuideFrom.productName } : null} />
 
-          <AccountPlans plans={plans} />
+          <AccountPlans plans={plans} canCreate={ownedProducts.some((product) => product.productSlug === "travel-smarter-personalized-plan")} />
 
           {/* Unified Personalized Plan merge: this section is now historical/legacy only -- the
               new unified planner (/planner) never creates a custom_plan_requests row, it saves

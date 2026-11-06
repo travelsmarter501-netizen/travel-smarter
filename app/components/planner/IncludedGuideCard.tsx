@@ -27,7 +27,7 @@ export default function IncludedGuideCard() {
   const c = copy[language === "en" ? "en" : "ar"];
 
   return (
-    <section className="rounded-3xl border border-teal-200 bg-teal-50/70 p-5 sm:p-6">
+    <section className="rounded-2xl border border-teal-200 bg-teal-50/70 p-5 sm:p-6">
       <p className="text-sm font-bold text-teal-800">{c.badge}</p>
       <h2 className="mt-1 text-lg font-bold text-slate-900">{c.title}</h2>
       <p className="mt-1 text-sm leading-6 text-slate-600">{c.body}</p>

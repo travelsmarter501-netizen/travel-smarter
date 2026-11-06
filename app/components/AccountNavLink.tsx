@@ -26,8 +26,8 @@ export function AccountNavLinkView({ status, variant = "bar", onNavigate }: { st
 
   const className =
     variant === "bar"
-      ? "inline-flex h-10 items-center rounded-full px-3 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-900"
-      : "flex w-full items-center justify-center rounded-full border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-800 transition-colors hover:bg-slate-50 pointer-coarse:py-3";
+      ? "inline-flex h-10 items-center rounded-full px-3 text-sm font-semibold text-ink transition-colors hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+      : "flex w-full items-center justify-center rounded-full border border-line px-5 py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand pointer-coarse:py-3";
 
   if (status === "loading") {
     return (
