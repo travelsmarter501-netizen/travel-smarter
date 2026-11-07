@@ -12,7 +12,7 @@ import { CHECKOUT_PERSONALIZED } from "../../lib/planner/planLinks";
 import { generateOwnerPlanAction } from "../../planner/actions";
 import PlanGeneratingScreen from "./PlanGeneratingScreen";
 import TextWithPrice from "../home/TextWithPrice";
-import { QUIZ_CHOICE_BASE, QUIZ_PRESS, quizChoiceClass, useQuizClick } from "./quizFeedback";
+import { QUIZ_CHOICE_BASE, QUIZ_PRESS, quizChoiceClass, quizHaptic } from "./quizFeedback";
 import { PLAN_PRICE_ILS } from "../home/homeOffer";
 import type { V2PlannerInterest } from "../../lib/planner/v2PlannerTypes";
 import { PLANNER_DESTINATIONS, DEFAULT_PLANNER_DESTINATION_ID, isAvailablePlannerDestinationId } from "../../lib/planner/plannerDestinations";
@@ -60,8 +60,6 @@ export default function PersonalizedPlanWizard({
   const generateErrors = plannerCopy.generateErrors;
 
   const [step, setStep] = useState<Step>(initialDraft ? 4 : 1);
-  // Short click on every real choice / Next / Back activation (mouse, touch or keyboard); the visitor can mute it.
-  const { click, muted, toggleMuted } = useQuizClick();
   const [destinationId, setDestinationId] = useState<string>(
     initialDraft?.destinationId ?? (isAvailablePlannerDestinationId(initialDestinationId) ? (initialDestinationId as string) : DEFAULT_PLANNER_DESTINATION_ID)
   );
@@ -154,21 +152,7 @@ export default function PersonalizedPlanWizard({
             />
           ))}
         </div>
-        <div className="mt-2 flex items-center justify-between gap-3">
-          <p className="text-xs font-bold text-slate-500">{fillCopy(wizard.stepOf, { step, total: 4, label: wizard.stepLabels[step - 1] })}</p>
-          {/* Small, clear mute control for the click sound; the choice is remembered in this browser. */}
-          <button
-            type="button"
-            onClick={toggleMuted}
-            aria-pressed={muted}
-            aria-label={wizard.muteClicks}
-            title={wizard.muteClicks}
-            className="touch-target relative inline-flex shrink-0 items-center gap-1 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-600 hover:border-slate-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
-          >
-            <span aria-hidden="true">{muted ? "🔇" : "🔊"}</span>
-            <span aria-hidden="true">{muted ? wizard.clickSoundOff : wizard.clickSoundOn}</span>
-          </button>
-        </div>
+        <p className="mt-2 text-xs font-bold text-slate-500">{fillCopy(wizard.stepOf, { step, total: 4, label: wizard.stepLabels[step - 1] })}</p>
       </div>
 
       {step === 1 && (
@@ -184,7 +168,7 @@ export default function PersonalizedPlanWizard({
                   type="button"
                   aria-pressed={selected}
                   onClick={() => {
-                    click();
+                    if (destination.id !== destinationId) quizHaptic();
                     setDestinationId(destination.id);
                   }}
                   className={`flex items-center justify-between gap-2 rounded-xl border px-4 py-3.5 text-base font-bold ${choiceClass(selected)}`}
@@ -227,7 +211,7 @@ export default function PersonalizedPlanWizard({
                 type="button"
                 aria-pressed={option.key === dateMode}
                 onClick={() => {
-                  click();
+                  if (option.key !== dateMode) quizHaptic();
                   setDateMode(option.key);
                 }}
                 className={`rounded-2xl border px-3 py-3 text-sm font-bold ${choiceClass(option.key === dateMode)}`}
@@ -247,7 +231,7 @@ export default function PersonalizedPlanWizard({
                     type="button"
                     aria-pressed={count === durationDays}
                     onClick={() => {
-                      click();
+                      if (count !== durationDays) quizHaptic();
                       setDurationDays(count);
                     }}
                     className={`rounded-xl border px-2 py-2.5 pointer-coarse:min-h-11 text-xs font-bold ${choiceClass(count === durationDays)}`}
@@ -300,13 +284,14 @@ export default function PersonalizedPlanWizard({
         <V2InterestSelector
           selected={interests}
           onChange={(next) => {
-            click();
+            // Toggling an interest always changes the selection (adds or removes it, and ends "Surprise me").
+            if (surpriseMe || next.length !== interests.length || next.some((key) => !interests.includes(key))) quizHaptic();
             setInterests(next);
             setSurpriseMe(false);
           }}
           surpriseMeActive={surpriseMe}
           onSurpriseMe={() => {
-            click();
+            if (!surpriseMe) quizHaptic();
             setSurpriseMe(true);
             setInterests([]);
           }}
@@ -329,7 +314,7 @@ export default function PersonalizedPlanWizard({
                 type="button"
                 aria-pressed={option.value === accommodationStatus}
                 onClick={() => {
-                  click();
+                  if (option.value !== accommodationStatus) quizHaptic();
                   setAccommodationStatus(option.value);
                   if (option.value === "not_booked") setAccommodationText("");
                 }}
@@ -375,10 +360,7 @@ export default function PersonalizedPlanWizard({
         {step > 1 && (
           <button
             type="button"
-            onClick={() => {
-              click();
-              setStep((s) => (s - 1) as Step);
-            }}
+            onClick={() => setStep((s) => (s - 1) as Step)}
             className={`rounded-full border border-slate-200 bg-white px-5 py-3.5 text-sm font-bold text-slate-700 hover:border-slate-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 ${QUIZ_PRESS}`}
           >
             {wizard.back}
@@ -388,10 +370,7 @@ export default function PersonalizedPlanWizard({
         {step < 4 ? (
           <button
             type="button"
-            onClick={() => {
-              click();
-              setStep((s) => (s + 1) as Step);
-            }}
+            onClick={() => setStep((s) => (s + 1) as Step)}
             disabled={!stepValid[step]}
             className={`flex flex-1 items-center justify-center rounded-full bg-teal-700 px-5 py-3.5 text-base font-semibold text-white shadow-sm hover:bg-teal-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 disabled:opacity-60 disabled:active:scale-100 ${QUIZ_PRESS}`}
           >
