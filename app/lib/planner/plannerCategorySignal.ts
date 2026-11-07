@@ -32,7 +32,13 @@ import { barcelonaGuide } from "../barcelona-guide";
  * responsibility elsewhere in the codebase. This changes no runtime selection/scoring behavior --
  * it is a read-only classification of an already-decided place.
  */
-export function classifyPlaceCategorySignal(placeId: string, meta: PlannerPlaceMetadata): V2PlannerInterest {
+/** The place content a city resolves its places from (Barcelona's guide by default). */
+export type CategorySignalGuide = Parameters<typeof resolvePlannerPlace>[1];
+
+/** What a non-Barcelona city passes so the classification and the flagship protection use ITS places (multi-city). */
+export type CityCompositionContext = { guide: CategorySignalGuide; protectedPlaceIds: readonly string[] };
+
+export function classifyPlaceCategorySignal(placeId: string, meta: PlannerPlaceMetadata, guide: CategorySignalGuide = barcelonaGuide): V2PlannerInterest {
   const w = meta.weights;
   const entries: [V2PlannerInterest, number][] = [
     ["popular", w.popular],
@@ -46,7 +52,7 @@ export function classifyPlaceCategorySignal(placeId: string, meta: PlannerPlaceM
   const winner = entries[0][0];
   if (winner !== "food") return winner;
 
-  const resolved = resolvePlannerPlace(placeId, barcelonaGuide);
+  const resolved = resolvePlannerPlace(placeId, guide);
   if (resolved?.type === "shopping") return "shopping";
   if (resolved?.type === "nightlife") return "nightlife";
   return "food";
@@ -57,7 +63,8 @@ export function classifyPlaceCategorySignal(placeId: string, meta: PlannerPlaceM
  * on the trip can never itself violate a trip-wide coverage guarantee (see that pass's own doc
  * comment for why this is an extra-conservative belt-and-braces exclusion, not a strict
  * necessity). */
-export function isProtectedFlagshipPlace(placeId: string): boolean {
+export function isProtectedFlagshipPlace(placeId: string, protectedPlaceIds?: readonly string[]): boolean {
+  if (protectedPlaceIds) return protectedPlaceIds.includes(placeId);
   return BARCELONA_FLAGSHIP_MUST_SEE.includes(placeId) || BARCELONA_FLAGSHIP_TIER_B.includes(placeId);
 }
 
@@ -69,11 +76,11 @@ export function isIconicPlace(placeId: string): boolean {
 
 /** A day's category signals as a set (not a multiset) -- two stops sharing a category count once,
  * matching how the Jaccard similarity check (below) is defined over category SETS. */
-export function dayCategorySignals(stopIds: readonly string[], metaById: ReadonlyMap<string, PlannerPlaceMetadata>): Set<V2PlannerInterest> {
+export function dayCategorySignals(stopIds: readonly string[], metaById: ReadonlyMap<string, PlannerPlaceMetadata>, guide?: CategorySignalGuide): Set<V2PlannerInterest> {
   const set = new Set<V2PlannerInterest>();
   for (const id of stopIds) {
     const meta = metaById.get(id);
-    if (meta) set.add(classifyPlaceCategorySignal(id, meta));
+    if (meta) set.add(classifyPlaceCategorySignal(id, meta, guide));
   }
   return set;
 }

@@ -3,7 +3,7 @@ import { buildBarcelonaPlannerRouteLegs } from "./barcelona-planner-route-legs";
 import type { DayRouteLegsBuilder } from "./plannerNaturalClusterReclaim";
 import { optimizeDayRoute } from "./plannerRouteOptimizer";
 import type { RouteConfig } from "./plannerRouteOptimizer";
-import { dayCategorySignals, jaccardSimilarity, isProtectedFlagshipPlace } from "./plannerCategorySignal";
+import { dayCategorySignals, jaccardSimilarity, isProtectedFlagshipPlace, type CityCompositionContext } from "./plannerCategorySignal";
 import type { PlannerDay, PlannerDayStop, GeneratedPlannerPlan, ClusterCompatibilityMap } from "./plannerDayBuilder";
 import type { PlannerRouteLeg } from "./plannerTransportTypes";
 import type { PlannerPlaceMetadata } from "./plannerTypes";
@@ -110,7 +110,8 @@ function enumerateCandidates(
   accommodation: TripCompositionAccommodationInfo | null | undefined,
   flaggedPairIndex: number,
   categorySets: Set<V2PlannerInterest>[],
-  buildDayLegs: DayRouteLegsBuilder
+  buildDayLegs: DayRouteLegsBuilder,
+  city?: CityCompositionContext
 ): Candidate[] {
   const metaById = new Map(places.map((p) => [p.placeId, p]));
 
@@ -198,7 +199,7 @@ function enumerateCandidates(
     const partnerIndex = targetIndex === flaggedPairIndex ? flaggedPairIndex + 1 : flaggedPairIndex;
 
     for (const stop of targetDay.stops) {
-      if (isProtectedFlagshipPlace(stop.placeId)) continue;
+      if (isProtectedFlagshipPlace(stop.placeId, city?.protectedPlaceIds)) continue;
 
       for (let otherIndex = 0; otherIndex < plan.days.length; otherIndex++) {
         if (otherIndex === targetIndex) continue;
@@ -215,12 +216,12 @@ function enumerateCandidates(
               metricsOk({ unresolvedCount: baseUnresolved[targetIndex], density: baseDensity[targetIndex] }, resTarget) &&
               resOther.unresolvedCount <= baseUnresolved[otherIndex]
             ) {
-              const newTargetSet = dayCategorySignals(newTargetIds, metaById);
-              if (otherPairsStayOk(targetIndex, newTargetSet) && otherPairsStayOk(otherIndex, dayCategorySignals(newOtherIds, metaById))) {
+              const newTargetSet = dayCategorySignals(newTargetIds, metaById, city?.guide);
+              if (otherPairsStayOk(targetIndex, newTargetSet) && otherPairsStayOk(otherIndex, dayCategorySignals(newOtherIds, metaById, city?.guide))) {
                 const partnerSet = categorySets[partnerIndex];
                 const flaggedAfter =
                   otherIndex === partnerIndex
-                    ? jaccardSimilarity(newTargetSet, dayCategorySignals(newOtherIds, metaById))
+                    ? jaccardSimilarity(newTargetSet, dayCategorySignals(newOtherIds, metaById, city?.guide))
                     : targetIndex < partnerIndex
                       ? jaccardSimilarity(newTargetSet, partnerSet)
                       : jaccardSimilarity(partnerSet, newTargetSet);
@@ -241,7 +242,7 @@ function enumerateCandidates(
 
         // -- SWAP: stop <-> one stop from otherDay --------------------------------------------
         for (const otherStop of otherDay.stops) {
-          if (isProtectedFlagshipPlace(otherStop.placeId)) continue;
+          if (isProtectedFlagshipPlace(otherStop.placeId, city?.protectedPlaceIds)) continue;
           const newTargetIds = targetDay.stops.map((s) => s.placeId).filter((id) => id !== stop.placeId).concat(otherStop.placeId);
           const newOtherIds = otherDay.stops.map((s) => s.placeId).filter((id) => id !== otherStop.placeId).concat(stop.placeId);
           if (!dayIsStructurallyValid(newTargetIds) || !dayIsStructurallyValid(newOtherIds)) continue;
@@ -253,8 +254,8 @@ function enumerateCandidates(
           if (!metricsOk({ unresolvedCount: baseUnresolved[targetIndex], density: baseDensity[targetIndex] }, resTarget)) continue;
           if (!metricsOk({ unresolvedCount: baseUnresolved[otherIndex], density: baseDensity[otherIndex] }, resOther)) continue;
 
-          const newTargetSet = dayCategorySignals(newTargetIds, metaById);
-          const newOtherSet = dayCategorySignals(newOtherIds, metaById);
+          const newTargetSet = dayCategorySignals(newTargetIds, metaById, city?.guide);
+          const newOtherSet = dayCategorySignals(newOtherIds, metaById, city?.guide);
           if (!otherPairsStayOk(targetIndex, newTargetSet)) continue;
           if (!otherPairsStayOk(otherIndex, newOtherSet)) continue;
 
@@ -299,12 +300,14 @@ export function applyTripCompositionPass(
   isPlaceEligibleForDay: ((placeId: string, dayNumber: number) => boolean) | undefined,
   accommodation: TripCompositionAccommodationInfo | null | undefined,
   surpriseMe: boolean,
-  buildDayLegs: DayRouteLegsBuilder = buildBarcelonaPlannerRouteLegs
+  buildDayLegs: DayRouteLegsBuilder = buildBarcelonaPlannerRouteLegs,
+  /** Multi-city: the city's own places and protected flagships. Omitted (Barcelona) = Barcelona's guide and Must-See policy. */
+  city?: CityCompositionContext
 ): { plan: GeneratedPlannerPlan; legsByDay: PlannerRouteLeg[][] } {
   if (!ENABLE_TRIP_COMPOSITION_PASS || !surpriseMe || plan.days.length < 2) return { plan, legsByDay };
 
   const metaById = new Map(places.map((p) => [p.placeId, p]));
-  const categorySets = plan.days.map((day) => dayCategorySignals(day.stops.map((s) => s.placeId), metaById));
+  const categorySets = plan.days.map((day) => dayCategorySignals(day.stops.map((s) => s.placeId), metaById, city?.guide));
 
   let flaggedPairIndex = -1;
   for (let i = 0; i < plan.days.length - 1; i++) {
@@ -316,7 +319,7 @@ export function applyTripCompositionPass(
   if (flaggedPairIndex === -1) return { plan, legsByDay };
 
   const originalJaccard = jaccardSimilarity(categorySets[flaggedPairIndex], categorySets[flaggedPairIndex + 1]);
-  const candidates = enumerateCandidates(plan, legsByDay, places, routeConfig, isPlaceEligibleForDay, accommodation, flaggedPairIndex, categorySets, buildDayLegs);
+  const candidates = enumerateCandidates(plan, legsByDay, places, routeConfig, isPlaceEligibleForDay, accommodation, flaggedPairIndex, categorySets, buildDayLegs, city);
 
   const improving = candidates.filter((c) => c.resultingFlaggedPairJaccard < originalJaccard);
   if (improving.length === 0) return { plan, legsByDay }; // no clearly better option -- do not force one

@@ -223,6 +223,7 @@ export async function generateCityPlanV2(city: CityPlannerModule, input: Generat
     // similarity threshold. Runs strictly AFTER generateTravelPlan and BEFORE Natural Cluster
     // Reclaim, per that task's own explicit ordering -- so Reclaim still gets the final say on
     // thin/veryThin density using whatever this pass produces.
+    const compositionCity = city.compositionProtectedPlaceIds ? { guide: city.places, protectedPlaceIds: city.compositionProtectedPlaceIds } : undefined;
     const { plan: composedPlan, legsByDay: composedLegsByDay } = applyTripCompositionPass(
       result.data.plan,
       result.data.legsByDay,
@@ -231,7 +232,8 @@ export async function generateCityPlanV2(city: CityPlannerModule, input: Generat
       isPlaceEligibleForDay,
       accommodationInfoForRepairPasses,
       surpriseMe,
-      city.buildDayRouteLegs
+      city.buildDayRouteLegs,
+      compositionCity
     );
     const compositionChangeAlreadyApplied = composedPlan !== result.data.plan;
 
@@ -290,10 +292,20 @@ let { plan: optimizedPlan, legsByDay: optimizedLegsByDay } = applyCrossDayOptimi
         isPlaceEligibleForDay,
         accommodationInfoForRepairPasses,
         surpriseMe,
-        city.buildDayRouteLegs
+        city.buildDayRouteLegs,
+        compositionCity
       );
       optimizedPlan = second.plan;
       optimizedLegsByDay = second.legsByDay;
+    }
+
+    // City geography repair (multi-city; Prague): the shared passes above accept a day when a new area is linked to ANY area
+    // already in it, so a day can end up pairing two areas that are not neighbours. A city may fix that here (reorder / swap
+    // stops between days, same places). Barcelona has no such hook, so its plans are unchanged.
+    if (city.repairDayGeography) {
+      const repaired = city.repairDayGeography({ plan: optimizedPlan, legsByDay: optimizedLegsByDay, config: configForRequest, isPlaceEligibleForDay });
+      optimizedPlan = repaired.plan;
+      optimizedLegsByDay = repaired.legsByDay;
     }
 
     // Accommodation Geo Intelligence (Section 10.C) -- Day 1's within-day stop order is applied

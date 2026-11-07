@@ -53,6 +53,16 @@ export type CityAccommodationRules = {
   keywordCluster: (text: string) => string | null;
 };
 
+/** Context handed to a city's optional geography repair (every plan, dated or not). */
+export type DayGeographyRepairContext = {
+  plan: GeneratedPlannerPlan;
+  legsByDay: PlannerRouteLeg[][];
+  /** The request's engine config (metadata, route optimizer, legs builder). */
+  config: DestinationConfig;
+  /** Dated plans: whether a place is open on that day number; undefined for flexible plans. */
+  isPlaceEligibleForDay?: (placeId: string, dayNumber: number) => boolean;
+};
+
 /** Context handed to a city's optional post-processing step for dated plans (Barcelona: the beach timing guard). */
 export type DatedPlanPostProcessContext = {
   plan: GeneratedPlannerPlan;
@@ -89,6 +99,16 @@ export type CityPlannerModule = {
   mealStops: CityMealStopRules;
   /** Optional extra pass for dated plans after the closure repair (Barcelona: beach timing). */
   postProcessDatedPlan?: (context: DatedPlanPostProcessContext) => { plan: GeneratedPlannerPlan; legsByDay: PlannerRouteLeg[][] };
+  /**
+   * Optional: flagships the Surprise Me composition pass must never move, for a city other than Barcelona. When set, that pass also
+   * classifies places from this city's own `places` (Barcelona omits it: Barcelona's guide and Must-See policy, unchanged).
+   */
+  compositionProtectedPlaceIds?: readonly string[];
+  /**
+   * Optional last geography repair for every plan, run after the day passes and before the accommodation Day-1 order and the
+   * date safety net. It may reorder stops and swap stops between days but must keep the trip's set of places (Barcelona omits it).
+   */
+  repairDayGeography?: (context: DayGeographyRepairContext) => { plan: GeneratedPlannerPlan; legsByDay: PlannerRouteLeg[][] };
   /** Shown when the content cannot fill every requested day (keeps the existing Barcelona wording for Barcelona). */
   capacityWarning: (daysGenerated: number) => string;
 };

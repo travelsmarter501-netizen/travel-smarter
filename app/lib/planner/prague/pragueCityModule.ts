@@ -2,6 +2,7 @@ import "server-only";
 import { resolvePlannerPlace } from "../../readyPlan";
 import { haversineDistanceKm, type GeoPoint } from "../geoDistance";
 import { buildEstimatedLeg, buildEstimatedPlanRouteLegs, estimatedWalkingMinutes } from "../estimatedRouteLegs";
+import { repairCityDayGeography } from "../cityGeographyRepair";
 import { ENABLE_MUST_SEE_PRIORITY, FLAGSHIP_MUST_SEE_BOOST, FLAGSHIP_TIER_B_BOOST, FLAGSHIP_TIER_B_SURPRISE_ME_BOOST } from "../barcelonaMustSeePolicy";
 import { V2_PLANNER_INTERESTS, type V2PlannerInterest } from "../v2PlannerTypes";
 import { PRAGUE_PLACES, PRAGUE_PLACE_COORDINATES } from "./praguePlaces";
@@ -65,6 +66,9 @@ function symmetric(links: typeof LINKS): ClusterCompatibilityMap {
 }
 
 export const PRAGUE_CLUSTER_COMPATIBILITY = symmetric(LINKS);
+
+/** Charles Bridge physically joins Malá Strana and the Old Town, so a hop to it from either side is a neighbour hop. */
+export const PRAGUE_CONNECTORS: Record<string, readonly string[]> = { "charles-bridge": ["mala-strana", "old-town"] };
 
 const TIER_A = ["prague-castle", "charles-bridge", "old-town-square", "old-town-hall"];
 const TIER_B = ["petrin-tower", "vysehrad", "clementinum", "st-nicholas-mala-strana", "john-lennon-wall", "letna-park", "jewish-museum"];
@@ -339,5 +343,9 @@ export const PRAGUE_CITY_MODULE: CityPlannerModule = {
     eveningSpecialCategory: null,
     dinnerCategories: ["local", "middle-eastern", "restaurants"],
   },
+  // The Surprise Me composition pass classifies Prague places from Prague's own data and never moves these flagships.
+  compositionProtectedPlaceIds: [...FLAGSHIP_MUST_SEE, ...FLAGSHIP_TIER_B_IDS],
+  repairDayGeography: (context) =>
+    repairCityDayGeography(context, { compatibility: PRAGUE_CLUSTER_COMPATIBILITY, connectors: PRAGUE_CONNECTORS, metadataById: getPraguePlannerMetadataById, travelMinutes }),
   capacityWarning: (daysGenerated) => `قدرنا نبني خطة قوية لـ ${daysGenerated} أيام من البيانات المتاحة حاليًا لبراغ. عم نوسّع المحتوى للأيام الأطول.`,
 };
