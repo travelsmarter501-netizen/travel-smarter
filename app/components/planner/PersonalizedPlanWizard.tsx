@@ -176,7 +176,7 @@ export default function PersonalizedPlanWizard({
                 >
                   <span>
                     {destination.flag} {name}
-                    {isPreviewPlannerDestinationId(destination.id) && <span className="ms-2 text-xs font-semibold text-amber-700">(معاينة محلية)</span>}
+                    {isPreviewPlannerDestinationId(destination.id) && <span className="ms-2 text-xs font-semibold text-amber-700">(معاينة)</span>}
                   </span>
                   {selected && <span aria-hidden="true">✓</span>}
                 </button>

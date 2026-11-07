@@ -2,17 +2,20 @@
 
 import { useLanguage } from "../lib/language";
 import type { Language } from "../lib/homepageTranslations";
+import { isEnabledLanguage } from "../lib/releaseScope";
 
 const FOCUS_CLASS = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand";
 
 export default function LanguageSwitcher({ className = "" }: { className?: string }) {
   const { language, setLanguage, t } = useLanguage();
 
-  const options: { value: Language; label: string }[] = [
-    { value: "ar", label: t.languageSwitcher.ar },
-    { value: "en", label: t.languageSwitcher.en },
-    { value: "he", label: t.languageSwitcher.he },
-  ];
+  const options: { value: Language; label: string }[] = (
+    [
+      { value: "ar", label: t.languageSwitcher.ar },
+      { value: "en", label: t.languageSwitcher.en },
+      { value: "he", label: t.languageSwitcher.he },
+    ] as { value: Language; label: string }[]
+  ).filter((option) => isEnabledLanguage(option.value));
 
   return (
     <div

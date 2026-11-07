@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useSyncExternalStore, type ReactNode } from "react";
 import { homepageTranslations, type HomepageCopy, type Language } from "./homepageTranslations";
+import { isEnabledLanguage } from "./releaseScope";
 
 const STORAGE_KEY = "travel-smarter-language";
 const listeners = new Set<() => void>();
@@ -14,7 +15,7 @@ function readStoredLanguage(): Language {
   if (memoryLanguage) return memoryLanguage;
   try {
     const stored = window.localStorage.getItem(STORAGE_KEY);
-    return stored === "en" || stored === "he" ? stored : "ar";
+    return isEnabledLanguage(stored) ? stored : "ar";
   } catch {
     return "ar";
   }

@@ -3,6 +3,7 @@ import { BARCELONA_CITY_MODULE } from "./barcelonaCityModule";
 import { PRAGUE_CITY_MODULE } from "./prague/pragueCityModule";
 import { VIENNA_CITY_MODULE } from "./vienna/viennaCityModule";
 import type { CityPlannerModule } from "./cityPlannerModule";
+import { isReleaseExcludedDestination } from "../releaseScope";
 
 /**
  * Multi-city foundation: destination id -> the city's planner module. Having a module here means the ENGINE can build a
@@ -18,5 +19,7 @@ const CITY_PLANNER_MODULES: Record<string, CityPlannerModule> = {
 };
 
 export function getCityPlannerModule(destinationId: string): CityPlannerModule | null {
+  // Release scope (releaseScope.ts): Vienna stays on the development branch, never generated in this release.
+  if (isReleaseExcludedDestination(destinationId)) return null;
   return Object.prototype.hasOwnProperty.call(CITY_PLANNER_MODULES, destinationId) ? CITY_PLANNER_MODULES[destinationId] : null;
 }

@@ -13,6 +13,8 @@
  * wizard component and, later, from any server-rendered destination-aware page alike.
  */
 
+import { isReleaseExcludedDestination } from "../releaseScope";
+
 export type PlannerDestinationOption = {
   id: string;
   name: string;
@@ -56,12 +58,16 @@ export function isKnownPlannerDestinationId(value: string | null | undefined): b
  * public purchase availability is only ever the `available` flag above. Do not set this variable on Vercel.
  */
 function previewPlannerDestinationIds(): string[] {
-  if (typeof window === "undefined" && process.env.VERCEL) return [];
+  // Prague release (2026-11-07): the switch is also honoured on a Vercel PREVIEW deployment (VERCEL_ENV === "preview"), so
+  // the owner can review Prague there with a separate test database. It is never honoured on Vercel Production (or any
+  // other Vercel environment) on the server, which is what decides: the server refuses the city there even if the
+  // variable were set by mistake. Set the variable for the Preview environment only.
+  if (typeof window === "undefined" && process.env.VERCEL && process.env.VERCEL_ENV !== "preview") return [];
   const raw = process.env.NEXT_PUBLIC_PLANNER_PREVIEW_DESTINATIONS ?? "";
   return raw
     .split(",")
     .map((id) => id.trim())
-    .filter((id) => PLANNER_DESTINATIONS.some((d) => d.id === id && !d.available));
+    .filter((id) => !isReleaseExcludedDestination(id) && PLANNER_DESTINATIONS.some((d) => d.id === id && !d.available));
 }
 
 /** Selectable in the questionnaire and accepted by the server: publicly available, or a local preview city (see above). */
