@@ -9,14 +9,15 @@ import LocationInfo from "../guide/LocationInfo";
 import SmartPlannerTransportConnector from "../smart-planner/SmartPlannerTransportConnector";
 import { IconArrowRight, IconChevronDown, IconClock } from "../icons";
 import { START_PLAN_HREF } from "./homeOffer";
-import { formatMinutesAr } from "../../lib/readyPlan";
-import { HOME_SAMPLE_PLAN, type HomeSampleStop } from "../../lib/home/homeSamplePlan";
+import { homeSampleForLanguage, type HomeSampleStop } from "../../lib/home/homeSamplePlan";
 import { useLanguage } from "../../lib/language";
+import { isRtlLanguage } from "../../lib/homepageTranslations";
+import { bookingStatusText, formatMinutes, PLACE_CARD_TEXT, type PlanLanguage } from "../../lib/i18n/planText";
 import type { ResolvedPlaceSummary } from "../../lib/readyPlan";
 
 // Same width the real day view reserves for its time + number rail.
 const RAIL_WIDTH = "w-11 sm:w-12";
-const STOP_CARD = "flex w-full flex-col rounded-xl border border-line bg-white p-3 text-right shadow-sm";
+const STOP_CARD = "flex w-full flex-col rounded-xl border border-line bg-white p-3 text-start shadow-sm";
 
 function toSummary(stop: HomeSampleStop): ResolvedPlaceSummary {
   return {
@@ -44,7 +45,7 @@ export function Rail({ number, timeRange }: { number: number; timeRange: string 
   );
 }
 
-export function StopContent({ stop, hint }: { stop: HomeSampleStop; hint?: string }) {
+export function StopContent({ stop, hint, lang = "ar" }: { stop: HomeSampleStop; hint?: string; lang?: PlanLanguage }) {
   return (
     <>
       <div className="flex items-center gap-3">
@@ -65,14 +66,14 @@ export function StopContent({ stop, hint }: { stop: HomeSampleStop; hint?: strin
           </p>
           <p className="mt-1 flex items-center gap-1 text-xs font-semibold text-muted">
             <IconClock className="h-3 w-3 text-brand" />
-            {formatMinutesAr(stop.visitDurationMinutes)}
+            {formatMinutes(lang, stop.visitDurationMinutes)}
           </p>
         </div>
       </div>
       {hint && (
         <span className="mt-2.5 flex items-center gap-1 text-xs font-bold text-brand">
           {hint}
-          <IconArrowRight className="h-3.5 w-3.5 rotate-180" aria-hidden="true" />
+          <IconArrowRight className="h-3.5 w-3.5 rtl:rotate-180" aria-hidden="true" />
         </span>
       )}
     </>
@@ -85,14 +86,16 @@ export function StopContent({ stop, hint }: { stop: HomeSampleStop; hint?: strin
  * (lib/home/homeSamplePlan.ts: three stops, the two transport legs and ONE openable place). <details> keeps it working without JavaScript.
  * The real thing starts at /planner?new=1.
  *
- * The plan view is Arabic and right-to-left in the product, so the example card is always rendered that way, whatever the page language.
+ * The example follows the page language like the plan view itself (Arabic and Hebrew right-to-left, English left-to-right); its texts come
+ * from the reviewed plan translations (homeSampleForLanguage). Stops, times, legs and prices are the same in every language.
  */
 export default function HomeExample() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const copy = t.home.example;
   const [open, setOpen] = useState(false);
 
-  const sample = HOME_SAMPLE_PLAN;
+  const sample = homeSampleForLanguage(language);
+  const dir = isRtlLanguage(language) ? "rtl" : "ltr";
   const detailsStop = sample.stops.find((stop) => stop.id === sample.details.placeId);
 
   return (
@@ -122,8 +125,8 @@ export default function HomeExample() {
                   </li>
                 ))}
               </ul>
-              <div dir="rtl">
-                <p dir="auto" className="text-sm font-bold text-ink">
+              <div dir={dir}>
+                <p className="text-sm font-bold text-ink">
                   {copy.dayLabel.replace("{n}", String(sample.dayNumber))} · {sample.dayTitle}
                 </p>
                 <div className="mt-4">
@@ -142,16 +145,16 @@ export default function HomeExample() {
                                 onClick={() => setOpen(true)}
                                 className={`${STOP_CARD} transition-[box-shadow,transform] hover:shadow-md active:scale-[0.99] motion-reduce:transition-none motion-reduce:active:scale-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand`}
                               >
-                                <StopContent stop={stop} hint={copy.detailsHint} />
+                                <StopContent stop={stop} hint={copy.detailsHint} lang={language} />
                               </button>
                             ) : (
                               <div className={STOP_CARD}>
-                                <StopContent stop={stop} />
+                                <StopContent stop={stop} lang={language} />
                               </div>
                             )}
                           </div>
                         </div>
-                        {next && leg && <SmartPlannerTransportConnector leg={leg} from={toSummary(stop)} to={toSummary(next)} railWidth={RAIL_WIDTH} />}
+                        {next && leg && <SmartPlannerTransportConnector leg={leg} from={toSummary(stop)} to={toSummary(next)} railWidth={RAIL_WIDTH} lang={language} />}
                       </div>
                     );
                   })}
@@ -165,10 +168,10 @@ export default function HomeExample() {
         </div>
       </Container>
 
-      <BottomSheet open={open} onClose={() => setOpen(false)} title={detailsStop?.name}>
-        <div dir="rtl" className="space-y-3 text-right">
+      <BottomSheet open={open} onClose={() => setOpen(false)} title={detailsStop?.name} closeLabel={PLACE_CARD_TEXT[language].close}>
+        <div dir={dir} className="space-y-3 text-start">
           <p className="text-sm leading-6 text-muted">{sample.details.description}</p>
-          <LocationInfo area={sample.details.areaName} address={sample.details.address} mapsUrl={sample.details.mapsUrl} appleMapsUrl={sample.details.appleMapsUrl} />
+          <LocationInfo lang={language} area={sample.details.areaName} address={sample.details.address} mapsUrl={sample.details.mapsUrl} appleMapsUrl={sample.details.appleMapsUrl} />
           <div className="space-y-1.5 text-sm text-ink">
             <p className="flex items-center gap-1.5">
               <span aria-hidden="true">🎟️</span>
@@ -179,7 +182,7 @@ export default function HomeExample() {
             <p className="flex items-center gap-1.5">
               <span aria-hidden="true">📅</span>
               <span>
-                {copy.sheetBooking}: {sample.details.bookingStatus}
+                {copy.sheetBooking}: {bookingStatusText(sample.details.bookingStatus, language)}
               </span>
             </p>
           </div>

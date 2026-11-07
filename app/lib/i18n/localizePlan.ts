@@ -49,11 +49,15 @@ function heAnd(word: string): string {
   return /^[֐-׿]/.test(word) ? `ו${word}` : `ו־${word}`;
 }
 
+/** English needs an article before some area names ("near the Gothic Quarter"). */
+const EN_AREA_ARTICLE: Record<string, string> = { "Gothic Quarter": "the Gothic Quarter", Born: "El Born", Raval: "El Raval" };
+const enArea = (x: string) => EN_AREA_ARTICLE[x] ?? x;
+
 const REASON_TEMPLATES: { prefix: string; en: (x: string) => string; he: (x: string) => string }[] = [
   { prefix: "قريب من مسار ", en: (x) => `Near the ${x} route`, he: (x) => `קרוב למסלול ${x}` },
-  { prefix: "مناسب بعد جولة ", en: (x) => `Good after a walk around ${x}`, he: (x) => `מתאים אחרי סיור ב־${x}` },
-  { prefix: "تجربة قريبة من ", en: (x) => `An experience near ${x}`, he: (x) => `חוויה ליד ${x}` },
-  { prefix: "سهرة قريبة من ", en: (x) => `An evening out near ${x}`, he: (x) => `בילוי ערב ליד ${x}` },
+  { prefix: "مناسب بعد جولة ", en: (x) => `Good after a walk around ${enArea(x)}`, he: (x) => `מתאים אחרי סיור ב־${x}` },
+  { prefix: "تجربة قريبة من ", en: (x) => `An experience near ${enArea(x)}`, he: (x) => `חוויה ליד ${x}` },
+  { prefix: "سهرة قريبة من ", en: (x) => `An evening out near ${enArea(x)}`, he: (x) => `בילוי ערב ליד ${x}` },
 ];
 
 const CITY_NAMES: Record<string, Pair> = { برشلونة: { en: "Barcelona", he: "ברצלונה" }, براغ: { en: "Prague", he: "פראג" } };

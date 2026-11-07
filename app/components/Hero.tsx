@@ -40,6 +40,7 @@ export default function Hero() {
             <h2 className="mb-2 text-center text-sm font-semibold text-ink">{video.title}</h2>
             {/* HomeVideo draws its own frame: rounded corners, a thin border and a small shadow. */}
             <HomeVideo />
+            {video.languageNote && <p className="mt-2 text-center text-sm text-muted">{video.languageNote}</p>}
           </div>
         </div>
       </Container>

@@ -138,3 +138,36 @@ export const HOME_SAMPLE_PLAN: HomeSamplePlan = {
     appleMapsUrl: "https://maps.apple.com/?q=Sagrada+Familia+Barcelona"
   }
 };
+
+/**
+ * The sample's display texts in English and Hebrew, copied verbatim from the reviewed plan catalog (lib/i18n/planCatalog.ts) so the
+ * homepage does not load the whole catalog. A check script compares them with the catalog (docs/PROJECT_PLAN.md, phase 5L). Only text
+ * changes: stops, times, legs, prices and links are the same in every language.
+ */
+type SampleText = { dayTitle: string; categoryLabel: string; description: string; priceText: string };
+const HOME_SAMPLE_TEXT: Record<"en" | "he", SampleText> = {
+  en: {
+    dayTitle: "Gaudí and Barcelona's architecture 🏛️",
+    categoryLabel: "Attraction",
+    description: "Gaudí's legendary basilica — still under construction after more than a century.",
+    priceText: "From €26 — depends on the ticket type",
+  },
+  he: {
+    dayTitle: "Gaudí והאדריכלות של ברצלונה 🏛️",
+    categoryLabel: "אטרקציה",
+    description: "הבזיליקה האגדית של Gaudí — עדיין בבנייה כבר יותר ממאה שנה.",
+    priceText: "החל מ־€26 — לפי סוג הכרטיס",
+  },
+};
+
+/** The sample in the page language (Arabic = the stored sample itself). */
+export function homeSampleForLanguage(lang: "ar" | "en" | "he"): HomeSamplePlan {
+  if (lang === "ar") return HOME_SAMPLE_PLAN;
+  const text = HOME_SAMPLE_TEXT[lang];
+  return {
+    ...HOME_SAMPLE_PLAN,
+    dayTitle: text.dayTitle,
+    stops: HOME_SAMPLE_PLAN.stops.map((stop) => (stop.categoryLabel === HOME_SAMPLE_PLAN.stops[0].categoryLabel ? { ...stop, categoryLabel: text.categoryLabel } : stop)),
+    details: { ...HOME_SAMPLE_PLAN.details, description: text.description, priceText: text.priceText },
+  };
+}

@@ -4,13 +4,13 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Container from "../Container";
 import { Rail, StopContent } from "./HomeExample";
-import { formatPlannerTransportOptionLabel, PLANNER_TRANSPORT_MODE_META, PLANNER_TRANSPORT_MODE_ORDER } from "../../lib/planner/plannerTransportFormat";
-import { HOME_SAMPLE_PLAN } from "../../lib/home/homeSamplePlan";
-import { homepageTranslations } from "../../lib/homepageTranslations";
+import { formatPlannerTransportOptionLabel, PLANNER_TRANSPORT_MODE_META, PLANNER_TRANSPORT_MODE_ORDER, plannerTransportModeLabel } from "../../lib/planner/plannerTransportFormat";
+import { homeSampleForLanguage } from "../../lib/home/homeSamplePlan";
+import { isRtlLanguage } from "../../lib/homepageTranslations";
 import { useLanguage } from "../../lib/language";
+import { bookingStatusText } from "../../lib/i18n/planText";
 
-// Inside the scenes everything is the product's own output, which is Arabic (like the plan view itself), whatever the page language.
-const PLAN_COPY = homepageTranslations.ar.home;
+// Inside the scenes everything is the product's own output, shown in the page language like the plan view itself (homeSampleForLanguage).
 const SCENE_COUNT = 3;
 
 const getSlides = (el: HTMLElement | null) => Array.from(el?.children ?? []) as HTMLElement[];
@@ -54,9 +54,11 @@ function Chevron({ direction }: { direction: "back" | "forward" }) {
  * hidden when the visitor swipes to it.
  */
 export default function HomeOfferVisual() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const copy = t.home.product;
-  const sample = HOME_SAMPLE_PLAN;
+  const planCopy = t.home;
+  const dir = isRtlLanguage(language) ? "rtl" : "ltr";
+  const sample = homeSampleForLanguage(language);
   const place = sample.stops.find((stop) => stop.id === sample.details.placeId) ?? sample.stops[1];
   const firstLeg = sample.legs[0];
   const firstLegOption = firstLeg.options.find((o) => o.mode === firstLeg.recommendedMode) ?? firstLeg.options[0];
@@ -160,22 +162,22 @@ export default function HomeOfferVisual() {
           <li className={sceneClass} aria-label={`1 / ${SCENE_COUNT}: ${titles[0]}`}>
             <div className="rounded-[1.5rem] bg-sky-surface p-4 sm:p-5">
               <SceneTitle>{copy.schedule}</SceneTitle>
-              <div dir="rtl" className="mt-3 text-right">
-                <p dir="auto" className="mb-3 text-sm font-bold text-ink">
-                  {PLAN_COPY.example.dayLabel.replace("{n}", String(sample.dayNumber))} · {sample.dayTitle}
+              <div dir={dir} className="mt-3 text-start">
+                <p className="mb-3 text-sm font-bold text-ink">
+                  {planCopy.example.dayLabel.replace("{n}", String(sample.dayNumber))} · {sample.dayTitle}
                 </p>
                 {sample.stops.slice(0, 2).map((stop, index) => (
                   <div key={stop.id}>
                     <div className="flex items-stretch gap-2">
                       <Rail number={index + 1} timeRange={stop.timeRange} />
-                      <div className="mb-2 flex w-full flex-col rounded-xl bg-white p-3 text-right">
-                        <StopContent stop={stop} />
+                      <div className="mb-2 flex w-full flex-col rounded-xl bg-white p-3 text-start">
+                        <StopContent stop={stop} lang={language} />
                       </div>
                     </div>
                     {index === 0 && (
                       <p className="mb-2 ms-[3.25rem] flex items-center gap-1.5 text-xs font-semibold text-muted sm:ms-14">
                         <span aria-hidden="true">{PLANNER_TRANSPORT_MODE_META[firstLegOption.mode].icon}</span>
-                        {formatPlannerTransportOptionLabel(firstLegOption)}
+                        {formatPlannerTransportOptionLabel(firstLegOption, language)}
                       </p>
                     )}
                   </div>
@@ -193,7 +195,7 @@ export default function HomeOfferVisual() {
               <div className="relative mx-4 aspect-[16/10] overflow-hidden rounded-xl sm:mx-5">
                 <Image src={place.image} alt={place.name} fill sizes="(min-width: 1024px) 30vw, (min-width: 640px) 26rem, 85vw" style={place.imagePosition ? { objectPosition: place.imagePosition } : undefined} className="object-cover" />
               </div>
-              <div dir="rtl" className="p-4 text-right sm:p-5">
+              <div dir={dir} className="p-4 text-start sm:p-5">
                 <p dir="auto" className="text-lg font-bold text-ink">
                   {place.name}
                 </p>
@@ -204,11 +206,11 @@ export default function HomeOfferVisual() {
                 <div className="mt-3 flex flex-wrap gap-2 text-sm text-ink">
                   <span className="inline-flex items-center gap-1.5 rounded-full bg-sky-surface px-3 py-1.5">
                     <span aria-hidden="true">🎟️</span>
-                    {PLAN_COPY.example.sheetPrice}: {sample.details.priceText}
+                    {planCopy.example.sheetPrice}: {sample.details.priceText}
                   </span>
                   <span className="inline-flex items-center gap-1.5 rounded-full bg-sky-surface px-3 py-1.5">
                     <span aria-hidden="true">📅</span>
-                    {PLAN_COPY.example.sheetBooking}: {sample.details.bookingStatus}
+                    {planCopy.example.sheetBooking}: {bookingStatusText(sample.details.bookingStatus, language)}
                   </span>
                 </div>
               </div>
@@ -220,7 +222,7 @@ export default function HomeOfferVisual() {
             <div className="rounded-[1.5rem] bg-brand-deep p-4 text-white sm:p-5">
               <SceneTitle light>{copy.transport}</SceneTitle>
               {from && to && (
-                <div dir="rtl" className="mt-3 text-right">
+                <div dir={dir} className="mt-3 text-start">
                   {[from, to].map((stop, index) => (
                     <div key={stop.id}>
                       {index === 1 && <span aria-hidden="true" className="ms-5 block h-5 w-px border-r-2 border-dotted border-on-deep/60" />}
@@ -243,10 +245,10 @@ export default function HomeOfferVisual() {
                             {PLANNER_TRANSPORT_MODE_META[option.mode].icon}
                           </span>
                           <div className="min-w-0 flex-1">
-                            <p className="text-sm font-bold text-white">{PLANNER_TRANSPORT_MODE_META[option.mode].label}</p>
-                            <p className="text-sm text-on-deep">{formatPlannerTransportOptionLabel(option)}</p>
+                            <p className="text-sm font-bold text-white">{plannerTransportModeLabel(option.mode, language)}</p>
+                            <p className="text-sm text-on-deep">{formatPlannerTransportOptionLabel(option, language)}</p>
                           </div>
-                          {recommended && <span className="rounded-full bg-white px-2.5 py-1 text-xs font-bold text-brand">{PLAN_COPY.product.recommended}</span>}
+                          {recommended && <span className="rounded-full bg-white px-2.5 py-1 text-xs font-bold text-brand">{planCopy.product.recommended}</span>}
                         </li>
                       );
                     })}

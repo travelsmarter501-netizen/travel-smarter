@@ -1,6 +1,6 @@
 /**
- * GENERATED translation catalog for the plan view (Arabic source -> English, Hebrew). Do not edit by hand: change the
- * reviewed translations and regenerate (scripts: see docs/PROJECT_PLAN.md, phase "languages").
+ * Translation catalog for the plan view (Arabic source -> English, Hebrew). First generated from the place data; edit entries
+ * here directly. The "ar" text must stay byte-identical to the stored Arabic text it translates (that is the lookup key).
  *
  * PLACE_TEXT: every Arabic text field of every place the planner can show (Barcelona + Prague), with the stable keys
  * `<city>/<collection>/<placeId>/<field>` that use it. PLAN_PHRASES: fixed texts the engine writes into plans (day titles,
@@ -210,9 +210,9 @@ export const PLACE_TEXT: (PlanCatalogEntry & { keys: string[] })[] = [
   { keys: ["barcelona/experiences/jetski-port-forum/description"], ar: "تجربة جت سكي على ساحل برشلونة، بدون حاجة لرخصة قيادة بحرية — بتعطيك الشركة تعليمات قبل ما تبلش.", en: "A jet ski experience on Barcelona's coast, with no boating licence needed — the company gives you instructions before you start.", he: "חוויית אופנוע ים לאורך חוף ברצלונה, בלי צורך ברישיון שיט — החברה נותנת הדרכה לפני שמתחילים." },
   { keys: ["barcelona/experiences/jetski-port-forum/duration"], ar: "30 دقيقة – ساعة", en: "30 minutes – 1 hour", he: "30 דקות – שעה" },
   { keys: ["barcelona/experiences/jetski-port-forum/priceText"], ar: "من €100 (نص ساعة، بدون رخصة)", en: "From €100 (half an hour, no licence)", he: "החל מ־€100 (חצי שעה, בלי רישיון)" },
-  { keys: ["barcelona/experiences/paddleboard-kayak-barceloneta/name"], ar: "تأجير Paddleboard / Kayak — شاطئ Barceloneta", en: "Paddleboard / Kayak rental — Barceloneta beach", he: "השכרת Paddleboard / קיאק — חוף Barceloneta" },
+  { keys: ["barcelona/experiences/paddleboard-kayak-barceloneta/name"], ar: "تأجير Paddleboard / Kayak — شاطئ Barceloneta", en: "Paddleboard / Kayak rental — Barceloneta beach", he: "השכרת סאפ / קיאק — חוף Barceloneta" },
   { keys: ["barcelona/experiences/paddleboard-kayak-barceloneta/tags[1]","barcelona/experiences/gaudi-bike-tour/tags[0]"], ar: "نشاط خفيف", en: "Light activity", he: "פעילות קלה" },
-  { keys: ["barcelona/experiences/paddleboard-kayak-barceloneta/description"], ar: "تأجير لوح Paddleboard أو كاياك ساعة أو أكثر مباشرة من شاطئ Barceloneta — مناسب حتى لو أول مرة تجرب.", en: "Rent a paddleboard or kayak for an hour or more right from Barceloneta beach — suitable even if it's your first time.", he: "השכרת Paddleboard או קיאק לשעה או יותר ישר מחוף Barceloneta — מתאים גם אם זו הפעם הראשונה." },
+  { keys: ["barcelona/experiences/paddleboard-kayak-barceloneta/description"], ar: "تأجير لوح Paddleboard أو كاياك ساعة أو أكثر مباشرة من شاطئ Barceloneta — مناسب حتى لو أول مرة تجرب.", en: "Rent a paddleboard or kayak for an hour or more right from Barceloneta beach — suitable even if it's your first time.", he: "השכרת סאפ או קיאק לשעה או יותר ישר מחוף Barceloneta — מתאים גם אם זו הפעם הראשונה." },
   { keys: ["barcelona/experiences/paddleboard-kayak-barceloneta/duration"], ar: "ساعة (أو حسب الباقة)", en: "1 hour (or per package)", he: "שעה (או לפי החבילה)" },
   { keys: ["barcelona/experiences/paddleboard-kayak-barceloneta/priceText"], ar: "من €15 (الساعة)", en: "From €15 (per hour)", he: "החל מ־€15 (לשעה)" },
   { keys: ["barcelona/experiences/paddleboard-kayak-barceloneta/hours.display"], ar: "عادة 9:00–14:00 و17:00–19:00", en: "Usually 9:00–14:00 and 17:00–19:00", he: "בדרך כלל 9:00–14:00 ו־17:00–19:00" },
@@ -521,7 +521,7 @@ export const PLACE_TEXT: (PlanCatalogEntry & { keys: string[] })[] = [
   { keys: ["prague/attractions/havlicek-gardens/whyRecommend"], ar: "مشي أخضر هادي بعيد عن زحمة المركز.", en: "A quiet green walk away from the busy centre.", he: "הליכה ירוקה ושקטה הרחק מהמרכז העמוס." },
   { keys: ["prague/attractions/havlicek-gardens/tip"], ar: "مفتوحة من 6:00 الصبح.", en: "Open from 6:00 in the morning.", he: "פתוח מ־6:00 בבוקר." },
   { keys: ["prague/attractions/havlicek-gardens/hours.display"], ar: "نوفمبر–مارس 6:00–22:00 · أبريل–أكتوبر 6:00–24:00 (كل الأيام)", en: "November–March 6:00–22:00 · April–October 6:00–24:00 (every day)", he: "נובמבר–מרץ 6:00–22:00 · אפריל–אוקטובר 6:00–24:00 (כל יום)" },
-  { keys: ["prague/attractions/trade-fair-palace/description"], ar: "مبنى وظيفي من العشرينات فيه مجموعات الفن الحديث والمعاصر للمعرض الوطني.", en: "A 1920s functionalist building housing the National Gallery's modern and contemporary art collections.", he: "בניין פונקציונליסטי משנות ה־20 שבו אוספי האמנות המודרנית והעכשווית של הגלריה הלאומית." },
+  { keys: ["prague/attractions/trade-fair-palace/description"], ar: "مبنى وظيفي من العشرينات فيه مجموعات الفن الحديث والمعاصر للمعرض الوطني.", en: "A 1920s functionalist building housing the National Gallery's modern and contemporary art collections.", he: "בניין פונקציונליסטי משנות העשרים של המאה הקודמת, ובו אוספי האמנות המודרנית והעכשווית של הגלריה הלאומית." },
   { keys: ["prague/attractions/trade-fair-palace/whyRecommend"], ar: "أكبر مكان للفن الحديث في براغ، وخيار داخلي ممتاز.", en: "Prague's largest venue for modern art, and an excellent indoor option.", he: "המקום הגדול ביותר לאמנות מודרנית בפראג, ואפשרות מצוינת בפנים." },
   { keys: ["prague/attractions/dox/description"], ar: "مركز فن معاصر في Holešovice بمعارض متغيرة.", en: "A contemporary art centre in Holešovice with changing exhibitions.", he: "מרכז לאמנות עכשווית ב־Holešovice עם תערוכות מתחלפות." },
   { keys: ["prague/attractions/dox/whyRecommend"], ar: "لمحبي الفن المعاصر والمعارض المختلفة.", en: "For lovers of contemporary art and unusual exhibitions.", he: "לאוהבי אמנות עכשווית ותערוכות שונות." },
@@ -549,8 +549,8 @@ export const PLACE_TEXT: (PlanCatalogEntry & { keys: string[] })[] = [
   { keys: ["prague/foodPlaces/kavarna-lucerna/why"], ar: "مقهى تاريخي داخل ممر Lucerna قرب ساحة فاتسلاف.", en: "A historic café inside the Lucerna passage near Wenceslas Square.", he: "בית קפה היסטורי בתוך מעבר Lucerna ליד כיכר ואצלב." },
   { keys: ["prague/foodPlaces/kuchyn/why"], ar: "مطبخ تشيكي تقليدي من وصفات قديمة، جنب بوابة القلعة.", en: "Traditional Czech cooking from old recipes, next to the castle gate.", he: "מטבח צ'כי מסורתי ממתכונים ישנים, ליד שער הטירה." },
   { keys: ["prague/foodPlaces/mlynec/why"], ar: "أطباق تشيكية بأسلوب حديث جنب Charles Bridge.", en: "Czech dishes in a modern style next to Charles Bridge.", he: "מנות צ'כיות בסגנון מודרני ליד Charles Bridge." },
-  { keys: ["prague/foodPlaces/u-modre-kachnicky-mala-strana/why"], ar: "مطعم تشيكي متخصص بالبط والطرائد.", en: "A Czech restaurant specialising in duck and game.", he: "מסעדה צ'כית שמתמחה בברווז ובציד." },
-  { keys: ["prague/foodPlaces/u-modre-kachnicky-old-town/why"], ar: "فرع البلدة القديمة: بط وطرائد ومطبخ تشيكي تقليدي.", en: "The Old Town branch: duck, game and traditional Czech cooking.", he: "הסניף בעיר העתיקה: ברווז, ציד ומטבח צ'כי מסורתי." },
+  { keys: ["prague/foodPlaces/u-modre-kachnicky-mala-strana/why"], ar: "مطعم تشيكي متخصص بالبط والطرائد.", en: "A Czech restaurant specialising in duck and game.", he: "מסעדה צ'כית שמתמחה בברווז ובבשר ציד." },
+  { keys: ["prague/foodPlaces/u-modre-kachnicky-old-town/why"], ar: "فرع البلدة القديمة: بط وطرائد ومطبخ تشيكي تقليدي.", en: "The Old Town branch: duck, game and traditional Czech cooking.", he: "הסניף בעיר העתיקה: ברווז, בשר ציד ומטבח צ'כי מסורתי." },
   { keys: ["prague/foodPlaces/petrinske-terasy/why"], ar: "مطعم على تلة Petřín بتراس مطل على المدينة.", en: "A restaurant on Petřín hill with a terrace overlooking the city.", he: "מסעדה על גבעת Petřín עם מרפסת שמשקיפה על העיר." },
   { keys: ["prague/foodPlaces/restaurant-obecni-dum/why"], ar: "مطبخ تشيكي حديث داخل Municipal House.", en: "Modern Czech cooking inside the Municipal House.", he: "מטבח צ'כי מודרני בתוך ה־Municipal House." },
   { keys: ["prague/foodPlaces/hostinec-na-vytoni/why"], ar: "مطبخ تشيكي مع تركيز على البط المشوي على الفحم، على النهر قرب Vyšehrad.", en: "Czech cooking with a focus on charcoal-grilled duck, on the river near Vyšehrad.", he: "מטבח צ'כי עם דגש על ברווז בגריל פחמים, על הנהר ליד Vyšehrad." },

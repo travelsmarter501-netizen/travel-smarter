@@ -118,6 +118,8 @@ export type HomepageCopy = {
       play: string;
       posterAlt: string;
       unavailable: string;
+      /** English / Hebrew only: the temporary demo video shows the Arabic version of the product. */
+      languageNote?: string;
     };
     offer: { title: string; text: string; includes: string; availability: string };
     /**
@@ -611,7 +613,7 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
         },
         {
           question: "How do I open my plan?",
-          answer: "The questions and the payment need no account. After paying, sign in or create an account with the email you paid with, then press \"ابنِ خطتي\" (Build my plan).",
+          answer: "The questions and the payment need no account. After paying, sign in or create an account with the email you paid with, then press \"Build my plan\".",
         },
         {
           question: "Can I make more than one plan?",
@@ -634,6 +636,7 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
         play: "Play the video",
         posterAlt: "An excerpt of an example plan: the days of the trip and their places",
         unavailable: "The video isn't available right now.",
+        languageNote: "The demo video shows the Arabic version.",
       },
       offer: {
         title: "Your plan, your way",
@@ -901,6 +904,7 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
         play: "הפעלת הסרטון",
         posterAlt: "קטע מתוכנית לדוגמה: ימי הטיול והמקומות שלהם",
         unavailable: "הסרטון לא זמין כרגע.",
+        languageNote: "סרטון ההדגמה מוצג בערבית.",
       },
       offer: {
         title: "התוכנית שלכם, בדרך שלכם",

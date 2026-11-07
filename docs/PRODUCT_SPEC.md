@@ -75,7 +75,7 @@ Server-side validation and the stored shape: `app/lib/planner/personalizedPlanAn
 - Place details sheet: address (copyable), weekday-aware opening hours, rating, price information, place phone, Google Maps and Apple Maps links.
 - The Barcelona Guide is included with a Barcelona plan.
 - **Not implemented:** PDF/download, print, sharing, total trip cost, in-plan editing (editing is done from "My plans" by re-running the questionnaire), built-in ticket booking.
-- The plan view follows the site language: **Arabic, English or Hebrew** (phase 5L, `docs/PROJECT_PLAN.md`). The stored plan is never changed; `app/lib/i18n/localizePlan.ts` translates a display copy from reviewed translations in `app/lib/i18n/planCatalog.ts` and `planText.ts`. Stops, order, times, prices and links are identical in every language; a stored text without a reviewed translation is shown as stored. Barcelona transport notes are stored in English and shown in English in every language. The title names the plan's own city.
+- The plan view follows the site language: **Arabic, English or Hebrew** (phase 5L, `docs/PROJECT_PLAN.md`). The stored plan is never changed; `app/lib/i18n/localizePlan.ts` translates a display copy from reviewed translations in `app/lib/i18n/planCatalog.ts` and `planText.ts`. Stops, order, times, prices and links are identical in every language; a stored text without a reviewed translation is shown as stored. Barcelona transport notes are stored as English research notes; customers see reviewed wording in their language (`app/lib/i18n/transportNotes.ts`) and internal notes are hidden. The homepage example and gallery follow the language too. The title names the plan's own city.
 
 ### 2.5 Price, payment, access
 
@@ -227,7 +227,7 @@ Journey copy (no business-logic change): planner subtitle "جاوب على 4 أ�
 
 ## 3. Known limitations and public-copy problems (confirmed in code)
 
-- ~~The public SEO description mentioned AI~~ Fixed in phase 3 (`app/layout.tsx`, `homepageTranslations.ts` `seo`; still to be released). The browser tab title is still the static Arabic one from `layout.tsx` even in English mode (the `seo` copy is not wired to the document title).
+- ~~The public SEO description mentioned AI~~ Fixed in phase 3 (`app/layout.tsx`, `homepageTranslations.ts` `seo`; still to be released). The tab title and description follow the chosen language in the browser (`DocumentLanguageMeta.tsx`); search engines and link previews still read the Arabic server metadata because the site has no per-language URLs.
 - The post-payment screens say the purchase is ready, but the customer still has to press "ابنِ خطتي".
 - ~~Homepage "Available destinations" section~~ Removed from the homepage in phase 3; availability is now one line ("Available now for Barcelona") in the hero and the price section. The questionnaire still lists 10 cities (only Barcelona selectable).
 - The Privacy Policy mentions contacting us "by email or WhatsApp" although no WhatsApp channel is published.

@@ -7,6 +7,7 @@ import { buildAppleMapsDirectionsUrl, buildDirectionsUrl } from "../../lib/ready
 import type { ResolvedPlaceSummary } from "../../lib/readyPlan";
 import { PLANNER_TRANSPORT_MODE_META, PLANNER_TRANSPORT_MODE_ORDER, formatPlannerTransportOptionLabel, plannerTransportModeLabel } from "../../lib/planner/plannerTransportFormat";
 import { PLACE_CARD_TEXT, PLAN_TEXT, type PlanLanguage } from "../../lib/i18n/planText";
+import { transportNoteText } from "../../lib/i18n/transportNotes";
 import type { PlannerRouteLeg, TransportMode } from "../../lib/planner/plannerTransportTypes";
 
 /**
@@ -48,6 +49,7 @@ export default function SmartPlannerTransportSheet({
         <div className="space-y-2">
           {availableModes.map((mode) => {
             const option = leg.options.find((item) => item.mode === mode)!;
+            const note = transportNoteText(option.note, lang);
             const active = mode === selectedMode;
             const recommended = mode === leg.recommendedMode;
             return (
@@ -69,7 +71,7 @@ export default function SmartPlannerTransportSheet({
                 </span>
                 <span className="text-end text-xs font-semibold text-slate-600">
                   <span className="block">{formatPlannerTransportOptionLabel(option, lang)}</span>
-                  {option.note && <span dir="auto" className="mt-0.5 block max-w-40 font-medium text-slate-400">{option.note}</span>}
+                  {note && <span dir="auto" className="mt-0.5 block max-w-40 font-medium text-slate-400">{note}</span>}
                 </span>
               </button>
             );

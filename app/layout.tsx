@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Cairo, Noto_Kufi_Arabic, Rubik } from "next/font/google";
 import { CurrencyProvider } from "./lib/currency";
 import { LanguageProvider } from "./lib/language";
+import DocumentLanguageMeta from "./components/DocumentLanguageMeta";
 import { CartProvider } from "./lib/cart";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
@@ -55,6 +56,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <CurrencyProvider>
             <CartProvider>
               <LoadingSplash />
+              <DocumentLanguageMeta />
               <NavigationIntentTracker />
               <Header />
               {children}
