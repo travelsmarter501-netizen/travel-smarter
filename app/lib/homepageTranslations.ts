@@ -230,7 +230,7 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
     dir: "rtl",
     seo: {
       title: "Travel Smarter | خطة رحلة مخصصة، يوم بيوم",
-      description: "جاوب على أسئلة قصيرة واحصل على خطة رحلة مخصصة حسب أيامك واهتماماتك ومكان سكنك، مع الأماكن والمطاعم وأوقات التنقل. متاح حاليًا لبرشلونة.",
+      description: "جاوب على أسئلة قصيرة واحصل على خطة رحلة مخصصة حسب أيامك واهتماماتك ومكان سكنك، مع الأماكن والمطاعم وأوقات التنقل. متاح لبرشلونة وبراغ.",
     },
     nav: {
       home: "الرئيسية",
@@ -269,9 +269,9 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
           referencePriceILS: PRODUCT_PRICES_ILS["personalized-trip-plan"].reference,
           route: "/planner",
           ctaLabel: "ابدأ خطتك",
-          includesGuideLabel: "+ دليل برشلونة",
+          includesGuideLabel: "+ دليل برشلونة (لخطط برشلونة)",
           badge: "فوري",
-          comparisonHint: "برشلونة متاحة الآن — وجهات جديدة قريبًا.",
+          comparisonHint: "برشلونة وبراغ متاحتين الآن — وجهات جديدة قريبًا.",
         },
         {
           id: "barcelona-1day",
@@ -375,7 +375,7 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
         title: "خطتك، على طريقتك",
         text: "اختار وين مسافر، قديش يوم، شو بتحب ووين ساكن.",
         includes: "أماكن، مطاعم وتنقّل — مرتّبين يوم بيوم.",
-        availability: "متاح حاليًا لبرشلونة",
+        availability: "متاح لبرشلونة وبراغ",
       },
       problems: {
         title: "صارت معك؟",
@@ -419,8 +419,8 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
         title: "{price} مرة واحدة",
         points: [
           "اعمل أكثر من خطة، وعدّلها وأعد بناءها بدون دفع إضافي، حتى 30 خطة محفوظة.",
-          "بتفتح كل المدن المدعومة. حاليًا: برشلونة.",
-          "دليل برشلونة الكامل مرفق مع خطط برشلونة.",
+          "بتفتح كل المدن المدعومة: برشلونة وبراغ.",
+          "دليل برشلونة الكامل مرفق فقط لما تشتري لخطة برشلونة.",
         ],
         notIncluded: "السعر للخطة فقط، ومش شامل الطيران أو الإقامة أو تذاكر الأماكن.",
         ownerTitle: "الخطة المخصصة إلك ✓",
@@ -502,7 +502,7 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
     dir: "ltr",
     seo: {
       title: "Travel Smarter | Personalized trip plans, day by day",
-      description: "Answer a few questions and get a trip plan built around your days, interests and where you stay, with places, restaurants and travel times. Available now for Barcelona.",
+      description: "Answer a few questions and get a trip plan built around your days, interests and where you stay, with places, restaurants and travel times. Available for Barcelona and Prague.",
     },
     nav: {
       home: "Home",
@@ -538,9 +538,9 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
           referencePriceILS: PRODUCT_PRICES_ILS["personalized-trip-plan"].reference,
           route: "/planner",
           ctaLabel: "Start Your Plan",
-          includesGuideLabel: "+ Barcelona Guide",
+          includesGuideLabel: "+ Barcelona Guide (Barcelona plans)",
           badge: "Instant",
-          comparisonHint: "Barcelona available now — new destinations coming soon.",
+          comparisonHint: "Barcelona and Prague available now — new destinations coming soon.",
         },
         {
           id: "barcelona-1day",
@@ -645,7 +645,7 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
         title: "Your plan, your way",
         text: "Pick where you're going, how many days, what you like and where you're staying.",
         includes: "Places, restaurants and getting around — arranged day by day.",
-        availability: "Available now for Barcelona",
+        availability: "Available for Barcelona and Prague",
       },
       problems: {
         title: "Sound familiar?",
@@ -689,8 +689,8 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
         title: "{price} once",
         points: [
           "Create more than one plan, then edit and rebuild them at no extra cost, up to 30 saved plans.",
-          "One payment unlocks all supported cities. Available now: Barcelona.",
-          "The full Barcelona guide is included with Barcelona plans.",
+          "One payment unlocks all supported cities: Barcelona and Prague.",
+          "The full Barcelona guide is included only when you buy for a Barcelona plan.",
         ],
         notIncluded: "The price is for the plan only. It doesn't include flights, accommodation or tickets for places.",
         ownerTitle: "Your personalized plan is unlocked ✓",

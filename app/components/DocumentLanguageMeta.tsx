@@ -25,13 +25,13 @@ const TITLES: Entry[] = [
 
 const DESCRIPTIONS: Entry[] = [
   {
-    ar: "جاوب على أسئلة قصيرة واحصل على خطة رحلة مخصصة حسب أيامك واهتماماتك ومكان سكنك، مع الأماكن والمطاعم وأوقات التنقل. متاح حاليًا لبرشلونة.",
-    en: "Answer a few short questions and get a trip plan built around your days, your interests and where you're staying, with places, restaurants and travel times. Currently available for Barcelona.",
+    ar: "جاوب على أسئلة قصيرة واحصل على خطة رحلة مخصصة حسب أيامك واهتماماتك ومكان سكنك، مع الأماكن والمطاعم وأوقات التنقل. متاح لبرشلونة وبراغ.",
+    en: "Answer a few short questions and get a trip plan built around your days, your interests and where you're staying, with places, restaurants and travel times. Currently available for Barcelona and Prague.",
     he: "ענו על כמה שאלות קצרות וקבלו תוכנית טיול שמותאמת לימים, לתחומי העניין ולמקום הלינה שלכם, עם מקומות, מסעדות וזמני נסיעה. זמין כרגע לברצלונה.",
   },
   {
-    ar: "جاوب على 4 أسئلة قصيرة وبنبني لك خطة مرتّبة يوم بيوم. برشلونة متاحة الآن.",
-    en: "Answer 4 short questions and we'll build you a plan arranged day by day. Barcelona is available now.",
+    ar: "جاوب على 4 أسئلة قصيرة وبنبني لك خطة مرتّبة يوم بيوم. برشلونة وبراغ متاحتين الآن.",
+    en: "Answer 4 short questions and we'll build you a plan arranged day by day. Barcelona and Prague are available now.",
     he: "ענו על 4 שאלות קצרות ונבנה לכם תוכנית מסודרת יום אחר יום. ברצלונה זמינה עכשיו.",
   },
 ];

@@ -172,7 +172,7 @@ export const plannerCopyAr: PlannerCopy = {
     stepLabels: ["وين مسافر؟", "متى؟", "شو بتحب؟", "السكن"],
     destinationTitle: "وين مسافر؟",
     comingSoon: "قريبًا",
-    availableNote: "برشلونة متاحة الآن.",
+    availableNote: "برشلونة وبراغ متاحتين الآن.",
     destinationNames: {
       barcelona: "برشلونة",
       rome: "روما",
@@ -305,7 +305,7 @@ export const plannerCopyEn: PlannerCopy = {
     stepLabels: ["Where to?", "When?", "What do you like?", "Accommodation"],
     destinationTitle: "Where are you going?",
     comingSoon: "Coming soon",
-    availableNote: "Barcelona is available now.",
+    availableNote: "Barcelona and Prague are available now.",
     destinationNames: {
       barcelona: "Barcelona",
       rome: "Rome",

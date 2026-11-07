@@ -147,6 +147,10 @@ export default function HomeOfferVisual() {
           <p data-reveal className="mt-2 text-base leading-7 text-muted sm:text-lg">
             {t.home.offer.includes}
           </p>
+          {/* The scenes below come from the Barcelona example plan: say so plainly now that the planner has more than one city. */}
+          <span data-reveal className="mt-3 inline-flex rounded-full bg-apricot/60 px-3 py-1 text-sm font-bold text-ink">
+            {t.home.example.badge}
+          </span>
         </div>
       </Container>
 
