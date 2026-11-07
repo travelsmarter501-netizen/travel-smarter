@@ -5,7 +5,6 @@ import { LanguageProvider } from "./lib/language";
 import { CartProvider } from "./lib/cart";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
-import LoadingSplash from "./components/LoadingSplash";
 import NavigationIntentTracker from "./components/NavigationIntentTracker";
 import WebAnalytics from "./components/WebAnalytics";
 import AttributionCapture from "./components/AttributionCapture";
@@ -47,7 +46,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <LanguageProvider>
           <CurrencyProvider>
             <CartProvider>
-              <LoadingSplash />
               <NavigationIntentTracker />
               <Header />
               {children}

@@ -7,6 +7,7 @@ import HomeOfferVisual from "./components/home/HomeOfferVisual";
 import HomePricing from "./components/home/HomePricing";
 import HomeProblems from "./components/home/HomeProblems";
 import HomeMotion from "./components/home/HomeMotion";
+import HomeLogoIntro from "./components/home/HomeLogoIntro";
 
 /**
  * Single-product homepage: Header (logo + compact menu) / product video / visual offer / free example / price / FAQ / footer (Header and
@@ -21,6 +22,7 @@ import HomeMotion from "./components/home/HomeMotion";
 export default function Home() {
   return (
     <main className="theme-brand home-page">
+      <HomeLogoIntro />
       <HomeAudienceProvider>
         <Hero />
         <HomeProblems />

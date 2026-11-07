@@ -146,6 +146,8 @@ export type HomepageCopy = {
       detailsHint: string;
       sheetPrice: string;
       sheetBooking: string;
+      /** Label before the photo credits (Wikimedia Commons, CC BY-SA) under the example and the gallery. */
+      photoCredits: string;
       start: string;
     };
     pricing: {
@@ -405,6 +407,7 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
         detailsHint: "تفاصيل المكان",
         sheetPrice: "السعر",
         sheetBooking: "الحجز",
+        photoCredits: "حقوق الصور:",
         start: "ابدأ خطتك",
       },
       pricing: {
@@ -674,6 +677,7 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
         detailsHint: "Place details",
         sheetPrice: "Price",
         sheetBooking: "Booking",
+        photoCredits: "Photo credits:",
         start: "Start your plan",
       },
       pricing: {

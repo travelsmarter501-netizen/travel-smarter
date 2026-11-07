@@ -4,6 +4,7 @@ import { V2_INTEREST_DISPLAY_GROUPS, isV2DisplayGroupActive, toggleV2DisplayGrou
 import type { V2PlannerInterest } from "../../lib/planner/v2PlannerTypes";
 import { usePlannerCopy } from "../../lib/usePlannerCopy";
 import { fillCopy } from "../../lib/plannerCopy";
+import { QUIZ_CHOICE_BASE, quizChoiceClass } from "../planner/quizFeedback";
 
 /**
  * Interests UI Simplification -- 6 customer-facing display groups (down from the original 8
@@ -61,9 +62,7 @@ export default function V2InterestSelector({
               type="button"
               aria-pressed={active}
               onClick={() => onChange(toggleV2DisplayGroup(selected, group))}
-              className={`flex items-center gap-2.5 rounded-2xl border px-3.5 py-3 text-start text-sm font-bold transition-colors ${
-                active ? "border-teal-700 bg-teal-700 text-white" : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"
-              }`}
+              className={`flex items-center gap-2.5 rounded-2xl px-3.5 py-3 text-start text-sm font-bold ${QUIZ_CHOICE_BASE} ${quizChoiceClass(active)}`}
             >
               <span className="text-xl">{group.emoji}</span>
               <span>{copy.interestGroups[group.id] ?? group.label}</span>
@@ -76,8 +75,8 @@ export default function V2InterestSelector({
         type="button"
         aria-pressed={surpriseMeActive}
         onClick={onSurpriseMe}
-        className={`mt-3 flex w-full items-center justify-center gap-2 rounded-2xl border px-4 py-3 text-sm font-bold transition-colors ${
-          surpriseMeActive ? "border-teal-700 bg-teal-700 text-white" : "border-dashed border-teal-300 bg-teal-50/60 text-teal-700 hover:bg-teal-50"
+        className={`mt-3 flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-bold ${QUIZ_CHOICE_BASE} ${
+          surpriseMeActive ? quizChoiceClass(true) : "border-dashed border-teal-300 bg-teal-50/60 text-teal-700 hover:bg-teal-50"
         }`}
       >
         {copy.surpriseMe}

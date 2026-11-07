@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Container from "../Container";
+import HomePhotoCredits from "./HomePhotoCredits";
 import { Rail, StopContent } from "./HomeExample";
 import { formatPlannerTransportOptionLabel, PLANNER_TRANSPORT_MODE_META, PLANNER_TRANSPORT_MODE_ORDER } from "../../lib/planner/plannerTransportFormat";
 import { HOME_SAMPLE_PLAN } from "../../lib/home/homeSamplePlan";
@@ -292,6 +293,7 @@ export default function HomeOfferVisual() {
             <Chevron direction="forward" />
           </button>
         </div>
+        <HomePhotoCredits className="mt-3 px-5" />
       </div>
     </section>
   );

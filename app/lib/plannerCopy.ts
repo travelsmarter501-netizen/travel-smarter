@@ -76,6 +76,10 @@ export type PlannerCopy = {
     back: string;
     next: string;
     continueToCheckout: string;
+    /** Questionnaire click sound: the mute control's accessible name and its two visible states. */
+    muteClicks: string;
+    clickSoundOn: string;
+    clickSoundOff: string;
     /** Under the questionnaire's last button for someone who has not bought yet. Placeholder: {price} */
     priceNote: string;
     draftSaveFailed: string;
@@ -212,6 +216,9 @@ export const plannerCopyAr: PlannerCopy = {
     back: "رجوع",
     next: "التالي",
     continueToCheckout: "المتابعة للدفع",
+    muteClicks: "كتم صوت النقرات",
+    clickSoundOn: "الصوت",
+    clickSoundOff: "مكتوم",
     priceNote: "{price} مرة واحدة · أكثر من خطة · حتى 30 خطة محفوظة",
     draftSaveFailed: "تعذّر حفظ إجاباتك على هذا المتصفح. فعّل التخزين المؤقت أو جرّب متصفحًا آخر.",
     createMyPlan: "أنشئ خطتي ✨",
@@ -345,6 +352,9 @@ export const plannerCopyEn: PlannerCopy = {
     back: "Back",
     next: "Next",
     continueToCheckout: "Continue to checkout",
+    muteClicks: "Mute click sounds",
+    clickSoundOn: "Sound",
+    clickSoundOff: "Muted",
     priceNote: "{price} once · more than one plan · up to 30 saved plans",
     draftSaveFailed: "We couldn’t save your answers in this browser. Enable site storage or try another browser.",
     createMyPlan: "Create my plan ✨",

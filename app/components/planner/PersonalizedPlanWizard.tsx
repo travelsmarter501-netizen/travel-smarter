@@ -12,6 +12,7 @@ import { CHECKOUT_PERSONALIZED } from "../../lib/planner/planLinks";
 import { generateOwnerPlanAction } from "../../planner/actions";
 import PlanGeneratingScreen from "./PlanGeneratingScreen";
 import TextWithPrice from "../home/TextWithPrice";
+import { QUIZ_CHOICE_BASE, QUIZ_PRESS, quizChoiceClass, useQuizClick } from "./quizFeedback";
 import { PLAN_PRICE_ILS } from "../home/homeOffer";
 import type { V2PlannerInterest } from "../../lib/planner/v2PlannerTypes";
 import { PLANNER_DESTINATIONS, DEFAULT_PLANNER_DESTINATION_ID, isAvailablePlannerDestinationId } from "../../lib/planner/plannerDestinations";
@@ -22,8 +23,8 @@ type DateMode = "flexible" | "specific";
 const DAY_OPTIONS = Array.from({ length: MAX_PERSONALIZED_PLAN_DAYS }, (_, i) => i + 1);
 type Step = 1 | 2 | 3 | 4;
 
-const choiceClass = (active: boolean) =>
-  active ? "border-teal-700 bg-teal-700 text-white" : "border-slate-200 bg-white text-slate-700 hover:border-slate-300";
+/** Selected / unselected look of every choice in the questionnaire (Rhyme-like: light fill, dark text, thin blue frame). */
+const choiceClass = (active: boolean) => `${QUIZ_CHOICE_BASE} ${quizChoiceClass(active)}`;
 
 /**
  * Personalized Plan -- the free questionnaire.
@@ -59,6 +60,8 @@ export default function PersonalizedPlanWizard({
   const generateErrors = plannerCopy.generateErrors;
 
   const [step, setStep] = useState<Step>(initialDraft ? 4 : 1);
+  // Short click on every real choice / Next / Back activation (mouse, touch or keyboard); the visitor can mute it.
+  const { click, muted, toggleMuted } = useQuizClick();
   const [destinationId, setDestinationId] = useState<string>(
     initialDraft?.destinationId ?? (isAvailablePlannerDestinationId(initialDestinationId) ? (initialDestinationId as string) : DEFAULT_PLANNER_DESTINATION_ID)
   );
@@ -151,9 +154,21 @@ export default function PersonalizedPlanWizard({
             />
           ))}
         </div>
-        <p className="mt-2 text-xs font-bold text-slate-500">
-          {fillCopy(wizard.stepOf, { step, total: 4, label: wizard.stepLabels[step - 1] })}
-        </p>
+        <div className="mt-2 flex items-center justify-between gap-3">
+          <p className="text-xs font-bold text-slate-500">{fillCopy(wizard.stepOf, { step, total: 4, label: wizard.stepLabels[step - 1] })}</p>
+          {/* Small, clear mute control for the click sound; the choice is remembered in this browser. */}
+          <button
+            type="button"
+            onClick={toggleMuted}
+            aria-pressed={muted}
+            aria-label={wizard.muteClicks}
+            title={wizard.muteClicks}
+            className="touch-target relative inline-flex shrink-0 items-center gap-1 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-600 hover:border-slate-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+          >
+            <span aria-hidden="true">{muted ? "🔇" : "🔊"}</span>
+            <span aria-hidden="true">{muted ? wizard.clickSoundOff : wizard.clickSoundOn}</span>
+          </button>
+        </div>
       </div>
 
       {step === 1 && (
@@ -168,8 +183,11 @@ export default function PersonalizedPlanWizard({
                   key={destination.id}
                   type="button"
                   aria-pressed={selected}
-                  onClick={() => setDestinationId(destination.id)}
-                  className={`flex items-center justify-between gap-2 rounded-xl border px-4 py-3.5 text-base font-bold transition-colors ${choiceClass(selected)}`}
+                  onClick={() => {
+                    click();
+                    setDestinationId(destination.id);
+                  }}
+                  className={`flex items-center justify-between gap-2 rounded-xl border px-4 py-3.5 text-base font-bold ${choiceClass(selected)}`}
                 >
                   <span>
                     {destination.flag} {name}
@@ -208,8 +226,11 @@ export default function PersonalizedPlanWizard({
                 key={option.key}
                 type="button"
                 aria-pressed={option.key === dateMode}
-                onClick={() => setDateMode(option.key)}
-                className={`rounded-2xl border px-3 py-3 text-sm font-bold transition-colors ${choiceClass(option.key === dateMode)}`}
+                onClick={() => {
+                  click();
+                  setDateMode(option.key);
+                }}
+                className={`rounded-2xl border px-3 py-3 text-sm font-bold ${choiceClass(option.key === dateMode)}`}
               >
                 {option.label}
               </button>
@@ -225,8 +246,11 @@ export default function PersonalizedPlanWizard({
                     key={count}
                     type="button"
                     aria-pressed={count === durationDays}
-                    onClick={() => setDurationDays(count)}
-                    className={`rounded-xl border px-2 py-2.5 pointer-coarse:min-h-11 text-xs font-bold transition-colors ${choiceClass(count === durationDays)}`}
+                    onClick={() => {
+                      click();
+                      setDurationDays(count);
+                    }}
+                    className={`rounded-xl border px-2 py-2.5 pointer-coarse:min-h-11 text-xs font-bold ${choiceClass(count === durationDays)}`}
                   >
                     {count} {count === 1 ? wizard.dayOne : wizard.dayMany}
                   </button>
@@ -276,11 +300,13 @@ export default function PersonalizedPlanWizard({
         <V2InterestSelector
           selected={interests}
           onChange={(next) => {
+            click();
             setInterests(next);
             setSurpriseMe(false);
           }}
           surpriseMeActive={surpriseMe}
           onSurpriseMe={() => {
+            click();
             setSurpriseMe(true);
             setInterests([]);
           }}
@@ -303,10 +329,11 @@ export default function PersonalizedPlanWizard({
                 type="button"
                 aria-pressed={option.value === accommodationStatus}
                 onClick={() => {
+                  click();
                   setAccommodationStatus(option.value);
                   if (option.value === "not_booked") setAccommodationText("");
                 }}
-                className={`rounded-2xl border px-2 py-4 text-sm font-bold transition-colors ${choiceClass(option.value === accommodationStatus)}`}
+                className={`rounded-2xl border px-2 py-4 text-sm font-bold ${choiceClass(option.value === accommodationStatus)}`}
               >
                 {option.label}
               </button>
@@ -348,8 +375,11 @@ export default function PersonalizedPlanWizard({
         {step > 1 && (
           <button
             type="button"
-            onClick={() => setStep((s) => (s - 1) as Step)}
-            className="rounded-full border border-slate-200 bg-white px-5 py-3.5 text-sm font-bold text-slate-700 transition-colors hover:border-slate-300"
+            onClick={() => {
+              click();
+              setStep((s) => (s - 1) as Step);
+            }}
+            className={`rounded-full border border-slate-200 bg-white px-5 py-3.5 text-sm font-bold text-slate-700 hover:border-slate-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 ${QUIZ_PRESS}`}
           >
             {wizard.back}
           </button>
@@ -358,9 +388,12 @@ export default function PersonalizedPlanWizard({
         {step < 4 ? (
           <button
             type="button"
-            onClick={() => setStep((s) => (s + 1) as Step)}
+            onClick={() => {
+              click();
+              setStep((s) => (s + 1) as Step);
+            }}
             disabled={!stepValid[step]}
-            className="flex flex-1 items-center justify-center rounded-full bg-teal-700 px-5 py-3.5 text-base font-semibold text-white shadow-sm transition-colors hover:bg-teal-800 disabled:opacity-60"
+            className={`flex flex-1 items-center justify-center rounded-full bg-teal-700 px-5 py-3.5 text-base font-semibold text-white shadow-sm hover:bg-teal-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 disabled:opacity-60 disabled:active:scale-100 ${QUIZ_PRESS}`}
           >
             {wizard.next}
           </button>
