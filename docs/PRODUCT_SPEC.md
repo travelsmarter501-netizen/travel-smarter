@@ -112,6 +112,13 @@ The saved-plan URL stays `/smart-planner/barcelona-v2/saved/<id>` for every city
 - **Meals:** breakfast only at places verified open by 9:00 every day (4); lunch/dinner from Czech, Lebanese and other restaurants mapped to areas by verified address; Lví dvůr (closes 19:00) is suggestion-only. Plans without dates cannot check restaurant hours (shared engine rule, unchanged).
 - **No Prague guide** is sold, promised or linked (`DESTINATION_INCLUDED_GUIDE_SLUG` still lists Barcelona only).
 
+### 2.6b Vienna (engine-ready, not public; data verified 2026-11-07)
+
+- Planner data in `app/lib/planner/vienna/`; Vienna stays `available: false` and only the local preview switch enables it (the switch is ignored on Vercel).
+- 43 sights, 2 booked experiences and 2 shopping streets (47 possible main stops), plus 19 food places; hours and prices from each place's own official site, coordinates from Wikidata / OpenStreetMap; facts not found on an official page are omitted, never assumed (details and exclusions in `docs/PROJECT_PLAN.md`, phase 5c).
+- Transport between stops is a distance-based estimate, labelled as such (same as Prague).
+- No restaurant is marked halal by an official source; Viennese kitchens usually serve pork (shown on the cards). No Middle-Eastern restaurant and no nightlife venue yet.
+
 ### 2.7 Contact
 
 - Only an email is published: `travelsmarter501@gmail.com` (`app/lib/businessInfo.ts`; the address is shown on the legal pages only). No phone or WhatsApp number is published anywhere.

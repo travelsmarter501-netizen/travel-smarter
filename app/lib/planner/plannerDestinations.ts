@@ -36,6 +36,7 @@ export const PLANNER_DESTINATIONS: PlannerDestinationOption[] = [
   { id: "dubai", name: "دبي", nameEn: "Dubai", nameHe: "דובאי", flag: "🇦🇪", available: false },
   { id: "batumi", name: "باتومي", nameEn: "Batumi", nameHe: "בטומי", flag: "🇬🇪", available: false },
   { id: "istanbul", name: "إسطنبول", nameEn: "Istanbul", nameHe: "איסטנבול", flag: "🇹🇷", available: false },
+  // Vienna: planner data + engine module exist (lib/planner/vienna/); NOT public until its launch checks pass (docs/PROJECT_PLAN.md).
   { id: "vienna", name: "فيينا", nameEn: "Vienna", nameHe: "וינה", flag: "🇦🇹", available: false },
   { id: "paris", name: "باريس", nameEn: "Paris", nameHe: "פריז", flag: "🇫🇷", available: false },
   { id: "london", name: "لندن", nameEn: "London", nameHe: "לונדון", flag: "🇬🇧", available: false },
@@ -80,6 +81,7 @@ export function isPreviewPlannerDestinationId(value: string | null | undefined):
  */
 const INTEREST_GROUP_LABEL_OVERRIDES: Record<string, { ar: Record<string, string>; en: Record<string, string>; he: Record<string, string> }> = {
   prague: { ar: { natureBeaches: "طبيعة وإطلالات" }, en: { natureBeaches: "Nature & views" }, he: { natureBeaches: "טבע ונופים" } },
+  vienna: { ar: { natureBeaches: "طبيعة وإطلالات" }, en: { natureBeaches: "Nature & views" }, he: { natureBeaches: "טבע ונופים" } },
 };
 
 export function interestGroupLabelForDestination(destinationId: string | null | undefined, groupId: string, language: "ar" | "en" | "he"): string | undefined {

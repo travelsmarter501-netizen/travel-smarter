@@ -1,5 +1,6 @@
 import type { Language } from "../homepageTranslations";
 import type { Weekday } from "../hours";
+import { hebrewPrefixed } from "./hebrew";
 
 /**
  * Plan view (saved personalized plan) + place-details cards: fixed interface wording and formatters in Arabic, English and
@@ -169,8 +170,8 @@ export const PLAN_TEXT = {
     modes: { walking: "Walking", transit: "Public transport", car: "Car / taxi" },
   },
   he: {
-    title: (city: string) => `התוכנית האישית שלכם ל${city} ✨`,
-    daysIn: (days: string, city: string) => `${days} ב${city}`,
+    title: (city: string) => `התוכנית האישית שלכם ${hebrewPrefixed("ל", city)} ✨`,
+    daysIn: (days: string, city: string) => `${days} ${hebrewPrefixed("ב", city)}`,
     surpriseMe: "תפתיעו אותי ✨",
     accommodation: (text: string) => `לינה: ${text}`,
     orderedByStay: "סידרנו את תחילת הטיול לפי מקום הלינה שלכם 📍",

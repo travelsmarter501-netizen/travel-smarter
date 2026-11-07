@@ -146,8 +146,15 @@ export type PlannerCopy = {
   complimentaryErrors: Record<PlannerComplimentaryErrorCode, string>;
 };
 
+import { hebrewPrefixed } from "./i18n/hebrew";
+
+/** Fills {placeholders}; a Hebrew one-letter prefix right before a placeholder follows hebrewPrefixed (לווינה). */
 export function fillCopy(template: string, values: Record<string, string | number>): string {
-  return template.replace(/\{(\w+)\}/g, (match, key: string) => (key in values ? String(values[key]) : match));
+  return template.replace(/(?:(^|[\s("'״])([לבמשכ]))?\{(\w+)\}/g, (match, lead: string | undefined, prefix: string | undefined, key: string) => {
+    if (!(key in values)) return match;
+    const value = String(values[key]);
+    return prefix ? (lead ?? "") + hebrewPrefixed(prefix, value) : value;
+  });
 }
 
 export const plannerCopyAr: PlannerCopy = {

@@ -1,5 +1,6 @@
 import { PLACE_TEXT, PLAN_PHRASES } from "./planCatalog";
 import type { PlanLanguage } from "./planText";
+import { hebrewPrefixed } from "./hebrew";
 import type { V2Plan } from "../planner/barcelonaV2Resolve";
 
 /**
@@ -60,7 +61,7 @@ const REASON_TEMPLATES: { prefix: string; en: (x: string) => string; he: (x: str
   { prefix: "سهرة قريبة من ", en: (x) => `An evening out near ${enArea(x)}`, he: (x) => `בילוי ערב ליד ${x}` },
 ];
 
-const CITY_NAMES: Record<string, Pair> = { برشلونة: { en: "Barcelona", he: "ברצלונה" }, براغ: { en: "Prague", he: "פראג" } };
+const CITY_NAMES: Record<string, Pair> = { برشلونة: { en: "Barcelona", he: "ברצלונה" }, براغ: { en: "Prague", he: "פראג" }, فيينا: { en: "Vienna", he: "וינה" } };
 
 /** Engine texts that carry a parameter (area names, numbers, place names). Returns null when no template matches. */
 function template(text: string, lang: "en" | "he"): string | null {
@@ -76,12 +77,12 @@ function template(text: string, lang: "en" | "he"): string | null {
   if (m) return lang === "en" ? `Day ${m[1]}` : `יום ${m[1]}`;
 
   // Capacity warning (Barcelona / Prague wording)
-  m = /^قدرنا نبني خطة قوية لـ (\d+) أيام من البيانات المتاحة حاليًا ل(برشلونة|براغ)\. عم نوسّع المحتوى للأيام الأطول\.$/.exec(text);
+  m = /^قدرنا نبني خطة قوية لـ (\d+) أيام من البيانات المتاحة حاليًا ل(برشلونة|براغ|فيينا)\. عم نوسّع المحتوى للأيام الأطول\.$/.exec(text);
   if (m) {
     const city = CITY_NAMES[m[2]][lang];
     return lang === "en"
       ? `We could build a strong plan for ${m[1]} days from the data currently available for ${city}. We're expanding the content for longer trips.`
-      : `הצלחנו לבנות תוכנית חזקה ל־${m[1]} ימים מהנתונים שזמינים כרגע ל${city}. אנחנו מרחיבים את התוכן לטיולים ארוכים יותר.`;
+      : `הצלחנו לבנות תוכנית חזקה ל־${m[1]} ימים מהנתונים שזמינים כרגע ${hebrewPrefixed("ל", city)}. אנחנו מרחיבים את התוכן לטיולים ארוכים יותר.`;
   }
 
   // Prague day summaries: "محطات اليوم: A، B وC." / "محطة اليوم: A."
@@ -109,7 +110,12 @@ function template(text: string, lang: "en" | "he"): string | null {
   return pragueTitle(text, lang);
 }
 
-const PRAGUE_AREAS_AR = ["منطقة القلعة", "القلعة وHradčany", "Malá Strana", "تلة Petřín", "البلدة القديمة", "ساحة Republiky", "Josefov", "المدينة الجديدة", "ضفة النهر", "Vyšehrad", "Žižkov وVinohrady", "Letná", "Holešovice", "Troja"];
+/** Area labels used in day titles by the cities with the simple presenter (Prague, Vienna). */
+const PRAGUE_AREAS_AR = [
+  "منطقة القلعة", "القلعة وHradčany", "Malá Strana", "تلة Petřín", "البلدة القديمة", "ساحة Republiky", "Josefov", "المدينة الجديدة", "ضفة النهر", "Vyšehrad", "Žižkov وVinohrady", "Letná", "Holešovice", "Troja",
+  // Vienna
+  "وسط المدينة", "قصر Hofburg", "حي المتاحف", "Karlsplatz", "Stadtpark", "Belvedere", "حي Hundertwasser", "Prater", "Augarten", "Mariahilf", "Schönbrunn", "الدانوب", "Alsergrund", "Kahlenberg",
+];
 /** Area labels without a leading article, for titles. */
 const PRAGUE_AREA_TITLE: Record<string, Pair> = {
   "منطقة القلعة": { en: "Castle area", he: "אזור הטירה" },
@@ -120,6 +126,12 @@ const PRAGUE_AREA_TITLE: Record<string, Pair> = {
   "المدينة الجديدة": { en: "New Town", he: "העיר החדשה" },
   "ضفة النهر": { en: "Riverside", he: "גדת הנהר" },
   "Žižkov وVinohrady": { en: "Žižkov and Vinohrady", he: "Žižkov ו־Vinohrady" },
+  // Vienna
+  "وسط المدينة": { en: "City centre", he: "מרכז העיר" },
+  "قصر Hofburg": { en: "Hofburg Palace", he: "ארמון Hofburg" },
+  "حي المتاحف": { en: "Museum Quarter", he: "רובע המוזיאונים" },
+  "حي Hundertwasser": { en: "Hundertwasser quarter", he: "רובע Hundertwasser" },
+  "الدانوب": { en: "The Danube", he: "הדנובה" },
 };
 function areaTitle(ar: string, lang: "en" | "he"): string {
   return PRAGUE_AREA_TITLE[ar]?.[lang] ?? ar;

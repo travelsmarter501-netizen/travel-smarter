@@ -14,7 +14,7 @@ import type { PlannerPlaceMetadata } from "./plannerTypes";
  * pass, run once after those passes:
  *  1. swaps one stop between two days (or moves one stop) when that makes the broken day fully linked without breaking the
  *     other day -- same set of places for the trip, so interest coverage, must-sees and whole-trip caps are untouched;
- *     every change respects the engine's own day limits (420 min, 6 stops, 3 areas), never makes a day thinner, and on a
+ *     every change respects the engine's own day limits (420 min, 6 stops, 3 areas), never makes a day "very thin", and on a
  *     dated plan never puts a place on a day it is closed;
  *  2. inside a run of stops of the same area entered from another area, reverses the order when the run is entered from its
  *     far end (e.g. arriving from the castle side, Charles Bridge before Old Town Square), using the city's own travel-time
@@ -96,7 +96,9 @@ export function repairCityDayGeography(context: DayGeographyRepairContext, optio
     const consider = (j: number, newI: string[], newJ: string[]) => {
       const other = days[j];
       if (!fits(broken.dayNumber, newI) || !fits(other.dayNumber, newJ)) return;
-      if (densityRank(newI) < densityRank(brokenIds) || densityRank(newJ) < densityRank(idsOf(other))) return;
+      // A day may become "thin" to remove a hop between non-neighbouring areas, never "veryThin".
+      const worse = (next: string[], before: string[]) => densityRank(next) < densityRank(before) && densityRank(next) === DENSITY_RANK.veryThin;
+      if (worse(newI, brokenIds) || worse(newJ, idsOf(other))) return;
       const dayI = build(broken.dayNumber, newI);
       const dayJ = build(other.dayNumber, newJ);
       if (badHops(idsOf(dayI)) > 0 || badHops(idsOf(dayJ)) > badHops(idsOf(other))) return;

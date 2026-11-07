@@ -1,0 +1,980 @@
+import type { Area, Attraction, Experience, FoodCategory, FoodPlace, NightlifeVenue, ShoppingArea } from "../../guideTypes";
+import type { HoursInfo, TimeRange, Weekday, WeeklySchedule } from "../../hours";
+import type { CityPlaceData } from "../cityPlannerModule";
+
+/**
+ * Vienna -- PLANNER place data (second new city, same structure as Prague). NOT a destination guide: nothing here is sold or
+ * promised as a "Vienna guide"; it only feeds the personalized-plan engine. NOT public (plannerDestinations.ts keeps Vienna
+ * `available: false`; the local preview switch only).
+ *
+ * Sources and verification (2026-11-07):
+ * - Opening hours and prices: each place's OWN official website (named per entry). wien.info pages were checked but show
+ *   outdated opening times (2023-2025), so they are not used for hours.
+ * - Coordinates: Wikidata (item ids in viennaPlaceSources comments) or OpenStreetMap (Nominatim) for the verified street address.
+ * - Where the official page shows no hours (public squares, parks run by the city, the Hundertwasser House façade), `hours` is
+ *   omitted, never assumed. Where hours change by season or day, the entry is `variable` with the official text, or `fixed`
+ *   with the SHORTEST daily window of the year (the place is open at least then), and the longer season is named in the tip.
+ * - Prices: only when the official page states them in its text. Pages that load prices with scripts (Schönbrunn, Giant Ferris
+ *   Wheel, Albertina) have no price here: the card links to the official site instead.
+ * - Not included on purpose: Café Central (closed for renovation since 16 March 2026, cafecentral.wien); Middle-Eastern
+ *   restaurants (no official page with opening hours could be read yet). Restaurants: none is marked halal by an official
+ *   source; Viennese kitchens usually serve pork -> `pork-maybe`, never hidden.
+ * - No images yet: image rights are not cleared (every card handles a missing image).
+ */
+
+const VERIFIED = "2026-11-07";
+
+const ALL_WEEKDAYS: Weekday[] = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
+const MON_TO_SAT: Weekday[] = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+
+function everyDay(...ranges: [string, string][]): WeeklySchedule {
+  const intervals: TimeRange[] = ranges.map(([open, close]) => ({ open, close }));
+  return Object.fromEntries(ALL_WEEKDAYS.map((day) => [day, intervals])) as WeeklySchedule;
+}
+
+function days(list: Weekday[], ...ranges: [string, string][]): WeeklySchedule {
+  const intervals: TimeRange[] = ranges.map(([open, close]) => ({ open, close }));
+  return Object.fromEntries(list.map((day) => [day, intervals])) as WeeklySchedule;
+}
+
+function fixed(sched: WeeklySchedule, sourceUrl: string, source: string): HoursInfo {
+  return { type: "fixed", schedule: sched, source, sourceUrl, lastVerified: VERIFIED };
+}
+
+function variable(display: string, sourceUrl: string, source: string, closedWeekdays?: Weekday[]): HoursInfo {
+  return { type: "variable", display, ...(closedWeekdays ? { closedWeekdays } : {}), source, sourceUrl, lastVerified: VERIFIED };
+}
+
+function maps(query: string) {
+  const q = encodeURIComponent(`${query}, Vienna`).replace(/%20/g, "+");
+  return { mapsUrl: `https://www.google.com/maps/search/?api=1&query=${q}`, appleMapsUrl: `https://maps.apple.com/?q=${q}` };
+}
+
+// ── Areas ──────────────────────────────────────────────────────────────────────────────────────────
+export const VIENNA_AREAS: Area[] = [
+  { id: "innere-stadt", name: "Innere Stadt", description: "وسط فيينا التاريخي حول كاتدرائية St. Stephen.", image: "", ...maps("Stephansplatz"), attractionIds: ["st-stephens-cathedral", "mozarthaus", "haus-der-musik", "imperial-crypt", "jewish-museum-vienna", "peterskirche", "judenplatz", "ankeruhr", "donaukanal"] },
+  { id: "hofburg", name: "Hofburg", description: "مجمع القصر الإمبراطوري ومتاحفه وساحاته.", image: "", ...maps("Hofburg"), attractionIds: ["sisi-imperial-apartments", "state-hall-national-library", "albertina", "heldenplatz", "volksgarten", "parliament", "michaelerplatz", "rathaus"] },
+  { id: "museumsquartier", name: "MuseumsQuartier", description: "حي المتاحف الكبيرة على شارع Ring.", image: "", ...maps("MuseumsQuartier"), attractionIds: ["kunsthistorisches-museum", "naturhistorisches-museum", "leopold-museum", "museumsquartier"] },
+  { id: "karlsplatz", name: "Karlsplatz / Naschmarkt", description: "ساحة Karlsplatz وكنيستها وسوق Naschmarkt.", image: "", ...maps("Karlsplatz"), attractionIds: ["karlskirche", "wien-museum", "secession", "naschmarkt"] },
+  { id: "belvedere", name: "Belvedere", description: "قصر Belvedere الباروكي وحدائقه.", image: "", ...maps("Belvedere"), attractionIds: ["belvedere-upper", "belvedere-lower"] },
+  { id: "landstrasse", name: "Landstraße", description: "حي Hundertwasser وحديقة Stadtpark شرق المركز.", image: "", ...maps("Landstrasse"), attractionIds: ["hundertwasserhaus", "kunst-haus-wien", "stadtpark", "mak"] },
+  { id: "leopoldstadt", name: "Leopoldstadt", description: "حديقة Prater والعجلة العملاقة وحديقة Augarten.", image: "", ...maps("Prater"), attractionIds: ["giant-ferris-wheel", "prater", "augarten"] },
+  { id: "schoenbrunn", name: "Schönbrunn", description: "قصر Schönbrunn وحدائقه وحديقة الحيوان.", image: "", ...maps("Schönbrunn"), attractionIds: ["schoenbrunn-palace", "schoenbrunn-gardens", "schoenbrunn-zoo"] },
+  { id: "mariahilf", name: "Mariahilf", description: "شارع Mariahilfer Straße للتسوق وبرج Haus des Meeres.", image: "", ...maps("Mariahilf"), attractionIds: ["haus-des-meeres"] },
+  { id: "donaustadt", name: "Donaustadt", description: "على الدانوب: برج Donauturm وجزيرة الدانوب.", image: "", ...maps("Donauturm"), attractionIds: ["danube-tower", "donauinsel"] },
+  { id: "alsergrund", name: "Alsergrund", description: "حي الجامعة: Votivkirche ومتحف Freud.", image: "", ...maps("Alsergrund"), attractionIds: ["sigmund-freud-museum", "votivkirche"] },
+  { id: "kahlenberg", name: "Kahlenberg", description: "تلة بغابات فيينا شمال المدينة.", image: "", ...maps("Kahlenberg"), attractionIds: ["kahlenberg"] },
+];
+
+// ── Attractions ────────────────────────────────────────────────────────────────────────────────────
+type AttractionInput = Omit<Attraction, "image" | "mapsUrl" | "appleMapsUrl" | "lastVerified"> & { mapsQuery: string };
+
+function attraction(input: AttractionInput): Attraction {
+  const { mapsQuery, ...rest } = input;
+  return { image: "", ...maps(mapsQuery), lastVerified: VERIFIED, ...rest };
+}
+
+export const VIENNA_ATTRACTIONS: Attraction[] = [
+  attraction({
+    id: "st-stephens-cathedral",
+    name: "St. Stephen's Cathedral (Stephansdom)",
+    mapsQuery: "St. Stephen's Cathedral",
+    description: "الكاتدرائية القوطية في قلب فيينا، بسقفها الملون وأبراجها.",
+    whyRecommend: "رمز فيينا ونقطة بداية طبيعية لوسط المدينة.",
+    areaId: "innere-stadt",
+    duration: "45 دقيقة تقريبًا",
+    priceType: "paid",
+    bookingStatus: "بدون حجز",
+    bestTime: "الصبح",
+    tip: "أوقات الزيارة السياحية: الاثنين–السبت 9:00–11:30 و13:00–16:30، الأحد والأعياد 13:00–16:30 (خارجها في قداديس).",
+    officialUrl: "https://www.stephanskirche.at",
+    mustSee: true,
+    address: "Stephansplatz 1, 1010 Wien",
+    priceText: "التذكرة الشاملة €29 (البرجين والسراديب والجولة الصوتية)",
+    hours: fixed({ ...days(MON_TO_SAT, ["09:00", "11:30"], ["13:00", "16:30"]), sunday: [{ open: "13:00", close: "16:30" }] }, "https://www.stephanskirche.at/visitCathedral.php", "stephanskirche.at (official)"),
+    coordinates: { lat: 48.208427, lng: 16.373256 }, // Wikidata Q5943
+  }),
+  attraction({
+    id: "mozarthaus",
+    name: "Mozarthaus Vienna",
+    mapsQuery: "Mozarthaus Vienna",
+    description: "البيت اللي عاش فيه Mozart بفيينا، اليوم متحف عن حياته وموسيقاه.",
+    whyRecommend: "محطة قصيرة جنب الكاتدرائية لمحبي الموسيقى الكلاسيكية.",
+    areaId: "innere-stadt",
+    duration: "ساعة تقريبًا",
+    priceType: "paid",
+    bookingStatus: "بدون حجز",
+    bestTime: "النهار",
+    tip: "مفتوح يوميًا 10:00–19:00.",
+    officialUrl: "https://www.mozarthausvienna.at",
+    mustSee: false,
+    address: "Domgasse 5, 1010 Wien",
+    priceText: "السعر بالموقع الرسمي",
+    hours: fixed(everyDay(["10:00", "19:00"]), "https://www.mozarthausvienna.at/en/", "mozarthausvienna.at (official)"),
+    coordinates: { lat: 48.2082175, lng: 16.3749334 }, // OpenStreetMap
+  }),
+  attraction({
+    id: "haus-der-musik",
+    name: "Haus der Musik",
+    mapsQuery: "Haus der Musik Vienna",
+    description: "متحف تفاعلي عن الصوت والموسيقى، فيه تجربة قيادة أوركسترا افتراضية.",
+    whyRecommend: "تجربة ممتعة للعائلات، ومفتوح لحد المسا.",
+    areaId: "innere-stadt",
+    duration: "ساعة ونص تقريبًا",
+    priceType: "paid",
+    bookingStatus: "بدون حجز",
+    bestTime: "بعد الظهر أو المسا",
+    tip: "مفتوح يوميًا 10:00–22:00 (24 ديسمبر لحد 18:00).",
+    officialUrl: "https://www.hausdermusik.com",
+    mustSee: false,
+    address: "Seilerstätte 30, 1010 Wien",
+    priceText: "السعر بالموقع الرسمي",
+    hours: fixed(everyDay(["10:00", "22:00"]), "https://www.hausdermusik.com/en/", "hausdermusik.com (official)"),
+    coordinates: { lat: 48.2038496, lng: 16.3730813 }, // OpenStreetMap
+  }),
+  attraction({
+    id: "imperial-crypt",
+    name: "Imperial Crypt (Kaisergruft)",
+    mapsQuery: "Kaisergruft",
+    description: "مدافن عائلة Habsburg تحت كنيسة الكبوشيين.",
+    whyRecommend: "زيارة قصيرة ومهمة لفهم تاريخ الأسرة الإمبراطورية.",
+    areaId: "innere-stadt",
+    duration: "30 دقيقة تقريبًا",
+    priceType: "paid",
+    bookingStatus: "بدون حجز",
+    bestTime: "النهار",
+    tip: "مفتوح يوميًا 10:00–18:00، آخر دخول 17:30.",
+    officialUrl: "https://www.kaisergruft.at",
+    mustSee: false,
+    address: "Tegetthoffstraße 2 (Neuer Markt), 1010 Wien",
+    priceText: "€15 (مخفّض €13)",
+    hours: fixed(everyDay(["10:00", "18:00"]), "https://www.kaisergruft.at/en/", "kaisergruft.at (official)"),
+    coordinates: { lat: 48.2055342, lng: 16.3699357 }, // OpenStreetMap
+  }),
+  attraction({
+    id: "jewish-museum-vienna",
+    name: "Jewish Museum Vienna (Dorotheergasse)",
+    mapsQuery: "Jewish Museum Vienna Dorotheergasse",
+    description: "متحف تاريخ وثقافة يهود فيينا.",
+    whyRecommend: "جزء من تاريخ المدينة لمحبي الثقافة والتاريخ.",
+    areaId: "innere-stadt",
+    duration: "ساعة وربع تقريبًا",
+    priceType: "paid",
+    bookingStatus: "بدون حجز",
+    bestTime: "النهار",
+    tip: "مغلق كل سبت. التذكرة بتشمل موقعي المتحف خلال 7 أيام.",
+    officialUrl: "https://www.jmw.at",
+    mustSee: false,
+    address: "Dorotheergasse 11, 1010 Wien",
+    priceText: "€15 (كبار السن €13)",
+    hours: fixed(days(["sunday", "monday", "tuesday", "wednesday", "thursday", "friday"], ["10:00", "18:00"]), "https://www.jmw.at/en/visit", "jmw.at (official)"),
+    coordinates: { lat: 48.2071298, lng: 16.3692931 }, // OpenStreetMap
+  }),
+  attraction({
+    id: "sisi-imperial-apartments",
+    name: "Imperial Apartments & Sisi Museum (Hofburg)",
+    mapsQuery: "Sisi Museum Hofburg",
+    description: "شقق الإمبراطور Franz Joseph والإمبراطورة Sisi داخل قصر Hofburg.",
+    whyRecommend: "أهم زيارة داخل Hofburg لفهم حياة البلاط الإمبراطوري.",
+    areaId: "hofburg",
+    duration: "ساعة ونص تقريبًا",
+    priceType: "paid",
+    bookingStatus: "يفضل مسبقًا",
+    bestTime: "الصبح",
+    tip: "متحف Sisi بحلّة جديدة من 19 نوفمبر 2026؛ شوف المواعيد الجديدة بالموقع الرسمي.",
+    officialUrl: "https://www.sisimuseum-hofburg.at",
+    mustSee: true,
+    address: "Hofburg, Michaelerkuppel, 1010 Wien",
+    priceText: "السعر بالموقع الرسمي",
+    hours: variable("لحد 18 نوفمبر 2026: يوميًا 10:00–16:30 (آخر دخول 16:00) · من 19 نوفمبر: متحف Sisi الجديد، المواعيد بالموقع الرسمي", "https://www.sisimuseum-hofburg.at/en/visitor-information/", "sisimuseum-hofburg.at (official)"),
+    coordinates: { lat: 48.207699, lng: 16.36561 }, // Wikidata Q131937476
+  }),
+  attraction({
+    id: "state-hall-national-library",
+    name: "State Hall of the Austrian National Library (Prunksaal)",
+    mapsQuery: "Prunksaal Austrian National Library",
+    description: "قاعة مكتبة باروكية ضخمة داخل Hofburg.",
+    whyRecommend: "من أجمل القاعات التاريخية بفيينا، والزيارة قصيرة.",
+    areaId: "hofburg",
+    duration: "45 دقيقة تقريبًا",
+    priceType: "paid",
+    bookingStatus: "بدون حجز",
+    bestTime: "النهار",
+    tip: "أحيانًا بتسكّر بكير بسبب فعاليات؛ شوف الإعلانات بالموقع الرسمي.",
+    officialUrl: "https://www.onb.ac.at",
+    mustSee: false,
+    address: "Josefsplatz 1, 1010 Wien",
+    priceText: "السعر بالموقع الرسمي",
+    hours: variable("يونيو–سبتمبر: يوميًا 9:00–18:00 (الخميس لحد 21:00) · أكتوبر–مايو: مغلق الاثنين", "https://www.onb.ac.at/en/museums/state-hall", "onb.ac.at (official)"),
+    coordinates: { lat: 48.20614167, lng: 16.36626667 }, // Wikidata Q304037
+  }),
+  attraction({
+    id: "albertina",
+    name: "Albertina",
+    mapsQuery: "Albertina Museum",
+    description: "متحف فني بقصر Habsburg سابق، فيه مجموعات من Monet لـ Picasso وقاعات ملكية.",
+    whyRecommend: "من أهم متاحف الفن، وموقعه جنب الأوبرا.",
+    areaId: "hofburg",
+    duration: "ساعة ونص تقريبًا",
+    priceType: "paid",
+    bookingStatus: "بدون حجز",
+    bestTime: "النهار",
+    tip: "الأربعاء والجمعة مفتوح لحد 21:00.",
+    officialUrl: "https://www.albertina.at",
+    mustSee: false,
+    address: "Albertinaplatz, 1010 Wien",
+    priceText: "السعر بالموقع الرسمي",
+    hours: fixed({ ...days(["monday", "tuesday", "thursday", "saturday", "sunday"], ["10:00", "18:00"]), ...days(["wednesday", "friday"], ["10:00", "21:00"]) }, "https://www.albertina.at/en/visit/opening-hours/", "albertina.at (official)"),
+    coordinates: { lat: 48.204722222, lng: 16.368333333 }, // Wikidata Q371908
+  }),
+  attraction({
+    id: "heldenplatz",
+    name: "Heldenplatz",
+    mapsQuery: "Heldenplatz",
+    description: "الساحة الكبيرة قدام القصر الإمبراطوري الجديد بـ Hofburg.",
+    whyRecommend: "إطلالة واسعة على Hofburg ومشي بين القصر والحدائق.",
+    areaId: "hofburg",
+    duration: "20 دقيقة تقريبًا",
+    priceType: "free",
+    bookingStatus: "بدون حجز",
+    bestTime: "أي وقت",
+    tip: "ساحة عامة مجانية.",
+    mustSee: false,
+    locationLabel: "نقطة مقترحة",
+    coordinates: { lat: 48.206280555, lng: 16.363761111 }, // Wikidata Q700128
+  }),
+  attraction({
+    id: "volksgarten",
+    name: "Volksgarten",
+    mapsQuery: "Volksgarten Vienna",
+    description: "حديقة بجنب Hofburg مشهورة بحديقة الورد.",
+    whyRecommend: "استراحة خضرا قصيرة بين القصر والبرلمان.",
+    areaId: "hofburg",
+    duration: "30 دقيقة تقريبًا",
+    priceType: "free",
+    bookingStatus: "بدون حجز",
+    bestTime: "بعد الظهر",
+    tip: "الدخول مجاني.",
+    officialUrl: "https://www.bundesgaerten.at",
+    mustSee: false,
+    hours: variable("1 أبريل–31 أكتوبر: 6:00–22:00 · 1 نوفمبر–31 مارس: 7:00–17:30", "https://www.bundesgaerten.at/hofburggaerten/Volksgarten.html", "bundesgaerten.at (official)"),
+    coordinates: { lat: 48.2081, lng: 16.361761111 }, // Wikidata Q875751
+  }),
+  attraction({
+    id: "parliament",
+    name: "Austrian Parliament (Parlament)",
+    mapsQuery: "Austrian Parliament Building",
+    description: "مبنى البرلمان على شارع Ring، وفيه مركز زوار وجولات مرشدة مجانية.",
+    whyRecommend: "مبنى من أجمل مباني Ring، والجولة مجانية.",
+    areaId: "hofburg",
+    duration: "ساعة تقريبًا",
+    priceType: "free",
+    bookingStatus: "يفضل مسبقًا",
+    bestTime: "النهار",
+    tip: "الجولات المرشدة مجانية؛ مغلق الأحد والأعياد.",
+    officialUrl: "https://www.parlament.gv.at",
+    mustSee: false,
+    address: "Dr.-Karl-Renner-Ring 3, 1017 Wien",
+    priceText: "مجاني",
+    hours: fixed(
+      { monday: [{ open: "08:00", close: "13:00" }], ...days(["tuesday", "wednesday", "friday"], ["08:00", "18:00"]), thursday: [{ open: "08:00", close: "21:00" }], saturday: [{ open: "09:00", close: "17:00" }] },
+      "https://www.parlament.gv.at/en/experience/visitor-center/index.html",
+      "parlament.gv.at (official, Visitor Center)"
+    ),
+    coordinates: { lat: 48.20805, lng: 16.3587 }, // Wikidata Q702121
+  }),
+  attraction({
+    id: "kunsthistorisches-museum",
+    name: "Kunsthistorisches Museum",
+    mapsQuery: "Kunsthistorisches Museum",
+    description: "متحف تاريخ الفن: لوحات Bruegel وRaphael ومجموعات مصرية ويونانية بمبنى فخم.",
+    whyRecommend: "من أهم متاحف أوروبا، وقاعة المقهى تحت القبة بحد ذاتها تجربة.",
+    areaId: "museumsquartier",
+    duration: "ساعتين ونص تقريبًا",
+    priceType: "paid",
+    bookingStatus: "مش ضروري عادةً",
+    bestTime: "الصبح",
+    tip: "الخميس مفتوح لحد 21:00. 24 ديسمبر لحد 15:00.",
+    officialUrl: "https://www.khm.at",
+    mustSee: false,
+    address: "Maria-Theresien-Platz, 1010 Wien",
+    priceText: "€22 أونلاين / €24 بالشباك",
+    hours: fixed({ ...days(["monday", "tuesday", "wednesday", "friday", "saturday", "sunday"], ["10:00", "18:00"]), thursday: [{ open: "10:00", close: "21:00" }] }, "https://www.khm.at/en/visit/besucherinformation/hours-admission/", "khm.at (official)"),
+    coordinates: { lat: 48.203880555, lng: 16.3616 }, // Wikidata Q95569
+  }),
+  attraction({
+    id: "naturhistorisches-museum",
+    name: "Natural History Museum (Naturhistorisches Museum)",
+    mapsQuery: "Naturhistorisches Museum Wien",
+    description: "متحف التاريخ الطبيعي: ديناصورات ونيازك وتمثال Venus of Willendorf.",
+    whyRecommend: "ممتاز للعائلات وللأيام الماطرة.",
+    areaId: "museumsquartier",
+    duration: "ساعتين تقريبًا",
+    priceType: "paid",
+    bookingStatus: "بدون حجز",
+    bestTime: "النهار",
+    tip: "مغلق الثلاثاء. الأربعاء لحد 20:00. آخر دخول قبل الإغلاق بنص ساعة. تحت 19 سنة مجاني.",
+    officialUrl: "https://www.nhm.at",
+    mustSee: false,
+    address: "Maria-Theresien-Platz, 1010 Wien",
+    priceText: "€18",
+    hours: fixed({ monday: [{ open: "09:00", close: "18:00" }], wednesday: [{ open: "09:00", close: "20:00" }], ...days(["thursday", "friday", "saturday", "sunday"], ["09:00", "18:00"]) }, "https://www.nhm.at/en/information", "nhm.at (official)"),
+    coordinates: { lat: 48.205130555, lng: 16.359930555 }, // Wikidata Q688704
+  }),
+  attraction({
+    id: "leopold-museum",
+    name: "Leopold Museum",
+    mapsQuery: "Leopold Museum",
+    description: "أكبر مجموعة لأعمال Egon Schiele وفن فيينا حوالي 1900.",
+    whyRecommend: "قلب حي MuseumsQuartier ومناسب لمحبي Klimt وSchiele.",
+    areaId: "museumsquartier",
+    duration: "ساعة ونص تقريبًا",
+    priceType: "paid",
+    bookingStatus: "بدون حجز",
+    bestTime: "النهار",
+    tip: "مغلق الثلاثاء (بس من 7 ديسمبر لـ 10 يناير مفتوح يوميًا).",
+    officialUrl: "https://www.leopoldmuseum.org",
+    mustSee: false,
+    address: "Museumsplatz 1, 1070 Wien",
+    priceText: "€19 (مخفّض €16)",
+    hours: fixed(days(["monday", "wednesday", "thursday", "friday", "saturday", "sunday"], ["10:00", "18:00"]), "https://www.leopoldmuseum.org/en/visit", "leopoldmuseum.org (official)"),
+    coordinates: { lat: 48.2025896, lng: 16.3590667 }, // OpenStreetMap
+  }),
+  attraction({
+    id: "museumsquartier",
+    name: "MuseumsQuartier (courtyards)",
+    mapsQuery: "MuseumsQuartier",
+    description: "ساحات حي المتاحف بين المباني القديمة والحديثة، فيها مقاهي ومقاعد.",
+    whyRecommend: "استراحة لطيفة بين متحفين.",
+    areaId: "museumsquartier",
+    duration: "30 دقيقة تقريبًا",
+    priceType: "free",
+    bookingStatus: "بدون حجز",
+    bestTime: "بعد الظهر",
+    tip: "الساحات مفتوحة ومجانية.",
+    mustSee: false,
+    locationLabel: "نقطة مقترحة",
+    coordinates: { lat: 48.203333333, lng: 16.358888888 }, // Wikidata Q699943
+  }),
+  attraction({
+    id: "karlskirche",
+    name: "Karlskirche",
+    mapsQuery: "Karlskirche",
+    description: "كنيسة باروكية بقبة خضرا وعمودين عاليين على ساحة Karlsplatz.",
+    whyRecommend: "من أجمل كنائس فيينا، والصورة من البركة قدامها مشهورة.",
+    areaId: "karlsplatz",
+    duration: "45 دقيقة تقريبًا",
+    priceType: "paid",
+    bookingStatus: "بدون حجز",
+    bestTime: "النهار",
+    tip: "الزيارة بتذكرة: الاثنين–السبت 9:00–18:00، الأحد والأعياد 11:45–19:15.",
+    officialUrl: "https://www.karlskirche.at",
+    mustSee: false,
+    address: "Karlsplatz 10, 1040 Wien",
+    priceText: "السعر بالموقع الرسمي",
+    hours: fixed({ ...days(MON_TO_SAT, ["09:00", "18:00"]), sunday: [{ open: "11:45", close: "19:15" }] }, "https://www.karlskirche.at/", "karlskirche.at (official)"),
+    coordinates: { lat: 48.198280555, lng: 16.371880555 }, // Wikidata Q408847
+  }),
+  attraction({
+    id: "wien-museum",
+    name: "Wien Museum Karlsplatz",
+    mapsQuery: "Wien Museum Karlsplatz",
+    description: "متحف تاريخ فيينا، والمعرض الدائم مجاني.",
+    whyRecommend: "طريقة سهلة ومجانية تتعرّف فيها على تاريخ المدينة، وفوقه تراس.",
+    areaId: "karlsplatz",
+    duration: "ساعة وربع تقريبًا",
+    priceType: "free",
+    bookingStatus: "بدون حجز",
+    bestTime: "النهار",
+    tip: "مغلق الاثنين. الخميس لحد 21:00. المعارض الخاصة بتذكرة (€13).",
+    officialUrl: "https://www.wienmuseum.at",
+    mustSee: false,
+    address: "Karlsplatz 8, 1040 Wien",
+    priceText: "المعرض الدائم مجاني",
+    hours: fixed({ ...days(["tuesday", "wednesday", "friday"], ["09:00", "18:00"]), thursday: [{ open: "09:00", close: "21:00" }], ...days(["saturday", "sunday"], ["10:00", "18:00"]) }, "https://www.wienmuseum.at/besucherinformation", "wienmuseum.at (official)"),
+    coordinates: { lat: 48.1992128, lng: 16.3730689 }, // OpenStreetMap
+  }),
+  attraction({
+    id: "secession",
+    name: "Secession (Beethoven Frieze)",
+    mapsQuery: "Secession Building Vienna",
+    description: "مبنى آرت نوفو بقبة ذهبية، وفيه لوحة Beethoven Frieze لـ Klimt.",
+    whyRecommend: "محطة قصيرة ومميزة جنب Naschmarkt.",
+    areaId: "karlsplatz",
+    duration: "45 دقيقة تقريبًا",
+    priceType: "paid",
+    bookingStatus: "بدون حجز",
+    bestTime: "النهار",
+    tip: "مغلق الاثنين. الدخول مجاني بأول أربعاء من كل شهر.",
+    officialUrl: "https://secession.at",
+    mustSee: false,
+    address: "Friedrichstraße 12, 1010 Wien",
+    priceText: "€13 (مخفّض €10)",
+    hours: fixed(days(["tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"], ["10:00", "18:00"]), "https://secession.at/information_tickets", "secession.at (official)"),
+    coordinates: { lat: 48.200395, lng: 16.365934 }, // Wikidata Q265129
+  }),
+  attraction({
+    id: "naschmarkt",
+    name: "Naschmarkt",
+    mapsQuery: "Naschmarkt",
+    description: "أشهر سوق بفيينا: خضرة وفواكه وبهارات ومطاعم صغيرة.",
+    whyRecommend: "مشي ممتع وأكل من ثقافات كتير بمكان واحد.",
+    areaId: "karlsplatz",
+    duration: "ساعة تقريبًا",
+    priceType: "free",
+    bookingStatus: "بدون حجز",
+    bestTime: "الصبح أو الظهر",
+    tip: "الأكشاك مسكّرة الأحد (المطاعم بتفتح). السبت في سوق مستعمل (Flohmarkt) جنبه.",
+    officialUrl: "https://www.wien.gv.at/freizeit/naschmarkt",
+    mustSee: false,
+    locationLabel: "نقطة مقترحة",
+    hours: fixed({ ...days(["monday", "tuesday", "wednesday", "thursday", "friday"], ["06:00", "21:00"]), saturday: [{ open: "06:00", close: "18:00" }] }, "https://www.wien.gv.at/freizeit/naschmarkt", "wien.gv.at (City of Vienna, market office)"),
+    coordinates: { lat: 48.1989, lng: 16.3636 }, // Wikidata Q417645
+  }),
+  attraction({
+    id: "belvedere-upper",
+    name: "Upper Belvedere",
+    mapsQuery: "Upper Belvedere",
+    description: "قصر باروكي فيه لوحة The Kiss لـ Klimt، مع حدائق مطلة على المدينة.",
+    whyRecommend: "أشهر لوحة بفيينا بقصر من أجمل القصور.",
+    areaId: "belvedere",
+    duration: "ساعة ونص تقريبًا",
+    priceType: "paid",
+    bookingStatus: "يفضل مسبقًا",
+    bestTime: "الصبح",
+    tip: "من 15 يوليو لـ 31 أغسطس مفتوح لحد 19:00. التذكرة الأونلاين بتدخلك مباشرة.",
+    officialUrl: "https://www.belvedere.at",
+    mustSee: true,
+    address: "Prinz-Eugen-Straße 27, 1030 Wien",
+    priceText: "€23 (مخفّض €19)",
+    hours: fixed(everyDay(["09:00", "18:00"]), "https://www.belvedere.at/en/visit/upper-belvedere", "belvedere.at (official)"),
+    coordinates: { lat: 48.19154, lng: 16.3809 }, // Wikidata Q87193291
+  }),
+  attraction({
+    id: "schoenbrunn-palace",
+    name: "Schönbrunn Palace",
+    mapsQuery: "Schönbrunn Palace",
+    description: "القصر الصيفي لعائلة Habsburg، بغرف ملكية فخمة.",
+    whyRecommend: "أشهر معلم بالنمسا؛ خصص له نص يوم مع الحدائق.",
+    areaId: "schoenbrunn",
+    duration: "ساعتين تقريبًا",
+    priceType: "paid",
+    bookingStatus: "يفضل مسبقًا",
+    bestTime: "الصبح بدري",
+    tip: "مفتوح يوميًا؛ من أبريل لأكتوبر لحد 17:30 (يوليو–أغسطس لحد 18:00). آخر دخول قبل الإغلاق بـ 45 دقيقة.",
+    officialUrl: "https://www.schoenbrunn.at",
+    mustSee: true,
+    address: "Schönbrunner Schlossstraße 47, 1130 Wien",
+    priceText: "حسب الجولة — شوف الموقع الرسمي",
+    hours: fixed(everyDay(["08:30", "17:00"]), "https://www.schoenbrunn.at/en/visitor-information/opening-times", "schoenbrunn.at (official)"),
+    coordinates: { lat: 48.18479, lng: 16.31227 }, // Wikidata Q131330
+  }),
+  attraction({
+    id: "schoenbrunn-gardens",
+    name: "Schönbrunn Palace Park & Gloriette",
+    mapsQuery: "Gloriette Schönbrunn",
+    description: "حدائق القصر المجانية، وفوق التلة مبنى Gloriette بإطلالة على القصر والمدينة.",
+    whyRecommend: "أحلى إطلالة على Schönbrunn، والدخول للحديقة مجاني.",
+    areaId: "schoenbrunn",
+    duration: "ساعة تقريبًا",
+    priceType: "free",
+    bookingStatus: "بدون حجز",
+    bestTime: "بعد الظهر",
+    tip: "الطلعة لـ Gloriette حوالي 15 دقيقة مشي.",
+    officialUrl: "https://www.schoenbrunn.at",
+    mustSee: false,
+    locationLabel: "نقطة مقترحة",
+    hours: variable("الحديقة يوميًا من 6:30؛ الإغلاق حسب الشهر: يناير–فبراير 17:30 · مارس 19:00 · أبريل 20:00 · مايو–أغسطس 21:00", "https://www.schoenbrunn.at/en/visitor-information/opening-times", "schoenbrunn.at (official)"),
+    coordinates: { lat: 48.17828, lng: 16.30869 }, // Wikidata Q873139 (Gloriette)
+  }),
+  attraction({
+    id: "schoenbrunn-zoo",
+    name: "Schönbrunn Zoo (Tiergarten Schönbrunn)",
+    mapsQuery: "Tiergarten Schönbrunn",
+    description: "حديقة الحيوان التاريخية داخل حدائق Schönbrunn.",
+    whyRecommend: "يوم ممتع للعائلات جنب القصر.",
+    areaId: "schoenbrunn",
+    duration: "3 ساعات تقريبًا",
+    priceType: "paid",
+    bookingStatus: "بدون حجز",
+    bestTime: "الصبح",
+    tip: "بيفتح يوميًا 9:00؛ الإغلاق بين 16:30 بالشتاء و18:30 من أبريل لسبتمبر. آخر دخول قبل الإغلاق بنص ساعة.",
+    officialUrl: "https://www.zoovienna.at",
+    mustSee: false,
+    address: "Maxingstraße 13b, 1130 Wien",
+    priceText: "€29 (أطفال وشباب €17)",
+    hours: fixed(everyDay(["09:00", "16:30"]), "https://www.zoovienna.at/besuch-und-tickets/besucherinformation/", "zoovienna.at (official)"),
+    coordinates: { lat: 48.1817341, lng: 16.3047717 }, // OpenStreetMap
+  }),
+  attraction({
+    id: "giant-ferris-wheel",
+    name: "Giant Ferris Wheel (Wiener Riesenrad)",
+    mapsQuery: "Wiener Riesenrad",
+    description: "العجلة العملاقة التاريخية من 1897 بحديقة Prater.",
+    whyRecommend: "إطلالة كلاسيكية على فيينا، وحلوة وقت الغروب.",
+    areaId: "leopoldstadt",
+    duration: "30 دقيقة تقريبًا",
+    priceType: "paid",
+    bookingStatus: "بدون حجز",
+    bestTime: "قبل الغروب",
+    tip: "مفتوحة طول السنة؛ المواعيد بتختلف حسب اليوم والشهر.",
+    officialUrl: "https://wienerriesenrad.com",
+    mustSee: false,
+    address: "Riesenradplatz 1, 1020 Wien",
+    priceText: "السعر بالموقع الرسمي",
+    hours: variable("مفتوحة طول السنة؛ المواعيد حسب اليوم والشهر (مثلًا 10:00–19:45 أو 10:00–21:45)", "https://wienerriesenrad.com/en/opening-times/", "wienerriesenrad.com (official)"),
+    coordinates: { lat: 48.216830555, lng: 16.395919444 }, // Wikidata Q697578
+  }),
+  attraction({
+    id: "prater",
+    name: "Prater (Wurstelprater)",
+    mapsQuery: "Wurstelprater",
+    description: "حديقة الملاهي والمساحات الخضرا الكبيرة حول العجلة العملاقة.",
+    whyRecommend: "مشي طويل وألعاب للعائلات.",
+    areaId: "leopoldstadt",
+    duration: "ساعة تقريبًا",
+    priceType: "free",
+    bookingStatus: "بدون حجز",
+    bestTime: "بعد الظهر",
+    tip: "الدخول للحديقة مجاني؛ الألعاب بتذاكر منفصلة.",
+    mustSee: false,
+    locationLabel: "نقطة مقترحة",
+    coordinates: { lat: 48.216111111, lng: 16.395555555 }, // Wikidata Q264752
+  }),
+  attraction({
+    id: "augarten",
+    name: "Augarten",
+    mapsQuery: "Augarten",
+    description: "حديقة باروكية قديمة بحي Leopoldstadt، فيها مصنع خزف Augarten.",
+    whyRecommend: "حديقة هادية بعيدة عن الزحمة.",
+    areaId: "leopoldstadt",
+    duration: "45 دقيقة تقريبًا",
+    priceType: "free",
+    bookingStatus: "بدون حجز",
+    bestTime: "بعد الظهر",
+    tip: "الدخول مجاني.",
+    officialUrl: "https://www.bundesgaerten.at",
+    mustSee: false,
+    hours: variable("بتفتح 6:30 (أبريل–أكتوبر) أو 7:00 (نوفمبر–مارس)؛ الإغلاق: نوفمبر–فبراير 17:30 · مارس 19:00 · أبريل 20:00 · مايو–يوليو 21:00 · أغسطس–سبتمبر 20:00 · أكتوبر 19:00", "https://www.bundesgaerten.at/augarten/oeffnungszeiten.html", "bundesgaerten.at (official)"),
+    coordinates: { lat: 48.22611111, lng: 16.37638889 }, // Wikidata Q143265
+  }),
+  attraction({
+    id: "hundertwasserhaus",
+    name: "Hundertwasser House (Hundertwasserhaus)",
+    mapsQuery: "Hundertwasserhaus",
+    description: "عمارة سكنية ملونة بأشكال غير مألوفة من تصميم Friedensreich Hundertwasser.",
+    whyRecommend: "من أكثر المباني تصويرًا بفيينا.",
+    areaId: "landstrasse",
+    duration: "20 دقيقة تقريبًا",
+    priceType: "free",
+    bookingStatus: "بدون حجز",
+    bestTime: "أي وقت",
+    tip: "البيت سكني؛ بتشوفه من برّا بس.",
+    mustSee: false,
+    locationLabel: "نقطة التصوير",
+    coordinates: { lat: 48.2075, lng: 16.3939 }, // Wikidata Q493126
+  }),
+  attraction({
+    id: "kunst-haus-wien",
+    name: "Kunst Haus Wien",
+    mapsQuery: "Kunst Haus Wien",
+    description: "متحف Hundertwasser ومعارض تصوير، بمبنى من تصميمه.",
+    whyRecommend: "بتشوف أعمال Hundertwasser من جوّا، قريب من بيته.",
+    areaId: "landstrasse",
+    duration: "ساعة وربع تقريبًا",
+    priceType: "paid",
+    bookingStatus: "بدون حجز",
+    bestTime: "النهار",
+    tip: "مفتوح يوميًا 10:00–18:00.",
+    officialUrl: "https://www.kunsthauswien.com",
+    mustSee: false,
+    address: "Untere Weißgerberstraße 13, 1030 Wien",
+    priceText: "€16 (مخفّض €13)",
+    hours: fixed(everyDay(["10:00", "18:00"]), "https://www.kunsthauswien.com/en/visit/", "kunsthauswien.com (official)"),
+    coordinates: { lat: 48.2111338, lng: 16.3932757 }, // OpenStreetMap
+  }),
+  attraction({
+    id: "stadtpark",
+    name: "Stadtpark",
+    mapsQuery: "Stadtpark Vienna Johann Strauss monument",
+    description: "حديقة المدينة على شارع Ring، فيها تمثال Johann Strauss الذهبي.",
+    whyRecommend: "استراحة خضرا قريبة من الوسط، وصورة مع تمثال Strauss.",
+    areaId: "landstrasse",
+    duration: "30 دقيقة تقريبًا",
+    priceType: "free",
+    bookingStatus: "بدون حجز",
+    bestTime: "بعد الظهر",
+    tip: "الدخول مجاني.",
+    mustSee: false,
+    locationLabel: "نقطة مقترحة",
+    coordinates: { lat: 48.204722222, lng: 16.380555555 }, // Wikidata Q688588
+  }),
+  attraction({
+    id: "danube-tower",
+    name: "Danube Tower (Donauturm)",
+    mapsQuery: "Donauturm",
+    description: "برج مشاهدة بحديقة Donaupark، فيه منصة مشاهدة ومطعم.",
+    whyRecommend: "أعلى إطلالة على فيينا والدانوب.",
+    areaId: "donaustadt",
+    duration: "ساعة وربع تقريبًا",
+    priceType: "paid",
+    bookingStatus: "بدون حجز",
+    bestTime: "وقت الغروب",
+    tip: "المنصة الخارجية ممكن تسكّر مع الريح القوية.",
+    officialUrl: "https://www.donauturm.at",
+    mustSee: false,
+    address: "Donauturmplatz 1, 1220 Wien",
+    priceText: "€18",
+    hours: variable("مفتوح يوميًا؛ المواعيد بتتغير حسب الموسم (عادة من الصبح لآخر المسا)", "https://www.donauturm.at/en/about-us/faq/", "donauturm.at (official)"),
+    coordinates: { lat: 48.24023, lng: 16.41003 }, // Wikidata Q686544
+  }),
+  attraction({
+    id: "haus-des-meeres",
+    name: "Haus des Meeres",
+    mapsQuery: "Haus des Meeres",
+    description: "أكواريوم وحيوانات استوائية داخل برج حربي قديم، وفوقه سطح مشاهدة.",
+    whyRecommend: "ممتاز للعائلات وللأيام الماطرة.",
+    areaId: "mariahilf",
+    duration: "ساعتين تقريبًا",
+    priceType: "paid",
+    bookingStatus: "بدون حجز",
+    bestTime: "النهار",
+    tip: "المواعيد والأسعار بالموقع الرسمي.",
+    officialUrl: "https://www.haus-des-meeres.at",
+    mustSee: false,
+    address: "Fritz-Grünbaum-Platz 1, 1060 Wien",
+    priceText: "السعر بالموقع الرسمي",
+    coordinates: { lat: 48.1975784, lng: 16.352958 }, // OpenStreetMap
+  }),
+  attraction({
+    id: "belvedere-lower",
+    name: "Lower Belvedere",
+    mapsQuery: "Lower Belvedere",
+    description: "القصر السفلي لمجمع Belvedere، فيه قاعات باروكية ومعارض متغيرة.",
+    whyRecommend: "بيكمّل زيارة Belvedere العلوي عبر الحدائق.",
+    areaId: "belvedere",
+    duration: "ساعة تقريبًا",
+    priceType: "paid",
+    bookingStatus: "بدون حجز",
+    bestTime: "النهار",
+    tip: "الحدائق بين القصرين بتوصل الاثنين مشيًا.",
+    officialUrl: "https://www.belvedere.at",
+    mustSee: false,
+    address: "Rennweg 6, 1030 Wien",
+    priceText: "€20",
+    hours: fixed(everyDay(["10:00", "18:00"]), "https://www.belvedere.at/en/visit/lower-belvedere", "belvedere.at (official)"),
+    coordinates: { lat: 48.1874125, lng: 16.3808196 }, // Wikidata Q87193289
+  }),
+  attraction({
+    id: "sigmund-freud-museum",
+    name: "Sigmund Freud Museum",
+    mapsQuery: "Sigmund Freud Museum",
+    description: "بيت وعيادة Sigmund Freud، اليوم متحف عن حياته وأفكاره.",
+    whyRecommend: "محطة مميزة لمحبي التاريخ والثقافة.",
+    areaId: "alsergrund",
+    duration: "ساعة تقريبًا",
+    priceType: "paid",
+    bookingStatus: "بدون حجز",
+    bestTime: "النهار",
+    tip: "مغلق كل ثلاثاء. آخر دخول قبل الإغلاق بنص ساعة.",
+    officialUrl: "https://www.freud-museum.at",
+    mustSee: false,
+    address: "Berggasse 19, 1090 Wien",
+    priceText: "€16 (مخفّض €12)",
+    hours: fixed(days(["wednesday", "thursday", "friday", "saturday", "sunday", "monday"], ["10:00", "18:00"]), "https://www.freud-museum.at/en/visitor_information/articles/opening-hours-tickets", "freud-museum.at (official)"),
+    coordinates: { lat: 48.2186, lng: 16.3631 }, // Wikidata Q694810
+  }),
+  attraction({
+    id: "votivkirche",
+    name: "Votivkirche",
+    mapsQuery: "Votivkirche",
+    description: "كنيسة قوطية جديدة ببرجين عاليين قرب الجامعة.",
+    whyRecommend: "من أجمل واجهات فيينا، قريبة من متحف Freud.",
+    areaId: "alsergrund",
+    duration: "30 دقيقة تقريبًا",
+    priceType: "free",
+    bookingStatus: "بدون حجز",
+    bestTime: "النهار",
+    tip: "مغلقة الاثنين.",
+    officialUrl: "https://www.votivkirche.at",
+    mustSee: false,
+    address: "Rooseveltplatz, 1090 Wien",
+    priceText: "الدخول للكنيسة مجاني",
+    hours: fixed({ sunday: [{ open: "09:00", close: "13:00" }], ...days(["tuesday", "wednesday", "thursday", "friday"], ["10:00", "16:00"]), saturday: [{ open: "11:00", close: "19:00" }] }, "https://www.votivkirche.at/_service.htm", "votivkirche.at (official)"),
+    coordinates: { lat: 48.2154147, lng: 16.3591401 }, // OpenStreetMap
+  }),
+  attraction({
+    id: "mak",
+    name: "MAK – Museum of Applied Arts",
+    mapsQuery: "MAK Museum of Applied Arts Vienna",
+    description: "متحف الفنون التطبيقية والتصميم على شارع Ring.",
+    whyRecommend: "لمحبي التصميم وفن فيينا 1900، والثلاثاء مفتوح لحد المسا.",
+    areaId: "landstrasse",
+    duration: "ساعة ونص تقريبًا",
+    priceType: "paid",
+    bookingStatus: "بدون حجز",
+    bestTime: "النهار",
+    tip: "مغلق الاثنين. الثلاثاء لحد 21:00.",
+    officialUrl: "https://www.mak.at",
+    mustSee: false,
+    address: "Stubenring 5, 1010 Wien",
+    priceText: "السعر بالموقع الرسمي",
+    hours: fixed({ tuesday: [{ open: "10:00", close: "21:00" }], ...days(["wednesday", "thursday", "friday", "saturday", "sunday"], ["10:00", "18:00"]) }, "https://www.mak.at/visit", "mak.at (official)"),
+    coordinates: { lat: 48.207669444, lng: 16.381369444 }, // Wikidata Q478455
+  }),
+  attraction({
+    id: "peterskirche",
+    name: "St. Peter's Church (Peterskirche)",
+    mapsQuery: "Peterskirche Vienna",
+    description: "كنيسة باروكية بقبة خضرا بشارع جانبي من Graben.",
+    whyRecommend: "زيارة قصيرة ومجانية بقلب الوسط.",
+    areaId: "innere-stadt",
+    duration: "20 دقيقة تقريبًا",
+    priceType: "free",
+    bookingStatus: "بدون حجز",
+    bestTime: "أي وقت",
+    tip: "الدخول مجاني؛ احترم أوقات القداديس.",
+    officialUrl: "https://www.peterskirche.at",
+    mustSee: false,
+    address: "Petersplatz, 1010 Wien",
+    priceText: "مجاني",
+    hours: fixed({ ...days(["monday", "tuesday", "wednesday", "thursday", "friday"], ["08:00", "19:00"]), ...days(["saturday", "sunday"], ["09:00", "19:00"]) }, "https://www.peterskirche.at/", "peterskirche.at (official)"),
+    coordinates: { lat: 48.2094369, lng: 16.3700108 }, // OpenStreetMap
+  }),
+  attraction({
+    id: "michaelerplatz",
+    name: "Michaelerplatz",
+    mapsQuery: "Michaelerplatz",
+    description: "ساحة قدام بوابة Hofburg، بوسطها آثار رومانية مكشوفة.",
+    whyRecommend: "مدخل جميل لـ Hofburg وصورة مع القبة.",
+    areaId: "hofburg",
+    duration: "15 دقيقة تقريبًا",
+    priceType: "free",
+    bookingStatus: "بدون حجز",
+    bestTime: "أي وقت",
+    tip: "ساحة عامة مجانية.",
+    mustSee: false,
+    locationLabel: "نقطة مقترحة",
+    coordinates: { lat: 48.208, lng: 16.3664 }, // Wikidata Q877584
+  }),
+  attraction({
+    id: "judenplatz",
+    name: "Judenplatz",
+    mapsQuery: "Judenplatz",
+    description: "ساحة هادية فيها نصب ضحايا الهولوكوست النمساويين.",
+    whyRecommend: "محطة تاريخية قصيرة قرب Am Hof.",
+    areaId: "innere-stadt",
+    duration: "15 دقيقة تقريبًا",
+    priceType: "free",
+    bookingStatus: "بدون حجز",
+    bestTime: "أي وقت",
+    tip: "ساحة عامة مجانية.",
+    mustSee: false,
+    locationLabel: "نقطة مقترحة",
+    coordinates: { lat: 48.2116, lng: 16.3696 }, // Wikidata Q390730
+  }),
+  attraction({
+    id: "ankeruhr",
+    name: "Anker Clock (Ankeruhr)",
+    mapsQuery: "Ankeruhr",
+    description: "ساعة آرت نوفو على جسر بين مبنيين بساحة Hoher Markt، بتمر فيها شخصيات تاريخية.",
+    whyRecommend: "توقف قصير ولطيف، خاصة الظهر.",
+    areaId: "innere-stadt",
+    duration: "15 دقيقة تقريبًا",
+    priceType: "free",
+    bookingStatus: "بدون حجز",
+    bestTime: "الظهر",
+    tip: "بتشوفها من الشارع مجانًا.",
+    mustSee: false,
+    locationLabel: "نقطة التصوير",
+    coordinates: { lat: 48.2108, lng: 16.3737 }, // Wikidata Q557226
+  }),
+  attraction({
+    id: "rathaus",
+    name: "Vienna City Hall (Rathaus) & Rathausplatz",
+    mapsQuery: "Wiener Rathaus",
+    description: "مبنى البلدية القوطي الجديد وساحته اللي بتستضيف أسواق وفعاليات موسمية.",
+    whyRecommend: "من أجمل مباني شارع Ring، والساحة مجانية.",
+    areaId: "hofburg",
+    duration: "20 دقيقة تقريبًا",
+    priceType: "free",
+    bookingStatus: "بدون حجز",
+    bestTime: "أي وقت",
+    tip: "بتشوف المبنى من الساحة مجانًا.",
+    mustSee: false,
+    locationLabel: "نقطة مقترحة",
+    coordinates: { lat: 48.2108, lng: 16.3574 }, // Wikidata Q686468
+  }),
+  attraction({
+    id: "donaukanal",
+    name: "Danube Canal promenade (Donaukanal)",
+    mapsQuery: "Donaukanal Schwedenplatz",
+    description: "ممشى على قناة الدانوب بفنون شارع وجدران ملونة وبارات صيفية.",
+    whyRecommend: "مشي مختلف وحيوي قرب الوسط.",
+    areaId: "innere-stadt",
+    duration: "45 دقيقة تقريبًا",
+    priceType: "free",
+    bookingStatus: "بدون حجز",
+    bestTime: "بعد الظهر",
+    tip: "ابدأ من Schwedenplatz.",
+    mustSee: false,
+    locationLabel: "نقطة مقترحة للبدء",
+    coordinates: { lat: 48.2118, lng: 16.3777 }, // Wikidata Q1311686 (Schwedenplatz)
+  }),
+  attraction({
+    id: "donauinsel",
+    name: "Danube Island (Donauinsel)",
+    mapsQuery: "Donauinsel",
+    description: "جزيرة طويلة بالدانوب للمشي والدراجات والجلوس على الماء.",
+    whyRecommend: "طبيعة واستراحة على الماء داخل المدينة.",
+    areaId: "donaustadt",
+    duration: "ساعة تقريبًا",
+    priceType: "free",
+    bookingStatus: "بدون حجز",
+    bestTime: "بعد الظهر",
+    tip: "أحلى بالربيع والصيف.",
+    mustSee: false,
+    locationLabel: "نقطة مقترحة",
+    coordinates: { lat: 48.229, lng: 16.40884 }, // Wikidata Q23249
+  }),
+  attraction({
+    id: "kahlenberg",
+    name: "Kahlenberg viewpoint",
+    mapsQuery: "Kahlenberg",
+    description: "تلة بغابات فيينا بإطلالة على المدينة والدانوب.",
+    whyRecommend: "أوسع إطلالة طبيعية على فيينا، بعيدة عن الزحمة.",
+    areaId: "kahlenberg",
+    duration: "ساعة ونص تقريبًا",
+    priceType: "free",
+    bookingStatus: "بدون حجز",
+    bestTime: "بعد الظهر",
+    tip: "بعيدة عن الوسط (باص من محطة Heiligenstadt)؛ خليها لنص يوم.",
+    mustSee: false,
+    locationLabel: "نقطة التصوير",
+    coordinates: { lat: 48.2761, lng: 16.3333 }, // Wikidata Q697119
+  }),
+];
+
+// ── Experiences ─────────────────────────────────────────────────────────────────────────────────────
+export const VIENNA_EXPERIENCES: Experience[] = [
+  {
+    id: "state-opera-tour",
+    name: "Vienna State Opera guided tour (Wiener Staatsoper)",
+    image: "",
+    categoryId: "culture",
+    tags: ["music", "architecture"],
+    description: "جولة مرشدة حوالي 40 دقيقة بقاعات الأوبرا والمسرح.",
+    area: "Innere Stadt",
+    address: "Opernring 2, 1010 Wien",
+    duration: "40 دقيقة تقريبًا",
+    priceText: "€18 (مخفّض €14)",
+    priceVaries: false,
+    bookingRequired: true,
+    lastVerified: VERIFIED,
+    hours: variable("المواعيد حسب جدول الأوبرا؛ شوف التواريخ المتاحة بمتجر التذاكر", "https://www.wiener-staatsoper.at/en/guided-tours/", "wiener-staatsoper.at (official)"),
+    ...maps("Vienna State Opera"),
+    officialUrl: "https://www.wiener-staatsoper.at",
+  },
+  {
+    id: "spanish-riding-school",
+    name: "Spanish Riding School (Spanische Hofreitschule)",
+    image: "",
+    categoryId: "culture",
+    tags: ["horses", "tradition"],
+    description: "مدرسة الفروسية الإمبراطورية بخيول Lipizzaner داخل Hofburg: تدريبات صباحية وعروض.",
+    area: "Hofburg",
+    address: "Michaelerplatz 1, 1010 Wien",
+    duration: "ساعة تقريبًا",
+    priceText: "من €17 (حسب البرنامج)",
+    priceVaries: true,
+    bookingRequired: true,
+    lastVerified: VERIFIED,
+    hours: variable("حسب البرنامج والتاريخ؛ شوف الجدول بالموقع الرسمي", "https://www.srs.at/en/", "srs.at (official)"),
+    ...maps("Spanish Riding School"),
+    officialUrl: "https://www.srs.at",
+  },
+];
+
+// ── Food ────────────────────────────────────────────────────────────────────────────────────────────
+export const VIENNA_FOOD_CATEGORIES: FoodCategory[] = [
+  { id: "breakfast", icon: "🥐", label: "فطور" },
+  { id: "cafes", icon: "☕", label: "مقاهي" },
+  { id: "local", icon: "🍲", label: "مطبخ نمساوي" },
+];
+
+type FoodInput = Omit<FoodPlace, "mapsUrl" | "appleMapsUrl" | "lastVerified" | "hours"> & { hoursSchedule: WeeklySchedule; sourceUrl: string; source: string };
+
+function food(input: FoodInput): FoodPlace {
+  const { hoursSchedule, sourceUrl, source, ...rest } = input;
+  return { ...maps(input.name), lastVerified: VERIFIED, hours: fixed(hoursSchedule, sourceUrl, source), ...rest };
+}
+
+export const VIENNA_FOOD_PLACES: FoodPlace[] = [
+  food({ id: "cafe-sacher", name: "Café Sacher Wien", categoryId: "breakfast", area: "Innere Stadt (Staatsoper)", address: "Philharmoniker Straße 4, 1010 Wien", why: "المقهى الأصلي لكعكة Sacher-Torte، والفطور من 7:00.", officialUrl: "https://www.sacher.com", dietaryTags: ["coffee", "dessert", "pork-maybe"], hoursSchedule: everyDay(["07:00", "23:00"]), sourceUrl: "https://www.sacher.com/en/restaurants/cafe-sacher-wien/", source: "sacher.com (official)" }),
+  food({ id: "cafe-landtmann", name: "Café Landtmann", categoryId: "breakfast", area: "Innere Stadt (Ring)", address: "Universitätsring 4, 1010 Wien", why: "مقهى فيينا كلاسيكي على شارع Ring جنب البرلمان، بيفتح 7:30.", officialUrl: "https://www.landtmann.at", dietaryTags: ["coffee", "dessert", "pork-maybe"], hoursSchedule: { ...days(MON_TO_SAT, ["07:30", "00:00"]), sunday: [{ open: "07:30", close: "22:00" }] }, sourceUrl: "https://www.landtmann.at/en/", source: "landtmann.at (official)" }),
+  food({ id: "cafe-museum", name: "Café Museum", categoryId: "breakfast", area: "Innere Stadt (Karlsplatz)", address: "Operngasse 7, 1010 Wien", why: "مقهى تاريخي جنب Karlsplatz والسيسيشن، بيفتح 8:00 كل يوم.", officialUrl: "https://www.cafemuseum.at", dietaryTags: ["coffee", "dessert"], hoursSchedule: everyDay(["08:00", "21:00"]), sourceUrl: "https://www.cafemuseum.at/en/", source: "cafemuseum.at (official)" }),
+  food({ id: "zum-schwarzen-kameel", name: "Zum Schwarzen Kameel", categoryId: "breakfast", area: "Innere Stadt (Bognergasse)", address: "Bognergasse 5, 1010 Wien", why: "مطعم وديلي تاريخي، مشهور بالسندويشات الصغيرة، والفطور من 8:00.", officialUrl: "https://www.kameel.at", dietaryTags: ["coffee", "meat", "pork-maybe"], hoursSchedule: everyDay(["08:00", "00:00"]), sourceUrl: "https://www.kameel.at/en/", source: "kameel.at (official)" }),
+  food({ id: "cafe-sperl", name: "Café Sperl", categoryId: "cafes", area: "Mariahilf", address: "Gumpendorfer Straße 11, 1060 Wien", why: "مقهى فيينا أصيل من القرن 19، بطاولات بلياردو.", officialUrl: "https://www.cafesperl.at", dietaryTags: ["coffee", "dessert"], hoursSchedule: { ...days(MON_TO_SAT, ["07:00", "22:00"]), sunday: [{ open: "10:00", close: "20:00" }] }, sourceUrl: "https://www.cafesperl.at/", source: "cafesperl.at (official)" }),
+  food({ id: "demel", name: "Demel", categoryId: "cafes", area: "Innere Stadt (Kohlmarkt)", address: "Kohlmarkt 14, 1010 Wien", why: "حلواني البلاط الإمبراطوري، مشهور بالكيكات والـ Kaiserschmarrn.", officialUrl: "https://www.demel.com", dietaryTags: ["coffee", "dessert"], hoursSchedule: everyDay(["10:00", "19:00"]), sourceUrl: "https://www.demel.com/en/", source: "demel.com (official)" }),
+  food({ id: "cafe-prueckel", name: "Café Prückel", categoryId: "cafes", area: "Innere Stadt (Stubenring)", address: "Stubenring 24, 1010 Wien", why: "مقهى من الخمسينات مقابل Stadtpark.", officialUrl: "https://www.prueckel.at", dietaryTags: ["coffee", "dessert"], hoursSchedule: everyDay(["08:30", "22:00"]), sourceUrl: "https://www.prueckel.at/", source: "prueckel.at (official)" }),
+  // "From 9 a.m. until dusk" every day (gloriette-cafe.at): stored as 9:00-16:00, the shortest winter day, so it is never planned after it closes.
+  food({ id: "cafe-gloriette", name: "Café Gloriette", categoryId: "cafes", area: "Schönbrunn (Gloriette)", address: "Schlosspark Schönbrunn, 1130 Wien", why: "مقهى داخل مبنى Gloriette فوق حدائق Schönbrunn، بإطلالة على القصر والمدينة.", officialUrl: "https://www.gloriette-cafe.at", dietaryTags: ["coffee", "dessert"], hoursSchedule: everyDay(["09:00", "16:00"]), sourceUrl: "https://www.gloriette-cafe.at/", source: "gloriette-cafe.at (official)" }),
+  food({ id: "cafe-mozart", name: "Café Mozart", categoryId: "breakfast", area: "Innere Stadt (Albertinaplatz)", address: "Albertinaplatz 2, 1010 Wien", why: "مقهى كلاسيكي جنب الأوبرا وAlbertina، فطور لحد 11:30 ومنيو غدا بأيام الأسبوع.", officialUrl: "https://www.cafe-mozart.at", dietaryTags: ["coffee", "dessert", "pork-maybe"], hoursSchedule: everyDay(["08:00", "23:30"]), sourceUrl: "https://www.cafe-mozart.at/", source: "cafe-mozart.at (official)" }),
+  food({ id: "cafe-schwarzenberg", name: "Café Schwarzenberg", categoryId: "breakfast", area: "Innere Stadt (Kärntner Ring)", address: "Kärntner Ring 17, 1010 Wien", why: "مقهى فييني تاريخي على شارع Ring، بيفتح 7:30 (الويكند 8:30).", officialUrl: "https://www.cafe-schwarzenberg.at", dietaryTags: ["coffee", "dessert", "pork-maybe"], hoursSchedule: { ...days(["monday", "tuesday", "wednesday", "thursday", "friday"], ["07:30", "23:30"]), ...days(["saturday", "sunday"], ["08:30", "23:30"]) }, sourceUrl: "https://www.cafe-schwarzenberg.at/", source: "cafe-schwarzenberg.at (official)" }),
+  food({ id: "griechenbeisl", name: "Griechenbeisl", categoryId: "local", area: "Innere Stadt (Fleischmarkt)", address: "Fleischmarkt 11, 1010 Wien", why: "من أقدم مطاعم فيينا، مطبخ فييني تقليدي بقاعات تاريخية.", officialUrl: "https://www.griechenbeisl.at", dietaryTags: ["meat", "pork-maybe"], hoursSchedule: everyDay(["12:00", "23:00"]), sourceUrl: "https://www.griechenbeisl.at/", source: "griechenbeisl.at (official)" }),
+  food({ id: "zum-weissen-rauchfangkehrer", name: "Zum Weißen Rauchfangkehrer", categoryId: "local", area: "Innere Stadt (Weihburggasse)", address: "Weihburggasse 4, 1010 Wien", why: "مطبخ فييني كلاسيكي قرب الكاتدرائية (آخر طلب للمطبخ 21:45).", officialUrl: "https://www.weisser-rauchfangkehrer.at", dietaryTags: ["meat", "pork-maybe"], hoursSchedule: everyDay(["12:00", "00:00"]), sourceUrl: "https://www.weisser-rauchfangkehrer.at/", source: "weisser-rauchfangkehrer.at (official)" }),
+  food({ id: "gasthaus-poeschl", name: "Gasthaus Pöschl", categoryId: "local", area: "Innere Stadt (Franziskanerplatz)", address: "Weihburggasse 17, 1010 Wien", why: "مطعم فييني صغير بساحة Franziskanerplatz الهادية.", officialUrl: "https://www.gasthauspoeschl.at", dietaryTags: ["meat", "pork-maybe"], hoursSchedule: days(["monday", "tuesday", "wednesday", "thursday", "friday", "saturday"], ["12:00", "23:00"]), sourceUrl: "https://www.gasthauspoeschl.at/", source: "gasthauspoeschl.at (official)" }),
+  food({ id: "plachutta-hietzing", name: "Plachutta Hietzing", categoryId: "local", area: "Hietzing (near Schönbrunn)", address: "Auhofstraße 1, 1130 Wien", why: "مطبخ فييني (طبق Tafelspitz) قرب بوابة Schönbrunn الغربية.", officialUrl: "https://www.plachutta.at", dietaryTags: ["meat"], hoursSchedule: everyDay(["11:30", "23:00"]), sourceUrl: "https://www.plachutta.at/en/restaurant/hietzing/", source: "plachutta.at (official)" }),
+  food({ id: "figlmueller", name: "Figlmüller (Wollzeile)", categoryId: "local", area: "Innere Stadt (Wollzeile)", address: "Wollzeile 5, 1010 Wien", why: "من أشهر مطاعم الشنيتسل بفيينا، جنب الكاتدرائية.", officialUrl: "https://www.figlmueller.at", dietaryTags: ["meat", "pork-maybe"], hoursSchedule: everyDay(["11:00", "22:30"]), sourceUrl: "https://www.figlmueller.at/en/", source: "figlmueller.at (official)" }),
+  food({ id: "plachutta-wollzeile", name: "Plachutta Wollzeile", categoryId: "local", area: "Innere Stadt (Wollzeile)", address: "Wollzeile 38, 1010 Wien", why: "مشهور بطبق Tafelspitz (لحم بقر مسلوق) على الطريقة الفيينية.", officialUrl: "https://www.plachutta.at", dietaryTags: ["meat"], hoursSchedule: everyDay(["11:30", "23:30"]), sourceUrl: "https://www.plachutta.at/en/restaurant/wollzeile/", source: "plachutta.at (official)" }),
+  food({ id: "gmoakeller", name: "Gmoakeller", categoryId: "local", area: "Landstraße (Am Heumarkt)", address: "Am Heumarkt 25, 1030 Wien", why: "مطعم فييني تقليدي بقبو قديم قرب Stadtpark.", officialUrl: "https://www.gmoakeller.at", dietaryTags: ["meat", "pork-maybe"], hoursSchedule: days(MON_TO_SAT, ["11:00", "00:00"]), sourceUrl: "https://www.gmoakeller.at/", source: "gmoakeller.at (official)" }),
+  food({ id: "salm-braeu", name: "Salm Bräu", categoryId: "local", area: "Landstraße (Rennweg, by the Belvedere)", address: "Rennweg 8, 1030 Wien", why: "مطعم وبيت بيرة نمساوي جنب Belvedere السفلي.", officialUrl: "https://www.salmbraeu.com", dietaryTags: ["meat", "pork-maybe"], hoursSchedule: everyDay(["11:00", "23:00"]), sourceUrl: "https://www.salmbraeu.com/en/", source: "salmbraeu.com (official)" }),
+  food({ id: "glacis-beisl", name: "Glacis Beisl", categoryId: "local", area: "MuseumsQuartier", address: "Breite Gasse 4, 1070 Wien", why: "مطبخ فييني بحديقة هادية داخل MuseumsQuartier.", officialUrl: "https://www.glacisbeisl.at", dietaryTags: ["meat", "pork-maybe"], hoursSchedule: everyDay(["12:00", "00:00"]), sourceUrl: "https://www.glacisbeisl.at/", source: "glacisbeisl.at (official)" }),
+];
+
+// ── Shopping ────────────────────────────────────────────────────────────────────────────────────────
+export const VIENNA_SHOPPING_AREAS: ShoppingArea[] = [
+  { id: "kaerntner-strasse-graben", name: "Kärntner Straße & Graben", image: "", bestFor: "ماركات عالمية ومشي بالوسط", description: "شوارع المشاة الرئيسية بين الأوبرا والكاتدرائية.", ...maps("Graben Vienna"), address: "Graben, 1010 Wien", locationLabel: "نقطة مقترحة للبدء" },
+  { id: "mariahilfer-strasse", name: "Mariahilfer Straße", image: "", bestFor: "أطول شارع تسوق: ماركات وأسعار متنوعة", description: "أطول شارع تسوق بفيينا، من MuseumsQuartier لمحطة Westbahnhof.", ...maps("Mariahilfer Straße"), address: "Mariahilfer Straße, 1060/1070 Wien", locationLabel: "نقطة مقترحة للبدء" },
+];
+
+export const VIENNA_NIGHTLIFE_VENUES: NightlifeVenue[] = [];
+
+/** Everything the planner resolves for Vienna, in the CityPlaceData shape (see cityPlannerModule.ts). */
+export const VIENNA_PLACES: CityPlaceData = {
+  attractions: VIENNA_ATTRACTIONS,
+  experiences: VIENNA_EXPERIENCES,
+  areas: VIENNA_AREAS,
+  foodPlaces: VIENNA_FOOD_PLACES,
+  foodCategories: VIENNA_FOOD_CATEGORIES,
+  nightlifeVenues: VIENNA_NIGHTLIFE_VENUES,
+  shoppingAreas: VIENNA_SHOPPING_AREAS,
+};
+
+/** Coordinates for EVERY Vienna place id (attractions carry theirs above). Used only for transport estimates and accommodation proximity. */
+export const VIENNA_PLACE_COORDINATES: Record<string, { lat: number; lng: number }> = {
+  ...Object.fromEntries(VIENNA_ATTRACTIONS.filter((a) => a.coordinates).map((a) => [a.id, a.coordinates!])),
+  "state-opera-tour": { lat: 48.2032864, lng: 16.3691936 }, // OpenStreetMap (Opernring 2)
+  "spanish-riding-school": { lat: 48.2075, lng: 16.366111111 }, // Wikidata Q269273
+  "kaerntner-strasse-graben": { lat: 48.208613, lng: 16.369913 }, // Wikidata Q699937 (Graben)
+  "mariahilfer-strasse": { lat: 48.1986, lng: 16.3508 }, // Wikidata Q699930
+  "cafe-sacher": { lat: 48.2038758, lng: 16.3697886 },
+  "cafe-landtmann": { lat: 48.2115624, lng: 16.3614497 },
+  "cafe-museum": { lat: 48.2014374, lng: 16.3676655 },
+  "zum-schwarzen-kameel": { lat: 48.2099948, lng: 16.3683168 },
+  "cafe-sperl": { lat: 48.1998385, lng: 16.3611697 },
+  demel: { lat: 48.2086051, lng: 16.367211 },
+  "cafe-prueckel": { lat: 48.2076076, lng: 16.3804174 },
+  figlmueller: { lat: 48.2092134, lng: 16.3745366 },
+  "plachutta-wollzeile": { lat: 48.2075481, lng: 16.378755 },
+  gmoakeller: { lat: 48.2004312, lng: 16.3786228 },
+  "salm-braeu": { lat: 48.1964098, lng: 16.3812516 },
+  "glacis-beisl": { lat: 48.2032248, lng: 16.3571199 },
+  "cafe-gloriette": { lat: 48.17828, lng: 16.30869 }, // Gloriette (Wikidata Q873139)
+  "cafe-mozart": { lat: 48.2042453, lng: 16.3693357 },
+  "cafe-schwarzenberg": { lat: 48.2017548, lng: 16.373777 },
+  griechenbeisl: { lat: 48.2107463, lng: 16.3772648 },
+  "zum-weissen-rauchfangkehrer": { lat: 48.2069563, lng: 16.3724129 },
+  "gasthaus-poeschl": { lat: 48.2067084, lng: 16.3738873 },
+  "plachutta-hietzing": { lat: 48.1868131, lng: 16.2958 }, // map pin on plachutta.at
+};
