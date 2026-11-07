@@ -12,6 +12,7 @@ import { CHECKOUT_PERSONALIZED } from "../../lib/planner/planLinks";
 import { generateOwnerPlanAction } from "../../planner/actions";
 import PlanGeneratingScreen from "./PlanGeneratingScreen";
 import TextWithPrice from "../home/TextWithPrice";
+import { QUIZ_CHOICE_BASE, QUIZ_PRESS, quizChoiceClass, quizHaptic } from "./quizFeedback";
 import { PLAN_PRICE_ILS } from "../home/homeOffer";
 import type { V2PlannerInterest } from "../../lib/planner/v2PlannerTypes";
 import { PLANNER_DESTINATIONS, DEFAULT_PLANNER_DESTINATION_ID, isAvailablePlannerDestinationId, isPreviewPlannerDestinationId } from "../../lib/planner/plannerDestinations";
@@ -22,8 +23,8 @@ type DateMode = "flexible" | "specific";
 const DAY_OPTIONS = Array.from({ length: MAX_PERSONALIZED_PLAN_DAYS }, (_, i) => i + 1);
 type Step = 1 | 2 | 3 | 4;
 
-const choiceClass = (active: boolean) =>
-  active ? "border-teal-700 bg-teal-700 text-white" : "border-slate-200 bg-white text-slate-700 hover:border-slate-300";
+/** Selected / unselected look of every choice in the questionnaire (Rhyme-like: light fill, dark text, thin blue frame). */
+const choiceClass = (active: boolean) => `${QUIZ_CHOICE_BASE} ${quizChoiceClass(active)}`;
 
 /**
  * Personalized Plan -- the free questionnaire.
@@ -151,9 +152,7 @@ export default function PersonalizedPlanWizard({
             />
           ))}
         </div>
-        <p className="mt-2 text-xs font-bold text-slate-500">
-          {fillCopy(wizard.stepOf, { step, total: 4, label: wizard.stepLabels[step - 1] })}
-        </p>
+        <p className="mt-2 text-xs font-bold text-slate-500">{fillCopy(wizard.stepOf, { step, total: 4, label: wizard.stepLabels[step - 1] })}</p>
       </div>
 
       {step === 1 && (
@@ -169,8 +168,11 @@ export default function PersonalizedPlanWizard({
                   key={destination.id}
                   type="button"
                   aria-pressed={selected}
-                  onClick={() => setDestinationId(destination.id)}
-                  className={`flex items-center justify-between gap-2 rounded-xl border px-4 py-3.5 text-base font-bold transition-colors ${choiceClass(selected)}`}
+                  onClick={() => {
+                    if (destination.id !== destinationId) quizHaptic();
+                    setDestinationId(destination.id);
+                  }}
+                  className={`flex items-center justify-between gap-2 rounded-xl border px-4 py-3.5 text-base font-bold ${choiceClass(selected)}`}
                 >
                   <span>
                     {destination.flag} {name}
@@ -210,8 +212,11 @@ export default function PersonalizedPlanWizard({
                 key={option.key}
                 type="button"
                 aria-pressed={option.key === dateMode}
-                onClick={() => setDateMode(option.key)}
-                className={`rounded-2xl border px-3 py-3 text-sm font-bold transition-colors ${choiceClass(option.key === dateMode)}`}
+                onClick={() => {
+                  if (option.key !== dateMode) quizHaptic();
+                  setDateMode(option.key);
+                }}
+                className={`rounded-2xl border px-3 py-3 text-sm font-bold ${choiceClass(option.key === dateMode)}`}
               >
                 {option.label}
               </button>
@@ -227,8 +232,11 @@ export default function PersonalizedPlanWizard({
                     key={count}
                     type="button"
                     aria-pressed={count === durationDays}
-                    onClick={() => setDurationDays(count)}
-                    className={`rounded-xl border px-2 py-2.5 pointer-coarse:min-h-11 text-xs font-bold transition-colors ${choiceClass(count === durationDays)}`}
+                    onClick={() => {
+                      if (count !== durationDays) quizHaptic();
+                      setDurationDays(count);
+                    }}
+                    className={`rounded-xl border px-2 py-2.5 pointer-coarse:min-h-11 text-xs font-bold ${choiceClass(count === durationDays)}`}
                   >
                     {count} {count === 1 ? wizard.dayOne : wizard.dayMany}
                   </button>
@@ -279,11 +287,14 @@ export default function PersonalizedPlanWizard({
           destinationId={destinationId}
           selected={interests}
           onChange={(next) => {
+            // Toggling an interest always changes the selection (adds or removes it, and ends "Surprise me").
+            if (surpriseMe || next.length !== interests.length || next.some((key) => !interests.includes(key))) quizHaptic();
             setInterests(next);
             setSurpriseMe(false);
           }}
           surpriseMeActive={surpriseMe}
           onSurpriseMe={() => {
+            if (!surpriseMe) quizHaptic();
             setSurpriseMe(true);
             setInterests([]);
           }}
@@ -306,10 +317,11 @@ export default function PersonalizedPlanWizard({
                 type="button"
                 aria-pressed={option.value === accommodationStatus}
                 onClick={() => {
+                  if (option.value !== accommodationStatus) quizHaptic();
                   setAccommodationStatus(option.value);
                   if (option.value === "not_booked") setAccommodationText("");
                 }}
-                className={`rounded-2xl border px-2 py-4 text-sm font-bold transition-colors ${choiceClass(option.value === accommodationStatus)}`}
+                className={`rounded-2xl border px-2 py-4 text-sm font-bold ${choiceClass(option.value === accommodationStatus)}`}
               >
                 {option.label}
               </button>
@@ -352,7 +364,7 @@ export default function PersonalizedPlanWizard({
           <button
             type="button"
             onClick={() => setStep((s) => (s - 1) as Step)}
-            className="rounded-full border border-slate-200 bg-white px-5 py-3.5 text-sm font-bold text-slate-700 transition-colors hover:border-slate-300"
+            className={`rounded-full border border-slate-200 bg-white px-5 py-3.5 text-sm font-bold text-slate-700 hover:border-slate-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 ${QUIZ_PRESS}`}
           >
             {wizard.back}
           </button>
@@ -363,7 +375,7 @@ export default function PersonalizedPlanWizard({
             type="button"
             onClick={() => setStep((s) => (s + 1) as Step)}
             disabled={!stepValid[step]}
-            className="flex flex-1 items-center justify-center rounded-full bg-teal-700 px-5 py-3.5 text-base font-semibold text-white shadow-sm transition-colors hover:bg-teal-800 disabled:opacity-60"
+            className={`flex flex-1 items-center justify-center rounded-full bg-teal-700 px-5 py-3.5 text-base font-semibold text-white shadow-sm hover:bg-teal-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 disabled:opacity-60 disabled:active:scale-100 ${QUIZ_PRESS}`}
           >
             {wizard.next}
           </button>

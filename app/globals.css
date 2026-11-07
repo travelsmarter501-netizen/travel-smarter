@@ -207,11 +207,47 @@ body {
   }
 }
 
-@keyframes splashFadeOut {
-  0% {
-    opacity: 1;
+/*
+ * Homepage logo intro (components/home/HomeLogoIntro.tsx): only visible while <html data-home-intro> is set by its inline script (once per
+ * session, homepage, motion allowed). The mark holds for a beat, then rushes towards the viewer and fades while the white layer clears.
+ */
+.home-logo-intro {
+  display: none;
+}
+html[data-home-intro] .home-logo-intro {
+  display: flex;
+  animation: homeIntroLayer 650ms ease-out forwards;
+}
+html[data-home-intro] .home-logo-intro-mark {
+  animation: homeIntroMark 600ms cubic-bezier(0.55, 0, 0.85, 0.35) forwards;
+  will-change: transform, opacity;
+}
+@media (prefers-reduced-motion: reduce) {
+  .home-logo-intro {
+    display: none !important;
   }
-  60% {
+}
+@keyframes homeIntroMark {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  14% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  32% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(7);
+  }
+}
+@keyframes homeIntroLayer {
+  0%,
+  58% {
     opacity: 1;
   }
   100% {
@@ -220,13 +256,3 @@ body {
   }
 }
 
-@keyframes splashLogoIn {
-  0% {
-    opacity: 0;
-    transform: scale(0.92);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-}

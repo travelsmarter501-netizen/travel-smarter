@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import Container from "../Container";
 import HomeButton from "./HomeButton";
+import HomePhotoCredits from "./HomePhotoCredits";
 import BottomSheet from "../guide/BottomSheet";
 import LocationInfo from "../guide/LocationInfo";
 import SmartPlannerTransportConnector from "../smart-planner/SmartPlannerTransportConnector";
@@ -160,6 +161,7 @@ export default function HomeExample() {
                   })}
                 </div>
               </div>
+              <HomePhotoCredits className="mb-3" />
               <HomeButton href={START_PLAN_HREF} variant="secondary" className="mt-2 w-full">
                 {copy.start}
               </HomeButton>
