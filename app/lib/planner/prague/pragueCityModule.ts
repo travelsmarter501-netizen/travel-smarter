@@ -250,6 +250,8 @@ const FOOD_PLACE_CLUSTER: Record<string, string> = {
   "hostinec-na-vytoni": "riverside",
   "u-kroka": "vysehrad",
   "u-cedru": "bubenec",
+  "habibi-prague": "republiky", // Na Příkopě 23, 0.2 km from the náměstí Republiky cluster centre
+  "jaffa-restaurant": "republiky", // Panská 894/4, 0.3 km from the náměstí Republiky cluster centre; closes 21:00 (its own site), hours shown on the card
   "letensky-zamecek": "letna",
   "cafe-ornament": "troja",
   "bredovsky-dvur": "new-town",
@@ -270,7 +272,8 @@ const WARNINGS: Record<string, PlannerOperationalWarning[]> = {
   // tip (praguePlaces.ts) instead of showing on every plan.
   "jewish-museum": [{ textAr: "⚠️ مغلق كل سبت وبالأعياد اليهودية." }],
   "tyn-church": [{ textAr: "⚠️ الزيارة بفترتين قصيرتين (10:00–13:00 و15:00–17:00)، ومغلقة الاثنين، والأحد كمان من مارس لنوفمبر." }],
-  clementinum: [{ textAr: "الزيارة بجولة بموعد محدد؛ احجز موعدك قبل." }],
+  clementinum: [{ textAr: "⚠️ مشروطة بالحجز: الزيارة بجولة مرشدة بموعد محدد، ووقت الخطة تقريبي. احجز جولة قريبة منه ورتّب يومك حسبها." }],
+  "municipal-house": [{ textAr: "⚠️ مشروطة بالحجز: القاعات بجولة مرشدة (حوالي ساعة) ومواعيد الجولات مش منشورة بالمصدر، ووقت الخطة تقريبي. احجز جولة قريبة منه ورتّب يومك حسبها." }],
   "troja-chateau": [{ textAr: "⚠️ من نوفمبر لمارس المصدر الرسمي ما بيذكر مواعيد القصر؛ تأكد قبل الزيارة." }],
   "prague-zoo": [{ textAr: "المواعيد بتتغير حسب الشهر (بالشتاء لحد 16:00)." }],
 };

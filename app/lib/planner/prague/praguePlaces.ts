@@ -841,11 +841,21 @@ export const PRAGUE_FOOD_CATEGORIES: FoodCategory[] = [
   { id: "restaurants", icon: "🍴", label: "مطاعم" },
 ];
 
-type FoodInput = Omit<FoodPlace, "mapsUrl" | "appleMapsUrl" | "lastVerified" | "hours"> & { hoursSchedule: WeeklySchedule; sourceUrl: string };
+type FoodInput = Omit<FoodPlace, "mapsUrl" | "appleMapsUrl" | "lastVerified" | "hours"> & {
+  hoursSchedule: WeeklySchedule;
+  sourceUrl: string;
+  /** Source name when it is not prague.eu (e.g. the restaurant's own site), and the date it was read when later than VERIFIED. */
+  hoursSource?: string;
+  verifiedOn?: string;
+};
 
 function food(input: FoodInput): FoodPlace {
-  const { hoursSchedule, sourceUrl, ...rest } = input;
-  return { ...maps(input.name), lastVerified: VERIFIED, hours: fixed(hoursSchedule, sourceUrl), ...rest };
+  const { hoursSchedule, sourceUrl, hoursSource, verifiedOn, ...rest } = input;
+  const hours: HoursInfo =
+    hoursSource || verifiedOn
+      ? { type: "fixed", schedule: hoursSchedule, source: hoursSource ?? PRAGUE_EU, sourceUrl, lastVerified: verifiedOn ?? VERIFIED }
+      : fixed(hoursSchedule, sourceUrl);
+  return { ...maps(input.name), lastVerified: verifiedOn ?? VERIFIED, hours, ...rest };
 }
 
 const MON_TO_FRI: Weekday[] = ["monday", "tuesday", "wednesday", "thursday", "friday"];
@@ -871,6 +881,17 @@ export const PRAGUE_FOOD_PLACES: FoodPlace[] = [
   food({ id: "restaurant-obecni-dum", name: "Restaurant Obecní dům", categoryId: "local", area: "Staré Město (náměstí Republiky)", address: "náměstí Republiky 5, 110 00 Praha 1", why: "مطبخ تشيكي حديث داخل Municipal House.", officialUrl: "https://www.restauraceod.cz", dietaryTags: ["meat", "pork-maybe"], hoursSchedule: everyDay(["11:00", "15:00"], ["17:30", "23:00"]), sourceUrl: "https://prague.eu/en/objevujte/restaurant-obecni-dum/" }),
   food({ id: "hostinec-na-vytoni", name: "Hostinec Na Výtoni", categoryId: "local", area: "Nové Město (Výtoň, riverside)", address: "Rašínovo nábřeží 30, 128 00 Praha 2", why: "مطبخ تشيكي مع تركيز على البط المشوي على الفحم، على النهر قرب Vyšehrad.", officialUrl: "https://www.kachna.cz", dietaryTags: ["meat", "pork-maybe"], hoursSchedule: everyDay(["11:30", "23:00"]), sourceUrl: "https://prague.eu/en/objevujte/hostinec-na-vytoni/" }),
   food({ id: "u-kroka", name: "U Kroka", categoryId: "local", area: "Vyšehrad", address: "Vratislavova 12, 120 00 Praha 2", why: "مطعم تشيكي تحت قلعة Vyšehrad.", officialUrl: "https://www.ukroka.cz", dietaryTags: ["meat", "pork-maybe"], hoursSchedule: everyDay(["11:30", "23:00"]), sourceUrl: "https://prague.eu/en/objevujte/u-kroka-restaurant/" }),
+  // Added 2026-11-07 from the restaurants' own sites (not prague.eu). Halal: stated only as the restaurant states it, never as a certificate.
+  // Habibi (habibipraguecafe.cz): "100% halal certified meat", "100% non-alcoholic"; no certifying body is named. Hours on the site read
+  // Mon-Sun 11:00-02:00 in one place and "dinner till 1 AM" in another, so the stored window is the conservative 11:00-00:00.
+  food({ id: "habibi-prague", name: "Habibi Prague (Restaurant & Shisha Lounge)", categoryId: "middle-eastern", area: "Nové Město (Na Příkopě)", address: "Na Příkopě 23, 110 00 Praha 1 (Pánská pasáž)", why: "مطعم لبناني بشارع Na Příkopě التجاري. المطعم بيعلن على موقعه إن لحمه حلال 100% ومن غير كحول (الجهة المعتمدة مش مذكورة)، وفيه أرجيلة. الحجز بالتلفون.", officialUrl: "https://www.habibipraguecafe.cz/", phone: "+420 777 858 990", dietaryTags: ["meat"], hoursSchedule: everyDay(["11:00", "00:00"]), sourceUrl: "https://www.habibipraguecafe.cz/", hoursSource: "habibipraguecafe.cz (restaurant's own site)", verifiedOn: "2026-11-07" }),
+  // Jaffa (jaffa-restaurant.cz, its own ordering site): Panská 894/4, daily 11:00-21:00 for the ordering location (11:00-22:00 in another
+  // field of the same site; Tripadvisor / Wanderlog say 10:00-22:00), so 11:00-21:00 is stored. Halal: only 13 of 49 dishes carry the
+  // site's own "Halal" label (grilled lamb/beef 4/4, chicken 4/7, mix grill 2/4, specialities 3/7), no certificate is published, and
+  // Mustakshif lists it as not verified: so the restaurant is NOT classed halal, and the card says exactly that. It closes at 21:00
+  // (30 minutes before a 20:00-21:30 dinner slot ends): dated plans cap the window at the closing time, flexible-date plans cannot
+  // check it, and the card always shows the hours.
+  food({ id: "jaffa-restaurant", name: "Jaffa Restaurant", categoryId: "middle-eastern", area: "Nové Město (Panská)", address: "Panská 4 (Panská 894/4), 110 00 Praha 1", why: "مطعم عربي مشاوي (كباب وحمص وأسماك) قرب Na Příkopě. قائمته الرسمية بتعلّم 13 من 49 طبق «حلال» وبس، وما لقينا شهادة حلال للمطعم: اسأل عن مصدر اللحم قبل ما تروح.", officialUrl: "https://www.jaffa-restaurant.cz/", phone: "+420 720 262 202", dietaryTags: ["meat", "seafood"], hoursSchedule: everyDay(["11:00", "21:00"]), sourceUrl: "https://www.jaffa-restaurant.cz/", hoursSource: "jaffa-restaurant.cz (restaurant's own site)", verifiedOn: "2026-11-07" }),
   food({ id: "u-cedru", name: "U Cedru", categoryId: "middle-eastern", area: "Bubeneč", address: "Národní obrany 27, 160 00 Praha 6", why: "من أول المطاعم اللبنانية في براغ: مازات وأطباق لحم وسمك.", officialUrl: "https://www.ucedru.cz", dietaryTags: ["meat", "seafood"], hoursSchedule: everyDay(["11:00", "22:00"]), sourceUrl: "https://prague.eu/en/objevujte/u-cedru/" }),
   food({ id: "bredovsky-dvur", name: "Bredovský dvůr", categoryId: "local", area: "Nové Město", address: "Politických vězňů 13, 110 00 Praha 1", why: "مطبخ تشيكي تقليدي قرب ساحة فاتسلاف.", officialUrl: "https://www.restauracebredovskydvur.cz", dietaryTags: ["meat", "pork-maybe"], hoursSchedule: { ...days(["monday", "tuesday", "wednesday", "thursday", "friday", "saturday"], ["11:00", "00:00"]), sunday: [{ open: "11:00", close: "23:00" }] }, sourceUrl: "https://prague.eu/en/objevujte/bredovsky-dvur-restaurant/" }),
   food({ id: "u-pinkasu", name: "U Pinkasů", categoryId: "local", area: "Nové Město (Jungmannovo náměstí)", address: "Jungmannovo náměstí 16, 110 00 Praha 1", why: "أطباق تشيكية تقليدية بوصفات قديمة، جنب Franciscan Garden.", officialUrl: "https://www.upinkasu.cz", dietaryTags: ["meat", "pork-maybe"], hoursSchedule: everyDay(["10:00", "22:30"]), sourceUrl: "https://prague.eu/en/objevujte/u-pinkasu-restaurant/" }),
@@ -960,6 +981,9 @@ export const PRAGUE_PLACE_COORDINATES: Record<string, { lat: number; lng: number
   "hostinec-na-vytoni": { lat: 50.0678574, lng: 14.4153899 },
   "u-kroka": { lat: 50.0665822, lng: 14.4178374 },
   "u-cedru": { lat: 50.1003572, lng: 14.3981385 },
+  // Habibi: OpenStreetMap address node Na Příkopě 957/23; Jaffa: the coordinates on its own site (Panská 894/4).
+  "habibi-prague": { lat: 50.0859234, lng: 14.4258818 },
+  "jaffa-restaurant": { lat: 50.0846801, lng: 14.4264542 },
   "letensky-zamecek": { lat: 50.0963753, lng: 14.4255511 },
   "cafe-ornament": { lat: 50.119165788607, lng: 14.414755611436 },
   "bredovsky-dvur": { lat: 50.0824806, lng: 14.430021 },
