@@ -91,12 +91,14 @@ export const PRAGUE_ATTRACTIONS: Attraction[] = [
     priceType: "paid",
     bookingStatus: "مش ضروري عادةً",
     bestTime: "الصبح بدري",
-    tip: "ساحات القلعة مفتوحة 6:00–22:00 مجانًا؛ التذكرة للمباني التاريخية فقط (صالحة يومين).",
+    tip: "ساحات القلعة مفتوحة 6:00–22:00 مجانًا؛ التذكرة للمباني التاريخية فقط (صالحة يومين). المباني بتسكّر 16:00 من نوفمبر لمارس و17:00 من أبريل لأكتوبر.",
     officialUrl: "https://www.hrad.cz",
     mustSee: true,
     address: "Pražský hrad, 119 08 Praha 1 – Hradčany",
     priceText: "450 CZK (التذكرة الأساسية)",
-    hours: fixed(everyDay(["09:00", "17:00"]), "https://prague.eu/en/objevujte/prague-castle-prazsky-hrad/"),
+    // Historical buildings: 9:00–17:00 April–October, 9:00–16:00 November–March (hrad.cz winter season page, 2026-11-07;
+    // prague.eu shows 9:00–17:00 all year). Stored as the shorter window so a plan never schedules a visit after the winter closing.
+    hours: fixed(everyDay(["09:00", "16:00"]), "https://www.hrad.cz/en/prague-castle-for-visitors/opening-hours/winter-tourist-season-10349", "hrad.cz (official)"),
     coordinates: { lat: 50.0903447, lng: 14.3995402 },
   }),
   attraction({
@@ -110,11 +112,11 @@ export const PRAGUE_ATTRACTIONS: Attraction[] = [
     priceType: "paid",
     bookingStatus: "مش ضروري عادةً",
     bestTime: "قبل الظهر",
-    tip: "آخر دخول للمكتبة 16:30، والتذاكر لحد 16:15. مغلق 24 و25 ديسمبر.",
+    tip: "قاعات المكتبة بتتشاف من المدخل بدون دخول لجوّاها. آخر دخول 16:30، والتذاكر لحد 16:15. مغلق 24 و25 ديسمبر.",
     officialUrl: "https://www.strahovskyklaster.cz",
     mustSee: false,
     address: "Strahovské nádvoří 1/132, 118 00 Praha 1",
-    priceText: "390 CZK (دخول الدير حسب prague.eu)",
+    priceText: "220 CZK للمكتبة · 390 CZK للجولة المشتركة",
     hours: fixed(everyDay(["09:00", "17:00"]), "https://www.strahovskyklaster.cz/en/for-visitors/what-you-can-visit/strahov-library", "strahovskyklaster.cz (official)"),
     coordinates: { lat: 50.086150261346, lng: 14.389251465474 },
   }),
@@ -222,14 +224,14 @@ export const PRAGUE_ATTRACTIONS: Attraction[] = [
     priceType: "free",
     bookingStatus: "بدون حجز",
     bestTime: "قبل الظهر",
-    tip: "الزيارة غير ممكنة وقت القداس. تبرع مقترح 50 CZK.",
+    tip: "الزيارة غير ممكنة وقت القداس. تبرع مقترح 50 CZK. من ديسمبر لفبراير بتفتح كمان الأحد 10:30–12:00.",
     mustSee: false,
     address: "Staroměstské náměstí 604, 110 00 Praha 1",
-    hours: variable(
-      "ديسمبر–فبراير: الاثنين مغلق، الثلاثاء–السبت 10:00–13:00 و15:00–17:00، الأحد 10:30–12:00 · مارس–نوفمبر: الاثنين والأحد مغلق، الثلاثاء–السبت 10:00–13:00 و15:00–17:00",
-      "https://prague.eu/en/objevujte/church-of-our-lady-before-tyn-chram-matky-bozi-pred-tynem/",
-      ["monday"]
-    ),
+    // prague.eu: Dec–Feb Tue–Sat 10:00–13:00 & 15:00–17:00, Sun 10:30–12:00; Mar–Nov Tue–Sat the same, Sunday and Monday closed.
+    // Stored as the schedule common to every month (fixed, so the engine checks the time windows and never plans a Sunday
+    // visit in a closed month); the short winter Sunday opening is in the tip. Review 2026-11-07: as "variable" the engine
+    // planned it on a July Sunday at 09:00.
+    hours: fixed(days(["tuesday", "wednesday", "thursday", "friday", "saturday"], ["10:00", "13:00"], ["15:00", "17:00"]), "https://prague.eu/en/objevujte/church-of-our-lady-before-tyn-chram-matky-bozi-pred-tynem/"),
     coordinates: { lat: 50.087594106741, lng: 14.422563348549 },
   }),
   attraction({
@@ -401,7 +403,7 @@ export const PRAGUE_ATTRACTIONS: Attraction[] = [
     priceType: "paid",
     bookingStatus: "بدون حجز",
     bestTime: "قبل الغروب",
-    tip: "⚠️ مغلق من 7 لـ 14 نوفمبر 2026. في مصعد بسعر إضافي.",
+    tip: "في مصعد بسعر إضافي.",
     mustSee: false,
     address: "Petřínské sady 633, 118 00 Praha 1",
     priceText: "250 CZK",
