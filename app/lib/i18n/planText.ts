@@ -266,6 +266,8 @@ export const PLACE_CARD_TEXT = {
     copyAddress: "نسخ الموقع",
     copied: "تم نسخ العنوان ✓",
     close: "إغلاق",
+    photo: "صورة",
+    photoCredits: "حقوق الصور",
     tip: "Travel Smarter Tip",
     dressCode: "👕 Dress code",
     hours: {
@@ -317,6 +319,8 @@ export const PLACE_CARD_TEXT = {
     copyAddress: "Copy the address",
     copied: "Address copied ✓",
     close: "Close",
+    photo: "Photo",
+    photoCredits: "Photo credits",
     tip: "Travel Smarter Tip",
     dressCode: "👕 Dress code",
     hours: {
@@ -368,6 +372,8 @@ export const PLACE_CARD_TEXT = {
     copyAddress: "העתקת הכתובת",
     copied: "הכתובת הועתקה ✓",
     close: "סגירה",
+    photo: "צילום",
+    photoCredits: "קרדיטים לתמונות",
     tip: "Travel Smarter Tip",
     dressCode: "👕 קוד לבוש",
     hours: {

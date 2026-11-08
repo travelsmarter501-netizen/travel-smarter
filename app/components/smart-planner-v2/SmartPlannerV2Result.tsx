@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { interestGroupLabelForDestination, plannerDestinationName } from "../../lib/planner/plannerDestinations";
 import SmartPlannerV2Day from "./SmartPlannerV2Day";
+import { PlanPhotoCredits } from "../guide/PhotoCredit";
 import { v2DisplayInterestsLabel } from "../../lib/planner/v2PlannerTypes";
 import { formatArabicDayMonth } from "../../lib/planner/dateOnly";
 import { useLanguage } from "../../lib/language";
@@ -150,6 +151,8 @@ export default function SmartPlannerV2Result({
       </div>
 
       <div className="mt-4">{activeDay && <SmartPlannerV2Day day={activeDay} guideSlug={plan.destination} placeDetails={plan.placeDetails} lang={language} />}</div>
+
+      <PlanPhotoCredits places={plan.placeDetails} lang={language} />
     </div>
   );
 }

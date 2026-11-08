@@ -1,6 +1,7 @@
 import type { Area, Attraction, Experience, FoodCategory, FoodPlace, NightlifeVenue, ShoppingArea } from "../../guideTypes";
 import type { HoursDateException, HoursInfo, SeasonalSchedule, TimeRange, Weekday, WeeklySchedule } from "../../hours";
 import type { CityPlaceData } from "../cityPlannerModule";
+import { withPhoto } from "./praguePhotos";
 
 /**
  * Prague -- PLANNER place data (multi-city foundation, first new city). NOT a destination guide: nothing here is sold
@@ -14,8 +15,8 @@ import type { CityPlaceData } from "../cityPlannerModule";
  * - Letná Park and Riegrovy sady coordinates: Wikidata (Q3500624, Q12049439).
  * - Where the official page shows no hours, `hours` is omitted (never assumed); where hours change by month, the entry
  *   is `variable` with the official monthly text, so the engine never hard-excludes it on a guessed weekday.
- * - No images yet: image rights for Prague are not cleared, so `image` is "" (every planner card already handles a
- *   missing image). Price levels for restaurants are omitted: no verified source was checked for them.
+ * - Photos: only Wikimedia Commons files whose free license and author were checked (praguePhotos.ts, with the credit
+ *   shown next to the photo). A place without such a photo keeps `image: ""` (every planner card handles that). Price levels for restaurants are omitted: no verified source was checked for them.
  * - Restaurants: prague.eu does not mark any of them halal. Traditional Czech kitchens usually serve pork; that is
  *   stated through `dietaryTags: ["pork-maybe"]`, never hidden.
  */
@@ -1087,6 +1088,17 @@ function withPlanningHours<T extends { id: string; hours?: HoursInfo }>(items: T
 withPlanningHours(PRAGUE_ATTRACTIONS);
 withPlanningHours(PRAGUE_EXPERIENCES);
 withPlanningHours(PRAGUE_FOOD_PLACES);
+
+function addPhotos<T extends { id: string; image?: string }>(items: T[]): void {
+  items.forEach((item, i) => {
+    items[i] = withPhoto(item);
+  });
+}
+addPhotos(PRAGUE_ATTRACTIONS);
+addPhotos(PRAGUE_EXPERIENCES);
+addPhotos(PRAGUE_FOOD_PLACES);
+addPhotos(PRAGUE_SHOPPING_AREAS);
+addPhotos(PRAGUE_NIGHTLIFE_VENUES);
 
 export const PRAGUE_PLACES: CityPlaceData = {
   attractions: PRAGUE_ATTRACTIONS,

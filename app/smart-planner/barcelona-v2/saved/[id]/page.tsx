@@ -9,6 +9,7 @@ import IncludedGuideCard from "../../../../components/planner/IncludedGuideCard"
 import { destinationIncludesGuide } from "../../../../lib/planner/personalizedPlanAnswers";
 import { hasProductAccess } from "../../../../lib/entitlements";
 import { PRODUCT_SLUGS } from "../../../../lib/commerce/catalog";
+import { withCurrentPlacePhotos } from "../../../../lib/planner/planPhotos";
 
 /**
  * Smart Planner V2 Phase 5 -- saved-plan reopen route, separate from V1's
@@ -83,7 +84,7 @@ export default async function SavedSmartPlanV2Page(props: PageProps<"/smart-plan
         )}
         <div className="mt-4">
           <SmartPlannerV2Result
-            plan={validRow.generated_plan_json.plan}
+            plan={withCurrentPlacePhotos(validRow.generated_plan_json.plan)}
             interests={validRow.preferences_json.interests}
             accommodation={validRow.preferences_json.accommodation}
           />
