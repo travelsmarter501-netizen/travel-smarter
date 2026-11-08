@@ -16,6 +16,8 @@ import { applyNaturalClusterReclaim } from "./plannerNaturalClusterReclaim";
 import { applyTripCompositionPass } from "./plannerTripCompositionPass";
 import { preferAccommodationAnchoredStart } from "./plannerRouteOptimizer";
 import { resolvePlannerPlace } from "../readyPlan";
+import { resolvePlacesForTrip, tripDates } from "./tripHours";
+import { applyTimingGuard } from "./plannerTimingGuard";
 
 /**
  * Personalized Planner V2 -- the city-independent generation pipeline (multi-city foundation).
@@ -55,16 +57,21 @@ function isV2PlannerInterest(value: unknown): value is V2PlannerInterest {
 export const MAX_SUPPORTED_DAYS = 10;
 const MIN_SUPPORTED_DAYS = 1;
 
-export async function generateCityPlanV2(city: CityPlannerModule, input: GenerateCityPlanV2Input): Promise<GenerateCityPlanV2Result> {
+export async function generateCityPlanV2(baseCity: CityPlannerModule, input: GenerateCityPlanV2Input): Promise<GenerateCityPlanV2Result> {
   try {
     if (!input || typeof input !== "object") {
       return { ok: false, error: "طلب غير صالح." };
     }
 
-    if (input.destinationId !== city.id) {
+    if (input.destinationId !== baseCity.id) {
       return { ok: false, error: "الوجهة غير مدعومة في هذا الإصدار التجريبي." };
     }
 
+    // Seasonal hours / dated exceptions resolved for THIS trip's dates (cities that opt in; see tripHours.ts). Every other city
+    // keeps its place data object unchanged.
+    const datesOfTrip =
+      input.dateMode === "specific" && typeof input.arrivalDate === "string" && typeof input.departureDate === "string" ? tripDates(input.arrivalDate, input.departureDate) : null;
+    const city: CityPlannerModule = baseCity.resolveHoursPerTrip ? { ...baseCity, places: resolvePlacesForTrip(baseCity.places, datesOfTrip) } : baseCity;
     const getHours = hoursLookupForPlaces(city.places);
 
     if (input.dateMode !== "flexible" && input.dateMode !== "specific") {
@@ -387,25 +394,30 @@ let { plan: optimizedPlan, legsByDay: optimizedLegsByDay } = applyCrossDayOptimi
     if (!configForRequest.presentationResolver) {
       return { ok: false, error: "تعذّر تجهيز عرض الخطة." };
     }
-    const presentedPlan = configForRequest.presentationResolver(optimizedPlan, preferences);
 
     // Sellability audit: only true when accommodation text actually resolved to a real cluster
     // AND was used as a daily anchor -- matches generateTravelPlan's own real condition for
     // calling orderDaysByAccommodation (travelPlannerEngine.ts), never guessed independently.
     const accommodationOrderedTrip = !!(accommodation?.useAsDailyAnchor && accommodation.cluster);
 
-    const data = resolveV2Plan(
-      city,
-      days,
-      optimizedPlan,
-      optimizedLegsByDay,
-      presentedPlan,
-      arrivalDateForResolution,
-      v2Interests,
-      accommodationOrderedTrip,
-      surpriseMe,
-      accommodationResolutionFailed
-    );
+    const presentationResolver = configForRequest.presentationResolver;
+    const build = (plan: typeof optimizedPlan, legsByDay: typeof optimizedLegsByDay, mealExclusionsByDay?: Readonly<Record<number, readonly string[]>>) =>
+      resolveV2Plan(
+        city,
+        days,
+        plan,
+        legsByDay,
+        presentationResolver(plan, preferences),
+        arrivalDateForResolution,
+        v2Interests,
+        accommodationOrderedTrip,
+        surpriseMe,
+        accommodationResolutionFailed,
+        mealExclusionsByDay
+      );
+    let data = build(optimizedPlan, optimizedLegsByDay);
+    // Opening hours as a hard constraint on the final plan (cities that opt in; see plannerTimingGuard.ts).
+    if (city.timingGuard) data = applyTimingGuard({ city, plan: optimizedPlan, legsByDay: optimizedLegsByDay, data, build });
     return { ok: true, data };
   } catch {
     return { ok: false, error: "صار في خطأ غير متوقع. حاول مرة أخرى." };

@@ -94,6 +94,12 @@ export default function SmartPlannerTransportSheet({
           {ui.openApple}
           <IconExternalLink className="h-3.5 w-3.5 opacity-60" />
         </ExternalLink>
+        {leg.routeUrl && (
+          <ExternalLink href={leg.routeUrl} className="flex items-center justify-center gap-1 py-1 text-xs font-semibold text-teal-700 underline decoration-dotted underline-offset-2">
+            {ui.openRouteSource}
+            <IconExternalLink className="h-3 w-3 opacity-70" />
+          </ExternalLink>
+        )}
       </div>
 
       <p className="mt-3 text-center text-[11px] leading-5 text-slate-400">{ui.transportDisclaimer}</p>

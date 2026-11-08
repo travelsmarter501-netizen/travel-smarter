@@ -2,7 +2,7 @@ import "server-only";
 import { barcelonaGuide } from "../barcelona-guide";
 import { resolvePlace, summarizeResolvedPlace, type ResolvedPlaceSummary } from "../readyPlan";
 import { isPlaceClosedOnWeekday } from "./barcelonaV2DateEligibility";
-import { isLikelyOpenForMealType, type MealType } from "./barcelonaV2Timeline";
+import { findCoveringInterval, isLikelyOpenForMealType, MEAL_ASSUMED_DURATION_MINUTES, MEAL_TARGET_WINDOW, type MealType } from "./barcelonaV2Timeline";
 import { BARCELONA_CLUSTER_COMPATIBILITY } from "./barcelona-planner-day-builder";
 import type { FoodCategory, FoodPlace } from "../guideTypes";
 import type { ClusterCompatibilityMap } from "./plannerDayBuilder";
@@ -162,6 +162,8 @@ export type MealStopCityContext = {
   foodCategories: readonly FoodCategory[];
   clusterCompatibility: ClusterCompatibilityMap;
   rules: CityMealStopRules;
+  /** Cities with the timing guard: the WHOLE meal (from its representative time) must fit inside the opening hours. */
+  strictMealHours?: boolean;
 };
 
 const BARCELONA_MEAL_STOP_CONTEXT: MealStopCityContext = {
@@ -260,7 +262,13 @@ function pickBestForSlot(
     // skipped here -- see barcelonaV2Timeline.ts's own doc comment for why this is checked at
     // SELECTION time (so a genuinely-closed-then venue is never picked to begin with) using the
     // exact same representative time the Timeline Resolver later fits the displayed window to.
-    return isLikelyOpenForMealType(place.hours, weekday, mealType);
+    if (!isLikelyOpenForMealType(place.hours, weekday, mealType)) return false;
+    if (city.strictMealHours && weekday) {
+      const representative = MEAL_TARGET_WINDOW[mealType].representative;
+      const covering = findCoveringInterval(place.hours, weekday, representative);
+      if (covering && covering.close < representative + MEAL_ASSUMED_DURATION_MINUTES[mealType]) return false;
+    }
+    return true;
   });
   if (eligible.length === 0) return null;
 

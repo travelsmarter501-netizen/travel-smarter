@@ -92,6 +92,16 @@ export type CityPlannerModule = {
   secondaryCoverageGoals: (interests: readonly V2PlannerInterest[], days: number) => SecondaryCoverageGoal[];
   /** One leg between any two place ids (meal-adjacent legs); never invents data -- unknown pairs come back "unresolved" or "estimated". */
   routeLeg: (fromPlaceId: string, toPlaceId: string) => PlannerRouteLeg;
+  /**
+   * Optional: resolve seasonal schedules and dated exceptions for each trip before planning (tripHours.ts), so the engine
+   * checks opening / closing times of seasonal places too. Cities without structured seasons leave it unset (unchanged).
+   */
+  resolveHoursPerTrip?: boolean;
+  /**
+   * Optional: after the plan is built (meals included), re-order a day whose visits or meals would start before opening,
+   * run past closing or start after the last entry (plannerTimingGuard.ts). Unset = unchanged behaviour.
+   */
+  timingGuard?: boolean;
   /** One day's legs, used by the reclaim / cross-day / trip-composition passes when they test a changed day. Omit to use
    * Barcelona's checked route table (Barcelona omits it, so those passes behave exactly as before). */
   buildDayRouteLegs?: (day: PlannerDay) => PlannerRouteLeg[];

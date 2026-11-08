@@ -38,6 +38,8 @@ export type PlannerRouteLeg = {
   recommendedMode: TransportMode | null;
   options: TransportOption[];
   sourceStatus: RouteLegSourceStatus;
+  /** Optional: a link to the real route this leg's distance was taken from (e.g. an OpenStreetMap directions URL). */
+  routeUrl?: string;
 };
 
 /**

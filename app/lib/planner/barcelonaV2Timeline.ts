@@ -1,4 +1,4 @@
-import type { HoursInfo, Weekday } from "../hours";
+import { planningHoursOf, type HoursInfo, type Weekday } from "../hours";
 import type { PreferredTime } from "./plannerTypes";
 import type { PlannerRouteLeg } from "./plannerTransportTypes";
 
@@ -71,6 +71,8 @@ export type TimelineStopInput = {
   visitDurationMinutes: number;
   hours?: HoursInfo;
   preferredTime: PreferredTime;
+  /** Minutes to arrive before the visit starts (a guided tour at a set time); omitted = 0, as before. */
+  arrivalBufferMinutes?: number;
 };
 
 export type TimelineMealInput = {
@@ -187,7 +189,7 @@ export const FREE_TIME_GAP_THRESHOLD_MINUTES = 180;
  * attractions/experiences/shopping areas). Conservative, typical values, clearly isolated here
  * so they're never confused with verified data.
  */
-const MEAL_ASSUMED_DURATION_MINUTES: Record<MealType, number> = { breakfast: 45, lunch: 75, tapas: 90, dinner: 90 };
+export const MEAL_ASSUMED_DURATION_MINUTES: Record<MealType, number> = { breakfast: 45, lunch: 75, tapas: 90, dinner: 90 };
 
 /**
  * Preferred scheduling window per meal type -- `earliest`/`latest` are soft targets (the real
@@ -228,7 +230,9 @@ function intervalsEqual(a: { open: string; close: string }[] = [], b: { open: st
  * this only improves the STARTING TIME chosen, never the honesty label shown to the customer
  * (see this task's own section 14: a flexible plan's timing is always "قد تحتاج تعديل").
  */
-function resolveEffectiveWeekday(hours: HoursInfo | undefined, weekday: Weekday | null): Weekday | null {
+function resolveEffectiveWeekday(rawHours: HoursInfo | undefined, weekday: Weekday | null): Weekday | null {
+  // Seasonal places carry a per-trip planning schedule (hours.ts planningHoursOf); every other place is unchanged.
+  const hours = planningHoursOf(rawHours);
   if (weekday) return weekday;
   if (!hours || hours.type !== "fixed") return null;
   const [first, ...rest] = ALL_WEEKDAYS.map((day) => hours.schedule[day] ?? []);
@@ -243,7 +247,9 @@ function resolveEffectiveWeekday(hours: HoursInfo | undefined, weekday: Weekday 
  * verifiable", never as "closed"). See `resolveEffectiveWeekday` for the one safe flexible-mode
  * exception (a day-invariant fixed schedule).
  */
-export function findCoveringInterval(hours: HoursInfo | undefined, weekday: Weekday | null, minutes: number): { open: number; close: number } | null {
+export function findCoveringInterval(rawHours: HoursInfo | undefined, weekday: Weekday | null, minutes: number): { open: number; close: number } | null {
+  // Seasonal places carry a per-trip planning schedule (hours.ts planningHoursOf); every other place is unchanged.
+  const hours = planningHoursOf(rawHours);
   const effectiveWeekday = resolveEffectiveWeekday(hours, weekday);
   if (!hours || hours.type !== "fixed" || !effectiveWeekday) return null;
   const intervals = hours.schedule[effectiveWeekday] ?? [];
@@ -262,7 +268,9 @@ export function findCoveringInterval(hours: HoursInfo | undefined, weekday: Week
  * weekday unknown with a weekday-varying schedule, or every interval today already ended before
  * `minutes`).
  */
-export function findNextOpeningOnOrAfter(hours: HoursInfo | undefined, weekday: Weekday | null, minutes: number): number | null {
+export function findNextOpeningOnOrAfter(rawHours: HoursInfo | undefined, weekday: Weekday | null, minutes: number): number | null {
+  // Seasonal places carry a per-trip planning schedule (hours.ts planningHoursOf); every other place is unchanged.
+  const hours = planningHoursOf(rawHours);
   const effectiveWeekday = resolveEffectiveWeekday(hours, weekday);
   if (!hours || hours.type !== "fixed" || !effectiveWeekday) return null;
   const intervals = hours.schedule[effectiveWeekday] ?? [];
@@ -280,7 +288,9 @@ export function findNextOpeningOnOrAfter(hours: HoursInfo | undefined, weekday: 
  * exactly the same "absence of proof is not proof of closure" rule used everywhere else in this
  * project.
  */
-export function isLikelyOpenForMealType(hours: HoursInfo | undefined, weekday: Weekday | null, mealType: MealType): boolean {
+export function isLikelyOpenForMealType(rawHours: HoursInfo | undefined, weekday: Weekday | null, mealType: MealType): boolean {
+  // Seasonal places carry a per-trip planning schedule (hours.ts planningHoursOf); every other place is unchanged.
+  const hours = planningHoursOf(rawHours);
   if (!hours || hours.type !== "fixed" || !weekday) return true;
   return findCoveringInterval(hours, weekday, MEAL_TARGET_WINDOW[mealType].representative) !== null;
 }
@@ -293,7 +303,9 @@ export function isLikelyOpenForMealType(hours: HoursInfo | undefined, weekday: W
  * to cap a displayed window at the real end of the day's schedule instead of floating an
  * arbitrary, valid-looking clock time past real closing.
  */
-function findLastClosingMinutesForWeekday(hours: HoursInfo | undefined, weekday: Weekday | null): number | null {
+function findLastClosingMinutesForWeekday(rawHours: HoursInfo | undefined, weekday: Weekday | null): number | null {
+  // Seasonal places carry a per-trip planning schedule (hours.ts planningHoursOf); every other place is unchanged.
+  const hours = planningHoursOf(rawHours);
   const effectiveWeekday = resolveEffectiveWeekday(hours, weekday);
   if (!hours || hours.type !== "fixed" || !effectiveWeekday) return null;
   const intervals = hours.schedule[effectiveWeekday] ?? [];
@@ -332,7 +344,9 @@ function deriveDayStartMinutes(preferredTimes: PreferredTime[]): number {
  * {start, end, approximate} to use. `earliestStart` is the clock position the day has already
  * reached (never scheduled earlier than this). Shared by both main stops and meal placement.
  */
-function fitWindow(earliestStart: number, durationMinutes: number, hours: HoursInfo | undefined, weekday: Weekday | null): TimelineWindow {
+function fitWindow(earliestStart: number, durationMinutes: number, rawHours: HoursInfo | undefined, weekday: Weekday | null): TimelineWindow {
+  // Seasonal places carry a per-trip planning schedule (hours.ts planningHoursOf); every other place is unchanged.
+  const hours = planningHoursOf(rawHours);
   let start = roundUpToBoundary(earliestStart);
   // Customer-facing honesty flag: true whenever the real calendar weekday isn't known, even if
   // the hours math below still manages to use a day-invariant fixed schedule internally (see
@@ -452,7 +466,8 @@ export function buildBarcelonaDayTimeline(stops: TimelineStopInput[], legs: Plan
 
   stops.forEach((stop, index) => {
     const sunsetFloor = minimumStartForPreferredTime(stop.preferredTime, month);
-    const earliestStart = sunsetFloor !== null ? Math.max(clock, sunsetFloor) : clock;
+    const arrival = clock + (stop.arrivalBufferMinutes ?? 0);
+    const earliestStart = sunsetFloor !== null ? Math.max(arrival, sunsetFloor) : arrival;
     const window = fitWindow(earliestStart, stop.visitDurationMinutes, stop.hours, weekday);
     stopWindows.push({ placeId: stop.placeId, ...window });
     if (window.approximate) anyApproximate = true;

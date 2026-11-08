@@ -256,7 +256,9 @@ export function resolveV2Plan(
   v2Interests: V2PlannerInterest[],
   accommodationOrderedTrip: boolean,
   surpriseMe: boolean,
-  accommodationResolutionFailed = false
+  accommodationResolutionFailed = false,
+  /** Timing guard only: food places not to use as a meal on a given day number (they would run past closing). */
+  mealExclusionsByDay?: Readonly<Record<number, readonly string[]>>
 ): V2Plan {
   const daysGenerated = plan.days.length;
 
@@ -280,6 +282,7 @@ export function resolveV2Plan(
     foodCategories: city.places.foodCategories,
     clusterCompatibility: city.destinationConfig.dayBuilderConfig.clusterCompatibility,
     rules: city.mealStops,
+    ...(city.timingGuard ? { strictMealHours: true } : {}),
   };
 
   const days: V2Day[] = plan.days.map((day, index) => {
@@ -305,7 +308,11 @@ export function resolveV2Plan(
     // slot against the specific stops immediately before/after it, not "any cluster this day
     // happens to touch somewhere" (see that function's own doc comment for the detour it fixes).
     const stopClusters = day.stops.map((stop) => city.metadataById(stop.placeId)?.cluster ?? "");
+    // Timing guard: a food place excluded for this day is treated as used for this day's meal choice only.
+    const excludedToday = (mealExclusionsByDay?.[day.dayNumber] ?? []).filter((id) => !usedPlaceIds.has(id));
+    for (const id of excludedToday) usedPlaceIds.add(id);
     const mealStops = buildMealStopsForDay(mealStopCity, stopClusters, weekday ?? null, v2Interests, usedPlaceIds, usedFoodCategoryIds, surpriseMe);
+    for (const id of excludedToday) if (!mealStops.some((meal) => meal.id === id)) usedPlaceIds.delete(id);
     for (const meal of mealStops) {
       const resolved = resolvePlace(meal.id, "food", city.places);
       if (resolved) placeDetails[meal.id] = resolved;
@@ -362,6 +369,7 @@ export function resolveV2Plan(
       visitDurationMinutes: resolvedStops[i].visitDurationMinutes,
       hours: resolvedStops[i].hours,
       preferredTime: city.metadataById(stop.placeId)?.preferredTime ?? "anytime",
+      arrivalBufferMinutes: city.metadataById(stop.placeId)?.arrivalBufferMinutes,
     }));
     const timelineMeals: TimelineMealInput[] = mealStops.map((meal) => ({
       placeId: meal.id,

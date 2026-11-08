@@ -34,19 +34,49 @@ export type SeasonalPeriod = {
   display: string;
 };
 
+/**
+ * Structured planning data for a place whose hours change by season (multi-city planner; Barcelona entries do not use it).
+ * `from` / `to` are "MM-DD", inclusive, and may wrap the year end (e.g. 11-01 .. 03-31). The periods of one place must cover
+ * every day of the year without gaps.
+ */
+export type SeasonalSchedule = { from: string; to: string; schedule: WeeklySchedule; lastEntry?: string };
+
+/** A dated exception from the official source (closure or special hours), "YYYY-MM-DD", inclusive. */
+export type HoursDateException = { from: string; to: string; closed?: true; hours?: TimeRange[]; lastEntry?: string; note?: string };
+
 type HoursMeta = {
   /** Internal maintenance metadata — never rendered to the customer. */
   source?: string;
   sourceUrl?: string;
   lastVerified?: string;
+  /** Internal: where sources disagree, what each says and which value is stored. Never rendered. */
+  conflict?: string;
+  /** Planner: dated closures / special hours from the official source, applied only to trips that include those dates. */
+  dateExceptions?: HoursDateException[];
 };
 
 export type HoursInfo =
-  | ({ type: "fixed"; schedule: WeeklySchedule } & HoursMeta)
+  | ({
+      type: "fixed";
+      schedule: WeeklySchedule;
+      /** Planner: latest start of a visit ("HH:MM"), when the source publishes one. */
+      lastEntry?: string;
+      /** Planner, set per trip only: the schedule to plan against when it differs from `schedule` (see tripHours.ts). */
+      planningSchedule?: WeeklySchedule;
+    } & HoursMeta)
   | ({
       type: "variable";
       display: string;
       seasons?: SeasonalPeriod[];
+      /** Planner: the same hours as `display`, structured by season, so the engine can check opening and closing times. */
+      seasonalSchedules?: SeasonalSchedule[];
+      /**
+       * Planner, set per trip only (never stored in place data): the schedule that applies to THIS trip's dates (the
+       * narrowest window of the seasons the trip touches; every season for a plan without dates), with dated exceptions
+       * applied. The customer still sees `display`; the engine plans against this.
+       */
+      planningSchedule?: WeeklySchedule;
+      planningLastEntry?: string;
       /**
        * Operational Hours Integrity Audit: a narrow, OPTIONAL, purely additive escape hatch for
        * the specific case where a place's exact opening/closing TIMES genuinely vary (so it
@@ -130,4 +160,24 @@ export function isOpenNow(schedule: WeeklySchedule, timeZone: string = "Europe/M
   const today = schedule[now.weekday] ?? [];
   const yesterday = schedule[prevWeekday(now.weekday)] ?? [];
   return today.some((iv) => intervalCoversNow(iv, now.minutes, true)) || yesterday.some((iv) => intervalCoversNow(iv, now.minutes, false));
+}
+
+/**
+ * Planner: the hours the engine should plan against. A seasonal ("variable") place that carries a per-trip `planningSchedule`
+ * is planned as a fixed schedule (opening / closing / last entry checked); everything else is returned unchanged, so places
+ * without structured seasons (every Barcelona entry) behave exactly as before.
+ */
+export function planningHoursOf(hours: HoursInfo | undefined): HoursInfo | undefined {
+  if (hours && hours.type === "fixed" && hours.planningSchedule) return { ...hours, schedule: hours.planningSchedule };
+  if (hours && hours.type === "variable" && hours.planningSchedule) {
+    return {
+      type: "fixed",
+      schedule: hours.planningSchedule,
+      ...(hours.planningLastEntry ? { lastEntry: hours.planningLastEntry } : {}),
+      source: hours.source,
+      sourceUrl: hours.sourceUrl,
+      lastVerified: hours.lastVerified,
+    };
+  }
+  return hours;
 }

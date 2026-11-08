@@ -2,7 +2,7 @@ import "server-only";
 import { resolvePlannerPlace } from "../readyPlan";
 import { barcelonaGuide } from "../barcelona-guide";
 import { addDaysToIsoDate, weekdayOfIsoDate } from "./dateOnly";
-import type { HoursInfo, Weekday } from "../hours";
+import { planningHoursOf, type HoursInfo, type Weekday } from "../hours";
 
 /**
  * Smart Planner V2 -- Barcelona's specific-date closed-day eligibility resolver.
@@ -36,7 +36,9 @@ import type { HoursInfo, Weekday } from "../hours";
  * private/main-stop-specific, while the pure boolean rule itself is shared.
  */
 
-export function isPlaceClosedOnWeekday(hours: HoursInfo | undefined, weekday: Weekday): boolean {
+export function isPlaceClosedOnWeekday(rawHours: HoursInfo | undefined, weekday: Weekday): boolean {
+  // Seasonal places carry a per-trip planning schedule (hours.ts planningHoursOf); every other place is unchanged.
+  const hours = planningHoursOf(rawHours);
   if (!hours) return false;
   if (hours.type === "temporarily-closed") return true;
   // Operational Hours Integrity Audit: a `variable`-type place can still carry a verified,

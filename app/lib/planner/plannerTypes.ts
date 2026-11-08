@@ -44,6 +44,8 @@ export type PlannerPlaceMetadata = {
   preferredTime: PreferredTime;
   cluster: string;
   visitDurationMinutes: number;
+  /** Multi-city: minutes to arrive before a guided tour at a set time (Prague: Clementinum, Municipal House). Omitted = 0. */
+  arrivalBufferMinutes?: number;
 };
 
 /**
