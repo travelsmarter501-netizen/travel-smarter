@@ -49,11 +49,12 @@ export const PRAGUE_PLANNER_METADATA: PlannerPlaceMetadata[] = [
   place("old-town-square", "old-town", [10, 8, 3, 0, 1, 2], 10, "anytime", 30),
   place("old-town-hall", "old-town", [9, 8, 6, 0, 3, 0], 9, "daytime", 60),
   place("tyn-church", "old-town", [6, 7, 0, 0, 0, 0], 5, "morning", 20),
-  place("clementinum", "old-town", [7, 9, 6, 0, 1, 0], 8, "daytime", 60),
+  // Guided tours at set times: arrive 15 minutes before (our own planning margin; no official instruction found).
+  { ...place("clementinum", "old-town", [7, 9, 6, 0, 1, 0], 8, "daytime", 60), arrivalBufferMinutes: 15 },
   place("old-town-bridge-tower", "old-town", [5, 4, 8, 0, 2, 0], 6, "daytime/sunset", 30),
   place("havelske-market", "old-town", [5, 4, 0, 0, 0, 7], 5, "morning", 20),
   // náměstí Republiky
-  place("municipal-house", "republiky", [6, 8, 0, 0, 1, 2], 6, "afternoon", 60),
+  { ...place("municipal-house", "republiky", [6, 8, 0, 0, 1, 2], 6, "afternoon", 60), arrivalBufferMinutes: 15 },
   place("powder-tower", "republiky", [4, 4, 6, 0, 1, 0], 4, "daytime", 30),
   place("na-prikope", "republiky", [5, 1, 0, 0, 0, 9], 5, "anytime", 45),
   place("palladium", "republiky", [3, 0, 0, 0, 0, 9], 4, "anytime", 60),

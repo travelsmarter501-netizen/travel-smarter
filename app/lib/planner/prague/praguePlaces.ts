@@ -1,5 +1,5 @@
 import type { Area, Attraction, Experience, FoodCategory, FoodPlace, NightlifeVenue, ShoppingArea } from "../../guideTypes";
-import type { HoursInfo, TimeRange, Weekday, WeeklySchedule } from "../../hours";
+import type { HoursDateException, HoursInfo, SeasonalSchedule, TimeRange, Weekday, WeeklySchedule } from "../../hours";
 import type { CityPlaceData } from "../cityPlannerModule";
 
 /**
@@ -85,7 +85,7 @@ export const PRAGUE_ATTRACTIONS: Attraction[] = [
     name: "Prague Castle (Pražský hrad)",
     mapsQuery: "Prague Castle",
     description: "مجمع القلعة التاريخي، وفيه كاتدرائية St. Vitus والقصر الملكي القديم وGolden Lane.",
-    whyRecommend: "أهم معلم في براغ؛ التذكرة الأساسية بتغطي الكاتدرائية والقصر وGolden Lane.",
+    whyRecommend: "أهم معلم في براغ؛ تذكرة «الجولة الرئيسية» بتشمل كاتدرائية St. Vitus والقصر الملكي القديم وبازيليكا St. George وGolden Lane.",
     areaId: "hradcany",
     duration: "ساعتين ونص تقريبًا",
     priceType: "paid",
@@ -95,10 +95,10 @@ export const PRAGUE_ATTRACTIONS: Attraction[] = [
     officialUrl: "https://www.hrad.cz",
     mustSee: true,
     address: "Pražský hrad, 119 08 Praha 1 – Hradčany",
-    priceText: "450 CZK (التذكرة الأساسية)",
-    // Historical buildings: 9:00–17:00 April–October, 9:00–16:00 November–March (hrad.cz winter season page, 2026-11-07;
-    // prague.eu shows 9:00–17:00 all year). Stored as the shorter window so a plan never schedules a visit after the winter closing.
-    hours: fixed(everyDay(["09:00", "16:00"]), "https://www.hrad.cz/en/prague-castle-for-visitors/opening-hours/winter-tourist-season-10349", "hrad.cz (official)"),
+    priceText: "450 CZK (الجولة الرئيسية: 4 مباني؛ المعارض الدائمة بتذكرة منفصلة)",
+    // Historical buildings by season (structured in PLANNING_HOURS below): hrad.cz winter season 9:00–16:00 (Nov–Mar), 9:00–17:00
+    // April–October; prague.eu shows 9:00–17:00 all year (conflict noted there).
+    hours: variable("أبريل–أكتوبر 9:00–17:00 · نوفمبر–مارس 9:00–16:00 (كل الأيام) · مغلق 24 ديسمبر", "https://www.hrad.cz/en/prague-castle-for-visitors/opening-hours/winter-tourist-season-10349", undefined, "hrad.cz (official)"),
     coordinates: { lat: 50.0903447, lng: 14.3995402 },
   }),
   attraction({
@@ -170,7 +170,7 @@ export const PRAGUE_ATTRACTIONS: Attraction[] = [
     tip: "الدرج ضيق وطويل.",
     mustSee: false,
     address: "Karlův most, 110 00 Praha 1",
-    priceText: "250 CZK",
+    priceText: "250 CZK (أسعار جديدة من 1 مارس 2027)",
     hours: variable(
       "يناير–مارس 10:00–18:00 · أبريل–مايو 10:00–19:00 · يونيو–سبتمبر 9:00–20:30 · أكتوبر–نوفمبر 10:00–18:00 · ديسمبر 10:00–19:30 (كل الأيام)",
       "https://prague.eu/en/objevujte/old-town-bridge-tower-staromestska-mostecka-vez/"
@@ -224,14 +224,14 @@ export const PRAGUE_ATTRACTIONS: Attraction[] = [
     priceType: "free",
     bookingStatus: "بدون حجز",
     bestTime: "قبل الظهر",
-    tip: "الزيارة غير ممكنة وقت القداس. تبرع مقترح 50 CZK. من ديسمبر لفبراير بتفتح كمان الأحد 10:30–12:00.",
+    tip: "ما في زيارة وقت القداس: سبتمبر–يونيو الأربعاء والخميس 18:00، الجمعة 15:00، الأحد 9:30 و21:00؛ تموز وآب الاثنين–الجمعة 12:15. تبرع مقترح 50 CZK.",
     mustSee: false,
     address: "Staroměstské náměstí 604, 110 00 Praha 1",
     // prague.eu: Dec–Feb Tue–Sat 10:00–13:00 & 15:00–17:00, Sun 10:30–12:00; Mar–Nov Tue–Sat the same, Sunday and Monday closed.
     // Stored as the schedule common to every month (fixed, so the engine checks the time windows and never plans a Sunday
     // visit in a closed month); the short winter Sunday opening is in the tip. Review 2026-11-07: as "variable" the engine
     // planned it on a July Sunday at 09:00.
-    hours: fixed(days(["tuesday", "wednesday", "thursday", "friday", "saturday"], ["10:00", "13:00"], ["15:00", "17:00"]), "https://prague.eu/en/objevujte/church-of-our-lady-before-tyn-chram-matky-bozi-pred-tynem/"),
+    hours: variable("ديسمبر–فبراير: الاثنين مغلق، الثلاثاء–الخميس والسبت 10:00–13:00 و15:00–17:00، الجمعة 10:00–13:00 و15:30–17:00، الأحد 10:30–12:00 · مارس–نوفمبر: الاثنين والأحد مغلق، الثلاثاء–السبت 10:00–13:00 و15:00–17:00", "https://prague.eu/en/objevujte/church-of-our-lady-before-tyn-chram-matky-bozi-pred-tynem/", ["monday"]),
     coordinates: { lat: 50.087594106741, lng: 14.422563348549 },
   }),
   attraction({
@@ -245,11 +245,11 @@ export const PRAGUE_ATTRACTIONS: Attraction[] = [
     priceType: "paid",
     bookingStatus: "يفضل مسبقًا",
     bestTime: "أي وقت بالنهار",
-    tip: "الزيارة بجولات بمواعيد محددة؛ احجز موعد الجولة قبل.",
+    tip: "الزيارة بجولة مرشدة (حوالي 45 دقيقة، 25 شخص بالجولة). التذاكر أونلاين وبتنزل كل اثنين للأسبوع اللي بعد أسبوعين، والشراء من الشباك مش مضمون.",
     officialUrl: "https://www.prague.eu/klementinum",
     mustSee: false,
     address: "Mariánské náměstí 190/5, 110 00 Praha 1",
-    priceText: "380 CZK",
+    priceText: "380 CZK (أسعار جديدة من 1 مارس 2027)",
     hours: fixed(everyDay(["08:00", "21:00"]), "https://prague.eu/en/objevujte/the-clementinum-astronomical-tower-and-baroque-library/"),
     coordinates: { lat: 50.086666739281, lng: 14.416533584131 },
   }),
@@ -264,12 +264,13 @@ export const PRAGUE_ATTRACTIONS: Attraction[] = [
     priceType: "paid",
     bookingStatus: "يفضل مسبقًا",
     bestTime: "بعد الظهر",
-    tip: "الجولات حوالي ساعة؛ مواعيدها من شباك التذاكر (يوميًا 10:00–19:00).",
+    tip: "مواعيد الجولات بتنشر على obecnidum.cz/en/tours (عادة 2–5 جولات باليوم، أغلبها بالإنجليزي). التذاكر من شباك المبنى 10:00–19:00.",
     officialUrl: "https://www.obecnidum.cz",
     mustSee: false,
     address: "náměstí Republiky 5, 111 21 Praha 1",
     priceText: "320 CZK",
-    hours: fixed(everyDay(["10:00", "19:00"]), "https://prague.eu/en/objevujte/municipal-house-obecni-dum/"),
+    // 10:00–19:00 is the box office; the halls are only seen on guided tours at set times (structured in PLANNING_HOURS below).
+    hours: variable("القاعات بجولة مرشدة بمواعيد محددة (حوالي ساعة)، تقريبًا بين 11:00 و17:00 حسب جدول الجولات المنشور · شباك التذاكر يوميًا 10:00–19:00", "https://www.obecnidum.cz/en/tours/", undefined, "obecnidum.cz (official)"),
     coordinates: { lat: 50.087595264849, lng: 14.428034123279 },
   }),
   attraction({
@@ -286,7 +287,7 @@ export const PRAGUE_ATTRACTIONS: Attraction[] = [
     tip: "الأطفال تحت 15 سنة بيدخلوا مع شخص بالغ فقط.",
     mustSee: false,
     address: "Na Příkopě / náměstí Republiky 5, 110 00 Praha 1",
-    priceText: "200 CZK",
+    priceText: "200 CZK (أسعار جديدة من 1 مارس 2027)",
     hours: variable(
       "يناير–مارس 10:00–18:00 · أبريل–مايو 10:00–19:00 · يونيو–سبتمبر 9:00–20:30 · أكتوبر–نوفمبر 10:00–18:00 · ديسمبر 10:00–19:30 (كل الأيام)",
       "https://prague.eu/en/objevujte/powder-gate-tower-prasna-brana/"
@@ -403,10 +404,10 @@ export const PRAGUE_ATTRACTIONS: Attraction[] = [
     priceType: "paid",
     bookingStatus: "بدون حجز",
     bestTime: "قبل الغروب",
-    tip: "في مصعد بسعر إضافي.",
+    tip: "⚠️ مغلق من 7 لـ 14 نوفمبر 2026. في مصعد بسعر إضافي.",
     mustSee: false,
     address: "Petřínské sady 633, 118 00 Praha 1",
-    priceText: "250 CZK",
+    priceText: "250 CZK (أسعار جديدة من 1 مارس 2027)",
     hours: variable("يناير–مارس 10:00–18:00 · أبريل–سبتمبر 9:00–19:00 · أكتوبر 9:00–18:00 · نوفمبر–ديسمبر 10:00–18:00 (كل الأيام)", "https://prague.eu/en/objevujte/petrin-tower-petrinska-rozhledna/"),
     coordinates: { lat: 50.083543041143, lng: 14.395043251282 },
   }),
@@ -866,32 +867,32 @@ export const PRAGUE_FOOD_PLACES: FoodPlace[] = [
   food({ id: "cafe-savoy", name: "Café Savoy", categoryId: "breakfast", area: "Malá Strana", address: "Vítězná 5, 150 00 Praha 5", why: "مقهى ومطعم بديكور آرت نوفو، مشهور بالفطور والحلويات التشيكية.", officialUrl: "https://cafesavoy.ambi.cz", dietaryTags: ["coffee", "dessert", "pork-maybe"], hoursSchedule: { ...days(MON_TO_FRI, ["08:00", "22:00"]), ...days(WEEKEND, ["09:00", "22:00"]) }, sourceUrl: "https://prague.eu/en/objevujte/cafe-savoy/" }),
   food({ id: "cafe-imperial", name: "Café Imperial", categoryId: "breakfast", area: "Nové Město (Na Poříčí)", address: "Na Poříčí 15, 110 00 Praha 1", why: "فطور من 7:00 (مشهور بالـ Eggs Benedict) ومطبخ تشيكي حديث للغدا والعشا.", officialUrl: "https://www.cafeimperial.cz", dietaryTags: ["coffee", "meat", "pork-maybe"], hoursSchedule: everyDay(["07:00", "23:00"]), sourceUrl: "https://prague.eu/en/objevujte/cafe-imperial/" }),
   food({ id: "mansson-bakery", name: "Mansson Bakery", categoryId: "breakfast", area: "Josefov", address: "Bílkova 8, 110 00 Praha 1", why: "مخبز دنماركي: معجنات وفطور خفيف وسندويشات.", officialUrl: "https://www.mansson-bakery.com", dietaryTags: ["coffee", "dessert"], hoursSchedule: { ...days(MON_TO_FRI, ["07:00", "19:00"]), ...days(WEEKEND, ["08:00", "19:00"]) }, sourceUrl: "https://prague.eu/en/objevujte/mansson-bakery/" }),
-  food({ id: "kavarna-slavia", name: "Café Slavia", categoryId: "cafes", area: "Staré Město", address: "Národní 1 / Smetanovo nábřeží 2, 110 00 Praha 1", why: "مقهى تاريخي مقابل المسرح الوطني، بإطلالة على النهر والقلعة.", officialUrl: "https://www.cafeslavia.cz", dietaryTags: ["coffee", "dessert"], hoursSchedule: { ...days(MON_TO_FRI, ["10:00", "23:00"]), saturday: [{ open: "09:00", close: "23:00" }], sunday: [{ open: "09:00", close: "22:00" }] }, sourceUrl: "https://prague.eu/en/objevujte/kavarna-slavia/" }),
-  food({ id: "grand-cafe-orient", name: "Grand Café Orient", categoryId: "cafes", area: "Staré Město (Ovocný trh)", address: "Ovocný trh 19, 110 00 Praha 1", why: "مقهى بالبلدة القديمة، مشهور بحلوى věneček.", officialUrl: "https://www.grandcafeorient.cz", dietaryTags: ["coffee", "dessert"], hoursSchedule: { ...days(MON_TO_FRI, ["09:00", "22:00"]), ...days(WEEKEND, ["10:00", "22:00"]) }, sourceUrl: "https://prague.eu/en/objevujte/grand-cafe-orient/" }),
+  food({ id: "kavarna-slavia", name: "Café Slavia", categoryId: "cafes", area: "Staré Město", address: "Národní 1 / Smetanovo nábřeží 2, 110 00 Praha 1", why: "مقهى تاريخي مقابل المسرح الوطني، بإطلالة على النهر والقلعة.", officialUrl: "https://www.cafeslavia.cz", dietaryTags: ["coffee", "dessert"], hoursSchedule: { ...days([...MON_TO_FRI, "saturday"], ["09:00", "23:00"]), sunday: [{ open: "09:00", close: "22:00" }] }, sourceUrl: "https://www.cafeslavia.cz/", hoursSource: "cafeslavia.cz (official)", verifiedOn: "2026-11-08" }),
+  food({ id: "grand-cafe-orient", name: "Grand Café Orient", categoryId: "cafes", area: "Staré Město (Ovocný trh)", address: "Ovocný trh 19, 110 00 Praha 1", why: "مقهى بالبلدة القديمة، مشهور بحلوى věneček.", officialUrl: "https://www.grandcafeorient.cz", dietaryTags: ["coffee", "dessert"], hoursSchedule: { ...days(MON_TO_FRI, ["09:00", "21:00"]), ...days(WEEKEND, ["10:00", "21:00"]) }, sourceUrl: "https://www.grandcafeorient.cz/", hoursSource: "grandcafeorient.cz (official)", verifiedOn: "2026-11-08" }),
   food({ id: "kavarna-obecni-dum", name: "Kavárna Obecní dům", categoryId: "cafes", area: "Staré Město (náměstí Republiky)", address: "náměstí Republiky 5, 110 00 Praha 1", why: "مقهى داخل Municipal House بقاعة آرت نوفو وكيكات.", officialUrl: "https://www.kavarnaod.cz", dietaryTags: ["coffee", "dessert"], hoursSchedule: everyDay(["08:00", "23:00"]), sourceUrl: "https://prague.eu/en/objevujte/kavarna-obecni-dum/" }),
   food({ id: "lobkowicz-palace-cafe", name: "Lobkowicz Palace Café", categoryId: "cafes", area: "Hradčany (Prague Castle)", address: "Jiřská 1, 110 00 Praha 1", why: "داخل مجمع القلعة: شوربات وسلطات وسندويشات وحلويات بيتية.", officialUrl: "https://www.lobkowicz.cz/lobkowicz-palace-cafe", dietaryTags: ["coffee", "dessert", "vegetarian"], hoursSchedule: everyDay(["10:00", "18:00"]), sourceUrl: "https://prague.eu/en/objevujte/lobkowicz-palace-cafe-lobkowiczky-palac/" }),
   food({ id: "kavarna-novy-svet", name: "Kavárna Nový Svět", categoryId: "cafes", area: "Hradčany (Nový Svět)", address: "Nový Svět 2, 118 00 Praha 1", why: "مقهى صغير بشارع Nový Svět الهادي قرب Loreta.", dietaryTags: ["coffee"], hoursSchedule: { ...days(["tuesday", "wednesday", "thursday", "friday", "saturday"], ["10:00", "19:00"]), sunday: [{ open: "10:00", close: "18:00" }] }, sourceUrl: "https://prague.eu/en/objevujte/kavarna-novy-svet-new-world-cafe/" }),
   food({ id: "cafe-kupka", name: "Café Kupka", categoryId: "cafes", area: "Žižkov (Vítkov)", address: "U Památníku 1600/2, 130 00 Praha 3", why: "مقهى نصب Vítkov: قهوة وحلويات بيتية وسناكات، مع تراس بإطلالة.", dietaryTags: ["coffee", "dessert"], hoursSchedule: days(TUE_TO_SUN, ["10:00", "18:00"]), sourceUrl: "https://prague.eu/en/objevujte/cafe-kupka/" }),
   food({ id: "kavarna-lucerna", name: "Kavárna Lucerna", categoryId: "cafes", area: "Nové Město (Lucerna Palace)", address: "Vodičkova 36, 110 00 Praha 1", why: "مقهى تاريخي داخل ممر Lucerna قرب ساحة فاتسلاف.", officialUrl: "https://kavarna.lucerna.cz", dietaryTags: ["coffee", "dessert"], hoursSchedule: { ...days(MON_TO_FRI, ["11:00", "23:00"]), ...days(WEEKEND, ["12:00", "23:00"]) }, sourceUrl: "https://prague.eu/en/objevujte/kavarna-lucerna/" }),
   food({ id: "kuchyn", name: "Kuchyň", categoryId: "local", area: "Hradčany (Hradčanské náměstí)", address: "Hradčanské náměstí 1, 118 00 Praha 1", why: "مطبخ تشيكي تقليدي من وصفات قديمة، جنب بوابة القلعة.", officialUrl: "https://kuchyn.ambi.cz", dietaryTags: ["meat", "pork-maybe"], hoursSchedule: everyDay(["11:30", "23:00"]), sourceUrl: "https://prague.eu/en/objevujte/kitchen-kuchyn/" }),
-  food({ id: "mlynec", name: "Mlýnec", categoryId: "restaurants", area: "Staré Město (Charles Bridge)", address: "Novotného lávka 9, 110 00 Praha 1", why: "أطباق تشيكية بأسلوب حديث جنب Charles Bridge.", officialUrl: "https://www.mlynec.cz", dietaryTags: ["meat", "pork-maybe"], hoursSchedule: { ...days(MON_TO_FRI, ["11:30", "13:30"], ["17:00", "22:00"]), ...days(WEEKEND, ["11:30", "15:00"], ["17:30", "22:00"]) }, sourceUrl: "https://prague.eu/en/objevujte/mlynec/" }),
+  food({ id: "mlynec", name: "Mlýnec", categoryId: "restaurants", area: "Staré Město (Charles Bridge)", address: "Novotného lávka 9, 110 00 Praha 1", why: "أطباق تشيكية بأسلوب حديث جنب Charles Bridge.", officialUrl: "https://www.mlynec.cz", dietaryTags: ["meat", "pork-maybe"], hoursSchedule: { ...days(MON_TO_FRI, ["11:30", "15:00"], ["17:00", "22:00"]), ...days(WEEKEND, ["11:30", "15:00"], ["17:30", "22:00"]) }, sourceUrl: "https://www.mlynec.cz/en/", hoursSource: "mlynec.cz (official)", verifiedOn: "2026-11-08" }),
   food({ id: "u-modre-kachnicky-mala-strana", name: "U Modré kachničky (Malá Strana)", categoryId: "local", area: "Malá Strana", address: "Nebovidská 6, 118 00 Praha 1", why: "مطعم تشيكي متخصص بالبط والطرائد.", officialUrl: "https://www.umodrekachnicky.cz", dietaryTags: ["meat", "pork-maybe"], hoursSchedule: everyDay(["12:00", "23:00"]), sourceUrl: "https://prague.eu/en/objevujte/u-modre-kachnicky-i/" }),
   food({ id: "u-modre-kachnicky-old-town", name: "U Modré kachničky (Old Town)", categoryId: "local", area: "Staré Město", address: "Michalská 16, 110 00 Praha 1", why: "فرع البلدة القديمة: بط وطرائد ومطبخ تشيكي تقليدي.", officialUrl: "https://www.umodrekachnicky.cz", dietaryTags: ["meat", "pork-maybe"], hoursSchedule: everyDay(["11:30", "23:00"]), sourceUrl: "https://prague.eu/en/objevujte/u-modre-kachnicky-ii/" }),
-  food({ id: "petrinske-terasy", name: "Petřínské terasy", categoryId: "local", area: "Petřín", address: "Petřínské sady 393, 118 00 Praha 1", why: "مطعم على تلة Petřín بتراس مطل على المدينة.", officialUrl: "https://www.petrinsketerasy.cz", dietaryTags: ["meat", "pork-maybe"], hoursSchedule: { ...days(["tuesday", "wednesday", "thursday", "friday"], ["12:00", "22:00"]), saturday: [{ open: "11:00", close: "22:00" }], sunday: [{ open: "11:00", close: "21:00" }] }, sourceUrl: "https://prague.eu/en/objevujte/petrinske-terasy/" }),
-  food({ id: "restaurant-obecni-dum", name: "Restaurant Obecní dům", categoryId: "local", area: "Staré Město (náměstí Republiky)", address: "náměstí Republiky 5, 110 00 Praha 1", why: "مطبخ تشيكي حديث داخل Municipal House.", officialUrl: "https://www.restauraceod.cz", dietaryTags: ["meat", "pork-maybe"], hoursSchedule: everyDay(["11:00", "15:00"], ["17:30", "23:00"]), sourceUrl: "https://prague.eu/en/objevujte/restaurant-obecni-dum/" }),
+  food({ id: "petrinske-terasy", name: "Petřínské terasy", categoryId: "local", area: "Petřín", address: "Petřínské sady 393, 118 00 Praha 1", why: "مطعم على تلة Petřín بتراس مطل على المدينة.", officialUrl: "https://www.petrinsketerasy.cz", dietaryTags: ["meat", "pork-maybe"], hoursSchedule: { ...days(["tuesday", "wednesday", "thursday", "friday"], ["12:00", "22:00"]), saturday: [{ open: "11:00", close: "23:00" }], sunday: [{ open: "11:00", close: "21:00" }] }, sourceUrl: "https://www.petrinsketerasy.cz/", hoursSource: "petrinsketerasy.cz (official)", verifiedOn: "2026-11-08" }),
+  food({ id: "restaurant-obecni-dum", name: "Restaurant Obecní dům", categoryId: "local", area: "Staré Město (náměstí Republiky)", address: "náměstí Republiky 5, 110 00 Praha 1", why: "مطبخ تشيكي حديث داخل Municipal House.", officialUrl: "https://www.restauraceod.cz", dietaryTags: ["meat", "pork-maybe"], hoursSchedule: { ...days(MON_TO_FRI, ["11:30", "15:00"], ["17:30", "23:00"]), ...days(WEEKEND, ["17:30", "23:00"]) }, sourceUrl: "https://www.restauraceod.cz/", hoursSource: "restauraceod.cz (official)", verifiedOn: "2026-11-08" }),
   food({ id: "hostinec-na-vytoni", name: "Hostinec Na Výtoni", categoryId: "local", area: "Nové Město (Výtoň, riverside)", address: "Rašínovo nábřeží 30, 128 00 Praha 2", why: "مطبخ تشيكي مع تركيز على البط المشوي على الفحم، على النهر قرب Vyšehrad.", officialUrl: "https://www.kachna.cz", dietaryTags: ["meat", "pork-maybe"], hoursSchedule: everyDay(["11:30", "23:00"]), sourceUrl: "https://prague.eu/en/objevujte/hostinec-na-vytoni/" }),
-  food({ id: "u-kroka", name: "U Kroka", categoryId: "local", area: "Vyšehrad", address: "Vratislavova 12, 120 00 Praha 2", why: "مطعم تشيكي تحت قلعة Vyšehrad.", officialUrl: "https://www.ukroka.cz", dietaryTags: ["meat", "pork-maybe"], hoursSchedule: everyDay(["11:30", "23:00"]), sourceUrl: "https://prague.eu/en/objevujte/u-kroka-restaurant/" }),
+  food({ id: "u-kroka", name: "U Kroka", categoryId: "local", area: "Vyšehrad", address: "Vratislavova 28, 128 00 Praha 2", why: "مطعم تشيكي تحت قلعة Vyšehrad.", officialUrl: "https://www.ukroka.cz", dietaryTags: ["meat", "pork-maybe"], hoursSchedule: everyDay(["11:30", "16:00"], ["17:00", "23:00"]), sourceUrl: "https://www.ukroka.cz/", hoursSource: "ukroka.cz (official; kitchen hours)", verifiedOn: "2026-11-08" }),
   // Added 2026-11-07 from the restaurants' own sites (not prague.eu). Halal: stated only as the restaurant states it, never as a certificate.
   // Habibi (habibipraguecafe.cz): "100% halal certified meat", "100% non-alcoholic"; no certifying body is named. Hours on the site read
   // Mon-Sun 11:00-02:00 in one place and "dinner till 1 AM" in another, so the stored window is the conservative 11:00-00:00.
-  food({ id: "habibi-prague", name: "Habibi Prague (Restaurant & Shisha Lounge)", categoryId: "middle-eastern", area: "Nové Město (Na Příkopě)", address: "Na Příkopě 23, 110 00 Praha 1 (Pánská pasáž)", why: "مطعم لبناني بشارع Na Příkopě التجاري. المطعم بيعلن على موقعه إن لحمه حلال 100% ومن غير كحول (الجهة المعتمدة مش مذكورة)، وفيه أرجيلة. الحجز بالتلفون.", officialUrl: "https://www.habibipraguecafe.cz/", phone: "+420 777 858 990", dietaryTags: ["meat"], hoursSchedule: everyDay(["11:00", "00:00"]), sourceUrl: "https://www.habibipraguecafe.cz/", hoursSource: "habibipraguecafe.cz (restaurant's own site)", verifiedOn: "2026-11-07" }),
+  food({ id: "habibi-prague", name: "Habibi Prague (Restaurant & Shisha Lounge)", categoryId: "middle-eastern", area: "Nové Město (Na Příkopě)", address: "Na Příkopě 23, 110 00 Praha 1 (Pánská pasáž)", why: "مطعم لبناني بممر Pánská pasáž (Na Příkopě 23)، على اليمين تحت الدرج مباشرة (مش Bistro Habibi اللي بـVyšehrad). المطعم بيعلن على موقعه إن لحمه حلال 100% ومن غير كحول (الجهة المعتمدة مش مذكورة)، وفيه أرجيلة. الحجز: +420 608 685 444.", officialUrl: "https://www.habibipraguecafe.cz/", phone: "+420 777 858 990", dietaryTags: ["meat"], hoursSchedule: everyDay(["11:00", "02:00"]), sourceUrl: "https://www.habibipraguecafe.cz/home", hoursSource: "habibipraguecafe.cz (restaurant's own site)", verifiedOn: "2026-11-08" }),
   // Jaffa (jaffa-restaurant.cz, its own ordering site): Panská 894/4, daily 11:00-21:00 for the ordering location (11:00-22:00 in another
   // field of the same site; Tripadvisor / Wanderlog say 10:00-22:00), so 11:00-21:00 is stored. Halal: only 13 of 49 dishes carry the
   // site's own "Halal" label (grilled lamb/beef 4/4, chicken 4/7, mix grill 2/4, specialities 3/7), no certificate is published, and
   // Mustakshif lists it as not verified: so the restaurant is NOT classed halal, and the card says exactly that. It closes at 21:00
   // (30 minutes before a 20:00-21:30 dinner slot ends): dated plans cap the window at the closing time, flexible-date plans cannot
   // check it, and the card always shows the hours.
-  food({ id: "jaffa-restaurant", name: "Jaffa Restaurant", categoryId: "middle-eastern", area: "Nové Město (Panská)", address: "Panská 4 (Panská 894/4), 110 00 Praha 1", why: "مطعم عربي مشاوي (كباب وحمص وأسماك) قرب Na Příkopě. قائمته الرسمية بتعلّم 13 من 49 طبق «حلال» وبس، وما لقينا شهادة حلال للمطعم: اسأل عن مصدر اللحم قبل ما تروح.", officialUrl: "https://www.jaffa-restaurant.cz/", phone: "+420 720 262 202", dietaryTags: ["meat", "seafood"], hoursSchedule: everyDay(["11:00", "21:00"]), sourceUrl: "https://www.jaffa-restaurant.cz/", hoursSource: "jaffa-restaurant.cz (restaurant's own site)", verifiedOn: "2026-11-07" }),
+  food({ id: "jaffa-restaurant", name: "Jaffa Restaurant", categoryId: "middle-eastern", area: "Nové Město (Panská)", address: "Panská 4 (Panská 894/4), 110 00 Praha 1", why: "مطعم عربي مشاوي (كباب وحمص وأسماك) بآخر الطابق الأرضي لمركز Černá růže قرب Na Příkopě. قائمته الرسمية بتعلّم 13 من 49 طبق «حلال» وبس، وما لقينا شهادة حلال للمطعم: اسأل عن مصدر اللحم. آخر طلب من المطبخ مش منشور، فللعشا المتأخر اتصل قبل.", officialUrl: "https://www.jaffa-restaurant.cz/", phone: "+420 720 262 202", dietaryTags: ["meat", "seafood"], hoursSchedule: everyDay(["11:00", "22:00"]), sourceUrl: "https://www.jaffa-restaurant.cz/", hoursSource: "jaffa-restaurant.cz (restaurant's own site)", verifiedOn: "2026-11-08" }),
   food({ id: "u-cedru", name: "U Cedru", categoryId: "middle-eastern", area: "Bubeneč", address: "Národní obrany 27, 160 00 Praha 6", why: "من أول المطاعم اللبنانية في براغ: مازات وأطباق لحم وسمك.", officialUrl: "https://www.ucedru.cz", dietaryTags: ["meat", "seafood"], hoursSchedule: everyDay(["11:00", "22:00"]), sourceUrl: "https://prague.eu/en/objevujte/u-cedru/" }),
   food({ id: "bredovsky-dvur", name: "Bredovský dvůr", categoryId: "local", area: "Nové Město", address: "Politických vězňů 13, 110 00 Praha 1", why: "مطبخ تشيكي تقليدي قرب ساحة فاتسلاف.", officialUrl: "https://www.restauracebredovskydvur.cz", dietaryTags: ["meat", "pork-maybe"], hoursSchedule: { ...days(["monday", "tuesday", "wednesday", "thursday", "friday", "saturday"], ["11:00", "00:00"]), sunday: [{ open: "11:00", close: "23:00" }] }, sourceUrl: "https://prague.eu/en/objevujte/bredovsky-dvur-restaurant/" }),
   food({ id: "u-pinkasu", name: "U Pinkasů", categoryId: "local", area: "Nové Město (Jungmannovo náměstí)", address: "Jungmannovo náměstí 16, 110 00 Praha 1", why: "أطباق تشيكية تقليدية بوصفات قديمة، جنب Franciscan Garden.", officialUrl: "https://www.upinkasu.cz", dietaryTags: ["meat", "pork-maybe"], hoursSchedule: everyDay(["10:00", "22:30"]), sourceUrl: "https://prague.eu/en/objevujte/u-pinkasu-restaurant/" }),
@@ -940,6 +941,153 @@ export const PRAGUE_NIGHTLIFE_VENUES: NightlifeVenue[] = [
 ];
 
 /** Everything the planner resolves for Prague, in the CityPlaceData shape (see cityPlannerModule.ts). */
+// ── Planning hours: structured seasons, dated exceptions, last entry and source conflicts ─────────────────────────────
+// Customers keep seeing each place's own text; the planner (tripHours.ts) resolves these per trip. Re-checked against each
+// official source on 2026-11-08 (after the Perplexity audit of 2026-11-07); "conflict" records where sources disagree.
+type PlanningHours = { seasonalSchedules?: SeasonalSchedule[]; dateExceptions?: HoursDateException[]; lastEntry?: string; conflict?: string };
+const R = (open: string, close: string): TimeRange[] => [{ open, close }];
+const season = (from: string, to: string, schedule: WeeklySchedule, lastEntry?: string): SeasonalSchedule => ({ from, to, schedule, ...(lastEntry ? { lastEntry } : {}) });
+const TOWERS: SeasonalSchedule[] = [
+  season("01-01", "03-31", everyDay(["10:00", "18:00"])),
+  season("04-01", "05-31", everyDay(["10:00", "19:00"])),
+  season("06-01", "09-30", everyDay(["09:00", "20:30"])),
+  season("10-01", "11-30", everyDay(["10:00", "18:00"])),
+  season("12-01", "12-31", everyDay(["10:00", "19:30"])),
+];
+const SUN_TO_FRI: Weekday[] = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday"];
+const TYN_MAR_JUN_SEP_NOV: WeeklySchedule = { ...days(["tuesday", "wednesday", "thursday", "saturday"], ["10:00", "13:00"], ["15:00", "17:00"]), friday: R("10:00", "13:00") };
+
+const PLANNING_HOURS: Record<string, PlanningHours> = {
+  "prague-castle": {
+    seasonalSchedules: [season("04-01", "10-31", everyDay(["09:00", "17:00"])), season("11-01", "03-31", everyDay(["09:00", "16:00"]))],
+    dateExceptions: [
+      { from: "2026-11-16", to: "2026-11-16", hours: R("09:00", "16:00"), lastEntry: "15:40", note: "St. Vitus Cathedral limited opening for liturgical reasons (hrad.cz/tickets notice)" },
+      { from: "2026-12-24", to: "2026-12-24", closed: true, note: "historical buildings closed on 24 December (prague.eu); the castle complex stays open" },
+    ],
+    conflict: "prague.eu: buildings 9:00-17:00 all year; hrad.cz winter-season page: 9:00-16:00 Nov-Mar (stored by season). The 15:40 last entry is a one-day cathedral notice for 16 Nov 2026, not a winter rule. Price list 1.3.2024: Main circuit 450 CZK = Old Royal Palace, St. George's Basilica, Golden Lane, St. Vitus Cathedral; the permanent exhibitions are a separate 300 CZK ticket (the audit said they were included).",
+  },
+  "strahov-monastery": {
+    lastEntry: "16:30",
+    dateExceptions: [
+      { from: "2026-12-24", to: "2026-12-25", closed: true },
+      { from: "2026-12-31", to: "2026-12-31", hours: R("09:00", "12:00") },
+      { from: "2027-01-01", to: "2027-01-01", hours: R("12:00", "17:00") },
+      { from: "2027-03-28", to: "2027-03-28", closed: true, note: "Easter Sunday" },
+    ],
+    conflict: "strahovskyklaster.cz lists the New Year's Day hours under '1 Jan 2026' next to the December 2026 dates (read as 1 Jan 2027).",
+  },
+  "tyn-church": {
+    seasonalSchedules: [
+      season("12-01", "02-29", { ...days(["tuesday", "wednesday", "thursday", "saturday"], ["10:00", "13:00"], ["15:00", "17:00"]), friday: [{ open: "10:00", close: "13:00" }, { open: "15:30", close: "17:00" }], sunday: R("10:30", "12:00") }),
+      season("03-01", "06-30", TYN_MAR_JUN_SEP_NOV),
+      season("07-01", "08-31", { ...days(["tuesday", "wednesday", "thursday", "friday"], ["10:00", "12:15"], ["15:00", "17:00"]), saturday: [{ open: "10:00", close: "13:00" }, { open: "15:00", close: "17:00" }] }),
+      season("09-01", "11-30", TYN_MAR_JUN_SEP_NOV),
+    ],
+    conflict: "prague.eu opening hours include Friday 15:00-17:00 (Mar-Nov) and weekday mornings to 13:00 (Jul-Aug), but masses are held then (Friday 15:00 Sep-Jun; Mon-Fri 12:15 Jul-Aug) and sightseeing is not possible during mass; mass length is not published, so those windows are left out of planning.",
+  },
+  clementinum: {
+    dateExceptions: [
+      { from: "2026-12-24", to: "2026-12-24", hours: R("08:00", "15:00") },
+      { from: "2026-12-25", to: "2026-12-25", hours: R("11:00", "21:00") },
+      { from: "2026-12-31", to: "2026-12-31", hours: R("08:00", "16:00") },
+      { from: "2027-01-01", to: "2027-01-01", hours: R("11:00", "21:00") },
+    ],
+    conflict: "prague.eu gives no last-tour time and no arrival instruction; the audit's '18:00 last tour' (read from the booking calendar) and 'arrive 10 minutes early' are unconfirmed. The planner adds its own 15-minute arrival margin.",
+  },
+  "municipal-house": {
+    seasonalSchedules: [season("01-01", "12-31", everyDay(["11:00", "18:00"]), "17:00")],
+    conflict: "Stored before as 10:00-19:00 (prague.eu): that is the box office. obecnidum.cz/en/tours lists guided tours (about 1 h) at set times, 8-21 Nov 2026 between 11:00 and 17:00 (e.g. 20 Nov 13:00, 15:00, 16:00 EN; 13:30 FR; 17:00), published a few weeks ahead. Planning window 11:00-18:00, last start 17:00; the visit stays 'subject to booking'.",
+  },
+  "old-town-bridge-tower": { seasonalSchedules: TOWERS },
+  "powder-tower": { seasonalSchedules: TOWERS },
+  "old-town-hall": { seasonalSchedules: [season("01-01", "03-31", everyDay(["10:00", "19:00"])), season("04-01", "12-31", everyDay(["09:00", "20:00"]))] },
+  "jewish-museum": {
+    seasonalSchedules: [
+      season("01-01", "03-31", days(SUN_TO_FRI, ["09:00", "16:30"])),
+      season("04-01", "04-30", days(SUN_TO_FRI, ["09:00", "18:00"])),
+      season("05-01", "08-31", days(SUN_TO_FRI, ["09:00", "19:00"])),
+      season("09-01", "10-17", days(SUN_TO_FRI, ["09:00", "18:00"])),
+      season("10-18", "12-31", days(SUN_TO_FRI, ["09:00", "16:30"])),
+    ],
+  },
+  "st-nicholas-mala-strana": {
+    seasonalSchedules: [
+      season("01-01", "01-31", everyDay(["09:00", "16:00"])),
+      season("02-01", "03-31", everyDay(["09:00", "17:00"])),
+      // "April–October mostly 9:00–18:00 (Friday and sometimes Saturday until 17:00)": Friday and Saturday planned to 17:00.
+      season("04-01", "10-31", { ...days(["sunday", "monday", "tuesday", "wednesday", "thursday"], ["09:00", "18:00"]), ...days(["friday", "saturday"], ["09:00", "17:00"]) }),
+      season("11-01", "11-30", everyDay(["09:00", "17:00"])),
+      season("12-01", "12-31", { ...days(["sunday", "monday", "tuesday", "wednesday", "thursday"], ["09:00", "17:00"]), ...days(["friday", "saturday"], ["09:00", "16:00"]) }),
+    ],
+  },
+  "petrin-tower": {
+    seasonalSchedules: [
+      season("01-01", "03-31", everyDay(["10:00", "18:00"])),
+      season("04-01", "09-30", everyDay(["09:00", "19:00"])),
+      season("10-01", "10-31", everyDay(["09:00", "18:00"])),
+      season("11-01", "12-31", everyDay(["10:00", "18:00"])),
+    ],
+    dateExceptions: [{ from: "2026-11-07", to: "2026-11-14", closed: true, note: "closed for operational reasons (prague.eu)" }],
+  },
+  "prague-zoo": {
+    seasonalSchedules: [
+      season("11-01", "02-29", everyDay(["09:00", "16:00"])),
+      season("03-01", "03-31", everyDay(["09:00", "17:00"])),
+      season("04-01", "05-31", everyDay(["09:00", "18:00"])),
+      season("06-01", "08-31", everyDay(["09:00", "19:00"])),
+      season("09-01", "09-30", everyDay(["09:00", "18:00"])),
+      season("10-01", "10-31", everyDay(["09:00", "17:00"])),
+    ],
+  },
+  "franciscan-garden": {
+    seasonalSchedules: [season("04-15", "09-14", everyDay(["07:00", "22:00"])), season("09-15", "10-14", everyDay(["07:00", "20:00"])), season("10-15", "04-14", everyDay(["08:00", "19:00"]))],
+  },
+  "havlicek-gardens": { seasonalSchedules: [season("11-01", "03-31", everyDay(["06:00", "22:00"])), season("04-01", "10-31", everyDay(["06:00", "00:00"]))] },
+  "botanical-garden": {
+    seasonalSchedules: [season("01-01", "02-29", everyDay(["09:00", "16:00"])), season("03-01", "10-31", everyDay(["09:00", "19:00"])), season("11-01", "12-31", everyDay(["09:00", "16:00"]))],
+  },
+  "vltava-one-hour-cruise": {
+    seasonalSchedules: [season("04-01", "09-30", everyDay(["10:00", "18:00"])), season("10-01", "03-31", {})],
+    conflict: "prague.eu: April-September daily 10:00-18:00, October weekends only (no hours given), closed November-March. October is left out of planning rather than guessing its hours. praguesteamboats.com (8 Nov 2026): 2026 season over, 2027 times and prices not published.",
+  },
+  "cafe-ornament": { seasonalSchedules: [season("03-01", "10-31", everyDay(["10:00", "19:30"])), season("11-01", "02-29", everyDay(["10:00", "16:30"]))] },
+  "kavarna-slavia": { conflict: "prague.eu: Monday-Friday from 10:00; cafeslavia.cz: Monday-Saturday 9:00-23:00, Sunday 9:00-22:00 (stored)." },
+  "grand-cafe-orient": { conflict: "prague.eu and a commented-out block on grandcafeorient.cz: until 22:00; the visible hours on grandcafeorient.cz: until 21:00 (stored)." },
+  mlynec: { conflict: "13:30 (weekdays) / 13:00 (weekends) is the last lunch reservation, not the end of lunch (mlynec.cz: lunch 11:30-15:00 every day)." },
+  "petrinske-terasy": {
+    dateExceptions: [
+      { from: "2026-11-24", to: "2026-11-24", closed: true },
+      { from: "2026-12-01", to: "2026-12-01", closed: true },
+      { from: "2026-12-08", to: "2026-12-08", closed: true },
+      { from: "2026-12-15", to: "2026-12-15", closed: true },
+      { from: "2026-12-22", to: "2026-12-22", closed: true },
+    ],
+    conflict: "prague.eu: Saturday until 22:00; petrinsketerasy.cz: Saturday until 23:00 (stored), and 'opening hours change with the season and the weather'.",
+  },
+  "restaurant-obecni-dum": {
+    dateExceptions: [
+      { from: "2026-11-19", to: "2026-11-19", hours: R("11:30", "14:00"), note: "private event from 14:00" },
+      { from: "2026-11-26", to: "2026-11-26", closed: true, note: "private event" },
+      { from: "2026-11-27", to: "2026-11-27", hours: R("17:30", "23:00"), note: "private event 11:30-15:00" },
+    ],
+    conflict: "prague.eu: every day 11:00-15:00 & 17:30-23:00; restauraceod.cz: lunch Monday-Friday 11:30-15:00 only, dinner every day 17:30-23:00 (stored).",
+  },
+  "u-kroka": { conflict: "prague.eu address: Vratislavova 12, 120 00; ukroka.cz: Vratislavova 28, 128 00 (stored; coordinates still from prague.eu). Open 11:30-23:00, kitchen closed 16:00-17:00: the kitchen hours are stored." },
+  "jaffa-restaurant": { conflict: "jaffa-restaurant.cz: restaurant hours 11:00-22:00 (stored); 11:00-21:00 on the same site is the delivery window. Last kitchen order not published." },
+  "habibi-prague": { conflict: "habibipraguecafe.cz (8 Nov 2026): Mon-Sun 11:00-02:00 (stored). An earlier read of the same site also said 'dinner till 1 AM'; not visible on 8 Nov. Not the same place as Bistro Habibi (Vratislavova 21, Vyšehrad)." },
+};
+
+function withPlanningHours<T extends { id: string; hours?: HoursInfo }>(items: T[]): T[] {
+  for (const item of items) {
+    const extra = PLANNING_HOURS[item.id];
+    if (extra && item.hours) item.hours = { ...item.hours, ...extra } as HoursInfo;
+  }
+  return items;
+}
+withPlanningHours(PRAGUE_ATTRACTIONS);
+withPlanningHours(PRAGUE_EXPERIENCES);
+withPlanningHours(PRAGUE_FOOD_PLACES);
+
 export const PRAGUE_PLACES: CityPlaceData = {
   attractions: PRAGUE_ATTRACTIONS,
   experiences: PRAGUE_EXPERIENCES,

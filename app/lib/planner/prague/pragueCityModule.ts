@@ -1,7 +1,42 @@
 import "server-only";
 import { resolvePlannerPlace } from "../../readyPlan";
 import { haversineDistanceKm, type GeoPoint } from "../geoDistance";
-import { buildEstimatedLeg, buildEstimatedPlanRouteLegs, estimatedWalkingMinutes } from "../estimatedRouteLegs";
+import { buildEstimatedLeg, estimatedWalkingMinutes } from "../estimatedRouteLegs";
+import { PRAGUE_ROUTED_WALKS } from "./pragueRoutedWalks";
+import type { PlannerRouteLeg, TransportOption } from "../plannerTransportTypes";
+
+// ── Transfers: straight-line estimate, except sensitive ones measured on a real walking route (pragueRoutedWalks.ts) ──
+export const ROUTED_WALK_NOTE_AR = "المسافة من مسار مشي فعلي (OpenStreetMap)، والوقت تقديري. تأكد من الطريق بالتطبيق قبل ما تتحرك.";
+export const ROUTED_WALK_CLIMB_NOTE_AR = "المسافة من مسار مشي فعلي (OpenStreetMap) وفيه طلعة، والوقت تقديري. تأكد من الطريق بالتطبيق قبل ما تتحرك.";
+
+function pragueLeg(fromPlaceId: string, toPlaceId: string): PlannerRouteLeg {
+  const leg = buildEstimatedLeg(fromPlaceId, toPlaceId, PRAGUE_PLACE_COORDINATES);
+  const routed = PRAGUE_ROUTED_WALKS[`${fromPlaceId}>${toPlaceId}`];
+  const from = PRAGUE_PLACE_COORDINATES[fromPlaceId];
+  const to = PRAGUE_PLACE_COORDINATES[toPlaceId];
+  if (!routed || !from || !to || leg.sourceStatus === "unresolved") return leg;
+  const [km, climb] = routed;
+  const minutes = (km / 4.5) * 60 * (climb ? 1.2 : 1);
+  const walking: TransportOption = {
+    mode: "walking",
+    durationMinutesMin: Math.max(1, Math.round(minutes * 0.9)),
+    durationMinutesMax: Math.max(1, Math.round(minutes * 1.15)),
+    distanceKm: km,
+    note: climb ? ROUTED_WALK_CLIMB_NOTE_AR : ROUTED_WALK_NOTE_AR,
+  };
+  // Same thresholds as estimatedRouteLegs.ts: walk only up to 20 minutes, walking still listed up to 60 minutes, transit estimated.
+  const transitMinutes = ((haversineDistanceKm(from, to) * 1.3) / 18) * 60 + 10;
+  const transit: TransportOption = leg.options.find((option) => option.mode === "transit") ?? {
+    mode: "transit",
+    durationMinutesMin: Math.round(transitMinutes * 0.85),
+    durationMinutesMax: Math.round(transitMinutes * 1.25),
+    note: leg.options[0]?.note,
+  };
+  const routeUrl = `https://www.openstreetmap.org/directions?engine=fossgis_osrm_foot&route=${from.lat}%2C${from.lng}%3B${to.lat}%2C${to.lng}`;
+  if (walking.durationMinutesMax <= 20) return { fromPlaceId, toPlaceId, recommendedMode: "walking", options: [walking], sourceStatus: "estimated", routeUrl };
+  const options = walking.durationMinutesMax <= 60 ? [walking, transit] : [transit];
+  return { fromPlaceId, toPlaceId, recommendedMode: "transit", options, sourceStatus: "estimated", routeUrl };
+}
 import { repairCityDayGeography } from "../cityGeographyRepair";
 import { ENABLE_MUST_SEE_PRIORITY, FLAGSHIP_MUST_SEE_BOOST, FLAGSHIP_TIER_B_BOOST, FLAGSHIP_TIER_B_SURPRISE_ME_BOOST } from "../barcelonaMustSeePolicy";
 import { V2_PLANNER_INTERESTS, type V2PlannerInterest } from "../v2PlannerTypes";
@@ -183,7 +218,7 @@ const DESTINATION_CONFIG: DestinationConfig = {
   plannerMetadata: PRAGUE_PLANNER_METADATA,
   dayBuilderConfig: DAY_BUILDER_CONFIG,
   routeOptimizationConfig: ROUTE_CONFIG,
-  buildPlanRouteLegs: (plan) => buildEstimatedPlanRouteLegs(plan, PRAGUE_PLACE_COORDINATES),
+  buildPlanRouteLegs: (plan) => plan.days.map((day) => day.stops.slice(0, -1).map((stop, i) => pragueLeg(stop.placeId, day.stops[i + 1].placeId))),
   presentationResolver: (plan) => presentPraguePlan(plan),
   resolvePlaceDisplayName: placeName,
 };
@@ -267,7 +302,7 @@ const FOOD_PLACE_CLUSTER: Record<string, string> = {
 
 // ── Warnings shown on a stop ────────────────────────────────────────────────────────────────────────
 const WARNINGS: Record<string, PlannerOperationalWarning[]> = {
-  "vltava-one-hour-cruise": [{ textAr: "⚠️ الرحلات موسمية حسب prague.eu: أبريل–سبتمبر يوميًا، أكتوبر بالويكند فقط، ومتوقفة نوفمبر–مارس. تأكد قبل." }],
+  "vltava-one-hour-cruise": [{ textAr: "⚠️ الرحلات موسمية حسب prague.eu: أبريل–سبتمبر يوميًا، أكتوبر بالويكند فقط، ومتوقفة نوفمبر–مارس. تأكد قبل." }, { textAr: "مواعيد وأسعار رحلات موسم 2027 لسا مش منشورة على موقع الشركة؛ تأكد قبل الرحلة." }],
   // The tower closure of 7-14 Nov 2026 is a one-off date range; warnings here are not date-aware, so it lives in the place
   // tip (praguePlaces.ts) instead of showing on every plan.
   "jewish-museum": [{ textAr: "⚠️ مغلق كل سبت وبالأعياد اليهودية." }],
@@ -334,8 +369,11 @@ export const PRAGUE_CITY_MODULE: CityPlannerModule = {
   flagshipCoverageGoals: flagshipGoals,
   placeSelectionBonus,
   secondaryCoverageGoals: shoppingCoverage,
-  routeLeg: (fromPlaceId, toPlaceId) => buildEstimatedLeg(fromPlaceId, toPlaceId, PRAGUE_PLACE_COORDINATES),
-  buildDayRouteLegs: (day) => buildEstimatedPlanRouteLegs({ days: [day] }, PRAGUE_PLACE_COORDINATES)[0],
+  routeLeg: pragueLeg,
+  // Seasonal hours, dated closures and last entry are planned per trip, and the final plan is checked against them.
+  resolveHoursPerTrip: true,
+  timingGuard: true,
+  buildDayRouteLegs: (day) => day.stops.slice(0, -1).map((stop, i) => pragueLeg(stop.placeId, day.stops[i + 1].placeId)),
   operationalWarnings: warningsFor,
   mealStops: {
     clusterForFoodPlace: (place: FoodPlace) => FOOD_PLACE_CLUSTER[place.id] ?? null,
