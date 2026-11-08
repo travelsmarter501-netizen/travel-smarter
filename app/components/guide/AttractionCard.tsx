@@ -1,4 +1,5 @@
 import Image from "next/image";
+import CardFavoriteButton from "./CardFavoriteButton";
 import { IconExternalLink, IconHeart, IconStar } from "../icons";
 import ExternalLink from "./ExternalLink";
 import LocationInfo from "./LocationInfo";
@@ -33,6 +34,7 @@ export default function AttractionCard({
 
   return (
     <article className="flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      {attraction.image && (
       <ExternalLink
         href={imageLinkHref}
         aria-label={imageLinkLabel}
@@ -73,8 +75,10 @@ export default function AttractionCard({
           </span>
         )}
       </ExternalLink>
+      )}
 
-      <div className="flex flex-1 flex-col p-4">
+      <div className={`relative flex flex-1 flex-col p-4 ${attraction.image ? "" : "pl-14"}`}>
+        {!attraction.image && <CardFavoriteButton isFavorite={isFavorite} onToggle={onToggleFavorite} addLabel={ui.favoriteAdd} removeLabel={ui.favoriteRemove} />}
         <p dir="ltr" className="text-base font-bold text-slate-900">
           {attraction.name}
         </p>
@@ -98,14 +102,23 @@ export default function AttractionCard({
         </div>
 
         <div className="mt-3 space-y-1.5 text-sm">
+          {attraction.outsideView && attraction.priceType === "paid" && (
+            <p className="flex items-center gap-1.5 text-slate-700">
+              <span>👀</span>
+              <span>{ui.outsideFree}</span>
+            </p>
+          )}
           <p className="flex items-center gap-1.5 text-slate-700">
             <span>🎟️</span>
-            <span>{attraction.priceText}</span>
+            <span>
+              {attraction.outsideView && attraction.priceType === "paid" ? `${ui.insideLabel} ` : ""}
+              {attraction.priceText}
+            </span>
           </p>
           {bookingNeeded.has(attraction.bookingStatus) && (
             <p className="flex items-center gap-1.5 text-slate-700">
               <span>📅</span>
-              <span>{bookingStatusText(attraction.bookingStatus, lang)}</span>
+              <span>{attraction.bookingStatus === "ضروري مسبقًا" ? ui.entryBookingRequired : attraction.bookingStatus === "يفضل مسبقًا" ? ui.entryBookingRecommended : bookingStatusText(attraction.bookingStatus, lang)}</span>
             </p>
           )}
         </div>
@@ -114,10 +127,12 @@ export default function AttractionCard({
           <OpeningHours lang={lang} hours={attraction.hours} plannedWeekday={plannedWeekday} />
         </div>
 
-        <div className="mt-3 rounded-xl bg-teal-50 p-3">
-          <p className="text-xs font-bold text-teal-800">{ui.tip}</p>
-          <p className="mt-1 text-xs leading-5 text-teal-700">{attraction.tip}</p>
-        </div>
+        {attraction.tip && (
+          <div className="mt-3 rounded-xl bg-teal-50 p-3">
+            <p className="text-xs font-bold text-teal-800">{ui.tip}</p>
+            <p className="mt-1 text-xs leading-5 text-teal-700">{attraction.tip}</p>
+          </div>
+        )}
 
         {(attraction.officialUrl || attraction.ticketsUrl) && (
           <div className="mt-3 flex flex-wrap gap-2">

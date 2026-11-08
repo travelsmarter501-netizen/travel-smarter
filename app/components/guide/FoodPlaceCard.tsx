@@ -1,4 +1,5 @@
 import Image from "next/image";
+import CardFavoriteButton from "./CardFavoriteButton";
 import { IconExternalLink, IconHeart } from "../icons";
 import ExternalLink from "./ExternalLink";
 import LocationInfo from "./LocationInfo";
@@ -49,6 +50,7 @@ export default function FoodPlaceCard({
 
   return (
     <article className="flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      {place.image && (
       <ExternalLink
         href={imageLinkHref}
         aria-label={imageLinkLabel}
@@ -83,8 +85,10 @@ export default function FoodPlaceCard({
           <IconHeart filled={isFavorite} className="h-4 w-4" />
         </button>
       </ExternalLink>
+      )}
 
-      <div className="flex flex-1 flex-col p-4">
+      <div className={`relative flex flex-1 flex-col p-4 ${place.image ? "" : "pl-14"}`}>
+        {!place.image && <CardFavoriteButton isFavorite={isFavorite} onToggle={onToggleFavorite} addLabel={ui.favoriteAdd} removeLabel={ui.favoriteRemove} />}
         <div className="flex items-start justify-between gap-2">
           <p dir="auto" className="text-sm font-bold text-slate-900">
             {place.name}

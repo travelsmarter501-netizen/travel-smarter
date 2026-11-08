@@ -72,6 +72,8 @@ export type Attraction = ImageCredit &
     description: string;
     /** Not shown in the UI — kept for potential future use. */
     whyRecommend: string;
+    /** A paid place whose outside stands on a public street, square or free grounds: the card then says "from outside: free" before the entry price. */
+    outsideView?: boolean;
     areaId: string;
     /** Not shown in the UI — kept for potential future use. */
     duration: string;

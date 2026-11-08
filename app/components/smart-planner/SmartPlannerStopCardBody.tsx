@@ -62,6 +62,7 @@ export default function SmartPlannerStopCardBody({
       className="flex w-full flex-1 flex-col gap-2.5 rounded-2xl border border-slate-200 bg-white p-3 text-start shadow-sm transition-shadow hover:shadow-md active:scale-[0.99]"
     >
       <div className="flex items-center gap-3">
+        {summary.image && (
         <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-xl bg-slate-100">
           {summary.image ? (
             <>
@@ -83,9 +84,10 @@ export default function SmartPlannerStopCardBody({
               />
             </>
           ) : (
-            <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200 text-lg text-slate-400">📍</div>
+            null
           )}
         </div>
+        )}
 
         <div className="min-w-0 flex-1">
           <p dir="auto" className="line-clamp-2 text-sm font-bold leading-snug text-slate-900">

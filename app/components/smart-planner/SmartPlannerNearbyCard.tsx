@@ -32,6 +32,7 @@ export default function SmartPlannerNearbyCard({
       onClick={onClick}
       className="flex w-36 shrink-0 flex-col gap-1.5 rounded-2xl border border-slate-200 bg-white p-2.5 text-start transition-colors hover:border-teal-300"
     >
+      {summary.image && (
       <div className="relative h-20 w-full overflow-hidden rounded-xl bg-slate-100">
         {summary.image ? (
           <>
@@ -52,9 +53,10 @@ export default function SmartPlannerNearbyCard({
             />
           </>
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-2xl">📍</div>
+          null
         )}
       </div>
+      )}
       <span className="text-[10px] font-bold text-teal-700">{typeLabel}</span>
       <span dir="auto" className="line-clamp-1 text-xs font-bold text-slate-800">
         {summary.name}

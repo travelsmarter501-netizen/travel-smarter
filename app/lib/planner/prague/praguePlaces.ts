@@ -83,6 +83,7 @@ function attraction(input: AttractionInput): Attraction {
 export const PRAGUE_ATTRACTIONS: Attraction[] = [
   attraction({
     id: "prague-castle",
+    outsideView: true,
     name: "Prague Castle (Pražský hrad)",
     mapsQuery: "Prague Castle",
     description: "مجمع القلعة التاريخي، وفيه كاتدرائية St. Vitus والقصر الملكي القديم وGolden Lane.",
@@ -92,7 +93,7 @@ export const PRAGUE_ATTRACTIONS: Attraction[] = [
     priceType: "paid",
     bookingStatus: "مش ضروري عادةً",
     bestTime: "الصبح بدري",
-    tip: "ساحات القلعة مفتوحة 6:00–22:00 مجانًا؛ التذكرة للمباني التاريخية فقط (صالحة يومين). المباني بتسكّر 16:00 من نوفمبر لمارس و17:00 من أبريل لأكتوبر.",
+    tip: "الساحات ببلاش ومفتوحة 6:00–22:00؛ التذكرة للمباني بس، وصالحة يومين.",
     officialUrl: "https://www.hrad.cz",
     mustSee: true,
     address: "Pražský hrad, 119 08 Praha 1 – Hradčany",
@@ -104,6 +105,7 @@ export const PRAGUE_ATTRACTIONS: Attraction[] = [
   }),
   attraction({
     id: "strahov-monastery",
+    outsideView: true,
     name: "Strahov Monastery & Library",
     mapsQuery: "Strahov Monastery Library",
     description: "دير تاريخي فوق Hradčany، مشهور بقاعات مكتبته الباروكية.",
@@ -113,7 +115,7 @@ export const PRAGUE_ATTRACTIONS: Attraction[] = [
     priceType: "paid",
     bookingStatus: "مش ضروري عادةً",
     bestTime: "قبل الظهر",
-    tip: "قاعات المكتبة بتتشاف من المدخل بدون دخول لجوّاها. آخر دخول 16:30، والتذاكر لحد 16:15. مغلق 24 و25 ديسمبر.",
+    tip: "قاعات المكتبة بتتشاف من عتبة الباب، مش من جوّا. آخر دخول 16:30.",
     officialUrl: "https://www.strahovskyklaster.cz",
     mustSee: false,
     address: "Strahovské nádvoří 1/132, 118 00 Praha 1",
@@ -123,6 +125,7 @@ export const PRAGUE_ATTRACTIONS: Attraction[] = [
   }),
   attraction({
     id: "loreta",
+    outsideView: true,
     name: "Loreta (Prague Loreto)",
     mapsQuery: "Loreta Prague",
     description: "مجمع ديني باروكي قريب من القلعة، معروف ببرج الأجراس.",
@@ -159,6 +162,7 @@ export const PRAGUE_ATTRACTIONS: Attraction[] = [
   }),
   attraction({
     id: "old-town-bridge-tower",
+    outsideView: true,
     name: "Old Town Bridge Tower",
     mapsQuery: "Old Town Bridge Tower",
     description: "البرج القوطي عند طرف Charles Bridge من جهة البلدة القديمة، وفوقه إطلالة.",
@@ -197,6 +201,7 @@ export const PRAGUE_ATTRACTIONS: Attraction[] = [
   }),
   attraction({
     id: "old-town-hall",
+    outsideView: true,
     name: "Old Town Hall & Astronomical Clock",
     mapsQuery: "Old Town Hall Astronomical Clock",
     description: "دار البلدية القديمة مع الساعة الفلكية (Orloj) وبرج بإطلالة على الساحة.",
@@ -225,7 +230,7 @@ export const PRAGUE_ATTRACTIONS: Attraction[] = [
     priceType: "free",
     bookingStatus: "بدون حجز",
     bestTime: "قبل الظهر",
-    tip: "ما في زيارة وقت القداس: سبتمبر–يونيو الأربعاء والخميس 18:00، الجمعة 15:00، الأحد 9:30 و21:00؛ تموز وآب الاثنين–الجمعة 12:15. تبرع مقترح 50 CZK.",
+    tip: "ما في زيارة وقت القداس: الجمعة 15:00 (سبتمبر–يونيو)، ويوليو–أغسطس الاثنين–الجمعة 12:15. التبرع المقترح 50 CZK.",
     mustSee: false,
     address: "Staroměstské náměstí 604, 110 00 Praha 1",
     // prague.eu: Dec–Feb Tue–Sat 10:00–13:00 & 15:00–17:00, Sun 10:30–12:00; Mar–Nov Tue–Sat the same, Sunday and Monday closed.
@@ -237,6 +242,7 @@ export const PRAGUE_ATTRACTIONS: Attraction[] = [
   }),
   attraction({
     id: "clementinum",
+    outsideView: true,
     name: "Clementinum (Baroque Library & Astronomical Tower)",
     mapsQuery: "Clementinum",
     description: "مجمع تاريخي فيه قاعة مكتبة باروكية والبرج الفلكي، بجولة مع مرشد.",
@@ -246,7 +252,7 @@ export const PRAGUE_ATTRACTIONS: Attraction[] = [
     priceType: "paid",
     bookingStatus: "يفضل مسبقًا",
     bestTime: "أي وقت بالنهار",
-    tip: "الزيارة بجولة مرشدة (حوالي 45 دقيقة، 25 شخص بالجولة). التذاكر أونلاين وبتنزل كل اثنين للأسبوع اللي بعد أسبوعين، والشراء من الشباك مش مضمون.",
+    tip: "جولة مرشدة 45 دقيقة تقريبًا، 25 شخص بالجولة. التذاكر بتنزل أونلاين كل اثنين للأسبوع اللي بعد أسبوعين، والشباك مش مضمون.",
     officialUrl: "https://www.prague.eu/klementinum",
     mustSee: false,
     address: "Mariánské náměstí 190/5, 110 00 Praha 1",
@@ -256,6 +262,7 @@ export const PRAGUE_ATTRACTIONS: Attraction[] = [
   }),
   attraction({
     id: "municipal-house",
+    outsideView: true,
     name: "Municipal House (Obecní dům)",
     mapsQuery: "Municipal House Obecni dum",
     description: "مبنى Art Nouveau فخم بساحة Republiky، والزيارة الداخلية بجولة مع مرشد.",
@@ -265,17 +272,18 @@ export const PRAGUE_ATTRACTIONS: Attraction[] = [
     priceType: "paid",
     bookingStatus: "يفضل مسبقًا",
     bestTime: "بعد الظهر",
-    tip: "مواعيد الجولات بتنشر على obecnidum.cz/en/tours (عادة 2–5 جولات باليوم، أغلبها بالإنجليزي). التذاكر من شباك المبنى 10:00–19:00.",
+    tip: "جدول الجولات منشور لكل يوم على obecnidum.cz/en/tours: من 2 لـ5 جولات بين 11:00 و17:00، أغلبها بالإنجليزي.",
     officialUrl: "https://www.obecnidum.cz",
     mustSee: false,
     address: "náměstí Republiky 5, 111 21 Praha 1",
     priceText: "320 CZK",
     // 10:00–19:00 is the box office; the halls are only seen on guided tours at set times (structured in PLANNING_HOURS below).
-    hours: variable("القاعات بجولة مرشدة بمواعيد محددة (حوالي ساعة)، تقريبًا بين 11:00 و17:00 حسب جدول الجولات المنشور · شباك التذاكر يوميًا 10:00–19:00", "https://www.obecnidum.cz/en/tours/", undefined, "obecnidum.cz (official)"),
+    hours: variable("القاعات بجولة مرشدة (ساعة)، الجولات بتبدأ بين 11:00 و17:00 حسب جدول اليوم · شباك التذاكر يوميًا 10:00–19:00", "https://www.obecnidum.cz/en/tours/", undefined, "obecnidum.cz (official)"),
     coordinates: { lat: 50.087595264849, lng: 14.428034123279 },
   }),
   attraction({
     id: "powder-tower",
+    outsideView: true,
     name: "Powder Tower (Prašná brána)",
     mapsQuery: "Powder Tower",
     description: "بوابة قوطية قديمة جنب Municipal House، ومن فوقها إطلالة.",
@@ -297,6 +305,7 @@ export const PRAGUE_ATTRACTIONS: Attraction[] = [
   }),
   attraction({
     id: "jewish-museum",
+    outsideView: true,
     name: "Jewish Museum in Prague (Josefov)",
     mapsQuery: "Jewish Museum in Prague",
     description: "مجموعة كُنُس تاريخية والمقبرة القديمة في حي Josefov، بتذكرة واحدة.",
@@ -306,7 +315,7 @@ export const PRAGUE_ATTRACTIONS: Attraction[] = [
     priceType: "paid",
     bookingStatus: "مش ضروري عادةً",
     bestTime: "قبل الظهر",
-    tip: "مغلق كل سبت وبالأعياد اليهودية؛ التذكرة صالحة 3 أيام فتح.",
+    tip: "التذكرة صالحة 3 أيام فتح.",
     officialUrl: "https://www.jewishmuseum.cz",
     mustSee: false,
     address: "Dušní 12, 110 00 Praha 1 – Josefov",
@@ -321,6 +330,7 @@ export const PRAGUE_ATTRACTIONS: Attraction[] = [
   }),
   attraction({
     id: "st-nicholas-mala-strana",
+    outsideView: true,
     name: "St. Nicholas Church (Malá Strana)",
     mapsQuery: "St. Nicholas Church Mala Strana",
     description: "كنيسة باروكية ضخمة في ساحة Malostranské náměstí.",
@@ -336,7 +346,7 @@ export const PRAGUE_ATTRACTIONS: Attraction[] = [
     address: "Malostranské náměstí, 118 00 Praha 1",
     priceText: "150 CZK",
     hours: variable(
-      "يناير 9:00–16:00 · فبراير–مارس 9:00–17:00 · أبريل–أكتوبر غالبًا 9:00–18:00 (الجمعة وأحيانًا السبت لحد 17:00) · نوفمبر 9:00–17:00 · ديسمبر 9:00–17:00 (الجمعة والسبت لحد 16:00)",
+      "يناير 9:00–16:00 · فبراير–مارس 9:00–17:00 · أبريل ويوليو–أكتوبر 9:00–18:00 (الجمعة والسبت لحد 17:00) · مايو–يونيو 9:00–18:00 (الجمعة لحد 17:00) · نوفمبر 9:00–17:00 · ديسمبر 9:00–17:00 (الجمعة والسبت لحد 16:00) · آخر دخول قبل الإغلاق بربع ساعة",
       "https://prague.eu/en/objevujte/st-nicholas-church-at-mala-strana-kostel-sv-mikulase-mala-strana/"
     ),
     coordinates: { lat: 50.087991947521, lng: 14.403133622476 },
@@ -396,6 +406,7 @@ export const PRAGUE_ATTRACTIONS: Attraction[] = [
   }),
   attraction({
     id: "petrin-tower",
+    outsideView: true,
     name: "Petřín Lookout Tower",
     mapsQuery: "Petrin Lookout Tower",
     description: "برج إطلالة معدني فوق تلة Petřín، 299 درجة لفوق.",
@@ -447,6 +458,7 @@ export const PRAGUE_ATTRACTIONS: Attraction[] = [
   }),
   attraction({
     id: "national-museum",
+    outsideView: true,
     name: "National Museum (Národní muzeum)",
     mapsQuery: "National Museum Prague",
     description: "المبنى التاريخي فوق ساحة فاتسلاف، فيه معارض تاريخ وطبيعة.",
@@ -494,7 +506,7 @@ export const PRAGUE_ATTRACTIONS: Attraction[] = [
     priceType: "free",
     bookingStatus: "بدون حجز",
     bestTime: "أي وقت",
-    tip: "المحطة هون من برّا للصور؛ ما في مواعيد زيارة داخلية مثبتة بالمصدر.",
+    tip: "الوقفة هون من برّا للصور.",
     mustSee: false,
     address: "Rašínovo nábřeží 80 / Jiráskovo náměstí 6, 120 00 Praha 2",
     hours: alwaysOpen("https://prague.eu/en/objevujte/dancing-house-tancici-dum/"),
@@ -537,6 +549,7 @@ export const PRAGUE_ATTRACTIONS: Attraction[] = [
   }),
   attraction({
     id: "zizkov-tower",
+    outsideView: true,
     name: "Žižkov Television Tower",
     mapsQuery: "Zizkov Television Tower",
     description: "برج التلفزيون العالي في Žižkov، وفيه منصة مشاهدة.",
@@ -546,7 +559,7 @@ export const PRAGUE_ATTRACTIONS: Attraction[] = [
     priceType: "paid",
     bookingStatus: "بدون حجز",
     bestTime: "المسا",
-    tip: "منصة المشاهدة مفتوحة يوميًا 9:00–24:00.",
+    tip: "على البرج تماثيل أطفال زاحفين للفنان David Černý.",
     officialUrl: "https://www.towerpark.cz",
     mustSee: false,
     address: "Mahlerovy sady 1, 130 00 Praha 3",
@@ -565,7 +578,7 @@ export const PRAGUE_ATTRACTIONS: Attraction[] = [
     priceType: "free",
     bookingStatus: "بدون حجز",
     bestTime: "العصر",
-    tip: "مغلق كل اثنين؛ آخر دخول 17:30.",
+    tip: "آخر دخول 17:30.",
     officialUrl: "https://www.vhu.cz",
     mustSee: false,
     address: "U Památníku 1900, 130 00 Praha 3",
@@ -615,7 +628,7 @@ export const PRAGUE_ATTRACTIONS: Attraction[] = [
     priceType: "paid",
     bookingStatus: "بدون حجز",
     bestTime: "أي وقت بالنهار",
-    tip: "مغلق كل اثنين.",
+    tip: "",
     officialUrl: "https://www.ntm.cz",
     mustSee: false,
     address: "Kostelní 42, 170 87 Praha 7",
@@ -634,7 +647,7 @@ export const PRAGUE_ATTRACTIONS: Attraction[] = [
     priceType: "paid",
     bookingStatus: "مش ضروري عادةً",
     bestTime: "الصبح",
-    tip: "المواعيد بتتغير حسب الشهر؛ بالشتاء بتسكر 16:00.",
+    tip: "",
     officialUrl: "https://www.zoopraha.cz",
     mustSee: false,
     address: "U Trojského zámku 3/120, 171 00 Praha 7",
@@ -653,13 +666,13 @@ export const PRAGUE_ATTRACTIONS: Attraction[] = [
     priceType: "paid",
     bookingStatus: "بدون حجز",
     bestTime: "بعد الظهر",
-    tip: "مغلق كل اثنين. من نوفمبر لمارس المصدر الرسمي بيذكر مواعيد الحدائق فقط، فتأكد من مواعيد القصر قبل الزيارة.",
+    tip: "برّا موسمه (2026: 1 أبريل–29 أكتوبر) القصر مسكّر والحدائق بس مفتوحة، وبتسكر وقت الصقيع.",
     officialUrl: "https://www.ghmp.cz",
     mustSee: false,
     address: "U Trojského zámku 1, 171 00 Praha 7",
     priceText: "200 CZK",
     hours: variable(
-      "أبريل–أكتوبر: الثلاثاء–الخميس 10:00–18:00، الجمعة 13:00–18:00، السبت–الأحد 10:00–18:00، الاثنين مغلق · نوفمبر–مارس: مواعيد القصر غير منشورة بالمصدر (الحدائق حتى 16:00)",
+      "الموسم (2026: 1 أبريل–29 أكتوبر): الثلاثاء–الخميس 10:00–18:00، الجمعة 13:00–18:00، السبت–الأحد 10:00–18:00، الاثنين مغلق · برّا الموسم: القصر مغلق، والحدائق الثلاثاء–الخميس 10:00–16:00، الجمعة 13:00–16:00، السبت–الأحد 10:00–16:00",
       "https://prague.eu/en/objevujte/prague-city-gallery-troja-chateau-zamek-troja/",
       ["monday"]
     ),
@@ -695,7 +708,7 @@ export const PRAGUE_ATTRACTIONS: Attraction[] = [
     priceType: "paid",
     bookingStatus: "بدون حجز",
     bestTime: "أي وقت بالنهار",
-    tip: "مغلق كل اثنين.",
+    tip: "",
     officialUrl: "https://www.ngprague.cz",
     mustSee: false,
     address: "Anežská 12, 110 00 Praha 1",
@@ -731,7 +744,7 @@ export const PRAGUE_ATTRACTIONS: Attraction[] = [
     priceType: "free",
     bookingStatus: "بدون حجز",
     bestTime: "العصر",
-    tip: "مفتوحة من 6:00 الصبح.",
+    tip: "",
     mustSee: false,
     address: "Havlíčkovy sady, 120 00 Praha 2 – Vinohrady",
     hours: variable("نوفمبر–مارس 6:00–22:00 · أبريل–أكتوبر 6:00–24:00 (كل الأيام)", "https://prague.eu/en/objevujte/havlicek-gardens-grebovka-havlickovy-sady/"),
@@ -748,7 +761,7 @@ export const PRAGUE_ATTRACTIONS: Attraction[] = [
     priceType: "paid",
     bookingStatus: "بدون حجز",
     bestTime: "أي وقت بالنهار",
-    tip: "مغلق كل اثنين.",
+    tip: "",
     officialUrl: "https://www.ngprague.cz",
     mustSee: false,
     address: "Dukelských hrdinů 47, 170 00 Praha 7",
@@ -767,7 +780,7 @@ export const PRAGUE_ATTRACTIONS: Attraction[] = [
     priceType: "paid",
     bookingStatus: "بدون حجز",
     bestTime: "بعد الظهر",
-    tip: "مغلق كل اثنين؛ بيفتح 11:00.",
+    tip: "",
     officialUrl: "https://www.dox.cz",
     mustSee: false,
     address: "Poupětova 1, 170 00 Praha 7",
@@ -824,7 +837,7 @@ export const PRAGUE_EXPERIENCES: Experience[] = [
     area: "Nové Město",
     address: "Rašínovo nábřeží, 120 00 Praha 2",
     duration: "ساعة تقريبًا",
-    priceText: "السعر حسب الرحلة — شوف الموقع الرسمي",
+    priceText: "فحصنا موقع الشركة (8 نوفمبر 2026): أسعار 2027 لسا مش منشورة",
     priceVaries: true,
     bookingRequired: false,
     lastVerified: VERIFIED,
@@ -864,9 +877,9 @@ const MON_TO_FRI: Weekday[] = ["monday", "tuesday", "wednesday", "thursday", "fr
 const WEEKEND: Weekday[] = ["saturday", "sunday"];
 
 export const PRAGUE_FOOD_PLACES: FoodPlace[] = [
-  food({ id: "cafe-louvre", name: "Café Louvre", categoryId: "breakfast", area: "Nové Město", address: "Národní 22, 110 00 Praha 1", why: "مقهى تاريخي من 1902، بيفتح للفطور 8:00 بأيام الأسبوع.", officialUrl: "https://www.cafelouvre.cz", dietaryTags: ["coffee", "dessert", "pork-maybe"], hoursSchedule: { ...days(MON_TO_FRI, ["08:00", "23:30"]), ...days(WEEKEND, ["09:00", "23:30"]) }, sourceUrl: "https://prague.eu/en/objevujte/cafe-louvre/" }),
+  food({ id: "cafe-louvre", name: "Café Louvre", categoryId: "breakfast", area: "Nové Město", address: "Národní 22, 110 00 Praha 1", why: "مقهى تاريخي من 1902، مناسب للفطور.", officialUrl: "https://www.cafelouvre.cz", dietaryTags: ["coffee", "dessert", "pork-maybe"], hoursSchedule: { ...days(MON_TO_FRI, ["08:00", "23:30"]), ...days(WEEKEND, ["09:00", "23:30"]) }, sourceUrl: "https://prague.eu/en/objevujte/cafe-louvre/" }),
   food({ id: "cafe-savoy", name: "Café Savoy", categoryId: "breakfast", area: "Malá Strana", address: "Vítězná 5, 150 00 Praha 5", why: "مقهى ومطعم بديكور آرت نوفو، مشهور بالفطور والحلويات التشيكية.", officialUrl: "https://cafesavoy.ambi.cz", dietaryTags: ["coffee", "dessert", "pork-maybe"], hoursSchedule: { ...days(MON_TO_FRI, ["08:00", "22:00"]), ...days(WEEKEND, ["09:00", "22:00"]) }, sourceUrl: "https://prague.eu/en/objevujte/cafe-savoy/" }),
-  food({ id: "cafe-imperial", name: "Café Imperial", categoryId: "breakfast", area: "Nové Město (Na Poříčí)", address: "Na Poříčí 15, 110 00 Praha 1", why: "فطور من 7:00 (مشهور بالـ Eggs Benedict) ومطبخ تشيكي حديث للغدا والعشا.", officialUrl: "https://www.cafeimperial.cz", dietaryTags: ["coffee", "meat", "pork-maybe"], hoursSchedule: everyDay(["07:00", "23:00"]), sourceUrl: "https://prague.eu/en/objevujte/cafe-imperial/" }),
+  food({ id: "cafe-imperial", name: "Café Imperial", categoryId: "breakfast", area: "Nové Město (Na Poříčí)", address: "Na Poříčí 15, 110 00 Praha 1", why: "مشهور بالـ Eggs Benedict للفطور، ومطبخ تشيكي حديث للغدا والعشا.", officialUrl: "https://www.cafeimperial.cz", dietaryTags: ["coffee", "meat", "pork-maybe"], hoursSchedule: everyDay(["07:00", "23:00"]), sourceUrl: "https://prague.eu/en/objevujte/cafe-imperial/" }),
   food({ id: "mansson-bakery", name: "Mansson Bakery", categoryId: "breakfast", area: "Josefov", address: "Bílkova 8, 110 00 Praha 1", why: "مخبز دنماركي: معجنات وفطور خفيف وسندويشات.", officialUrl: "https://www.mansson-bakery.com", dietaryTags: ["coffee", "dessert"], hoursSchedule: { ...days(MON_TO_FRI, ["07:00", "19:00"]), ...days(WEEKEND, ["08:00", "19:00"]) }, sourceUrl: "https://prague.eu/en/objevujte/mansson-bakery/" }),
   food({ id: "kavarna-slavia", name: "Café Slavia", categoryId: "cafes", area: "Staré Město", address: "Národní 1 / Smetanovo nábřeží 2, 110 00 Praha 1", why: "مقهى تاريخي مقابل المسرح الوطني، بإطلالة على النهر والقلعة.", officialUrl: "https://www.cafeslavia.cz", dietaryTags: ["coffee", "dessert"], hoursSchedule: { ...days([...MON_TO_FRI, "saturday"], ["09:00", "23:00"]), sunday: [{ open: "09:00", close: "22:00" }] }, sourceUrl: "https://www.cafeslavia.cz/", hoursSource: "cafeslavia.cz (official)", verifiedOn: "2026-11-08" }),
   food({ id: "grand-cafe-orient", name: "Grand Café Orient", categoryId: "cafes", area: "Staré Město (Ovocný trh)", address: "Ovocný trh 19, 110 00 Praha 1", why: "مقهى بالبلدة القديمة، مشهور بحلوى věneček.", officialUrl: "https://www.grandcafeorient.cz", dietaryTags: ["coffee", "dessert"], hoursSchedule: { ...days(MON_TO_FRI, ["09:00", "21:00"]), ...days(WEEKEND, ["10:00", "21:00"]) }, sourceUrl: "https://www.grandcafeorient.cz/", hoursSource: "grandcafeorient.cz (official)", verifiedOn: "2026-11-08" }),
@@ -886,14 +899,14 @@ export const PRAGUE_FOOD_PLACES: FoodPlace[] = [
   // Added 2026-11-07 from the restaurants' own sites (not prague.eu). Halal: stated only as the restaurant states it, never as a certificate.
   // Habibi (habibipraguecafe.cz): "100% halal certified meat", "100% non-alcoholic"; no certifying body is named. Hours on the site read
   // Mon-Sun 11:00-02:00 in one place and "dinner till 1 AM" in another, so the stored window is the conservative 11:00-00:00.
-  food({ id: "habibi-prague", name: "Habibi Prague (Restaurant & Shisha Lounge)", categoryId: "middle-eastern", area: "Nové Město (Na Příkopě)", address: "Na Příkopě 23, 110 00 Praha 1 (Pánská pasáž)", why: "مطعم لبناني بممر Pánská pasáž (Na Příkopě 23)، على اليمين تحت الدرج مباشرة (مش Bistro Habibi اللي بـVyšehrad). المطعم بيعلن على موقعه إن لحمه حلال 100% ومن غير كحول (الجهة المعتمدة مش مذكورة)، وفيه أرجيلة. الحجز: +420 608 685 444.", officialUrl: "https://www.habibipraguecafe.cz/", phone: "+420 777 858 990", dietaryTags: ["meat"], hoursSchedule: everyDay(["11:00", "02:00"]), sourceUrl: "https://www.habibipraguecafe.cz/home", hoursSource: "habibipraguecafe.cz (restaurant's own site)", verifiedOn: "2026-11-08" }),
+  food({ id: "habibi-prague", name: "Habibi Prague (Restaurant & Shisha Lounge)", categoryId: "middle-eastern", area: "Nové Město (Na Příkopě)", address: "Na Příkopě 23, 110 00 Praha 1 (Pánská pasáž)", why: "مطعم لبناني بممر Pánská pasáž، على اليمين تحت الدرج (مش Bistro Habibi بـVyšehrad). بيعلن على موقعه إن لحمه حلال 100% ومن غير كحول، بدون ما يذكر جهة الشهادة، وفيه أرجيلة.", officialUrl: "https://www.habibipraguecafe.cz/", phone: "+420 777 858 990", dietaryTags: ["meat"], hoursSchedule: everyDay(["11:00", "02:00"]), sourceUrl: "https://www.habibipraguecafe.cz/home", hoursSource: "habibipraguecafe.cz (restaurant's own site)", verifiedOn: "2026-11-08" }),
   // Jaffa (jaffa-restaurant.cz, its own ordering site): Panská 894/4, daily 11:00-21:00 for the ordering location (11:00-22:00 in another
   // field of the same site; Tripadvisor / Wanderlog say 10:00-22:00), so 11:00-21:00 is stored. Halal: only 13 of 49 dishes carry the
   // site's own "Halal" label (grilled lamb/beef 4/4, chicken 4/7, mix grill 2/4, specialities 3/7), no certificate is published, and
   // Mustakshif lists it as not verified: so the restaurant is NOT classed halal, and the card says exactly that. It closes at 21:00
   // (30 minutes before a 20:00-21:30 dinner slot ends): dated plans cap the window at the closing time, flexible-date plans cannot
   // check it, and the card always shows the hours.
-  food({ id: "jaffa-restaurant", name: "Jaffa Restaurant", categoryId: "middle-eastern", area: "Nové Město (Panská)", address: "Panská 4 (Panská 894/4), 110 00 Praha 1", why: "مطعم عربي مشاوي (كباب وحمص وأسماك) بآخر الطابق الأرضي لمركز Černá růže قرب Na Příkopě. قائمته الرسمية بتعلّم 13 من 49 طبق «حلال» وبس، وما لقينا شهادة حلال للمطعم: اسأل عن مصدر اللحم. آخر طلب من المطبخ مش منشور، فللعشا المتأخر اتصل قبل.", officialUrl: "https://www.jaffa-restaurant.cz/", phone: "+420 720 262 202", dietaryTags: ["meat", "seafood"], hoursSchedule: everyDay(["11:00", "22:00"]), sourceUrl: "https://www.jaffa-restaurant.cz/", hoursSource: "jaffa-restaurant.cz (restaurant's own site)", verifiedOn: "2026-11-08" }),
+  food({ id: "jaffa-restaurant", name: "Jaffa Restaurant", categoryId: "middle-eastern", area: "Nové Město (Panská)", address: "Panská 4 (Panská 894/4), 110 00 Praha 1", why: "مطعم عربي مشاوي (كباب وحمص وأسماك) بآخر الطابق الأرضي لمركز Černá růže. فحصنا: قائمته بتعلّم 13 من 49 طبق «حلال» بس، وما لقينا شهادة حلال للمطعم.", officialUrl: "https://www.jaffa-restaurant.cz/", phone: "+420 720 262 202", dietaryTags: ["meat", "seafood"], hoursSchedule: everyDay(["11:00", "22:00"]), sourceUrl: "https://www.jaffa-restaurant.cz/", hoursSource: "jaffa-restaurant.cz (restaurant's own site)", verifiedOn: "2026-11-08" }),
   food({ id: "u-cedru", name: "U Cedru", categoryId: "middle-eastern", area: "Bubeneč", address: "Národní obrany 27, 160 00 Praha 6", why: "من أول المطاعم اللبنانية في براغ: مازات وأطباق لحم وسمك.", officialUrl: "https://www.ucedru.cz", dietaryTags: ["meat", "seafood"], hoursSchedule: everyDay(["11:00", "22:00"]), sourceUrl: "https://prague.eu/en/objevujte/u-cedru/" }),
   food({ id: "bredovsky-dvur", name: "Bredovský dvůr", categoryId: "local", area: "Nové Město", address: "Politických vězňů 13, 110 00 Praha 1", why: "مطبخ تشيكي تقليدي قرب ساحة فاتسلاف.", officialUrl: "https://www.restauracebredovskydvur.cz", dietaryTags: ["meat", "pork-maybe"], hoursSchedule: { ...days(["monday", "tuesday", "wednesday", "thursday", "friday", "saturday"], ["11:00", "00:00"]), sunday: [{ open: "11:00", close: "23:00" }] }, sourceUrl: "https://prague.eu/en/objevujte/bredovsky-dvur-restaurant/" }),
   food({ id: "u-pinkasu", name: "U Pinkasů", categoryId: "local", area: "Nové Město (Jungmannovo náměstí)", address: "Jungmannovo náměstí 16, 110 00 Praha 1", why: "أطباق تشيكية تقليدية بوصفات قديمة، جنب Franciscan Garden.", officialUrl: "https://www.upinkasu.cz", dietaryTags: ["meat", "pork-maybe"], hoursSchedule: everyDay(["10:00", "22:30"]), sourceUrl: "https://prague.eu/en/objevujte/u-pinkasu-restaurant/" }),

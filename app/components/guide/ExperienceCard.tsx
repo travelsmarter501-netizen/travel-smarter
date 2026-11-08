@@ -1,4 +1,5 @@
 import Image from "next/image";
+import CardFavoriteButton from "./CardFavoriteButton";
 import { IconExternalLink, IconHeart } from "../icons";
 import ExternalLink from "./ExternalLink";
 import LocationInfo from "./LocationInfo";
@@ -30,7 +31,7 @@ export default function ExperienceCard({
 
   return (
     <article className="flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-      {imageLinkHref ? (
+      {imageLinkHref && experience.image ? (
         <ExternalLink
           href={imageLinkHref}
           aria-label={imageLinkLabel}
@@ -65,22 +66,9 @@ export default function ExperienceCard({
             <IconHeart filled={isFavorite} className="h-4 w-4" />
           </button>
         </ExternalLink>
-      ) : (
-        <div className="relative flex aspect-[4/3] w-full items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200 text-slate-400">
-          <span className="text-2xl">🔥</span>
-          <button
-            type="button"
-            onClick={onToggleFavorite}
-            aria-pressed={isFavorite}
-            aria-label={isFavorite ? ui.favoriteRemove : ui.favoriteAdd}
-            className="absolute left-2.5 top-2.5 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-rose-600 shadow-sm backdrop-blur-sm"
-          >
-            <IconHeart filled={isFavorite} className="h-4 w-4" />
-          </button>
-        </div>
-      )}
-
-      <div className="flex flex-1 flex-col p-4">
+      ) : null}
+      <div className={`relative flex flex-1 flex-col p-4 ${imageLinkHref && experience.image ? "" : "pl-14"}`}>
+        {!(imageLinkHref && experience.image) && <CardFavoriteButton isFavorite={isFavorite} onToggle={onToggleFavorite} addLabel={ui.favoriteAdd} removeLabel={ui.favoriteRemove} />}
         <div className="flex flex-wrap items-start justify-between gap-x-2 gap-y-1">
           <p dir="auto" className="text-sm font-bold text-slate-900">
             {experience.name}

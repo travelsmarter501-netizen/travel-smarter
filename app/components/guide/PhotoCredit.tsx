@@ -39,16 +39,16 @@ function CreditParts({ credit }: { credit: ImageCredit }) {
   );
 }
 
-/** One photo's credit line, under the place's details. */
+/** One photo's credit, under the place's details: a small "حقوق الصورة" link that opens the full credit (author, licence, file). */
 export default function PhotoCredit({ credit, lang = "ar" }: { credit: ImageCredit & { image?: string }; lang?: PlanLanguage }) {
   if (!hasCredit(credit)) return null;
   return (
-    <p className="mt-3 text-[11px] leading-5 text-slate-500">
-      📷 {PLACE_CARD_TEXT[lang].photo}:{" "}
-      <span dir="ltr">
+    <details className="mt-3 text-[11px] leading-5 text-slate-500">
+      <summary className="inline cursor-pointer list-none underline decoration-dotted underline-offset-2">📷 {PLACE_CARD_TEXT[lang].photoCredit}</summary>
+      <p dir="ltr" className="mt-1 text-start">
         <CreditParts credit={credit} />
-      </span>
-    </p>
+      </p>
+    </details>
   );
 }
 

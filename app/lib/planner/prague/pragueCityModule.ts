@@ -6,8 +6,8 @@ import { PRAGUE_ROUTED_WALKS } from "./pragueRoutedWalks";
 import type { PlannerRouteLeg, TransportOption } from "../plannerTransportTypes";
 
 // ── Transfers: straight-line estimate, except sensitive ones measured on a real walking route (pragueRoutedWalks.ts) ──
-export const ROUTED_WALK_NOTE_AR = "المسافة من مسار مشي فعلي (OpenStreetMap)، والوقت تقديري. تأكد من الطريق بالتطبيق قبل ما تتحرك.";
-export const ROUTED_WALK_CLIMB_NOTE_AR = "المسافة من مسار مشي فعلي (OpenStreetMap) وفيه طلعة، والوقت تقديري. تأكد من الطريق بالتطبيق قبل ما تتحرك.";
+export const ROUTED_WALK_NOTE_AR = "المسافة من مسار مشي فعلي (OpenStreetMap)، والوقت محسوب على مشي 4.5 كم بالساعة.";
+export const ROUTED_WALK_CLIMB_NOTE_AR = "المسافة من مسار مشي فعلي (OpenStreetMap) وفيه طلعة، فالوقت محسوب على مشي 4.5 كم بالساعة مع 20% زيادة للطلعة.";
 
 function pragueLeg(fromPlaceId: string, toPlaceId: string): PlannerRouteLeg {
   const leg = buildEstimatedLeg(fromPlaceId, toPlaceId, PRAGUE_PLACE_COORDINATES);
@@ -302,14 +302,14 @@ const FOOD_PLACE_CLUSTER: Record<string, string> = {
 
 // ── Warnings shown on a stop ────────────────────────────────────────────────────────────────────────
 const WARNINGS: Record<string, PlannerOperationalWarning[]> = {
-  "vltava-one-hour-cruise": [{ textAr: "⚠️ الرحلات موسمية حسب prague.eu: أبريل–سبتمبر يوميًا، أكتوبر بالويكند فقط، ومتوقفة نوفمبر–مارس. تأكد قبل." }, { textAr: "مواعيد وأسعار رحلات موسم 2027 لسا مش منشورة على موقع الشركة؛ تأكد قبل الرحلة." }],
+  "vltava-one-hour-cruise": [{ textAr: "⚠️ الرحلات موسمية حسب prague.eu: أبريل–سبتمبر يوميًا، أكتوبر بالويكند فقط، ومتوقفة نوفمبر–مارس." }, { textAr: "فحصنا موقع الشركة (8 نوفمبر 2026): موسم 2026 خلص، ومواعيد وأسعار 2027 لسا مش منشورة." }],
   // The tower closure of 7-14 Nov 2026 is a one-off date range; warnings here are not date-aware, so it lives in the place
   // tip (praguePlaces.ts) instead of showing on every plan.
   "jewish-museum": [{ textAr: "⚠️ مغلق كل سبت وبالأعياد اليهودية." }],
   "tyn-church": [{ textAr: "⚠️ الزيارة بفترتين قصيرتين (10:00–13:00 و15:00–17:00)، ومغلقة الاثنين، والأحد كمان من مارس لنوفمبر." }],
   clementinum: [{ textAr: "⚠️ مشروطة بالحجز: الزيارة بجولة مرشدة بموعد محدد، ووقت الخطة تقريبي. احجز جولة قريبة منه ورتّب يومك حسبها." }],
-  "municipal-house": [{ textAr: "⚠️ مشروطة بالحجز: القاعات بجولة مرشدة (حوالي ساعة) ومواعيد الجولات مش منشورة بالمصدر، ووقت الخطة تقريبي. احجز جولة قريبة منه ورتّب يومك حسبها." }],
-  "troja-chateau": [{ textAr: "⚠️ من نوفمبر لمارس المصدر الرسمي ما بيذكر مواعيد القصر؛ تأكد قبل الزيارة." }],
+  "municipal-house": [{ textAr: "⚠️ مشروطة بالحجز: القاعات بجولة مرشدة (ساعة) بمواعيد ثابتة منشورة لكل يوم على obecnidum.cz/en/tours. احجز الجولة الأقرب لوقتها بالخطة." }],
+  "troja-chateau": [{ textAr: "⚠️ القصر بيفتح بموسمه بس (2026: 1 أبريل–29 أكتوبر)؛ برّا الموسم مسكّر." }],
   "prague-zoo": [{ textAr: "المواعيد بتتغير حسب الشهر (بالشتاء لحد 16:00)." }],
 };
 

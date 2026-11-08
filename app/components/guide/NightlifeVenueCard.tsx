@@ -1,4 +1,5 @@
 import Image from "next/image";
+import CardFavoriteButton from "./CardFavoriteButton";
 import { IconExternalLink, IconHeart } from "../icons";
 import ExternalLink from "./ExternalLink";
 import LocationInfo from "./LocationInfo";
@@ -31,6 +32,7 @@ export default function NightlifeVenueCard({
 
   return (
     <article className="flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      {venue.image && (
       <ExternalLink
         href={imageLinkHref}
         aria-label={imageLinkLabel}
@@ -69,8 +71,15 @@ export default function NightlifeVenueCard({
           {venue.name}
         </p>
       </ExternalLink>
+      )}
 
-      <div className="flex flex-1 flex-col p-4">
+      <div className={`relative flex flex-1 flex-col p-4 ${venue.image ? "" : "pl-14"}`}>
+        {!venue.image && <CardFavoriteButton isFavorite={isFavorite} onToggle={onToggleFavorite} addLabel={ui.favoriteAdd} removeLabel={ui.favoriteRemove} />}
+        {!venue.image && (
+          <p dir="auto" className="text-base font-bold text-slate-900">
+            {venue.name}
+          </p>
+        )}
         <RatingBadge lang={lang}
           rating={venue.rating}
           reviewCount={venue.reviewCount}
