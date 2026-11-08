@@ -32,8 +32,8 @@ export type PlannerDestinationOption = {
 export const PLANNER_DESTINATIONS: PlannerDestinationOption[] = [
   { id: "barcelona", name: "برشلونة", nameEn: "Barcelona", nameHe: "ברצלונה", flag: "🇪🇸", available: true },
   { id: "rome", name: "روما", nameEn: "Rome", nameHe: "רומא", flag: "🇮🇹", available: false },
-  // Prague: planner data + engine module exist (lib/planner/prague/); NOT public until its launch checks pass (docs/PROJECT_PLAN.md).
-  { id: "prague", name: "براغ", nameEn: "Prague", nameHe: "פראג", flag: "🇨🇿", available: false },
+  // Prague: public since 2026-11-08 (owner decision; data and checks in docs/PROJECT_PLAN.md).
+  { id: "prague", name: "براغ", nameEn: "Prague", nameHe: "פראג", flag: "🇨🇿", available: true },
   { id: "budapest", name: "بودابست", nameEn: "Budapest", nameHe: "בודפשט", flag: "🇭🇺", available: false },
   { id: "dubai", name: "دبي", nameEn: "Dubai", nameHe: "דובאי", flag: "🇦🇪", available: false },
   { id: "batumi", name: "باتومي", nameEn: "Batumi", nameHe: "בטומי", flag: "🇬🇪", available: false },

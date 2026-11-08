@@ -12,7 +12,7 @@ Arabic-first (RTL, English supported) travel-planning website. Next.js 16 (App R
 
 ## Product in one paragraph
 
-The public presentation sells ONE product: a personalized travel itinerary (₪39, one-time). Barcelona is the only supported destination today. Do not promise other cities, PDF, sharing, trip-total cost, or lifetime/future-destination access: none of that is decided or built. Details and the open questions are in `docs/PRODUCT_SPEC.md`.
+The public presentation sells ONE product: a personalized travel itinerary (₪39, one-time). Barcelona and Prague are the supported destinations (Prague since 2026-11-08); the Barcelona guide comes only with a purchase for a Barcelona plan. Do not promise other cities, PDF, sharing, trip-total cost, or lifetime/future-destination access: none of that is decided or built. Details and the open questions are in `docs/PRODUCT_SPEC.md`.
 
 ## Working rules
 

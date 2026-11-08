@@ -18,7 +18,7 @@ Paths are relative to the repo root. Prefer function and file names over line nu
 - Price stays **₪39, one-time** (Allpay, ILS).
 - One purchase should give access to **all supported cities**. There is no per-city charge.
 - Customers keep the ability to **create and edit multiple plans**, with the current maximum of **30 saved plans per customer**. Never describe this as unlimited.
-- **Barcelona is the only supported destination today.**
+- **Supported destinations: Barcelona and Prague** (Prague public since 2026-11-08). The Barcelona guide is included only when the purchase is for a Barcelona plan.
 - Target destinations: Barcelona, Rome, Prague, Budapest, Dubai, Batumi, Istanbul, Vienna, Paris, London. These are targets, not a claim of support.
 - A destination stays unavailable until its data, generation, saving, viewing and quality checks are ready.
 - Priority: a simple **mobile-first** experience. A visitor should quickly understand the product, what they receive, the price, and the next step.
@@ -91,7 +91,7 @@ Server-side validation and the stored shape: `app/lib/planner/personalizedPlanAn
 
 | Layer | State |
 |---|---|
-| UI | All ten cities are listed in `app/lib/planner/plannerDestinations.ts`; only Barcelona has `available: true` (public). Prague is engine-ready but **not public** |
+| UI | All ten cities are listed in `app/lib/planner/plannerDestinations.ts`; Barcelona and Prague have `available: true` (public, Prague since 2026-11-08); Vienna stays off in this release |
 | Server | A destination is accepted only if it is enabled (`isAvailablePlannerDestinationId`: `available: true`, or the local-only preview switch below) **and** has an engine module (`app/lib/planner/cityPlannerRegistry.ts`). In production only Barcelona passes |
 | Engine | Multi-city since 2026-11-05 (local, uncommitted): one pipeline (`app/lib/planner/v2CityPipeline.ts`) driven by a per-city `CityPlannerModule` (`cityPlannerModule.ts`). Modules: Barcelona (`barcelonaCityModule.ts`, same data and rules as before; output proven byte-identical on 87 plans) and Prague (`prague/`) |
 | Saving | One planner tag for every city (`product_slug = 'barcelona-smart-planner-v2'`, which the 30-plan cap and edit/delete rules key on) and the city in `destination_slug`, `preferences_json.destinationId` and `generated_plan_json.plan.destination`. Old Barcelona rows are unchanged and still valid. Editing a plan keeps its city. No database change |
