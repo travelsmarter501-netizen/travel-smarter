@@ -6,9 +6,11 @@ import { isValidSmartPlannerV2SavedPlanRow } from "../../../../lib/planner/smart
 import { applyPlanChange, applyPlanCustomizations, parsePlanChange, planAddOptions, sanitizeCustomizations, type PlanAddOptions } from "../../../../lib/planner/planCustomizations";
 import { cityForSavedPlan } from "../../../../lib/planner/savedPlanCity";
 import { withCurrentPlacePhotos } from "../../../../lib/planner/planPhotos";
-import type { V2Plan } from "../../../../lib/planner/barcelonaV2Resolve";
+import type { V2Day } from "../../../../lib/planner/barcelonaV2Resolve";
+import type { ResolvedPlace } from "../../../../lib/readyPlan";
 
-export type CustomizeSavedPlanResult = { ok: true; plan: V2Plan; addOptions: PlanAddOptions } | { ok: false; code: "invalid" | "not_signed_in" | "not_found" | "save_failed" };
+/** Only the changed day goes back (with the details of the places it shows): a 7-day plan is ~177 KB, one day a fraction. */
+export type CustomizeSavedPlanResult = { ok: true; dayNumber: number; day: V2Day | null; placeDetails: Record<string, ResolvedPlace>; addOptions: PlanAddOptions } | { ok: false; code: "invalid" | "not_signed_in" | "not_found" | "save_failed" };
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -50,6 +52,11 @@ export async function customizeSavedPlan(planId: unknown, rawChange: unknown): P
     return { ok: false, code: "save_failed" };
   }
   if (saved !== true) return { ok: false, code: "not_found" };
-  // Same display-time photo fill as the saved-plan page (plans saved before the photos existed).
-  return { ok: true, plan: withCurrentPlacePhotos(applyPlanCustomizations(city, base, next)), addOptions: planAddOptions(city, base, next) };
+  // Same display-time photo fill as the saved-plan page (plans saved before the photos existed). Only the changed day is returned.
+  const effective = withCurrentPlacePhotos(applyPlanCustomizations(city, base, next));
+  const day = effective.days.find((d) => d.dayNumber === change.dayNumber) ?? null;
+  const ids = new Set<string>();
+  if (day) for (const x of [...day.stops, ...(day.mealStops ?? []), ...day.optionalNearby, ...(day.foodSuggestions ?? []), ...(day.shoppingSuggestions ?? []), ...(day.nightlifeSuggestions ?? [])]) ids.add(x.id);
+  const placeDetails = Object.fromEntries(Object.entries(effective.placeDetails ?? {}).filter(([id]) => ids.has(id)));
+  return { ok: true, dayNumber: change.dayNumber, day, placeDetails, addOptions: planAddOptions(city, base, next) };
 }

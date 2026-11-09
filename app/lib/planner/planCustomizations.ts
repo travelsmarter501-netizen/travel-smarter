@@ -33,6 +33,8 @@ export type PlanChange =
   | { kind: "start"; dayNumber: number; minutes: number }
   | { kind: "duration"; dayNumber: number; placeId: string; minutes: number }
   | { kind: "move"; dayNumber: number; placeId: string; direction: -1 | 1 }
+  /** Drag and drop: the stop goes to position `toIndex` (0-based) of the day. */
+  | { kind: "reorder"; dayNumber: number; placeId: string; toIndex: number }
   | { kind: "remove"; dayNumber: number; placeId: string }
   | { kind: "add"; dayNumber: number; placeId: string }
   | { kind: "reset"; dayNumber: number };
@@ -62,6 +64,8 @@ export function parsePlanChange(input: unknown): PlanChange | null {
       return placeId && isInt(c.minutes) && c.minutes >= DURATION_MIN && c.minutes <= DURATION_MAX && c.minutes % DURATION_STEP === 0 ? { kind: "duration", dayNumber, placeId, minutes: c.minutes } : null;
     case "move":
       return placeId && (c.direction === -1 || c.direction === 1) ? { kind: "move", dayNumber, placeId, direction: c.direction } : null;
+    case "reorder":
+      return placeId && isInt(c.toIndex) && c.toIndex >= 0 && c.toIndex < MAX_STOPS ? { kind: "reorder", dayNumber, placeId, toIndex: c.toIndex } : null;
     case "remove":
       return placeId ? { kind: "remove", dayNumber, placeId } : null;
     case "add":
@@ -196,6 +200,15 @@ export function applyPlanChange(city: CityPlannerModule, base: V2Plan, current: 
       const moved = [...order];
       [moved[i], moved[j]] = [moved[j], moved[i]];
       day.order = moved;
+      break;
+    }
+    case "reorder": {
+      const i = order.indexOf(change.placeId);
+      if (i < 0) return null;
+      const rest = order.filter((id) => id !== change.placeId);
+      const to = Math.min(change.toIndex, rest.length);
+      if (to === i) return null;
+      day.order = [...rest.slice(0, to), change.placeId, ...rest.slice(to)];
       break;
     }
     case "remove": {

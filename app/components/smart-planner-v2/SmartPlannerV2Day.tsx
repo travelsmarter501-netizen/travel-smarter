@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useState } from "react";
+import { Fragment, useRef, useState } from "react";
 import SmartPlannerStopCardBody from "../smart-planner/SmartPlannerStopCardBody";
 import SmartPlannerTransportConnector from "../smart-planner/SmartPlannerTransportConnector";
 import SmartPlannerNearbyCard from "../smart-planner/SmartPlannerNearbyCard";
@@ -99,6 +99,72 @@ export default function SmartPlannerV2Day({
   const [startSheetOpen, setStartSheetOpen] = useState(false);
   const change = (c: PlanChange) => editing?.onChange(c);
   const busy = !!editing?.saving;
+
+  // Drag and drop (edit mode): a long press (350 ms, finger still) on a stop picks it up, moving the finger moves it, letting
+  // go puts it where the line shows. Moving the finger before that is a normal scroll.
+  const [drag, setDrag] = useState<{ placeId: string; from: number; dy: number; to: number } | null>(null);
+  const suppressClick = useRef(false);
+  const startDrag = (event: React.PointerEvent<HTMLDivElement>, placeId: string, from: number) => {
+    if (!editing || !editMode || (event.pointerType === "mouse" && event.button !== 0)) return;
+    const startX = event.clientX;
+    const startY = event.clientY;
+    const container = event.currentTarget.closest("[data-day-stops]");
+    let active = false;
+    let to = from;
+    const targetIndex = (y: number) =>
+      [...(container?.querySelectorAll<HTMLElement>("[data-stop-index]") ?? [])]
+        .filter((el) => Number(el.dataset.stopIndex) !== from)
+        .filter((el) => {
+          const r = el.getBoundingClientRect();
+          return y > r.top + r.height / 2;
+        }).length;
+    const onMove = (e: PointerEvent) => {
+      if (!active) {
+        if (Math.abs(e.clientX - startX) > 8 || Math.abs(e.clientY - startY) > 8) cleanup();
+        return;
+      }
+      to = targetIndex(e.clientY);
+      setDrag({ placeId, from, dy: e.clientY - startY, to });
+    };
+    const onTouchMove = (e: TouchEvent) => {
+      if (active) e.preventDefault();
+    };
+    const onUp = () => {
+      const wasActive = active;
+      cleanup();
+      if (!wasActive) return;
+      setDrag(null);
+      if (to !== from) change({ kind: "reorder", dayNumber: day.dayNumber, placeId, toIndex: to });
+    };
+    const onCancel = () => {
+      cleanup();
+      setDrag(null);
+    };
+    const timer = window.setTimeout(() => {
+      active = true;
+      suppressClick.current = true;
+      setDrag({ placeId, from, dy: 0, to: from });
+    }, 350);
+    function cleanup() {
+      window.clearTimeout(timer);
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onCancel);
+      window.removeEventListener("touchmove", onTouchMove);
+    }
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+    window.addEventListener("pointercancel", onCancel);
+    window.addEventListener("touchmove", onTouchMove, { passive: false });
+  };
+  // Where the dragged stop would land: a line above the stop that will follow it (or below the last one).
+  const dropLine = (stopIndex: number): "above" | "below" | null => {
+    if (!drag || stopIndex === drag.from) return null;
+    const rank = stopIndex < drag.from ? stopIndex : stopIndex - 1;
+    if (rank === drag.to) return "above";
+    if (drag.to === day.stops.length - 1 && rank === day.stops.length - 2) return "below";
+    return null;
+  };
   const activeResolved = activePlaceId ? placeDetails?.[activePlaceId] : undefined;
 
   const fallbackLeg = (fromPlaceId: string, toPlaceId: string): PlannerRouteLeg => ({
@@ -126,7 +192,7 @@ export default function SmartPlannerV2Day({
         {editing && (
           <div className="flex shrink-0 items-center gap-1.5">
             {editing.edited && (
-              <button type="button" disabled={busy} onClick={() => change({ kind: "reset", dayNumber: day.dayNumber })} className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-600 hover:border-slate-300 disabled:opacity-50">
+              <button type="button" onClick={() => change({ kind: "reset", dayNumber: day.dayNumber })} className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-600 hover:border-slate-300 disabled:opacity-50">
                 {ui.resetDay}
               </button>
             )}
@@ -145,7 +211,7 @@ export default function SmartPlannerV2Day({
       {day.timeline && day.stops.length > 0 && (
         <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-600">
           {editing ? (
-            <button type="button" disabled={busy} onClick={() => setStartSheetOpen(true)} className="flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-slate-700 hover:border-slate-300 disabled:opacity-50">
+            <button type="button" onClick={() => setStartSheetOpen(true)} className="flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-slate-700 hover:border-slate-300 disabled:opacity-50">
               ⏰ {ui.dayStart} <bdi dir="ltr" className="font-bold text-slate-900">{formatTimelineClock(day.timeline.dayStartMinutes)}</bdi> <span aria-hidden="true">▾</span>
             </button>
           ) : (
@@ -177,7 +243,9 @@ export default function SmartPlannerV2Day({
         </div>
       )}
 
-      <div className="mt-4">
+      {editing && editMode && day.stops.length > 1 && <p className="mt-3 text-xs text-slate-500">{ui.dragHint}</p>}
+
+      <div className="mt-4" data-day-stops>
         {entries.map((entry, i) => {
           const next = entries[i + 1];
           const needsConnector = !!next && entry.kind !== "freeTime" && next.kind !== "freeTime";
@@ -223,14 +291,30 @@ export default function SmartPlannerV2Day({
                 ) : (
                   <>
                     <TimelineRail number={entry.number} timeRange={entry.timeRange} />
-                    <div className="mb-3 flex-1">
+                    <div
+                      className={`mb-3 flex-1 ${entry.kind === "place" && editing && editMode ? "relative touch-pan-y select-none [-webkit-touch-callout:none] [&_img]:pointer-events-none" : ""} ${entry.kind === "place" && dropLine(entry.stopIndex) === "above" ? "border-t-4 border-teal-500 pt-1" : ""} ${entry.kind === "place" && dropLine(entry.stopIndex) === "below" ? "border-b-4 border-teal-500 pb-1" : ""}`}
+                      {...(entry.kind === "place" && editing && editMode
+                        ? {
+                            "data-stop-index": entry.stopIndex,
+                            onPointerDown: (e: React.PointerEvent<HTMLDivElement>) => startDrag(e, entry.place.id, entry.stopIndex),
+                            onContextMenu: (e: React.MouseEvent) => e.preventDefault(),
+                            style: drag?.placeId === entry.place.id ? { transform: `translateY(${drag.dy}px) scale(1.02)`, zIndex: 20, boxShadow: "0 12px 28px rgba(15,23,42,0.18)", borderRadius: 16 } : undefined,
+                          }
+                        : {})}
+                    >
                       {entry.kind === "place" ? (
                         <SmartPlannerStopCardBody
                           summary={entry.place}
                           visitDurationMinutes={entry.place.visitDurationMinutes}
                           outsideOnly={entry.place.visitMode === "outside"}
                           warnings={entry.place.warnings}
-                          onClick={() => setActivePlaceId(entry.place.id)}
+                          onClick={() => {
+                            if (suppressClick.current) {
+                              suppressClick.current = false;
+                              return;
+                            }
+                            setActivePlaceId(entry.place.id);
+                          }}
                           priority={entry.number <= 2}
                           lang={lang}
                         />
@@ -252,22 +336,16 @@ export default function SmartPlannerV2Day({
                       {editing && editMode && entry.kind === "place" && (
                         <div className="mt-1.5 flex items-center justify-between gap-2">
                           <div className="flex items-center rounded-full border border-slate-200 bg-white">
-                            <button type="button" aria-label={ui.shorter} disabled={busy || entry.place.visitDurationMinutes <= 15} onClick={() => change({ kind: "duration", dayNumber: day.dayNumber, placeId: entry.place.id, minutes: Math.max(15, Math.ceil(entry.place.visitDurationMinutes / 15) * 15 - 15) })} className="h-9 w-9 text-base font-bold text-slate-700 disabled:opacity-30">
+                            <button type="button" aria-label={ui.shorter} disabled={entry.place.visitDurationMinutes <= 15} onClick={() => change({ kind: "duration", dayNumber: day.dayNumber, placeId: entry.place.id, minutes: Math.max(15, Math.ceil(entry.place.visitDurationMinutes / 15) * 15 - 15) })} className="h-9 w-9 text-base font-bold text-slate-700 disabled:opacity-30">
                               −
                             </button>
                             <span className="min-w-14 text-center text-xs font-bold text-teal-700">{formatMinutes(lang, entry.place.visitDurationMinutes)}</span>
-                            <button type="button" aria-label={ui.longer} disabled={busy || entry.place.visitDurationMinutes >= 360} onClick={() => change({ kind: "duration", dayNumber: day.dayNumber, placeId: entry.place.id, minutes: Math.min(360, Math.floor(entry.place.visitDurationMinutes / 15) * 15 + 15) })} className="h-9 w-9 text-base font-bold text-slate-700 disabled:opacity-30">
+                            <button type="button" aria-label={ui.longer} disabled={entry.place.visitDurationMinutes >= 360} onClick={() => change({ kind: "duration", dayNumber: day.dayNumber, placeId: entry.place.id, minutes: Math.min(360, Math.floor(entry.place.visitDurationMinutes / 15) * 15 + 15) })} className="h-9 w-9 text-base font-bold text-slate-700 disabled:opacity-30">
                               +
                             </button>
                           </div>
                           <div className="flex items-center gap-1">
-                            <button type="button" aria-label={ui.moveUp} disabled={busy || entry.stopIndex === 0} onClick={() => change({ kind: "move", dayNumber: day.dayNumber, placeId: entry.place.id, direction: -1 })} className="h-9 w-9 rounded-full border border-slate-200 bg-white text-sm text-slate-700 disabled:opacity-30">
-                              ↑
-                            </button>
-                            <button type="button" aria-label={ui.moveDown} disabled={busy || entry.stopIndex === day.stops.length - 1} onClick={() => change({ kind: "move", dayNumber: day.dayNumber, placeId: entry.place.id, direction: 1 })} className="h-9 w-9 rounded-full border border-slate-200 bg-white text-sm text-slate-700 disabled:opacity-30">
-                              ↓
-                            </button>
-                            <button type="button" aria-label={ui.removeStop} disabled={busy || day.stops.length <= 1} onClick={() => change({ kind: "remove", dayNumber: day.dayNumber, placeId: entry.place.id })} className="h-9 rounded-full border border-rose-200 bg-white px-3 text-xs font-bold text-rose-600 disabled:opacity-30">
+                            <button type="button" aria-label={ui.removeStop} disabled={day.stops.length <= 1} onClick={() => change({ kind: "remove", dayNumber: day.dayNumber, placeId: entry.place.id })} className="h-9 rounded-full border border-rose-200 bg-white px-3 text-xs font-bold text-rose-600 disabled:opacity-30">
                               {ui.removeStop}
                             </button>
                           </div>
@@ -337,7 +415,7 @@ export default function SmartPlannerV2Day({
               {editing.addOptions.map((option) => (
                 <div key={option.id} className="flex shrink-0 flex-col gap-1.5">
                   <SmartPlannerNearbyCard summary={option} typeLabel={ui.addPlaceType} onClick={() => setActivePlaceId(option.id)} />
-                  <button type="button" disabled={busy} onClick={() => change({ kind: "add", dayNumber: day.dayNumber, placeId: option.id })} className="rounded-full border border-teal-200 bg-teal-50 px-3 py-1.5 text-xs font-bold text-teal-700 disabled:opacity-50">
+                  <button type="button" onClick={() => change({ kind: "add", dayNumber: day.dayNumber, placeId: option.id })} className="rounded-full border border-teal-200 bg-teal-50 px-3 py-1.5 text-xs font-bold text-teal-700 disabled:opacity-50">
                     {ui.addToDay}
                   </button>
                 </div>
@@ -358,7 +436,7 @@ export default function SmartPlannerV2Day({
                 <button
                   key={minutes}
                   type="button"
-                  disabled={busy}
+                 
                   onClick={() => {
                     setStartSheetOpen(false);
                     change({ kind: "start", dayNumber: day.dayNumber, minutes });
