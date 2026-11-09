@@ -346,7 +346,7 @@ export const PRAGUE_ATTRACTIONS: Attraction[] = [
     address: "Malostranské náměstí, 118 00 Praha 1",
     priceText: "150 CZK",
     hours: variable(
-      "يناير 9:00–16:00 · فبراير–مارس 9:00–17:00 · أبريل ويوليو–أكتوبر 9:00–18:00 (الجمعة والسبت لحد 17:00) · مايو–يونيو 9:00–18:00 (الجمعة لحد 17:00) · نوفمبر 9:00–17:00 · ديسمبر 9:00–17:00 (الجمعة والسبت لحد 16:00) · آخر دخول قبل الإغلاق بربع ساعة",
+      "يناير 9:00–16:00 (1–4 يناير لحد 17:00) · فبراير–مارس 9:00–17:00 · أبريل ويوليو–أكتوبر 9:00–18:00 (الجمعة والسبت لحد 17:00) · مايو–يونيو 9:00–18:00 (الجمعة لحد 17:00) · نوفمبر 9:00–17:00 · ديسمبر 9:00–17:00 (الجمعة والسبت لحد 16:00) · 3 ديسمبر 2026: 9:00–13:30 · 17 ديسمبر 2026: 13:00–17:00 · آخر دخول قبل الإغلاق بربع ساعة",
       "https://prague.eu/en/objevujte/st-nicholas-church-at-mala-strana-kostel-sv-mikulase-mala-strana/"
     ),
     coordinates: { lat: 50.087991947521, lng: 14.403133622476 },
@@ -1024,14 +1024,33 @@ const PLANNING_HOURS: Record<string, PlanningHours> = {
       season("10-18", "12-31", days(SUN_TO_FRI, ["09:00", "16:30"])),
     ],
   },
+  // St. Nicholas Church, Malostranské náměstí (Malá Strana; not the Old Town church): stnicholas.cz/en/tours/opening-hours,
+  // checked 2026-11-09. "The last entry is always 15 minutes before closing": the planned visit (30 min) must end by closing,
+  // so its start is always earlier than the last entry.
   "st-nicholas-mala-strana": {
     seasonalSchedules: [
-      season("01-01", "01-31", everyDay(["09:00", "16:00"])),
+      season("01-01", "01-04", everyDay(["09:00", "17:00"])),
+      season("01-05", "01-31", everyDay(["09:00", "16:00"])),
       season("02-01", "03-31", everyDay(["09:00", "17:00"])),
-      // "April–October mostly 9:00–18:00 (Friday and sometimes Saturday until 17:00)": Friday and Saturday planned to 17:00.
-      season("04-01", "10-31", { ...days(["sunday", "monday", "tuesday", "wednesday", "thursday"], ["09:00", "18:00"]), ...days(["friday", "saturday"], ["09:00", "17:00"]) }),
+      season("04-01", "04-30", { ...days(["sunday", "monday", "tuesday", "wednesday", "thursday"], ["09:00", "18:00"]), ...days(["friday", "saturday"], ["09:00", "17:00"]) }),
+      season("05-01", "06-30", { ...days(["saturday", "sunday", "monday", "tuesday", "wednesday", "thursday"], ["09:00", "18:00"]), friday: R("09:00", "17:00") }),
+      season("07-01", "10-31", { ...days(["sunday", "monday", "tuesday", "wednesday", "thursday"], ["09:00", "18:00"]), ...days(["friday", "saturday"], ["09:00", "17:00"]) }),
       season("11-01", "11-30", everyDay(["09:00", "17:00"])),
       season("12-01", "12-31", { ...days(["sunday", "monday", "tuesday", "wednesday", "thursday"], ["09:00", "17:00"]), ...days(["friday", "saturday"], ["09:00", "16:00"]) }),
+    ],
+    dateExceptions: [
+      { from: "2026-12-03", to: "2026-12-03", hours: R("09:00", "13:30"), note: "stnicholas.cz" },
+      { from: "2026-12-17", to: "2026-12-17", hours: R("13:00", "17:00"), note: "stnicholas.cz" },
+    ],
+  },
+  // Troja Château (Prague City Gallery): ghmp.cz/en/buildings/troja-chateau, checked 2026-11-09. The CHÂTEAU (the planned visit)
+  // opens only in its season, 2026: 1 Apr - 29 Oct, Tue-Thu 10-18, Fri 13-18, Sat-Sun 10-18 (Monday not listed); "in the
+  // off-season, the château is closed and the gardens are open" (gardens Tue-Thu 10-16, Fri 13-16, Sat-Sun 10-16, closed in
+  // frost). The 2027 season dates are not published yet: the 2026 dates are used for 2027 too. No last entry is published.
+  "troja-chateau": {
+    seasonalSchedules: [
+      season("04-01", "10-29", { ...days(["tuesday", "wednesday", "thursday", "saturday", "sunday"], ["10:00", "18:00"]), friday: R("13:00", "18:00") }),
+      season("10-30", "03-31", {}),
     ],
   },
   "petrin-tower": {
