@@ -38,6 +38,7 @@ function pragueLeg(fromPlaceId: string, toPlaceId: string): PlannerRouteLeg {
   return { fromPlaceId, toPlaceId, recommendedMode: "transit", options, sourceStatus: "estimated", routeUrl };
 }
 import { repairCityDayGeography } from "../cityGeographyRepair";
+import { balanceCityDays } from "../cityDayBalance";
 import { ENABLE_MUST_SEE_PRIORITY, FLAGSHIP_MUST_SEE_BOOST, FLAGSHIP_TIER_B_BOOST, FLAGSHIP_TIER_B_SURPRISE_ME_BOOST } from "../barcelonaMustSeePolicy";
 import { V2_PLANNER_INTERESTS, type V2PlannerInterest } from "../v2PlannerTypes";
 import { PRAGUE_PLACES, PRAGUE_PLACE_COORDINATES } from "./praguePlaces";
@@ -125,6 +126,20 @@ const COVERAGE_GOALS: CoverageGoal[] = [
 ];
 
 const FLAGSHIP_MUST_SEE = ["prague-castle"];
+
+// ── Outside stops (PROPOSAL, owner review) ─────────────────────────────────────────────────────────
+// Paid places whose outside is on a public street or square (no closing time for the outside), and that are not flagships:
+// on a crowded day the plan may keep them as a 15-minute outside stop instead of the full visit.
+const OUTSIDE_STOP_MINUTES: Record<string, number> = {
+  "strahov-monastery": 15,
+  loreta: 15,
+  "old-town-bridge-tower": 15,
+  "municipal-house": 15,
+  "powder-tower": 15,
+  "national-museum": 15,
+  "zizkov-tower": 15,
+};
+const BALANCE_PROTECTED = new Set([...TIER_A, ...TIER_B]);
 const FLAGSHIP_TIER_B_IDS = ["charles-bridge", "old-town-square"];
 
 function flagshipGoals(context: { surpriseMe: boolean; days: number }): FlagshipCoverageGoal[] {
@@ -205,7 +220,9 @@ function presentPraguePlan(plan: GeneratedPlannerPlan): PresentedPlannerPlan {
     const names = day.stops.map((stop) => placeName(stop.placeId));
     const summary =
       names.length === 0 ? "" : names.length === 1 ? `محطة اليوم: ${names[0]}.` : `محطات اليوم: ${names.slice(0, -1).join("، ")} و${names[names.length - 1]}.`;
-    return { title, summary, optionalNearby: [] };
+    // Day balance: places taken off a full day stay visible as optional suggestions of that day.
+    const optionalNearby = (day.optionalPlaceIds ?? []).map((placeId) => ({ placeId, type: "experience" as const, reason: "اختياري: اليوم مليان، زوره إذا ضل عندك وقت" }));
+    return { title, summary, optionalNearby };
   });
   return { byDay };
 }
@@ -381,12 +398,30 @@ export const PRAGUE_CITY_MODULE: CityPlannerModule = {
     // open at 10:00 or later stay out of the breakfast slot, because flexible-date plans cannot check opening hours.
     breakfastCategories: ["breakfast"],
     lunchCategories: ["local", "middle-eastern", "restaurants"],
+    lunchByClock: true,
     eveningSpecialCategory: null,
     dinnerCategories: ["local", "middle-eastern", "restaurants"],
   },
   // The Surprise Me composition pass classifies Prague places from Prague's own data and never moves these flagships.
   compositionProtectedPlaceIds: [...FLAGSHIP_MUST_SEE, ...FLAGSHIP_TIER_B_IDS],
-  repairDayGeography: (context) =>
-    repairCityDayGeography(context, { compatibility: PRAGUE_CLUSTER_COMPATIBILITY, connectors: PRAGUE_CONNECTORS, metadataById: getPraguePlannerMetadataById, travelMinutes }),
+  repairDayGeography: (context) => {
+    const repaired = repairCityDayGeography(context, { compatibility: PRAGUE_CLUSTER_COMPATIBILITY, connectors: PRAGUE_CONNECTORS, metadataById: getPraguePlannerMetadataById, travelMinutes });
+    return balanceCityDays(
+      { ...context, plan: repaired.plan, legsByDay: repaired.legsByDay },
+      {
+        compatibility: PRAGUE_CLUSTER_COMPATIBILITY,
+        connectors: PRAGUE_CONNECTORS,
+        metadataById: getPraguePlannerMetadataById,
+        travelMinutes,
+        protectedPlaceIds: BALANCE_PROTECTED,
+        gatedPlaceIds: new Set(["vltava-one-hour-cruise"]),
+        outsideMinutes: (placeId) => OUTSIDE_STOP_MINUTES[placeId],
+        heavyMinutes: 380,
+        lightMinutes: 170,
+        minPriorityToAdd: 5,
+      }
+    );
+  },
+  outsideVisit: (placeId) => (OUTSIDE_STOP_MINUTES[placeId] ? { visitDurationMinutes: OUTSIDE_STOP_MINUTES[placeId] } : undefined),
   capacityWarning: (daysGenerated) => `قدرنا نبني خطة قوية لـ ${daysGenerated} أيام من البيانات المتاحة حاليًا لبراغ. عم نوسّع المحتوى للأيام الأطول.`,
 };

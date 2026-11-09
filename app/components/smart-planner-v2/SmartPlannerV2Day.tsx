@@ -190,6 +190,7 @@ export default function SmartPlannerV2Day({
                         <SmartPlannerStopCardBody
                           summary={entry.place}
                           visitDurationMinutes={entry.place.visitDurationMinutes}
+                          outsideOnly={entry.place.visitMode === "outside"}
                           warnings={entry.place.warnings}
                           onClick={() => setActivePlaceId(entry.place.id)}
                           priority={entry.number <= 2}

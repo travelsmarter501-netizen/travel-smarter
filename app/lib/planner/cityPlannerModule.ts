@@ -40,6 +40,8 @@ export type CityMealStopRules = {
   /** An optional evening category tried before dinner (Barcelona: "tapas"); null when the city has none. */
   eveningSpecialCategory: string | null;
   dinnerCategories: readonly string[];
+  /** Optional: place lunch after the stop that ends closest before 13:45 (estimated from visit lengths), not after the middle stop. */
+  lunchByClock?: boolean;
 };
 
 export type CityAccommodationRules = {
@@ -121,4 +123,6 @@ export type CityPlannerModule = {
   repairDayGeography?: (context: DayGeographyRepairContext) => { plan: GeneratedPlannerPlan; legsByDay: PlannerRouteLeg[][] };
   /** Shown when the content cannot fill every requested day (keeps the existing Barcelona wording for Barcelona). */
   capacityWarning: (daysGenerated: number) => string;
+  /** Optional: the short "outside only" visit of a paid place (minutes, and the outside access hours when the outside closes). */
+  outsideVisit?: (placeId: string) => { visitDurationMinutes: number; hours?: HoursInfo } | undefined;
 };

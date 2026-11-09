@@ -349,6 +349,23 @@ export function buildBarcelonaMealStopsForDay(
   return buildMealStopsForDay(BARCELONA_MEAL_STOP_CONTEXT, stopClusters, weekday, v2Interests, usedPlaceIds, usedFoodCategoryIds, surpriseMe);
 }
 
+/**
+ * Lunch by the clock (cities with `lunchByClock`): the day is estimated from 9:00 (+60 minutes when there is a breakfast stop),
+ * each stop's visit length and 15 minutes between stops; lunch goes after the last stop that ends by 13:45 (never after the last
+ * stop of the day, which keeps the evening slot), or after the first stop when even that one ends later.
+ */
+export function lunchIndexByClock(visitMinutes: readonly number[], hasBreakfast = true): number {
+  const LATEST_END = 13 * 60 + 45;
+  let t = 9 * 60 + (hasBreakfast ? 60 : 0);
+  let index = 0;
+  for (let i = 0; i < visitMinutes.length - 1; i++) {
+    t += (i > 0 ? 15 : 0) + visitMinutes[i];
+    if (t <= LATEST_END) index = i;
+    else break;
+  }
+  return index;
+}
+
 /** The city-independent meal-stop builder (see buildBarcelonaMealStopsForDay above for the full behaviour description). */
 export function buildMealStopsForDay(
   city: MealStopCityContext,
@@ -357,7 +374,8 @@ export function buildMealStopsForDay(
   v2Interests: V2PlannerInterest[],
   usedPlaceIds: Set<string>,
   usedFoodCategoryIds: Set<string>,
-  surpriseMe = false
+  surpriseMe = false,
+  stopVisitMinutes?: readonly number[]
 ): V2MealStop[] {
   const rules = city.rules;
   const mainStopCount = stopClusters.length;
@@ -381,7 +399,7 @@ export function buildMealStopsForDay(
   // day has no real "middle", so lunch is skipped there in favor of the single evening slot
   // below (never two meals crowded onto one attraction's day).
   if (mainStopCount >= 2) {
-    const lunchAfterIndex = Math.floor((mainStopCount - 1) / 2);
+    const lunchAfterIndex = rules.lunchByClock && stopVisitMinutes ? lunchIndexByClock(stopVisitMinutes) : Math.floor((mainStopCount - 1) / 2);
     const lunchPrevCluster = stopClusters[lunchAfterIndex];
     const lunchNextCluster = stopClusters[lunchAfterIndex + 1] ?? null;
     const lunchPlace = pickBestForSlot(city, rules.lunchCategories, lunchPrevCluster, lunchNextCluster, usedPlaceIds, usedFoodCategoryIds, weekday, "lunch", false);

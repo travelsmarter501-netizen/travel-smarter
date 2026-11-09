@@ -918,6 +918,7 @@ export const PLAN_PHRASES: (PlanCatalogEntry & { key: string })[] = [
   { key: "meal/reason/breakfast", ar: "قريب من أول محطة في يومك ومناسب لوقت الفطور", en: "Close to your first stop and right for breakfast time", he: "קרוב לתחנה הראשונה שלכם ומתאים לארוחת בוקר" },
   { key: "meal/reason/lunch", ar: "قريب من مسار يومك ومناسب لوقت الغداء", en: "Close to your route and right for lunchtime", he: "קרוב למסלול שלכם ומתאים לצהריים" },
   { key: "meal/reason/tapas", ar: "قريب من مسار يومك ومناسب لجولة تاباس مسائية", en: "Close to your route and right for an evening tapas round", he: "קרוב למסלול שלכם ומתאים לסיבוב טאפאס בערב" },
+  { key: "prague/optional/full-day", ar: "اختياري: اليوم مليان، زوره إذا ضل عندك وقت", en: "Optional: the day is full, visit if you have time", he: "אופציונלי: היום מלא, בקרו אם נשאר זמן" },
   { key: "meal/reason/dinner", ar: "قريب من مسار يومك ومناسب لوقت العشاء", en: "Close to your route and right for dinner time", he: "קרוב למסלול שלכם ומתאים לארוחת ערב" },
   { key: "category/attraction", ar: "معلم سياحي", en: "Attraction", he: "אטרקציה" },
   { key: "category/food", ar: "مطعم / مقهى", en: "Restaurant / café", he: "מסעדה / בית קפה" },

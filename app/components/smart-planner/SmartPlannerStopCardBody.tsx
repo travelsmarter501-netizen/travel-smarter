@@ -41,6 +41,7 @@ export default function SmartPlannerStopCardBody({
   onClick,
   priority,
   foodMeta,
+  outsideOnly,
   lang = "ar",
 }: {
   summary: ResolvedPlaceSummary;
@@ -51,6 +52,8 @@ export default function SmartPlannerStopCardBody({
   onClick: () => void;
   priority?: boolean;
   foodMeta?: StopCardFoodMeta;
+  /** The plan visits only the outside of this place (short stop). */
+  outsideOnly?: boolean;
   /** Display language (plan view). V1 and other callers omit it = Arabic. */
   lang?: PlanLanguage;
 }) {
@@ -126,6 +129,7 @@ export default function SmartPlannerStopCardBody({
               <p className="mt-1 flex items-center gap-1 text-[11px] font-semibold text-teal-700">
                 <IconClock className="h-3 w-3" />
                 {formatMinutes(lang, visitDurationMinutes)}
+                {outsideOnly && <span className="ms-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-800">{PLAN_TEXT[lang].outsideOnly}</span>}
               </p>
             )
           )}

@@ -50,6 +50,8 @@ export type V2ResolvedStop = ResolvedPlaceSummary & {
   /** Build Real Daily Timeline: the place's own real Guide hours, carried through so the
    * Timeline Resolver can hard-constrain against it -- see barcelonaV2Timeline.ts. */
   hours?: HoursInfo;
+  /** Outside-only stop (cities with outside stops): short visit of the outside; the card says so. */
+  visitMode?: "outside";
 };
 
 export type V2ResolvedNearby = ResolvedPlaceSummary & {
@@ -169,7 +171,7 @@ function getHoursForResolved(resolved: ResolvedPlace | undefined): HoursInfo | u
   return resolved ? (resolved.place as { hours?: HoursInfo }).hours : undefined;
 }
 
-function resolveStop(city: CityPlannerModule, placeId: string, score: number, placeDetails: Record<string, ResolvedPlace>, weekday?: Weekday | null): V2ResolvedStop {
+function resolveStop(city: CityPlannerModule, placeId: string, score: number, placeDetails: Record<string, ResolvedPlace>, weekday?: Weekday | null, visitMode?: "outside"): V2ResolvedStop {
   const resolved = resolvePlannerPlace(placeId, city.places);
   if (resolved) {
     placeDetails[placeId] = resolved;
@@ -187,6 +189,10 @@ function resolveStop(city: CityPlannerModule, placeId: string, score: number, pl
   // provably NOT that weekday -- see getBarcelonaPlannerOperationalWarnings's own doc comment.
   const warnings = city.operationalWarnings(placeId, weekday) ?? [];
 
+  const outside = visitMode === "outside" ? city.outsideVisit?.(placeId) : undefined;
+  if (outside) {
+    return { ...summary, visitDurationMinutes: outside.visitDurationMinutes, score, warnings: [], hours: outside.hours, visitMode: "outside" };
+  }
   return {
     ...summary,
     visitDurationMinutes: metadata?.visitDurationMinutes ?? 0,
@@ -311,7 +317,8 @@ export function resolveV2Plan(
     // Timing guard: a food place excluded for this day is treated as used for this day's meal choice only.
     const excludedToday = (mealExclusionsByDay?.[day.dayNumber] ?? []).filter((id) => !usedPlaceIds.has(id));
     for (const id of excludedToday) usedPlaceIds.add(id);
-    const mealStops = buildMealStopsForDay(mealStopCity, stopClusters, weekday ?? null, v2Interests, usedPlaceIds, usedFoodCategoryIds, surpriseMe);
+    const stopVisitMinutes = city.mealStops.lunchByClock ? day.stops.map((stop) => (stop.visitMode === "outside" ? city.outsideVisit?.(stop.placeId)?.visitDurationMinutes : undefined) ?? city.metadataById(stop.placeId)?.visitDurationMinutes ?? 60) : undefined;
+    const mealStops = buildMealStopsForDay(mealStopCity, stopClusters, weekday ?? null, v2Interests, usedPlaceIds, usedFoodCategoryIds, surpriseMe, stopVisitMinutes);
     for (const id of excludedToday) if (!mealStops.some((meal) => meal.id === id)) usedPlaceIds.delete(id);
     for (const meal of mealStops) {
       const resolved = resolvePlace(meal.id, "food", city.places);
@@ -356,7 +363,7 @@ export function resolveV2Plan(
     // are added above, and never derived from them (they're supplementary, never counted here).
     // Meal stops are equally excluded -- see mealStops' own doc comment on V2Day.
     const density = classifyDayDensity(day.stops.length, day.totalVisitMinutes);
-    const resolvedStops = day.stops.map((stop) => resolveStop(city, stop.placeId, stop.score, placeDetails, weekday ?? null));
+    const resolvedStops = day.stops.map((stop) => resolveStop(city, stop.placeId, stop.score, placeDetails, weekday ?? null, stop.visitMode));
     const legs = legsByDay[index] ?? [];
 
     // Build Real Daily Timeline: computed from this day's ALREADY-FINAL stops/legs/mealStops --

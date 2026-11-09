@@ -60,6 +60,8 @@ export type PlannerDayStop = {
   placeId: string;
   /** The real, unmodified score from the scoring engine -- never boosted by day-builder heuristics. */
   score: number;
+  /** Cities with outside stops (Prague day balance): the plan visits only the outside of a paid place (short stop, outside access hours). */
+  visitMode?: "outside";
 };
 
 export type PlannerDay = {
@@ -67,6 +69,8 @@ export type PlannerDay = {
   stops: PlannerDayStop[];
   totalVisitMinutes: number;
   clusters: string[];
+  /** Day balance (cities that opt in): places taken off a full day, shown as optional suggestions of that day. */
+  optionalPlaceIds?: string[];
 };
 
 export type GeneratedPlannerPlan = {
