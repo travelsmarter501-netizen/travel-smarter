@@ -47,8 +47,12 @@ export function formatDayMonth(lang: PlanLanguage, isoDate: string): string {
   return `${day} ${monthName(lang, month)}`;
 }
 
-/** Same thresholds as readyPlan.ts formatMinutesAr (Arabic output identical). */
-export function formatMinutes(lang: PlanLanguage, minutes: number): string {
+/**
+ * Same thresholds as readyPlan.ts formatMinutesAr (Arabic output identical). Display only: minutes are shown as whole
+ * minutes, rounded to the nearest one (15.6 -> 16); the value the caller computed with is not changed.
+ */
+export function formatMinutes(lang: PlanLanguage, rawMinutes: number): string {
+  const minutes = Math.round(rawMinutes);
   if (lang === "ar") {
     if (minutes === 1) return "دقيقة واحدة";
     if (minutes === 2) return "دقيقتان";
@@ -59,7 +63,10 @@ export function formatMinutes(lang: PlanLanguage, minutes: number): string {
   return minutes === 1 ? "1 minute" : `${minutes} minutes`;
 }
 
-export function formatMinutesRange(lang: PlanLanguage, min: number, max: number): string {
+/** A range of whole minutes ("14–17 دقيقة"); display-only rounding as in formatMinutes. */
+export function formatMinutesRange(lang: PlanLanguage, rawMin: number, rawMax: number): string {
+  const min = Math.round(rawMin);
+  const max = Math.round(rawMax);
   if (min === max) return formatMinutes(lang, min);
   return lang === "ar" ? `${min}–${max} دقيقة` : lang === "he" ? `${min}–${max} דקות` : `${min}–${max} min`;
 }

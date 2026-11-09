@@ -135,7 +135,9 @@ export function summarizeResolvedPlace(resolved: ResolvedPlace): ResolvedPlaceSu
 }
 
 /** "دقيقة واحدة" / "دقيقتان" / "٣-١٠ دقائق" / "١١+ دقيقة" — standard Arabic numeral-noun agreement. */
-export function formatMinutesAr(minutes: number): string {
+export function formatMinutesAr(rawMinutes: number): string {
+  // Display only: whole minutes, rounded to the nearest one.
+  const minutes = Math.round(rawMinutes);
   if (minutes === 1) return "دقيقة واحدة";
   if (minutes === 2) return "دقيقتان";
   if (minutes >= 3 && minutes <= 10) return `${minutes} دقائق`;
