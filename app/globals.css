@@ -70,6 +70,7 @@
 html[lang="he"] {
   --font-cairo: var(--font-rubik);
   --font-noto-kufi: var(--font-rubik);
+  --font-noto-kufi-600: var(--font-rubik);
 }
 
 /* Headlines in the customer journey use the display face; body text, buttons and inputs stay Cairo. */

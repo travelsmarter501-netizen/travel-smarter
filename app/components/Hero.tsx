@@ -37,7 +37,9 @@ export default function Hero() {
           </div>
 
           <div id="video" className="home-load mx-auto w-[clamp(10.5rem,calc((100svh-26rem)*0.8),15rem)] scroll-mt-24 sm:w-[18rem] md:w-[17rem] lg:w-[18.5rem]" style={{ "--d": "0.35s" } as React.CSSProperties}>
-            <h2 className="mb-2 text-center text-sm font-semibold text-ink">{video.title}</h2>
+            <h2 className="mb-2 text-center text-sm font-semibold text-ink" style={{ fontFamily: "var(--font-noto-kufi-600), var(--font-cairo)" }}>
+              {video.title}
+            </h2>
             {/* HomeVideo draws its own frame: rounded corners, a thin border and a small shadow. */}
             <HomeVideo />
             {video.languageNote && <p className="mt-2 text-center text-sm text-muted">{video.languageNote}</p>}

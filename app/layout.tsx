@@ -20,14 +20,28 @@ const cairo = Cairo({
 // from Cairo body text. It has no Latin glyphs, so English headlines fall back to Cairo.
 // Hebrew: neither Cairo nor Noto Kufi has Hebrew letters. Rubik (Hebrew + Latin) takes over body text and headlines only while the page is
 // in Hebrew (html[lang="he"] in globals.css), so Arabic and English pages render exactly as before.
+// Not preloaded: Arabic and English pages never use it (measured 2026-11-09), so its files load only on a Hebrew page.
 const rubik = Rubik({
   variable: "--font-rubik",
   subsets: ["hebrew", "latin"],
+  preload: false,
 });
 
+// Headlines are bold (700) everywhere, so only that weight is loaded: one 43 KB static file instead of the 121 KB variable font
+// (all weights 100-900). A headline set to another weight would render at 700.
 const notoKufi = Noto_Kufi_Arabic({
   variable: "--font-noto-kufi",
   subsets: ["arabic"],
+  weight: "700",
+});
+
+// The one semibold headline (the homepage video title, Hero.tsx) keeps its own 600 face: a separate static file, not preloaded, so it
+// is downloaded only on a page that shows that title.
+const notoKufiSemibold = Noto_Kufi_Arabic({
+  variable: "--font-noto-kufi-600",
+  subsets: ["arabic"],
+  weight: "600",
+  preload: false,
 });
 
 export const metadata: Metadata = {
@@ -47,7 +61,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="ar"
       dir="rtl"
       data-scroll-behavior="smooth"
-      className={`${cairo.variable} ${notoKufi.variable} ${rubik.variable} h-full scroll-smooth antialiased`}
+      className={`${cairo.variable} ${notoKufi.variable} ${notoKufiSemibold.variable} ${rubik.variable} h-full scroll-smooth antialiased`}
       suppressHydrationWarning
     >
       <body className="flex min-h-full flex-col font-sans">
