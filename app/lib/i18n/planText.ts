@@ -84,15 +84,15 @@ export function formatDistance(lang: PlanLanguage, km: number): string {
 }
 
 export function formatPlaceCount(lang: PlanLanguage, count: number): string {
-  if (lang === "ar") return count === 1 ? "مكان رئيسي واحد" : count === 2 ? "مكانان رئيسيان" : `${count} أماكن رئيسية`;
-  if (lang === "he") return count === 1 ? "מקום מרכזי אחד" : `${count} מקומות מרכזיים`;
-  return count === 1 ? "1 main place" : `${count} main places`;
+  if (lang === "ar") return count === 1 ? "مكان واحد" : count === 2 ? "مكانين" : `${count} أماكن`;
+  if (lang === "he") return count === 1 ? "מקום אחד" : `${count} מקומות`;
+  return count === 1 ? "1 place" : `${count} places`;
 }
 
 export function formatMealCount(lang: PlanLanguage, count: number): string {
-  if (lang === "ar") return count === 1 ? "وجبة واحدة مجدولة" : count === 2 ? "وجبتان مجدولتان" : `${count} وجبات مجدولة`;
-  if (lang === "he") return count === 1 ? "ארוחה אחת מתוכננת" : `${count} ארוחות מתוכננות`;
-  return count === 1 ? "1 planned meal" : `${count} planned meals`;
+  if (lang === "ar") return count === 1 ? "وجبة" : count === 2 ? "وجبتين" : `${count} وجبات`;
+  if (lang === "he") return count === 1 ? "ארוחה אחת" : `${count} ארוחות`;
+  return count === 1 ? "1 meal" : `${count} meals`;
 }
 
 export function formatDays(lang: PlanLanguage, count: number): string {
@@ -114,12 +114,29 @@ export const PLAN_TEXT = {
     regenerating: "عم نعيد البناء...",
     regenerate: "إعادة بناء الخطة",
     dayTab: (n: number) => `اليوم ${n}`,
-    dayStart: "⏰ ابدأ يومك:",
-    dayEnd: "ينتهي تقريبًا:",
-    approximate: "(الوقت تقريبي)",
-    totalTransit: (minutes: number) => `إجمالي التنقل تقريبًا ${minutes} دقيقة`,
+    dayStart: "البداية",
+    dayEnd: "النهاية",
+    approximate: "تقريبي",
+    totalTransit: (minutes: number) => `تنقل ~${minutes} د`,
+    // Editing a saved plan with buttons (plan page).
+    editDay: "✎ تعديل",
+    doneEditing: "تم",
+    resetDay: "↺ الأصلية",
+    chooseStart: "بداية اليوم",
+    moveUp: "لفوق",
+    moveDown: "لتحت",
+    removeStop: "شيل",
+    addToDay: "+ أضف",
+    addPlaces: "أماكن قريبة تقدر تضيفها",
+    addPlaceType: "قريب",
+    noAddPlaces: "ما في مكان قريب بيلحق بهاليوم.",
+    shorter: "أقصر",
+    longer: "أطول",
+    saving: "عم نحفظ…",
+    saveFailed: "ما انحفظ التعديل. جرّب كمان مرة.",
+    edited: "معدّلة",
     freeTime: "🕒 وقت حر",
-    freeTimeNote: "استراحة، رجوع للفندق، أو وقت مفتوح قبل المحطة التالية",
+    freeTimeNote: "استراحة",
     foodSuggestions: "اقتراحات أكل",
     shopping: "تسوق",
     nightlife: "اقتراح سهرة",
@@ -153,12 +170,29 @@ export const PLAN_TEXT = {
     regenerating: "Rebuilding...",
     regenerate: "Rebuild the plan",
     dayTab: (n: number) => `Day ${n}`,
-    dayStart: "⏰ Start your day:",
-    dayEnd: "ends around:",
-    approximate: "(approximate times)",
-    totalTransit: (minutes: number) => `About ${minutes} minutes of travel in total`,
+    dayStart: "Start",
+    dayEnd: "End",
+    approximate: "approx.",
+    totalTransit: (minutes: number) => `~${minutes} min travel`,
+    // Editing a saved plan with buttons (plan page).
+    editDay: "✎ Edit",
+    doneEditing: "Done",
+    resetDay: "↺ Original",
+    chooseStart: "Day starts",
+    moveUp: "Move up",
+    moveDown: "Move down",
+    removeStop: "Remove",
+    addToDay: "+ Add",
+    addPlaces: "Nearby places you can add",
+    addPlaceType: "Nearby",
+    noAddPlaces: "No nearby place fits this day.",
+    shorter: "Shorter",
+    longer: "Longer",
+    saving: "Saving…",
+    saveFailed: "The change wasn't saved. Try again.",
+    edited: "Edited",
     freeTime: "🕒 Free time",
-    freeTimeNote: "A break, back to the hotel, or open time before the next stop",
+    freeTimeNote: "Break",
     foodSuggestions: "Food suggestions",
     shopping: "Shopping",
     nightlife: "Evening suggestion",
@@ -192,12 +226,29 @@ export const PLAN_TEXT = {
     regenerating: "בונים מחדש...",
     regenerate: "בנייה מחדש של התוכנית",
     dayTab: (n: number) => `יום ${n}`,
-    dayStart: "⏰ התחלת היום:",
-    dayEnd: "סיום משוער:",
-    approximate: "(הזמנים משוערים)",
-    totalTransit: (minutes: number) => `בסך הכול בערך ${minutes} דקות נסיעה`,
+    dayStart: "התחלה",
+    dayEnd: "סיום",
+    approximate: "משוער",
+    totalTransit: (minutes: number) => `~${minutes} דק׳ נסיעה`,
+    // Editing a saved plan with buttons (plan page).
+    editDay: "✎ עריכה",
+    doneEditing: "סיום",
+    resetDay: "↺ המקור",
+    chooseStart: "תחילת היום",
+    moveUp: "למעלה",
+    moveDown: "למטה",
+    removeStop: "הסרה",
+    addToDay: "+ הוספה",
+    addPlaces: "מקומות קרובים שאפשר להוסיף",
+    addPlaceType: "קרוב",
+    noAddPlaces: "אין מקום קרוב שמתאים ליום הזה.",
+    shorter: "קצר יותר",
+    longer: "ארוך יותר",
+    saving: "שומר…",
+    saveFailed: "השינוי לא נשמר. נסו שוב.",
+    edited: "נערך",
     freeTime: "🕒 זמן חופשי",
-    freeTimeNote: "הפסקה, חזרה למלון או זמן פתוח לפני התחנה הבאה",
+    freeTimeNote: "הפסקה",
     foodSuggestions: "הצעות לאוכל",
     shopping: "קניות",
     nightlife: "הצעה לערב",

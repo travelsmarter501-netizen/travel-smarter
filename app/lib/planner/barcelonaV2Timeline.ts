@@ -437,12 +437,20 @@ function computeFreeTimeBlocks(stopWindows: TimelineStopWindow[], mealWindows: T
  * stops. Never reorders or drops anything -- `stops`/`meals` are placed in the exact order/
  * structure the caller already decided (see this file's own header comment).
  */
-export function buildBarcelonaDayTimeline(stops: TimelineStopInput[], legs: PlannerRouteLeg[], meals: TimelineMealInput[], weekday: Weekday | null, month: number | null = null): DayTimeline {
+export function buildBarcelonaDayTimeline(
+  stops: TimelineStopInput[],
+  legs: PlannerRouteLeg[],
+  meals: TimelineMealInput[],
+  weekday: Weekday | null,
+  month: number | null = null,
+  /** Customer-chosen day start (minutes after midnight); null = derived from the stops as before. */
+  startMinutesOverride: number | null = null
+): DayTimeline {
   if (stops.length === 0) {
     return { dayStartMinutes: DEFAULT_DAY_START_MINUTES, dayEndMinutes: DEFAULT_DAY_START_MINUTES, stops: [], meals: [], approximate: true, freeTimeBlocks: [] };
   }
 
-  let clock = deriveDayStartMinutes(stops.map((s) => s.preferredTime));
+  let clock = startMinutesOverride ?? deriveDayStartMinutes(stops.map((s) => s.preferredTime));
   let anyApproximate = false;
   let dayStartMinutes = clock;
 
@@ -457,7 +465,7 @@ export function buildBarcelonaDayTimeline(stops: TimelineStopInput[], legs: Plan
   const breakfast = meals.find((m) => m.afterStopIndex === -1);
   if (breakfast) {
     const target = MEAL_TARGET_WINDOW.breakfast;
-    const breakfastWindow = fitWindow(target.earliest, MEAL_ASSUMED_DURATION_MINUTES.breakfast, breakfast.hours, weekday);
+    const breakfastWindow = fitWindow(startMinutesOverride ?? target.earliest, MEAL_ASSUMED_DURATION_MINUTES.breakfast, breakfast.hours, weekday);
     mealWindows.push({ placeId: breakfast.placeId, mealType: "breakfast", afterStopIndex: -1, ...breakfastWindow });
     if (breakfastWindow.approximate) anyApproximate = true;
     dayStartMinutes = breakfastWindow.startMinutes;

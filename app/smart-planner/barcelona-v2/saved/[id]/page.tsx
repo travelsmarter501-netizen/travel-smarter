@@ -10,6 +10,8 @@ import { destinationIncludesGuide } from "../../../../lib/planner/personalizedPl
 import { hasProductAccess } from "../../../../lib/entitlements";
 import { PRODUCT_SLUGS } from "../../../../lib/commerce/catalog";
 import { withCurrentPlacePhotos } from "../../../../lib/planner/planPhotos";
+import { applyPlanCustomizations, planAddOptions, sanitizeCustomizations } from "../../../../lib/planner/planCustomizations";
+import { cityForSavedPlan } from "../../../../lib/planner/savedPlanCity";
 
 /**
  * Smart Planner V2 Phase 5 -- saved-plan reopen route, separate from V1's
@@ -69,6 +71,13 @@ export default async function SavedSmartPlanV2Page(props: PageProps<"/smart-plan
     );
   }
 
+  // The customer's own edits (start time, durations, order, removed / added places), kept beside the original plan.
+  const basePlan = validRow.generated_plan_json.plan;
+  const customizations = sanitizeCustomizations((validRow.generated_plan_json as { customizations?: unknown }).customizations);
+  const city = cityForSavedPlan(basePlan);
+  const plan = city ? applyPlanCustomizations(city, basePlan, customizations) : basePlan;
+  const addOptions = city ? planAddOptions(city, basePlan, customizations) : undefined;
+
   const showIncludedGuide = destinationIncludesGuide(validRow.destination_slug) && (await hasProductAccess(PRODUCT_SLUGS.guide, user.id));
 
   return (
@@ -84,7 +93,10 @@ export default async function SavedSmartPlanV2Page(props: PageProps<"/smart-plan
         )}
         <div className="mt-4">
           <SmartPlannerV2Result
-            plan={withCurrentPlacePhotos(validRow.generated_plan_json.plan)}
+            plan={withCurrentPlacePhotos(plan)}
+            editablePlanId={city ? validRow.id : undefined}
+            editedDays={Object.keys(customizations).map(Number)}
+            addOptions={addOptions}
             interests={validRow.preferences_json.interests}
             accommodation={validRow.preferences_json.accommodation}
           />

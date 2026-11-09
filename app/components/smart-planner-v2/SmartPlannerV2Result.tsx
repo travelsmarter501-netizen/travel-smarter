@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useTransition } from "react";
+import { customizeSavedPlan } from "../../smart-planner/barcelona-v2/saved/[id]/actions";
+import type { PlanAddOptions, PlanChange } from "../../lib/planner/planCustomizations";
 import { interestGroupLabelForDestination, plannerDestinationName } from "../../lib/planner/plannerDestinations";
 import SmartPlannerV2Day from "./SmartPlannerV2Day";
-import { PlanPhotoCredits } from "../guide/PhotoCredit";
 import { v2DisplayInterestsLabel } from "../../lib/planner/v2PlannerTypes";
 import { formatArabicDayMonth } from "../../lib/planner/dateOnly";
 import { useLanguage } from "../../lib/language";
@@ -45,8 +46,17 @@ export default function SmartPlannerV2Result({
   onRegenerate,
   regenerating,
   saveAction,
+  editablePlanId,
+  editedDays,
+  addOptions,
 }: {
   plan: V2Plan;
+  /** Saved-plan page only: the plan id, which turns on editing with buttons (start time, durations, order, add / remove). */
+  editablePlanId?: string;
+  /** Day numbers that already carry the customer's edits (shows "reset to original"). */
+  editedDays?: number[];
+  /** Saved plans: per day, the places the customer may add (computed on the server). */
+  addOptions?: PlanAddOptions;
   interests: V2PlannerInterest[];
   accommodation?: { booked: boolean; text?: string };
   onEditSelections?: () => void;
@@ -57,8 +67,38 @@ export default function SmartPlannerV2Result({
   const { language } = useLanguage();
   const plannerCopy = usePlannerCopy();
   const ui = PLAN_TEXT[language];
-  const view = useMemo(() => localizePlan(storedPlan, language), [storedPlan, language]);
+  // Edits come back from the server as the whole updated plan (times, legs and warnings recomputed there).
+  const [livePlan, setLivePlan] = useState(storedPlan);
+  const [edited, setEdited] = useState<Set<number>>(() => new Set(editedDays ?? []));
+  const [liveAddOptions, setLiveAddOptions] = useState(addOptions);
+  const [saveFailed, setSaveFailed] = useState(false);
+  const [saving, startSaving] = useTransition();
+  const view = useMemo(() => localizePlan(livePlan, language), [livePlan, language]);
+  const applyChange = (change: PlanChange) => {
+    if (!editablePlanId) return;
+    setSaveFailed(false);
+    startSaving(async () => {
+      const result = await customizeSavedPlan(editablePlanId, change);
+      if (!result.ok) {
+        setSaveFailed(true);
+        return;
+      }
+      setLivePlan(result.plan);
+      setLiveAddOptions(result.addOptions);
+      setEdited((current) => {
+        const next = new Set(current);
+        if (change.kind === "reset") next.delete(change.dayNumber);
+        else next.add(change.dayNumber);
+        return next;
+      });
+    });
+  };
   const plan = view;
+  // The add candidates' details too, so their cards open the same sheet and their photos are credited.
+  const allDetails = useMemo(() => {
+    const addDetails = liveAddOptions ? localizePlan({ ...livePlan, days: [], placeDetails: liveAddOptions.details }, language).placeDetails : undefined;
+    return { ...(addDetails ?? {}), ...(plan.placeDetails ?? {}) };
+  }, [liveAddOptions, livePlan, language, plan.placeDetails]);
   const [activeDayIndex, setActiveDayIndex] = useState(0);
   const activeDay = plan.days[activeDayIndex];
   const dayMonth = (iso: string) => (language === "ar" ? formatArabicDayMonth(iso) : formatDayMonth(language, iso));
@@ -150,9 +190,24 @@ export default function SmartPlannerV2Result({
         ))}
       </div>
 
-      <div className="mt-4">{activeDay && <SmartPlannerV2Day day={activeDay} guideSlug={plan.destination} placeDetails={plan.placeDetails} lang={language} />}</div>
+      {saveFailed && (
+        <p role="alert" className="mt-3 rounded-xl bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700">
+          {ui.saveFailed}
+        </p>
+      )}
 
-      <PlanPhotoCredits places={plan.placeDetails} lang={language} />
+      <div className="mt-4">
+        {activeDay && (
+          <SmartPlannerV2Day
+            day={activeDay}
+            guideSlug={plan.destination}
+            placeDetails={allDetails}
+            lang={language}
+            editing={editablePlanId ? { onChange: applyChange, saving, edited: edited.has(activeDay.dayNumber), addOptions: liveAddOptions?.byDay[String(activeDay.dayNumber)] ?? [] } : undefined}
+          />
+        )}
+      </div>
+
     </div>
   );
 }

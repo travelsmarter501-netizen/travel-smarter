@@ -5,10 +5,12 @@ import SmartPlannerStopCardBody from "../smart-planner/SmartPlannerStopCardBody"
 import SmartPlannerTransportConnector from "../smart-planner/SmartPlannerTransportConnector";
 import SmartPlannerNearbyCard from "../smart-planner/SmartPlannerNearbyCard";
 import PlaceDetailsSheet from "../guide/PlaceDetailsSheet";
+import BottomSheet from "../guide/BottomSheet";
 import { buildUnifiedTimelineEntries, type UnifiedTimelineEntry } from "../../lib/planner/v2TimelineItems";
-import { PLAN_TEXT, formatDayHeader, formatMealCount, formatPlaceCount, storedTextDir, type PlanLanguage } from "../../lib/i18n/planText";
+import { PLAN_TEXT, formatDayHeader, formatMealCount, formatMinutes, formatPlaceCount, storedTextDir, type PlanLanguage } from "../../lib/i18n/planText";
+import type { PlanChange } from "../../lib/planner/planCustomizations";
 import { formatTimelineClock } from "../../lib/planner/barcelonaV2Timeline";
-import type { ResolvedPlace } from "../../lib/readyPlan";
+import type { ResolvedPlace, ResolvedPlaceSummary } from "../../lib/readyPlan";
 import type { V2Day } from "../../lib/planner/barcelonaV2Resolve";
 import type { V2MealStop } from "../../lib/planner/barcelonaV2MealStops";
 import type { V2FoodSuggestion } from "../../lib/planner/barcelonaV2Supplementary";
@@ -48,6 +50,9 @@ const MEAL_TYPE_ICON: Record<V2MealStop["mealType"], string> = {
   dinner: "🌙",
 };
 type SuggestionType = PlannerOptionalSuggestion["type"];
+/** Nearby suggestions that are places (not food or evening venues) can be added to the day. */
+/** Day start choices: 06:00-13:00, every 30 minutes. */
+const START_TIMES = Array.from({ length: 15 }, (_, i) => 6 * 60 + i * 30);
 type FoodMeal = V2FoodSuggestion["mealType"];
 
 /** A numbered stop's own rail segment: time label + numbered dot + connecting line stub. The
@@ -76,6 +81,7 @@ export default function SmartPlannerV2Day({
   guideSlug,
   placeDetails,
   lang = "ar",
+  editing,
 }: {
   day: V2Day;
   guideSlug: string;
@@ -84,9 +90,15 @@ export default function SmartPlannerV2Day({
   placeDetails?: Record<string, ResolvedPlace>;
   /** Display language. The day passed in is already the translated display copy (localizePlan). */
   lang?: PlanLanguage;
+  /** Saved-plan page: edit this day with buttons (start time, duration, order, remove, add a nearby place, reset). */
+  editing?: { onChange: (change: PlanChange) => void; saving: boolean; edited: boolean; addOptions: ResolvedPlaceSummary[] };
 }) {
   const ui = PLAN_TEXT[lang];
   const [activePlaceId, setActivePlaceId] = useState<string | null>(null);
+  const [editMode, setEditMode] = useState(false);
+  const [startSheetOpen, setStartSheetOpen] = useState(false);
+  const change = (c: PlanChange) => editing?.onChange(c);
+  const busy = !!editing?.saving;
   const activeResolved = activePlaceId ? placeDetails?.[activePlaceId] : undefined;
 
   const fallbackLeg = (fromPlaceId: string, toPlaceId: string): PlannerRouteLeg => ({
@@ -102,22 +114,48 @@ export default function SmartPlannerV2Day({
 
   return (
     <div>
-      <h2 className="text-lg font-bold text-slate-900">
-        {ui.dayTab(day.dayNumber)}
-        {day.actualDate && day.weekday && <span className="font-semibold text-slate-500"> — {formatDayHeader(lang, day.actualDate, day.weekday)}</span>}
-      </h2>
-      <p dir={storedTextDir(day.title, lang)} className="mt-1 text-base font-semibold text-slate-800">{day.title}</p>
-      <p dir={storedTextDir(day.summary, lang)} className="mt-1 text-sm text-slate-600">{day.summary}</p>
-      {day.highlight && <p dir={storedTextDir(day.highlight, lang)} className="mt-2 rounded-xl bg-teal-50 px-3 py-2 text-xs font-semibold text-teal-700">{day.highlight}</p>}
+      {/* Short, Rhyme-style header: day, date, title; no sentences. */}
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h2 className="text-lg font-bold text-slate-900">
+            {ui.dayTab(day.dayNumber)}
+            {day.actualDate && day.weekday && <span className="text-sm font-semibold text-slate-500"> · {formatDayHeader(lang, day.actualDate, day.weekday)}</span>}
+          </h2>
+          <p dir={storedTextDir(day.title, lang)} className="mt-0.5 text-sm font-semibold text-slate-700">{day.title}</p>
+        </div>
+        {editing && (
+          <div className="flex shrink-0 items-center gap-1.5">
+            {editing.edited && (
+              <button type="button" disabled={busy} onClick={() => change({ kind: "reset", dayNumber: day.dayNumber })} className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-600 hover:border-slate-300 disabled:opacity-50">
+                {ui.resetDay}
+              </button>
+            )}
+            <button type="button" aria-pressed={editMode} onClick={() => setEditMode((v) => !v)} className={`rounded-full px-3 py-1.5 text-xs font-bold ${editMode ? "bg-teal-700 text-white" : "border border-slate-200 bg-white text-teal-700 hover:border-slate-300"}`}>
+              {editMode ? ui.doneEditing : ui.editDay}
+            </button>
+          </div>
+        )}
+      </div>
+      {day.highlight && <span dir={storedTextDir(day.highlight, lang)} className="mt-2 inline-block rounded-full bg-teal-50 px-2.5 py-1 text-[11px] font-semibold text-teal-700">{day.highlight}</span>}
+      {busy && <p className="mt-2 text-xs font-semibold text-slate-400">{ui.saving}</p>}
 
       {/* Day summary -- start/finish clock, place/meal counts, a transport-mode summary ONLY
           when every leg on this day is actually resolved (never a fake total when some legs are
           unresolved). Omitted entirely on an old saved plan with no `timeline` field. */}
       {day.timeline && day.stops.length > 0 && (
-        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 rounded-xl bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-600">
+        <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-600">
+          {editing ? (
+            <button type="button" disabled={busy} onClick={() => setStartSheetOpen(true)} className="flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-slate-700 hover:border-slate-300 disabled:opacity-50">
+              ⏰ {ui.dayStart} <bdi dir="ltr" className="font-bold text-slate-900">{formatTimelineClock(day.timeline.dayStartMinutes)}</bdi> <span aria-hidden="true">▾</span>
+            </button>
+          ) : (
+            <span>
+              ⏰ {ui.dayStart} <bdi dir="ltr">{formatTimelineClock(day.timeline.dayStartMinutes)}</bdi>
+            </span>
+          )}
           <span>
-            {ui.dayStart} <bdi dir="ltr">{formatTimelineClock(day.timeline.dayStartMinutes)}</bdi> · {ui.dayEnd} <bdi dir="ltr">{formatTimelineClock(day.timeline.dayEndMinutes)}</bdi>
-            {day.timeline.approximate && <span className="text-slate-400"> {ui.approximate}</span>}
+            {ui.dayEnd} <bdi dir="ltr">{formatTimelineClock(day.timeline.dayEndMinutes)}</bdi>
+            {day.timeline.approximate && <span className="text-slate-400"> · {ui.approximate}</span>}
           </span>
           <span>📍 {formatPlaceCount(lang, day.stops.length)}</span>
           {(day.mealStops?.length ?? 0) > 0 && <span>🍽️ {formatMealCount(lang, day.mealStops!.length)}</span>}
@@ -204,11 +242,36 @@ export default function SmartPlannerV2Day({
                           foodMeta={{
                             mealTypeIcon: MEAL_TYPE_ICON[entry.meal.mealType],
                             mealTypeLabel: ui.mealType[entry.meal.mealType],
-                            cuisineLabel: `${entry.meal.categoryIcon} ${entry.meal.categoryLabel}`,
+                            // Not repeated when the category says the same as the meal (e.g. "فطور" twice).
+                            cuisineLabel: entry.meal.categoryLabel === ui.mealType[entry.meal.mealType] ? "" : `${entry.meal.categoryIcon} ${entry.meal.categoryLabel}`,
                             priceLevel: entry.meal.priceLevel,
                             rating: entry.meal.rating,
                           }}
                         />
+                      )}
+                      {editing && editMode && entry.kind === "place" && (
+                        <div className="mt-1.5 flex items-center justify-between gap-2">
+                          <div className="flex items-center rounded-full border border-slate-200 bg-white">
+                            <button type="button" aria-label={ui.shorter} disabled={busy || entry.place.visitDurationMinutes <= 15} onClick={() => change({ kind: "duration", dayNumber: day.dayNumber, placeId: entry.place.id, minutes: Math.max(15, Math.ceil(entry.place.visitDurationMinutes / 15) * 15 - 15) })} className="h-9 w-9 text-base font-bold text-slate-700 disabled:opacity-30">
+                              −
+                            </button>
+                            <span className="min-w-14 text-center text-xs font-bold text-teal-700">{formatMinutes(lang, entry.place.visitDurationMinutes)}</span>
+                            <button type="button" aria-label={ui.longer} disabled={busy || entry.place.visitDurationMinutes >= 360} onClick={() => change({ kind: "duration", dayNumber: day.dayNumber, placeId: entry.place.id, minutes: Math.min(360, Math.floor(entry.place.visitDurationMinutes / 15) * 15 + 15) })} className="h-9 w-9 text-base font-bold text-slate-700 disabled:opacity-30">
+                              +
+                            </button>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <button type="button" aria-label={ui.moveUp} disabled={busy || entry.stopIndex === 0} onClick={() => change({ kind: "move", dayNumber: day.dayNumber, placeId: entry.place.id, direction: -1 })} className="h-9 w-9 rounded-full border border-slate-200 bg-white text-sm text-slate-700 disabled:opacity-30">
+                              ↑
+                            </button>
+                            <button type="button" aria-label={ui.moveDown} disabled={busy || entry.stopIndex === day.stops.length - 1} onClick={() => change({ kind: "move", dayNumber: day.dayNumber, placeId: entry.place.id, direction: 1 })} className="h-9 w-9 rounded-full border border-slate-200 bg-white text-sm text-slate-700 disabled:opacity-30">
+                              ↓
+                            </button>
+                            <button type="button" aria-label={ui.removeStop} disabled={busy || day.stops.length <= 1} onClick={() => change({ kind: "remove", dayNumber: day.dayNumber, placeId: entry.place.id })} className="h-9 rounded-full border border-rose-200 bg-white px-3 text-xs font-bold text-rose-600 disabled:opacity-30">
+                              {ui.removeStop}
+                            </button>
+                          </div>
+                        </div>
                       )}
                     </div>
                   </>
@@ -258,10 +321,56 @@ export default function SmartPlannerV2Day({
           <p className="mb-2 text-xs font-bold text-slate-500">{ui.nearby}</p>
           <div className="flex gap-2.5 overflow-x-auto pb-1">
             {day.optionalNearby.map((nearby) => (
-              <SmartPlannerNearbyCard key={nearby.id} summary={nearby} typeLabel={ui.suggestionType[nearby.type as SuggestionType]} reason={nearby.reason} onClick={() => setActivePlaceId(nearby.id)} />
+              <div key={nearby.id} className="flex shrink-0 flex-col gap-1.5">
+                <SmartPlannerNearbyCard summary={nearby} typeLabel={ui.suggestionType[nearby.type as SuggestionType]} reason={nearby.reason} onClick={() => setActivePlaceId(nearby.id)} />
+              </div>
             ))}
           </div>
         </div>
+      )}
+
+      {editing && editMode && (
+        <div className="mt-4">
+          <p className="mb-2 text-xs font-bold text-slate-500">{ui.addPlaces}</p>
+          {editing.addOptions.length > 0 ? (
+            <div className="flex gap-2.5 overflow-x-auto pb-1">
+              {editing.addOptions.map((option) => (
+                <div key={option.id} className="flex shrink-0 flex-col gap-1.5">
+                  <SmartPlannerNearbyCard summary={option} typeLabel={ui.addPlaceType} onClick={() => setActivePlaceId(option.id)} />
+                  <button type="button" disabled={busy} onClick={() => change({ kind: "add", dayNumber: day.dayNumber, placeId: option.id })} className="rounded-full border border-teal-200 bg-teal-50 px-3 py-1.5 text-xs font-bold text-teal-700 disabled:opacity-50">
+                    {ui.addToDay}
+                  </button>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-xs text-slate-500">{ui.noAddPlaces}</p>
+          )}
+        </div>
+      )}
+
+      {editing && (
+        <BottomSheet open={startSheetOpen} onClose={() => setStartSheetOpen(false)} title={ui.chooseStart} closeLabel={ui.doneEditing}>
+          <div className="grid grid-cols-4 gap-2 pb-2">
+            {START_TIMES.map((minutes) => {
+              const active = day.timeline?.dayStartMinutes === minutes;
+              return (
+                <button
+                  key={minutes}
+                  type="button"
+                  disabled={busy}
+                  onClick={() => {
+                    setStartSheetOpen(false);
+                    change({ kind: "start", dayNumber: day.dayNumber, minutes });
+                  }}
+                  className={`rounded-xl border py-2.5 text-sm font-bold ${active ? "border-teal-700 bg-teal-50 text-slate-900 shadow-[inset_0_0_0_1px_var(--color-teal-700)]" : "border-slate-200 bg-white text-slate-700"}`}
+                >
+                  <bdi dir="ltr">{formatTimelineClock(minutes)}</bdi>
+                </button>
+              );
+            })}
+          </div>
+        </BottomSheet>
       )}
 
       <PlaceDetailsSheet guideSlug={guideSlug} resolved={activeResolved} open={!!activePlaceId} onClose={() => setActivePlaceId(null)} plannedWeekday={day.weekday} lang={lang} />

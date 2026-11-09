@@ -171,7 +171,7 @@ function getHoursForResolved(resolved: ResolvedPlace | undefined): HoursInfo | u
   return resolved ? (resolved.place as { hours?: HoursInfo }).hours : undefined;
 }
 
-function resolveStop(city: CityPlannerModule, placeId: string, score: number, placeDetails: Record<string, ResolvedPlace>, weekday?: Weekday | null, visitMode?: "outside"): V2ResolvedStop {
+export function resolveStop(city: CityPlannerModule, placeId: string, score: number, placeDetails: Record<string, ResolvedPlace>, weekday?: Weekday | null, visitMode?: "outside"): V2ResolvedStop {
   const resolved = resolvePlannerPlace(placeId, city.places);
   if (resolved) {
     placeDetails[placeId] = resolved;
@@ -234,7 +234,7 @@ function resolveOptionalNearby(city: CityPlannerModule, suggestion: PlannerOptio
  * main-stop legs (`getBarcelonaRouteLeg`), skipping only the place-to-place pairs `day.legs`
  * already covers.
  */
-function buildMealAdjacentLegs(city: CityPlannerModule, day: V2Day): Record<string, PlannerRouteLeg> {
+export function buildMealAdjacentLegs(city: CityPlannerModule, day: V2Day): Record<string, PlannerRouteLeg> {
   const entries = buildUnifiedTimelineEntries(day);
   const idOf = (entry: UnifiedTimelineEntry): string | null => (entry.kind === "place" ? entry.place.id : entry.kind === "meal" ? entry.meal.id : null);
 

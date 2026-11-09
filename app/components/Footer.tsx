@@ -36,6 +36,9 @@ export default function Footer() {
           <Link href="/terms-of-service" className={LINK}>
             {t.footer.termsLabel}
           </Link>
+          <Link href="/photo-credits" className={LINK}>
+            {t.footer.photoCreditsLabel}
+          </Link>
         </nav>
         <p className="text-xs text-muted">{t.footer.rights}</p>
       </Container>

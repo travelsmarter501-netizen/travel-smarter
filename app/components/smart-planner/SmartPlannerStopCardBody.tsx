@@ -109,10 +109,10 @@ export default function SmartPlannerStopCardBody({
                 </span>
               </p>
               <p dir="auto" className="mt-0.5 flex flex-wrap items-center gap-x-1 text-[11px] text-slate-500">
-                <span>{foodMeta.cuisineLabel}</span>
+                {foodMeta.cuisineLabel && <span>{foodMeta.cuisineLabel}</span>}
                 {foodMeta.priceLevel && (
                   <>
-                    <span>·</span>
+                    {foodMeta.cuisineLabel && <span>·</span>}
                     <span>{foodMeta.priceLevel}</span>
                   </>
                 )}
@@ -134,6 +134,8 @@ export default function SmartPlannerStopCardBody({
             )
           )}
         </div>
+        {/* Concise card (Rhyme-style): the whole card opens the details; a small arrow says so. */}
+        <IconArrowRight className="h-4 w-4 flex-shrink-0 text-slate-300 rtl:rotate-180" aria-label={PLAN_TEXT[lang].placeDetails} />
       </div>
 
       {description && <p className="line-clamp-2 text-xs leading-5 text-slate-500">{description}</p>}
@@ -147,11 +149,6 @@ export default function SmartPlannerStopCardBody({
           ))}
         </div>
       )}
-
-      <span className="flex items-center gap-1 self-start text-xs font-bold text-teal-700">
-        {PLAN_TEXT[lang].placeDetails}
-        <IconArrowRight className="h-3.5 w-3.5 rtl:rotate-180" aria-hidden="true" />
-      </span>
     </button>
   );
 }

@@ -7,7 +7,6 @@ import ExperienceCard from "./ExperienceCard";
 import NightlifeVenueCard from "./NightlifeVenueCard";
 import BeachDetailCard from "./BeachDetailCard";
 import ShoppingAreaCard from "./ShoppingAreaCard";
-import PhotoCredit from "./PhotoCredit";
 import { useFavorites } from "../../lib/useFavorites";
 import type { ResolvedPlace } from "../../lib/readyPlan";
 import type { Weekday } from "../../lib/hours";
@@ -102,7 +101,6 @@ export default function PlaceDetailsSheet({
           lang={lang}
         />
       )}
-      {resolved && <PhotoCredit credit={resolved.place} lang={lang} />}
     </BottomSheet>
   );
 }

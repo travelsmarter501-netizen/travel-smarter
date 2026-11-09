@@ -216,6 +216,7 @@ export type HomepageCopy = {
     linkHow: string;
     linkPrice: string;
     linkAccount: string;
+    photoCreditsLabel: string;
     rights: string;
     descriptor: string;
     descriptorSecondary?: string;
@@ -490,6 +491,7 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
       linkHow: "كيف بتشتغل",
       linkPrice: "السعر",
       linkAccount: "حسابي وخططي",
+      photoCreditsLabel: "حقوق الصور",
       rights: "© 2026 Travel Smarter. جميع الحقوق محفوظة.",
       descriptor: "خطط رحلات مخصصة حسب أيامك واهتماماتك ومكان سكنك.",
       descriptorSecondary: "Personalized trip plans built around your days, interests and where you stay.",
@@ -760,6 +762,7 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
       linkHow: "How it works",
       linkPrice: "Price",
       linkAccount: "My account and plans",
+      photoCreditsLabel: "Photo credits",
       rights: "© 2026 Travel Smarter. All rights reserved.",
       descriptor: "Personalized trip plans built around your days, interests and where you stay.",
       privacyLabel: "Privacy Policy",
@@ -1029,6 +1032,7 @@ export const homepageTranslations: Record<Language, HomepageCopy> = {
       linkHow: "איך זה עובד",
       linkPrice: "מחיר",
       linkAccount: "החשבון והתוכניות שלי",
+      photoCreditsLabel: "קרדיטים לתמונות",
       rights: "© 2026 Travel Smarter. כל הזכויות שמורות.",
       descriptor: "תוכניות טיול אישיות לפי הימים, תחומי העניין ומקום הלינה שלכם.",
       privacyLabel: "מדיניות פרטיות",
