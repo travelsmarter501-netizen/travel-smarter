@@ -436,7 +436,7 @@ export const PRAGUE_CITY_MODULE: CityPlannerModule = {
         heavyMinutes: 380,
         lightMinutes: 170,
         minPriorityToAdd: 5,
-        keepInsideRelevance: 7,
+        keepInsideRelevance: 9,
       }
     );
   },

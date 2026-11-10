@@ -201,6 +201,8 @@ export function applyTimingGuard(params: {
       return (hours.schedule[weekday] ?? []).length > 0;
     };
     const protectedIds = new Set(city.compositionProtectedPlaceIds ?? []);
+    // Repeated (at most 3 rounds): dropping a stop re-chooses the meals, which can move a later stop past closing.
+    for (let dropRound = 0; dropRound < 3; dropRound++) {
     let dropped = false;
     const days = plan.days.map((day, index) => {
       const v2Day = data.days[index];
@@ -225,6 +227,8 @@ export function applyTimingGuard(params: {
       plan = { ...plan, days };
       legsByDay = days.map((day) => (city.buildDayRouteLegs ? city.buildDayRouteLegs(day) : day.stops.slice(0, -1).map((stop, i) => city.routeLeg(stop.placeId, day.stops[i + 1].placeId))));
       data = build(plan, legsByDay, mealExclusions);
+    }
+    if (!dropped) break;
     }
   }
 
