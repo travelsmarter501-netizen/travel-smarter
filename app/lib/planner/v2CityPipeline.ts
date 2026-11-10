@@ -203,11 +203,17 @@ export async function generateCityPlanV2(baseCity: CityPlannerModule, input: Gen
     // Surprise Me (v2Interests is []) and for any request that didn't select "shopping", so
     // secondaryCoverageGoals is a true no-op (byte-identical to omitting it) in those cases.
     const secondaryCoverageGoals = city.secondaryCoverageGoals(v2Interests, days);
+    // Cities with metadataForInterests / placeRelevance (Prague): scores and additions follow this request's interests.
+    const plannerMetadata = city.metadataForInterests ? city.metadataForInterests(v2Interests, surpriseMe) : city.destinationConfig.plannerMetadata;
+    const relevance = city.placeRelevance ? city.placeRelevance(v2Interests, surpriseMe) : null;
     const configForRequest: DestinationConfig = {
       ...city.destinationConfig,
+      plannerMetadata,
       dayBuilderConfig: {
         ...city.destinationConfig.dayBuilderConfig,
         isPlaceEligibleForDay,
+        ...(relevance ? { isPlaceRelevant: (placeId: string) => relevance(placeId) >= (city.relevanceThreshold ?? 5), placeRelevance: relevance } : {}),
+        ...(city.mealLegsInTimeline && (surpriseMe || v2Interests.includes("food")) ? { mealMinutesPerDay: 75 } : {}),
         flagshipCoverageGoals,
         placeSelectionBonus,
         secondaryCoverageGoals,

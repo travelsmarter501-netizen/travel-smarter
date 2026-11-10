@@ -211,6 +211,15 @@ export type DayBuilderConfig = {
    */
   isPlaceEligibleForDay?: (placeId: string, dayNumber: number) => boolean;
   /**
+   * Optional (cities with `placeRelevance`): whether a place matches the request's interests well enough to be ADDED to a day.
+   * Flagships and must-visits are always allowed. Unset = every place may be added, as before.
+   */
+  isPlaceRelevant?: (placeId: string) => boolean;
+  /** Optional, with `isPlaceRelevant`: the match itself (0-10), for passes that need its strength (the day balance). */
+  placeRelevance?: (placeId: string) => number;
+  /** Optional: minutes of scheduled meals inside a sightseeing day (lunch), counted by passes that judge a day's load. */
+  mealMinutesPerDay?: number;
+  /**
    * Route-First Planning Upgrade: optional real, verified/existing-project-data travel
    * minutes between two placeIds (directional), or null when no trustworthy data exists for
    * that exact pair -- NEVER a guessed/derived number (see barcelona-planner-route-legs.ts's
@@ -1039,6 +1048,7 @@ function applyDensityRebalance(
     const ranked = [...unassignedIds]
       .filter((id) => canReceive(target, id, targetIndex))
       .filter((id) => (selectionPriority.get(id) ?? 0) > 0) // relevant to selected interests -- never pure padding
+      .filter((id) => !config.isPlaceRelevant || config.isPlaceRelevant(id))
       .filter((id) => {
         const fit = clusterFitScore(byId.get(id)!.metadata.cluster, target.clusters);
         return fit > 0 || target.clusters.length === 0;
@@ -1179,6 +1189,7 @@ export function buildPlannerPlan(places: PlannerPlaceMetadata[], request: Planne
       // field (every existing config, including Barcelona's V1/V2-flexible config), so this
       // line changes nothing for any caller that doesn't opt in.
       if (config.isPlaceEligibleForDay && !config.isPlaceEligibleForDay(placeId, dayNumber)) return false;
+      if (config.isPlaceRelevant && !flagshipPlaceIds.has(placeId) && !mustVisitPlaceIds.has(placeId) && !config.isPlaceRelevant(placeId)) return false;
 
       const metadata = byId.get(placeId)!.metadata;
       const cluster = metadata.cluster;

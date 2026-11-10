@@ -1,4 +1,6 @@
-import type { PlannerPlaceMetadata, PreferredTime } from "../plannerTypes";
+import type { PlannerInterest, PlannerPlaceMetadata, PreferredTime } from "../plannerTypes";
+import type { V2PlannerInterest } from "../v2PlannerTypes";
+import { mapV2InterestsToLegacy, SURPRISE_ME_LEGACY_INTERESTS } from "../v2InterestAdapter";
 
 /**
  * Prague -- planner metadata: which interest each place serves (legacy 6-key weights, 0-10, same scale as Barcelona),
@@ -66,6 +68,7 @@ export const PRAGUE_PLANNER_METADATA: PlannerPlaceMetadata[] = [
   place("national-museum", "new-town", [6, 8, 1, 0, 2, 0], 6, "morning/daytime", 120),
   place("mucha-museum", "new-town", [4, 8, 0, 0, 0, 1], 5, "daytime", 60),
   place("franciscan-garden", "new-town", [3, 2, 5, 5, 0, 0], 4, "anytime", 20),
+  place("kafka-head", "new-town", [6, 5, 0, 0, 2, 0], 4, "anytime", 15),
   // Riverside (Nové Město, south)
   place("dancing-house", "riverside", [6, 3, 2, 0, 0, 0], 5, "anytime", 15),
   place("naplavka", "riverside", [3, 3, 5, 6, 1, 3], 4, "afternoon", 45),
@@ -75,7 +78,7 @@ export const PRAGUE_PLANNER_METADATA: PlannerPlaceMetadata[] = [
   // Žižkov / Vinohrady
   place("zizkov-tower", "zizkov", [5, 2, 9, 0, 5, 0], 6, "evening", 60),
   place("vitkov-memorial", "zizkov", [3, 6, 7, 0, 0, 0], 4, "afternoon", 60),
-  place("riegrovy-sady", "zizkov", [3, 2, 7, 5, 0, 0], 4, "sunset", 45),
+  place("riegrovy-sady", "zizkov", [3, 2, 7, 5, 0, 0], 4, "afternoon", 45),
   place("havlicek-gardens", "zizkov", [2, 2, 6, 6, 0, 0], 3, "afternoon", 45),
   // Letná / Holešovice
   place("letna-park", "letna", [5, 2, 8, 4, 0, 0], 6, "afternoon", 45),
@@ -91,6 +94,37 @@ export const PRAGUE_PLANNER_METADATA: PlannerPlaceMetadata[] = [
 ];
 
 const BY_ID = new Map(PRAGUE_PLANNER_METADATA.map((entry) => [entry.placeId, entry]));
+
+// ── Interests per request (PROPOSAL, owner review) ─────────────────────────────────────────────────────
+// The questionnaire's "food", "shopping" and "nightlife" share the legacy foodShoppingNightlife key, so choosing "food" used to
+// score the mall and the shopping street. Per request, that key now carries only what the customer chose: shopping = the
+// shopping weights above; food = places that are about food themselves (the market stalls, Náplavka's Saturday farmers'
+// market); nightlife = evening places. Restaurants are scheduled as meals and are not affected.
+const FOOD_WEIGHT: Record<string, number> = { "havelske-market": 2, naplavka: 4 };
+const NIGHTLIFE_WEIGHT: Record<string, number> = { naplavka: 4, "old-town-square": 2, "wenceslas-square": 2 };
+
+export function praguePlannerMetadataForInterests(v2Interests: readonly V2PlannerInterest[], surpriseMe: boolean): PlannerPlaceMetadata[] {
+  const food = surpriseMe || v2Interests.includes("food");
+  const shopping = v2Interests.includes("shopping");
+  const nightlife = v2Interests.includes("nightlife");
+  return PRAGUE_PLANNER_METADATA.map((entry) => {
+    const weight = Math.max(food ? (FOOD_WEIGHT[entry.placeId] ?? 0) : 0, shopping ? entry.weights.foodShoppingNightlife : 0, nightlife ? (NIGHTLIFE_WEIGHT[entry.placeId] ?? 0) : 0);
+    return weight === entry.weights.foodShoppingNightlife ? entry : { ...entry, weights: { ...entry.weights, foodShoppingNightlife: weight } };
+  });
+}
+
+// How well a place matches the request (0-10): its strongest weight among the chosen interests. A request without any
+// sightseeing interest (only food / shopping / experiences) also counts "popular", so its days still get the city's highlights.
+const SIGHTSEEING: PlannerInterest[] = ["popular", "cultureLocal", "viewsNature", "beachRelax"];
+export function praguePlaceRelevance(v2Interests: readonly V2PlannerInterest[], surpriseMe: boolean): (placeId: string) => number {
+  const byId = new Map(praguePlannerMetadataForInterests(v2Interests, surpriseMe).map((entry) => [entry.placeId, entry]));
+  const keys = new Set<PlannerInterest>(surpriseMe ? SURPRISE_ME_LEGACY_INTERESTS : mapV2InterestsToLegacy([...v2Interests]));
+  if (!SIGHTSEEING.some((key) => keys.has(key))) keys.add("popular");
+  return (placeId) => {
+    const entry = byId.get(placeId);
+    return entry ? Math.max(0, ...[...keys].map((key) => entry.weights[key] ?? 0)) : 0;
+  };
+}
 
 export function getPraguePlannerMetadataById(placeId: string): PlannerPlaceMetadata | undefined {
   return BY_ID.get(placeId);

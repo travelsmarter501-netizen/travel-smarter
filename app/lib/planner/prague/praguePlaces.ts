@@ -65,7 +65,7 @@ export const PRAGUE_AREAS: Area[] = [
   { id: "mala-strana", name: "Malá Strana", description: "الحي الباروكي تحت القلعة على الضفة الغربية للنهر.", image: "", ...maps("Malá Strana"), attractionIds: ["st-nicholas-mala-strana", "john-lennon-wall", "kampa-island", "franz-kafka-museum", "museum-kampa", "petrin-tower", "petrin-gardens"] },
   { id: "stare-mesto", name: "Staré Město", description: "البلدة القديمة وساحتها.", image: "", ...maps("Staré Město"), attractionIds: ["old-town-square", "old-town-hall", "tyn-church", "clementinum", "charles-bridge", "old-town-bridge-tower", "municipal-house", "powder-tower"] },
   { id: "josefov", name: "Josefov", description: "الحي اليهودي التاريخي داخل البلدة القديمة.", image: "", ...maps("Josefov"), attractionIds: ["jewish-museum", "convent-st-agnes"] },
-  { id: "nove-mesto", name: "Nové Město", description: "المدينة الجديدة وساحة فاتسلاف.", image: "", ...maps("Nové Město"), attractionIds: ["wenceslas-square", "national-museum", "mucha-museum", "franciscan-garden", "dancing-house", "naplavka"] },
+  { id: "nove-mesto", name: "Nové Město", description: "المدينة الجديدة وساحة فاتسلاف.", image: "", ...maps("Nové Město"), attractionIds: ["wenceslas-square", "national-museum", "mucha-museum", "franciscan-garden", "dancing-house", "naplavka", "kafka-head"] },
   { id: "vysehrad", name: "Vyšehrad", description: "قلعة تاريخية جنوب المركز على النهر.", image: "", ...maps("Vyšehrad"), attractionIds: ["vysehrad"] },
   { id: "zizkov-vinohrady", name: "Žižkov / Vinohrady", description: "أحياء سكنية شرق المركز فيها تلال وإطلالات.", image: "", ...maps("Žižkov"), attractionIds: ["zizkov-tower", "vitkov-memorial", "riegrovy-sady", "havlicek-gardens"] },
   { id: "letna-holesovice", name: "Letná / Holešovice", description: "تلة حديقة Letná ومتحف التقنية شمال النهر.", image: "", ...maps("Letná"), attractionIds: ["letna-park", "national-technical-museum", "trade-fair-palace", "dox", "stromovka"] },
@@ -350,6 +350,27 @@ export const PRAGUE_ATTRACTIONS: Attraction[] = [
       "https://prague.eu/en/objevujte/st-nicholas-church-at-mala-strana-kostel-sv-mikulase-mala-strana/"
     ),
     coordinates: { lat: 50.087991947521, lng: 14.403133622476 },
+  }),
+  // Added 2026-11-10 (independent review's suggestion). quadrio.cz/en/franz-kafka-statue: Spálená 2121/22, next to Národní třída
+  // metro; "moves during the first 15 minutes of every full hour, from 9:00 to 23:00"; free. Coordinates: OpenStreetMap node
+  // 3166450188 ("Franz Kafka - Rotating Head").
+  attraction({
+    id: "kafka-head",
+    name: "Franz Kafka – Rotating Head",
+    mapsQuery: "Franz Kafka Rotating Head Quadrio",
+    description: "رأس معدني ضخم لـFranz Kafka من طبقات بتلف، للفنان David Černý، بساحة مركز Quadrio.",
+    whyRecommend: "وقفة تصوير قصيرة ومجانية جنب محطة مترو Národní třída.",
+    areaId: "nove-mesto",
+    duration: "15 دقيقة تقريبًا",
+    priceType: "free",
+    bookingStatus: "بدون حجز",
+    bestTime: "أي وقت",
+    tip: "بيتحرك أول 15 دقيقة من كل ساعة بين 9:00 و23:00، فرتّب وصولك على رأس الساعة.",
+    officialUrl: "https://www.quadrio.cz/en/franz-kafka-statue",
+    mustSee: false,
+    address: "Spálená 2121/22, 110 00 Praha 1",
+    hours: { type: "fixed", schedule: everyDay(["09:00", "23:00"]), source: "quadrio.cz (official)", sourceUrl: "https://www.quadrio.cz/en/franz-kafka-statue", lastVerified: "2026-11-10" },
+    coordinates: { lat: 50.0816611, lng: 14.4208129 },
   }),
   attraction({
     id: "john-lennon-wall",
@@ -906,7 +927,7 @@ export const PRAGUE_FOOD_PLACES: FoodPlace[] = [
   // Mustakshif lists it as not verified: so the restaurant is NOT classed halal, and the card says exactly that. It closes at 21:00
   // (30 minutes before a 20:00-21:30 dinner slot ends): dated plans cap the window at the closing time, flexible-date plans cannot
   // check it, and the card always shows the hours.
-  food({ id: "jaffa-restaurant", name: "Jaffa Restaurant", categoryId: "middle-eastern", area: "Nové Město (Panská)", address: "Panská 4 (Panská 894/4), 110 00 Praha 1", why: "مطعم عربي مشاوي (كباب وحمص وأسماك) بآخر الطابق الأرضي لمركز Černá růže. فحصنا: قائمته بتعلّم 13 من 49 طبق «حلال» بس، وما لقينا شهادة حلال للمطعم.", officialUrl: "https://www.jaffa-restaurant.cz/", phone: "+420 720 262 202", dietaryTags: ["meat", "seafood"], hoursSchedule: everyDay(["11:00", "22:00"]), sourceUrl: "https://www.jaffa-restaurant.cz/", hoursSource: "jaffa-restaurant.cz (restaurant's own site)", verifiedOn: "2026-11-08" }),
+  food({ id: "jaffa-restaurant", name: "Jaffa Restaurant", categoryId: "middle-eastern", area: "Nové Město (Panská)", address: "Panská 4 (Panská 894/4), 110 00 Praha 1", why: "مطعم عربي مشاوي (كباب وحمص وأسماك) بآخر الطابق الأرضي لمركز Černá růže. فحصنا: قائمته بتعلّم 13 من 49 طبق «حلال» بس، وما لقينا شهادة حلال للمطعم.", officialUrl: "https://www.jaffa-restaurant.cz/", phone: "+420 720 262 202", dietaryTags: ["meat", "seafood"], hoursSchedule: everyDay(["11:00", "21:00"]), sourceUrl: "https://www.jaffa-restaurant.cz/", hoursSource: "jaffa-restaurant.cz (restaurant's own site)", verifiedOn: "2026-11-10" }),
   food({ id: "u-cedru", name: "U Cedru", categoryId: "middle-eastern", area: "Bubeneč", address: "Národní obrany 27, 160 00 Praha 6", why: "من أول المطاعم اللبنانية في براغ: مازات وأطباق لحم وسمك.", officialUrl: "https://www.ucedru.cz", dietaryTags: ["meat", "seafood"], hoursSchedule: everyDay(["11:00", "22:00"]), sourceUrl: "https://prague.eu/en/objevujte/u-cedru/" }),
   food({ id: "bredovsky-dvur", name: "Bredovský dvůr", categoryId: "local", area: "Nové Město", address: "Politických vězňů 13, 110 00 Praha 1", why: "مطبخ تشيكي تقليدي قرب ساحة فاتسلاف.", officialUrl: "https://www.restauracebredovskydvur.cz", dietaryTags: ["meat", "pork-maybe"], hoursSchedule: { ...days(["monday", "tuesday", "wednesday", "thursday", "friday", "saturday"], ["11:00", "00:00"]), sunday: [{ open: "11:00", close: "23:00" }] }, sourceUrl: "https://prague.eu/en/objevujte/bredovsky-dvur-restaurant/" }),
   food({ id: "u-pinkasu", name: "U Pinkasů", categoryId: "local", area: "Nové Město (Jungmannovo náměstí)", address: "Jungmannovo náměstí 16, 110 00 Praha 1", why: "أطباق تشيكية تقليدية بوصفات قديمة، جنب Franciscan Garden.", officialUrl: "https://www.upinkasu.cz", dietaryTags: ["meat", "pork-maybe"], hoursSchedule: everyDay(["10:00", "22:30"]), sourceUrl: "https://prague.eu/en/objevujte/u-pinkasu-restaurant/" }),
@@ -958,7 +979,11 @@ export const PRAGUE_NIGHTLIFE_VENUES: NightlifeVenue[] = [
 // ── Planning hours: structured seasons, dated exceptions, last entry and source conflicts ─────────────────────────────
 // Customers keep seeing each place's own text; the planner (tripHours.ts) resolves these per trip. Re-checked against each
 // official source on 2026-11-08 (after the Perplexity audit of 2026-11-07); "conflict" records where sources disagree.
-type PlanningHours = { seasonalSchedules?: SeasonalSchedule[]; dateExceptions?: HoursDateException[]; lastEntry?: string; conflict?: string };
+// planningSchedule: the window the planner may START a visit / meal in when it is narrower than the displayed hours (e.g. a
+// restaurant's last lunch reservation); the customer still sees the displayed hours.
+// source / sourceUrl / lastVerified: where the stored values above were last checked, so the record shows the source of the hours
+// actually used (not the source of an older read).
+type PlanningHours = { seasonalSchedules?: SeasonalSchedule[]; dateExceptions?: HoursDateException[]; lastEntry?: string; conflict?: string; planningSchedule?: WeeklySchedule; source?: string; sourceUrl?: string; lastVerified?: string };
 const R = (open: string, close: string): TimeRange[] => [{ open, close }];
 const season = (from: string, to: string, schedule: WeeklySchedule, lastEntry?: string): SeasonalSchedule => ({ from, to, schedule, ...(lastEntry ? { lastEntry } : {}) });
 const TOWERS: SeasonalSchedule[] = [
@@ -1015,7 +1040,16 @@ const PLANNING_HOURS: Record<string, PlanningHours> = {
   "old-town-bridge-tower": { seasonalSchedules: TOWERS },
   "powder-tower": { seasonalSchedules: TOWERS },
   "old-town-hall": { seasonalSchedules: [season("01-01", "03-31", everyDay(["10:00", "19:00"])), season("04-01", "12-31", everyDay(["09:00", "20:00"]))] },
+  // jewishmuseum.cz, checked 2026-11-10: 24 Dec 2026 9:00-14:00, 1 Jan 2027 11:00-16:30; the 2026 holiday closures are all past and
+  // the 2027 holiday dates are not published yet (the stop keeps its "closed on Jewish holidays" warning).
   "jewish-museum": {
+    source: "jewishmuseum.cz (official)",
+    sourceUrl: "https://www.jewishmuseum.cz/en/info/visit/opening-hours/",
+    lastVerified: "2026-11-10",
+    dateExceptions: [
+      { from: "2026-12-24", to: "2026-12-24", hours: R("09:00", "14:00") },
+      { from: "2027-01-01", to: "2027-01-01", hours: R("11:00", "16:30") },
+    ],
     seasonalSchedules: [
       season("01-01", "03-31", days(SUN_TO_FRI, ["09:00", "16:30"])),
       season("04-01", "04-30", days(SUN_TO_FRI, ["09:00", "18:00"])),
@@ -1028,6 +1062,9 @@ const PLANNING_HOURS: Record<string, PlanningHours> = {
   // checked 2026-11-09. "The last entry is always 15 minutes before closing": the planned visit (30 min) must end by closing,
   // so its start is always earlier than the last entry.
   "st-nicholas-mala-strana": {
+    source: "stnicholas.cz (official)",
+    sourceUrl: "https://www.stnicholas.cz/en/tours/opening-hours/",
+    lastVerified: "2026-11-09",
     seasonalSchedules: [
       season("01-01", "01-04", everyDay(["09:00", "17:00"])),
       season("01-05", "01-31", everyDay(["09:00", "16:00"])),
@@ -1048,19 +1085,31 @@ const PLANNING_HOURS: Record<string, PlanningHours> = {
   // off-season, the château is closed and the gardens are open" (gardens Tue-Thu 10-16, Fri 13-16, Sat-Sun 10-16, closed in
   // frost). The 2027 season dates are not published yet: the 2026 dates are used for 2027 too. No last entry is published.
   "troja-chateau": {
+    source: "ghmp.cz (Prague City Gallery, official)",
+    sourceUrl: "https://www.ghmp.cz/en/buildings/troja-chateau/",
+    lastVerified: "2026-11-09",
     seasonalSchedules: [
       season("04-01", "10-29", { ...days(["tuesday", "wednesday", "thursday", "saturday", "sunday"], ["10:00", "18:00"]), friday: R("13:00", "18:00") }),
       season("10-30", "03-31", {}),
     ],
   },
   "petrin-tower": {
+    lastVerified: "2026-11-10",
     seasonalSchedules: [
       season("01-01", "03-31", everyDay(["10:00", "18:00"])),
       season("04-01", "09-30", everyDay(["09:00", "19:00"])),
       season("10-01", "10-31", everyDay(["09:00", "18:00"])),
       season("11-01", "12-31", everyDay(["10:00", "18:00"])),
     ],
-    dateExceptions: [{ from: "2026-11-07", to: "2026-11-14", closed: true, note: "closed for operational reasons (prague.eu)" }],
+    dateExceptions: [
+      { from: "2026-11-07", to: "2026-11-14", closed: true, note: "closed for operational reasons (prague.eu)" },
+      // prague.eu, checked 2026-11-10 (Christmas and New Year hours).
+      { from: "2026-12-24", to: "2026-12-24", hours: R("10:00", "15:00") },
+      { from: "2026-12-25", to: "2026-12-25", hours: R("11:00", "18:00") },
+      { from: "2026-12-26", to: "2026-12-26", hours: R("10:00", "19:00") },
+      { from: "2026-12-31", to: "2026-12-31", hours: R("10:00", "16:00") },
+      { from: "2027-01-01", to: "2027-01-01", hours: R("11:00", "19:00") },
+    ],
   },
   "prague-zoo": {
     seasonalSchedules: [
@@ -1075,6 +1124,8 @@ const PLANNING_HOURS: Record<string, PlanningHours> = {
   "franciscan-garden": {
     seasonalSchedules: [season("04-15", "09-14", everyDay(["07:00", "22:00"])), season("09-15", "10-14", everyDay(["07:00", "20:00"])), season("10-15", "04-14", everyDay(["08:00", "19:00"]))],
   },
+  // prague.eu, checked 2026-11-10: "The last admission is at 5:30 p.m." (Tue-Sun 10:00-18:00, free).
+  "vitkov-memorial": { lastEntry: "17:30", lastVerified: "2026-11-10" },
   "havlicek-gardens": { seasonalSchedules: [season("11-01", "03-31", everyDay(["06:00", "22:00"])), season("04-01", "10-31", everyDay(["06:00", "00:00"]))] },
   "botanical-garden": {
     seasonalSchedules: [season("01-01", "02-29", everyDay(["09:00", "16:00"])), season("03-01", "10-31", everyDay(["09:00", "19:00"])), season("11-01", "12-31", everyDay(["09:00", "16:00"]))],
@@ -1086,7 +1137,15 @@ const PLANNING_HOURS: Record<string, PlanningHours> = {
   "cafe-ornament": { seasonalSchedules: [season("03-01", "10-31", everyDay(["10:00", "19:30"])), season("11-01", "02-29", everyDay(["10:00", "16:30"]))] },
   "kavarna-slavia": { conflict: "prague.eu: Monday-Friday from 10:00; cafeslavia.cz: Monday-Saturday 9:00-23:00, Sunday 9:00-22:00 (stored)." },
   "grand-cafe-orient": { conflict: "prague.eu and a commented-out block on grandcafeorient.cz: until 22:00; the visible hours on grandcafeorient.cz: until 21:00 (stored)." },
-  mlynec: { conflict: "13:30 (weekdays) / 13:00 (weekends) is the last lunch reservation, not the end of lunch (mlynec.cz: lunch 11:30-15:00 every day)." },
+  // Checked 2026-11-10: mlynec.cz "Monday - Friday 11:30 - 15:00 (last reserv. 13:30) / 17:00 - 22:00; Saturday - Sunday 11:30 - 15:00
+  // (last reserv. 13:00) / 17:30 - 22:00"; prague.eu (cs) and the Michelin guide list weekday lunch as 11:30-13:30. Read together:
+  // lunch service ends 15:00 but the last table is 13:30 (weekdays) / 13:00 (weekends). The displayed hours stay the restaurant's;
+  // the planner may only START lunch by the last reservation (planning window = last reservation + the 75-minute lunch).
+  mlynec: {
+    lastVerified: "2026-11-10",
+    planningSchedule: { ...days(MON_TO_FRI, ["11:30", "14:45"], ["17:00", "22:00"]), ...days(WEEKEND, ["11:30", "14:15"], ["17:30", "22:00"]) },
+    conflict: "mlynec.cz: lunch 11:30-15:00, last reservation 13:30 (Mon-Fri) / 13:00 (Sat-Sun); prague.eu (cs) and Michelin: Mon-Fri lunch 11:30-13:30. Planned as: lunch must start by the last reservation.",
+  },
   "petrinske-terasy": {
     dateExceptions: [
       { from: "2026-11-24", to: "2026-11-24", closed: true },
@@ -1106,7 +1165,7 @@ const PLANNING_HOURS: Record<string, PlanningHours> = {
     conflict: "prague.eu: every day 11:00-15:00 & 17:30-23:00; restauraceod.cz: lunch Monday-Friday 11:30-15:00 only, dinner every day 17:30-23:00 (stored).",
   },
   "u-kroka": { conflict: "prague.eu address: Vratislavova 12, 120 00; ukroka.cz: Vratislavova 28, 128 00 (stored; coordinates still from prague.eu). Open 11:30-23:00, kitchen closed 16:00-17:00: the kitchen hours are stored." },
-  "jaffa-restaurant": { conflict: "jaffa-restaurant.cz: restaurant hours 11:00-22:00 (stored); 11:00-21:00 on the same site is the delivery window. Last kitchen order not published." },
+  "jaffa-restaurant": { lastVerified: "2026-11-10", conflict: "jaffa-restaurant.cz (page data, checked 2026-11-10) carries two unlabelled weekly schedules: 11:00-22:00 (place) and 11:00-21:00 (location); firmy.cz showed 'open until 22:00'. Which one is the dining room is not stated, so 11:00-21:00 is stored (the later closing is not guaranteed). Last kitchen order not published." },
   "habibi-prague": { conflict: "habibipraguecafe.cz (8 Nov 2026): Mon-Sun 11:00-02:00 (stored). An earlier read of the same site also said 'dinner till 1 AM'; not visible on 8 Nov. Not the same place as Bistro Habibi (Vratislavova 21, Vyšehrad)." },
 };
 

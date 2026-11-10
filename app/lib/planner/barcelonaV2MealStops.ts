@@ -2,7 +2,7 @@ import "server-only";
 import { barcelonaGuide } from "../barcelona-guide";
 import { resolvePlace, summarizeResolvedPlace, type ResolvedPlaceSummary } from "../readyPlan";
 import { isPlaceClosedOnWeekday } from "./barcelonaV2DateEligibility";
-import { findCoveringInterval, isLikelyOpenForMealType, MEAL_ASSUMED_DURATION_MINUTES, MEAL_TARGET_WINDOW, type MealType } from "./barcelonaV2Timeline";
+import { canServeMealAt, findCoveringInterval, isLikelyOpenForMealType, MEAL_ASSUMED_DURATION_MINUTES, MEAL_TARGET_WINDOW, type MealType } from "./barcelonaV2Timeline";
 import { BARCELONA_CLUSTER_COMPATIBILITY } from "./barcelona-planner-day-builder";
 import type { FoodCategory, FoodPlace } from "../guideTypes";
 import type { ClusterCompatibilityMap } from "./plannerDayBuilder";
@@ -241,7 +241,9 @@ function pickBestForSlot(
   usedFoodCategoryIds: ReadonlySet<string>,
   weekday: Weekday | null,
   mealType: MealType,
-  preferSameClusterOnly: boolean
+  preferSameClusterOnly: boolean,
+  /** Cities with `mealLegsInTimeline`: the meal's estimated start on the real timeline; a place that cannot serve it then is skipped. */
+  expectedStart?: number
 ): FoodPlace | null {
   const primaryAnchor = beforeCluster ?? afterCluster!;
   const secondaryAnchor = beforeCluster !== null ? afterCluster : null;
@@ -268,6 +270,7 @@ function pickBestForSlot(
       const covering = findCoveringInterval(place.hours, weekday, representative);
       if (covering && covering.close < representative + MEAL_ASSUMED_DURATION_MINUTES[mealType]) return false;
     }
+    if (expectedStart !== undefined && canServeMealAt(place.hours, weekday, expectedStart, mealType) === false) return false;
     return true;
   });
   if (eligible.length === 0) return null;
@@ -285,7 +288,7 @@ function pickBestForSlot(
   // to the caller instead of silently accepting it. Never fires for breakfast/evening (one side
   // is null there, so they can never be "equal").
   if (!preferSameClusterOnly && beforeCluster !== null && beforeCluster === afterCluster && city.rules.clusterForFoodPlace(winner.place) !== beforeCluster) {
-    return pickBestForSlot(city, candidateCategoryIds, beforeCluster, afterCluster, usedPlaceIds, usedFoodCategoryIds, weekday, mealType, true);
+    return pickBestForSlot(city, candidateCategoryIds, beforeCluster, afterCluster, usedPlaceIds, usedFoodCategoryIds, weekday, mealType, true, expectedStart);
   }
   return winner.place;
 }
@@ -375,7 +378,20 @@ export function buildMealStopsForDay(
   usedPlaceIds: Set<string>,
   usedFoodCategoryIds: Set<string>,
   surpriseMe = false,
-  stopVisitMinutes?: readonly number[]
+  stopVisitMinutes?: readonly number[],
+  /**
+   * Cities with `mealLegsInTimeline`: the lunch position and estimated meal starts read from the day's real timeline
+   * (lunchPlacementFromTimeline), and whether a restaurant from another day may be reused when no unused one fits.
+   */
+  slotHints?: {
+    lunchAfterIndex?: number;
+    breakfastStart?: number;
+    lunchStart?: number;
+    dinnerStart?: number;
+    reuseWhenNoneLeft?: boolean;
+    /** Re-places lunch once the breakfast place is known (its opening time shifts the whole morning). */
+    lunchFor?: (breakfast: { placeId: string; hours?: HoursInfo } | null) => { afterIndex: number; estimatedStart: number } | null;
+  }
 ): V2MealStop[] {
   const rules = city.rules;
   const mainStopCount = stopClusters.length;
@@ -385,11 +401,27 @@ export function buildMealStopsForDay(
 
   // Slot 0: BREAKFAST -- before the day's first stop, judged purely against that first stop's
   // own cluster (no "previous" stop exists yet).
-  const breakfastPlace = pickBestForSlot(city, rules.breakfastCategories, null, stopClusters[0], usedPlaceIds, usedFoodCategoryIds, weekday, "breakfast", false);
+  // Cities with `reuseWhenNoneLeft`: when every fitting place was already used on another day, one may be used again
+  // (never twice on the same day) instead of leaving the slot empty.
+  const todaysMealIds = new Set<string>();
+  const foodIds = new Set(city.foodPlaces.map((place) => place.id));
+  const pick = (categories: readonly string[], before: string | null, after: string | null, mealType: MealType, expectedStart?: number): { place: FoodPlace; reused: boolean } | null => {
+    const fresh = pickBestForSlot(city, categories, before, after, usedPlaceIds, usedFoodCategoryIds, weekday, mealType, false, expectedStart);
+    if (fresh) return { place: fresh, reused: false };
+    if (!slotHints?.reuseWhenNoneLeft) return null;
+    const relaxed = new Set([...usedPlaceIds].filter((id) => !foodIds.has(id) || todaysMealIds.has(id)));
+    const reused = pickBestForSlot(city, categories, before, after, relaxed, usedFoodCategoryIds, weekday, mealType, false, expectedStart);
+    return reused ? { place: reused, reused: true } : null;
+  };
+  const REUSED_REASON = "نفس مطعم يوم سابق: ما في مطعم تاني قريب ومفتوح بهالوقت";
+
+  const breakfastPick = pick(rules.breakfastCategories, null, stopClusters[0], "breakfast", slotHints?.breakfastStart);
+  const breakfastPlace = breakfastPick?.place ?? null;
   if (breakfastPlace) {
-    const stop = toMealStop(city, breakfastPlace, "breakfast", -1, REASON_BY_MEAL_TYPE.breakfast);
+    const stop = toMealStop(city, breakfastPlace, "breakfast", -1, breakfastPick?.reused ? REUSED_REASON : REASON_BY_MEAL_TYPE.breakfast);
     if (stop) {
       mealStops.push(stop);
+      todaysMealIds.add(breakfastPlace.id);
       usedPlaceIds.add(breakfastPlace.id);
       usedFoodCategoryIds.add(breakfastPlace.categoryId);
     }
@@ -399,14 +431,24 @@ export function buildMealStopsForDay(
   // day has no real "middle", so lunch is skipped there in favor of the single evening slot
   // below (never two meals crowded onto one attraction's day).
   if (mainStopCount >= 2) {
-    const lunchAfterIndex = rules.lunchByClock && stopVisitMinutes ? lunchIndexByClock(stopVisitMinutes) : Math.floor((mainStopCount - 1) / 2);
+    const breakfastChosen = mealStops.find((meal) => meal.mealType === "breakfast");
+    const lunchHint = slotHints?.lunchFor?.(breakfastChosen ? { placeId: breakfastChosen.id, hours: breakfastChosen.hours } : null);
+    if (lunchHint && slotHints) slotHints = { ...slotHints, lunchAfterIndex: lunchHint.afterIndex, lunchStart: lunchHint.estimatedStart };
+    const lunchAfterIndex = slotHints?.lunchAfterIndex ?? (rules.lunchByClock && stopVisitMinutes ? lunchIndexByClock(stopVisitMinutes) : Math.floor((mainStopCount - 1) / 2));
     const lunchPrevCluster = stopClusters[lunchAfterIndex];
     const lunchNextCluster = stopClusters[lunchAfterIndex + 1] ?? null;
-    const lunchPlace = pickBestForSlot(city, rules.lunchCategories, lunchPrevCluster, lunchNextCluster, usedPlaceIds, usedFoodCategoryIds, weekday, "lunch", false);
+    let lunchPick = pick(rules.lunchCategories, lunchPrevCluster, lunchNextCluster, "lunch", slotHints?.lunchStart);
+    let lightLunch = false;
+    if (!lunchPick && rules.lunchFallbackCategories?.length) {
+      const fallback = pickBestForSlot(city, rules.lunchFallbackCategories, lunchPrevCluster, lunchNextCluster, usedPlaceIds, usedFoodCategoryIds, weekday, "lunch", false, slotHints?.lunchStart);
+      if (fallback) { lunchPick = { place: fallback, reused: false }; lightLunch = true; }
+    }
+    const lunchPlace = lunchPick?.place ?? null;
     if (lunchPlace) {
-      const stop = toMealStop(city, lunchPlace, "lunch", lunchAfterIndex, REASON_BY_MEAL_TYPE.lunch);
+      const stop = toMealStop(city, lunchPlace, "lunch", lunchAfterIndex, lightLunch ? "غدا خفيف بمقهى قريب: ما في مطعم قريب مفتوح بهالوقت" : lunchPick?.reused ? REUSED_REASON : REASON_BY_MEAL_TYPE.lunch);
       if (stop) {
         mealStops.push(stop);
+        todaysMealIds.add(lunchPlace.id);
         usedPlaceIds.add(lunchPlace.id);
         usedFoodCategoryIds.add(lunchPlace.categoryId);
       }
@@ -419,10 +461,11 @@ export function buildMealStopsForDay(
   const eveningPrevCluster = stopClusters[mainStopCount - 1];
   const special = rules.eveningSpecialCategory;
   const tapasPlace = special ? pickBestForSlot(city, [special], eveningPrevCluster, null, usedPlaceIds, usedFoodCategoryIds, weekday, "tapas", false) : null;
-  const eveningPlace = tapasPlace ?? pickBestForSlot(city, rules.dinnerCategories, eveningPrevCluster, null, usedPlaceIds, usedFoodCategoryIds, weekday, "dinner", false);
+  const dinnerPick = tapasPlace ? null : pick(rules.dinnerCategories, eveningPrevCluster, null, "dinner", slotHints?.dinnerStart);
+  const eveningPlace = tapasPlace ?? dinnerPick?.place ?? null;
   if (eveningPlace) {
     const mealType: V2MealStop["mealType"] = special !== null && eveningPlace.categoryId === special ? "tapas" : "dinner";
-    const stop = toMealStop(city, eveningPlace, mealType, mainStopCount - 1, REASON_BY_MEAL_TYPE[mealType]);
+    const stop = toMealStop(city, eveningPlace, mealType, mainStopCount - 1, dinnerPick?.reused ? REUSED_REASON : REASON_BY_MEAL_TYPE[mealType]);
     if (stop) {
       mealStops.push(stop);
       usedPlaceIds.add(eveningPlace.id);

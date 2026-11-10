@@ -42,6 +42,10 @@ export type CityMealStopRules = {
   dinnerCategories: readonly string[];
   /** Optional: place lunch after the stop that ends closest before 13:45 (estimated from visit lengths), not after the middle stop. */
   lunchByClock?: boolean;
+  /** Optional: categories tried for a light lunch when no restaurant of `lunchCategories` fits (Prague: cafés with food). */
+  lunchFallbackCategories?: readonly string[];
+  /** Optional: categories offered as one optional coffee break per day near the day's route (Prague: cafés); unset = none. */
+  coffeeBreakCategories?: readonly string[];
 };
 
 export type CityAccommodationRules = {
@@ -104,6 +108,24 @@ export type CityPlannerModule = {
    * run past closing or start after the last entry (plannerTimingGuard.ts). Unset = unchanged behaviour.
    */
   timingGuard?: boolean;
+  /**
+   * Optional: count the trip to and from each meal on the day's clock, place lunch from the real timeline, check each
+   * restaurant against the meal's estimated start, and reuse another day's restaurant rather than leave a meal slot empty.
+   * Unset = unchanged behaviour (Barcelona).
+   */
+  mealLegsInTimeline?: boolean;
+  /**
+   * Optional: the planner metadata for this request's interests (Prague: "food" no longer scores shopping places, which share
+   * the legacy foodShoppingNightlife key). Unset = the city's metadata unchanged (Barcelona).
+   */
+  metadataForInterests?: (v2Interests: readonly V2PlannerInterest[], surpriseMe: boolean) => PlannerPlaceMetadata[];
+  /**
+   * Optional: how well a place matches this request's interests (0-10). The day builder and the day balance only ADD places
+   * that reach the city's threshold (flagships and must-visits excepted), and a strong match is never cut to an outside stop.
+   */
+  placeRelevance?: (v2Interests: readonly V2PlannerInterest[], surpriseMe: boolean) => (placeId: string) => number;
+  /** With `placeRelevance`: the lowest match (0-10) a place needs to be added; default 5. */
+  relevanceThreshold?: number;
   /** One day's legs, used by the reclaim / cross-day / trip-composition passes when they test a changed day. Omit to use
    * Barcelona's checked route table (Barcelona omits it, so those passes behave exactly as before). */
   buildDayRouteLegs?: (day: PlannerDay) => PlannerRouteLeg[];

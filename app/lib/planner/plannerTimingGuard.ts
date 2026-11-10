@@ -4,6 +4,7 @@ import type { V2Day, V2Plan } from "./barcelonaV2Resolve";
 import type { CityPlannerModule } from "./cityPlannerModule";
 import type { GeneratedPlannerPlan } from "./plannerDayBuilder";
 import type { PlannerRouteLeg } from "./plannerTransportTypes";
+import { timelineLegBetween } from "./timelineLegs";
 
 /**
  * Multi-city planner, cities that opt in (`timingGuard`): opening hours are a hard constraint on the FINAL plan.
@@ -93,7 +94,7 @@ function simulate(city: CityPlannerModule, day: V2Day, order: number[], month: n
   const legs: PlannerRouteLeg[] = [];
   for (let i = 0; i < order.length - 1; i++) legs.push(city.routeLeg(day.stops[order[i]].id, day.stops[order[i + 1]].id));
   const meals: TimelineMealInput[] = (day.mealStops ?? []).map((meal) => ({ placeId: meal.id, mealType: meal.mealType, afterStopIndex: meal.afterStopIndex, hours: meal.hours }));
-  return { timeline: buildBarcelonaDayTimeline(stops, legs, meals, day.weekday ?? null, month), legs };
+  return { timeline: buildBarcelonaDayTimeline(stops, legs, meals, day.weekday ?? null, month, null, timelineLegBetween(city)), legs };
 }
 
 type Ranked = { violations: number; hops: number; travel: number; moved: number };
@@ -118,7 +119,9 @@ function bestOrderForDay(city: CityPlannerModule, day: V2Day): number[] | null {
   for (const order of permutations(n)) {
     const { timeline, legs } = simulate(city, day, order, month);
     const simulatedDay = { ...day, stops: order.map((i) => day.stops[i]), timeline };
-    const violations = findTimingViolations(simulatedDay).length;
+    // A flagship that cannot fit weighs as much as ten smaller stops: better to lose a small stop than cut the castle short.
+    const flagships = new Set(city.compositionProtectedPlaceIds ?? []);
+    const violations = findTimingViolations(simulatedDay).reduce((sum, v) => sum + (flagships.has(v.placeId) ? 10 : 1), 0);
     const travel = legs.reduce((sum, leg) => sum + legMinutes(leg), 0);
     const moved = order.filter((value, index) => value !== index).length;
     const hops = hopsOf(order);
@@ -126,7 +129,8 @@ function bestOrderForDay(city: CityPlannerModule, day: V2Day): number[] | null {
     if (!best || isBetter(candidate, best)) best = candidate;
   }
   if (!best) return null;
-  const current = findTimingViolations(day).length;
+  const currentFlagships = new Set(city.compositionProtectedPlaceIds ?? []);
+  const current = findTimingViolations(day).reduce((sum, v) => sum + (currentFlagships.has(v.placeId) ? 10 : 1), 0);
   if (best.violations >= current) return null;
   return best.order;
 }
@@ -184,6 +188,44 @@ export function applyTimingGuard(params: {
     }
     if (!added) break;
     data = build(plan, legsByDay, mealExclusions);
+  }
+
+  // Cities with `mealLegsInTimeline`: a stop that still runs past closing or starts after the last entry is not kept as a cut-short
+  // visit. It leaves the day and becomes that day's optional suggestion ("if there is time left"), and the day is rebuilt. Never
+  // the city's protected flagships, and never a day's only stop.
+  if (city.mealLegsInTimeline) {
+    const isOpenThatDay = (day: V2Day, placeId: string): boolean => {
+      const hours = planningHoursOf(day.stops.find((s) => s.id === placeId)?.hours);
+      if (!hours || hours.type !== "fixed") return false;
+      const weekday = day.weekday ?? "monday";
+      return (hours.schedule[weekday] ?? []).length > 0;
+    };
+    const protectedIds = new Set(city.compositionProtectedPlaceIds ?? []);
+    let dropped = false;
+    const days = plan.days.map((day, index) => {
+      const v2Day = data.days[index];
+      if (!v2Day) return day;
+      const late = findTimingViolations(v2Day)
+        // "closed" here also covers a visit pushed to the closing minute (no time left); a place really closed that weekday is
+        // left to the date repair and keeps its warning.
+        .filter((v) => v.kind === "stop" && !protectedIds.has(v.placeId) && (v.reason !== "closed" || isOpenThatDay(v2Day, v.placeId)))
+        .map((v) => v.placeId);
+      const remove = late.filter((id) => day.stops.length - late.length >= 1 || id !== day.stops[0]?.placeId).slice(0, Math.max(0, day.stops.length - 1));
+      if (remove.length === 0) return day;
+      dropped = true;
+      const removedMinutes = remove.reduce((sum, id) => sum + (v2Day.stops.find((s) => s.id === id)?.visitDurationMinutes ?? 0), 0);
+      return {
+        ...day,
+        stops: day.stops.filter((s) => !remove.includes(s.placeId)),
+        totalVisitMinutes: Math.max(0, day.totalVisitMinutes - removedMinutes),
+        optionalPlaceIds: [...(day.optionalPlaceIds ?? []), ...remove.filter((id) => !(day.optionalPlaceIds ?? []).includes(id))],
+      };
+    });
+    if (dropped) {
+      plan = { ...plan, days };
+      legsByDay = days.map((day) => (city.buildDayRouteLegs ? city.buildDayRouteLegs(day) : day.stops.slice(0, -1).map((stop, i) => city.routeLeg(stop.placeId, day.stops[i + 1].placeId))));
+      data = build(plan, legsByDay, mealExclusions);
+    }
   }
 
   // Whatever still cannot fit is said plainly on the stop (meals are re-chosen by the normal hours rules and are only reported).

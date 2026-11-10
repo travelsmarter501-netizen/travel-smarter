@@ -126,7 +126,8 @@ export function resolveHoursForTrip(hours: HoursInfo | undefined, dates: readonl
 
   if (hours.type === "fixed") {
     if (!dates) {
-      const planningSchedule = sameEveryDay(hours.schedule);
+      // A narrower planning window stored with the place (e.g. a restaurant's last reservation) is kept.
+      const planningSchedule = sameEveryDay(hours.planningSchedule ?? hours.schedule);
       return planningSchedule ? { ...hours, planningSchedule } : hours;
     }
     if (!hours.dateExceptions?.length) return hours;

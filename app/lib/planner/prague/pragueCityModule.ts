@@ -42,7 +42,7 @@ import { balanceCityDays } from "../cityDayBalance";
 import { ENABLE_MUST_SEE_PRIORITY, FLAGSHIP_MUST_SEE_BOOST, FLAGSHIP_TIER_B_BOOST, FLAGSHIP_TIER_B_SURPRISE_ME_BOOST } from "../barcelonaMustSeePolicy";
 import { V2_PLANNER_INTERESTS, type V2PlannerInterest } from "../v2PlannerTypes";
 import { PRAGUE_PLACES, PRAGUE_PLACE_COORDINATES } from "./praguePlaces";
-import { PRAGUE_PLANNER_METADATA, getPraguePlannerMetadataById } from "./pragueMetadata";
+import { PRAGUE_PLANNER_METADATA, getPraguePlannerMetadataById, praguePlannerMetadataForInterests, praguePlaceRelevance } from "./pragueMetadata";
 import type { CityPlannerModule } from "../cityPlannerModule";
 import type { ClusterCompatibilityMap, CoverageGoal, DayBuilderConfig, FlagshipCoverageGoal, GeneratedPlannerPlan, PlannerDay, SimilarityGroup } from "../plannerDayBuilder";
 import type { RouteConfig } from "../plannerRouteOptimizer";
@@ -145,6 +145,15 @@ const FLAGSHIP_TIER_B_IDS = ["charles-bridge", "old-town-square"];
 function flagshipGoals(context: { surpriseMe: boolean; days: number }): FlagshipCoverageGoal[] {
   if (!ENABLE_MUST_SEE_PRIORITY) return [];
   const tierBBoost = context.surpriseMe && context.days >= 3 ? FLAGSHIP_TIER_B_SURPRISE_ME_BOOST : FLAGSHIP_TIER_B_BOOST;
+  // PROPOSAL (owner review): from 2 days on, Charles Bridge and Old Town Square are required too (free, 30 minutes each); the
+  // audit sample had 24 of 49 short plans without the bridge.
+  if (context.days >= 2) {
+    return [
+      { candidates: FLAGSHIP_MUST_SEE, minCoverage: 1, boost: FLAGSHIP_MUST_SEE_BOOST },
+      { candidates: ["charles-bridge"], minCoverage: 1, boost: tierBBoost },
+      { candidates: ["old-town-square"], minCoverage: 1, boost: tierBBoost },
+    ];
+  }
   return [
     { candidates: FLAGSHIP_MUST_SEE, minCoverage: 1, boost: FLAGSHIP_MUST_SEE_BOOST },
     { candidates: FLAGSHIP_TIER_B_IDS, minCoverage: 0, boost: tierBBoost },
@@ -291,7 +300,8 @@ const FOOD_PLACE_CLUSTER: Record<string, string> = {
   "kavarna-obecni-dum": "republiky",
   "lobkowicz-palace-cafe": "hradcany",
   "kavarna-novy-svet": "hradcany",
-  "cafe-kupka": "zizkov",
+  // "cafe-kupka" is not offered (2026-11-10): prague.eu's Café Kupka page puts it on the top floor of the Army Museum Žižkov
+  // building, while its Vítkov page names the memorial's café "Café Vítkov". Kept out until the place is confirmed.
   "kavarna-lucerna": "new-town",
   kuchyn: "hradcany",
   mlynec: "old-town",
@@ -328,6 +338,10 @@ const WARNINGS: Record<string, PlannerOperationalWarning[]> = {
   "municipal-house": [{ textAr: "⚠️ مشروطة بالحجز: القاعات بجولة مرشدة (ساعة) بمواعيد ثابتة منشورة لكل يوم على obecnidum.cz/en/tours. احجز الجولة الأقرب لوقتها بالخطة." }],
   "troja-chateau": [{ textAr: "⚠️ القصر بيفتح بموسمه بس (2026: 1 أبريل–29 أكتوبر)؛ برّا الموسم مسكّر." }],
   "prague-zoo": [{ textAr: "المواعيد بتتغير حسب الشهر (بالشتاء لحد 16:00)." }],
+  // katedralasvatehovita.cz (checked 2026-11-10): Mon-Sat 9:00-17:00, Sunday 12:00-17:00, last admission 20 minutes before closing.
+  "prague-castle": [{ textAr: "الأحد: كاتدرائية St. Vitus بتفتح للزوار من 12:00 بس، فابدأ بالقصر الملكي وGolden Lane وخلّي الكاتدرائية للآخر.", onlyRelevantOnWeekday: "sunday" }],
+  // prague.eu (checked 2026-11-10): the Fata Morgana greenhouse is open Tuesday-Sunday; the outdoor garden every day.
+  "botanical-garden": [{ textAr: "الاثنين: البيت الزجاجي Fata Morgana مسكّر، والحديقة برّا بس مفتوحة.", onlyRelevantOnWeekday: "monday" }],
 };
 
 function warningsFor(placeId: string, weekday?: Weekday | null): PlannerOperationalWarning[] | undefined {
@@ -399,6 +413,9 @@ export const PRAGUE_CITY_MODULE: CityPlannerModule = {
     breakfastCategories: ["breakfast"],
     lunchCategories: ["local", "middle-eastern", "restaurants"],
     lunchByClock: true,
+    // A light lunch at a café with food when no restaurant near the day fits (Troja, Letná, the castle on some days).
+    lunchFallbackCategories: ["cafes"],
+    coffeeBreakCategories: ["cafes"],
     eveningSpecialCategory: null,
     dinnerCategories: ["local", "middle-eastern", "restaurants"],
   },
@@ -419,9 +436,14 @@ export const PRAGUE_CITY_MODULE: CityPlannerModule = {
         heavyMinutes: 380,
         lightMinutes: 170,
         minPriorityToAdd: 5,
+        keepInsideRelevance: 7,
       }
     );
   },
+  mealLegsInTimeline: true,
+  metadataForInterests: praguePlannerMetadataForInterests,
+  placeRelevance: praguePlaceRelevance,
+  relevanceThreshold: 5,
   outsideVisit: (placeId) => (OUTSIDE_STOP_MINUTES[placeId] ? { visitDurationMinutes: OUTSIDE_STOP_MINUTES[placeId] } : undefined),
   capacityWarning: (daysGenerated) => `قدرنا نبني خطة قوية لـ ${daysGenerated} أيام من البيانات المتاحة حاليًا لبراغ. عم نوسّع المحتوى للأيام الأطول.`,
 };

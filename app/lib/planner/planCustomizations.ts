@@ -1,5 +1,6 @@
 import "server-only";
-import { buildBarcelonaDayTimeline, type TimelineMealInput, type TimelineStopInput } from "./barcelonaV2Timeline";
+import { buildBarcelonaDayTimeline, lunchPlacementFromTimeline, type TimelineMealInput, type TimelineStopInput } from "./barcelonaV2Timeline";
+import { timelineLegBetween } from "./timelineLegs";
 import { buildMealAdjacentLegs, resolveStop, type V2Day, type V2Plan } from "./barcelonaV2Resolve";
 import { lunchIndexByClock } from "./barcelonaV2MealStops";
 import type { CityPlannerModule } from "./cityPlannerModule";
@@ -252,8 +253,6 @@ function effectiveDay(city: CityPlannerModule, baseDay: V2Day, edit: DayCustomiz
   if (stops.length === 0) return baseDay;
 
   const legs: PlannerRouteLeg[] = stops.slice(0, -1).map((stop, i) => city.routeLeg(stop.id, stops[i + 1].id));
-  const lunchAfterIndex = city.mealStops.lunchByClock ? lunchIndexByClock(stops.map((stop) => stop.visitDurationMinutes), (baseDay.mealStops ?? []).some((m) => m.mealType === "breakfast")) : undefined;
-  const mealStops = placeMeals(baseDay, stops.length, lunchAfterIndex);
   const timelineStops: TimelineStopInput[] = stops.map((stop) => ({
     placeId: stop.id,
     visitDurationMinutes: stop.visitDurationMinutes,
@@ -261,9 +260,18 @@ function effectiveDay(city: CityPlannerModule, baseDay: V2Day, edit: DayCustomiz
     preferredTime: city.metadataById(stop.id)?.preferredTime ?? "anytime",
     arrivalBufferMinutes: city.metadataById(stop.id)?.arrivalBufferMinutes,
   }));
-  const timelineMeals: TimelineMealInput[] = mealStops.map((meal) => ({ placeId: meal.id, mealType: meal.mealType, afterStopIndex: meal.afterStopIndex, hours: meal.hours }));
   const month = baseDay.actualDate ? Number(baseDay.actualDate.slice(5, 7)) : null;
-  const timeline = buildBarcelonaDayTimeline(timelineStops, legs, timelineMeals, baseDay.weekday ?? null, month, edit.startMinutes ?? null);
+  const breakfastMeal = (baseDay.mealStops ?? []).find((m) => m.mealType === "breakfast");
+  const hasBreakfast = !!breakfastMeal;
+  // Cities with `mealLegsInTimeline`: lunch is placed from the edited day's real timeline, like a new plan.
+  const lunchAfterIndex = city.mealLegsInTimeline
+    ? lunchPlacementFromTimeline(timelineStops, legs, baseDay.weekday ?? null, month, breakfastMeal ? { placeId: breakfastMeal.id, hours: breakfastMeal.hours } : false, edit.startMinutes ?? null, timelineLegBetween(city))?.afterIndex
+    : city.mealStops.lunchByClock
+      ? lunchIndexByClock(stops.map((stop) => stop.visitDurationMinutes), hasBreakfast)
+      : undefined;
+  const mealStops = placeMeals(baseDay, stops.length, lunchAfterIndex);
+  const timelineMeals: TimelineMealInput[] = mealStops.map((meal) => ({ placeId: meal.id, mealType: meal.mealType, afterStopIndex: meal.afterStopIndex, hours: meal.hours }));
+  const timeline = buildBarcelonaDayTimeline(timelineStops, legs, timelineMeals, baseDay.weekday ?? null, month, edit.startMinutes ?? null, timelineLegBetween(city));
 
   let day: V2Day = {
     ...baseDay,

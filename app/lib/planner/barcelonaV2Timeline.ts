@@ -444,11 +444,22 @@ export function buildBarcelonaDayTimeline(
   weekday: Weekday | null,
   month: number | null = null,
   /** Customer-chosen day start (minutes after midnight); null = derived from the stops as before. */
-  startMinutesOverride: number | null = null
+  startMinutesOverride: number | null = null,
+  /**
+   * Optional (cities with `mealLegsInTimeline`): the real leg between any two places of the day. When given, the trip to and
+   * from each meal is counted on the clock (breakfast -> first stop, stop -> meal, meal -> next stop) instead of a flat
+   * 15-minute buffer and the stop-to-stop leg. Omitted = the previous behaviour, unchanged (Barcelona).
+   */
+  legBetween?: (fromPlaceId: string, toPlaceId: string) => PlannerRouteLeg | undefined
 ): DayTimeline {
   if (stops.length === 0) {
     return { dayStartMinutes: DEFAULT_DAY_START_MINUTES, dayEndMinutes: DEFAULT_DAY_START_MINUTES, stops: [], meals: [], approximate: true, freeTimeBlocks: [] };
   }
+  const mealAdvance = (fromPlaceId: string, toPlaceId: string): number => {
+    const advance = transportAdvance(legBetween?.(fromPlaceId, toPlaceId));
+    if (advance.approximate) anyApproximate = true;
+    return advance.minutes;
+  };
 
   let clock = startMinutesOverride ?? deriveDayStartMinutes(stops.map((s) => s.preferredTime));
   let anyApproximate = false;
@@ -469,7 +480,7 @@ export function buildBarcelonaDayTimeline(
     mealWindows.push({ placeId: breakfast.placeId, mealType: "breakfast", afterStopIndex: -1, ...breakfastWindow });
     if (breakfastWindow.approximate) anyApproximate = true;
     dayStartMinutes = breakfastWindow.startMinutes;
-    clock = Math.max(clock, breakfastWindow.endMinutes + INTER_STOP_BUFFER_MINUTES);
+    clock = Math.max(clock, breakfastWindow.endMinutes + (legBetween ? mealAdvance(breakfast.placeId, stops[0].placeId) : INTER_STOP_BUFFER_MINUTES));
   }
 
   stops.forEach((stop, index) => {
@@ -488,9 +499,11 @@ export function buildBarcelonaDayTimeline(
     if (index === 0 && !breakfast) dayStartMinutes = window.startMinutes;
     clock = window.endMinutes;
 
+    let lastPlaceId = stop.placeId;
     for (const meal of meals.filter((m) => m.afterStopIndex === index)) {
       const target = MEAL_TARGET_WINDOW[meal.mealType];
-      const earliestStart = Math.max(clock + INTER_STOP_BUFFER_MINUTES, target.earliest);
+      const earliestStart = Math.max(clock + (legBetween ? mealAdvance(lastPlaceId, meal.placeId) : INTER_STOP_BUFFER_MINUTES), target.earliest);
+      lastPlaceId = meal.placeId;
       const mealWindow = fitWindow(earliestStart, MEAL_ASSUMED_DURATION_MINUTES[meal.mealType], meal.hours, weekday);
       mealWindows.push({ placeId: meal.placeId, mealType: meal.mealType, afterStopIndex: meal.afterStopIndex, ...mealWindow });
       if (mealWindow.approximate) anyApproximate = true;
@@ -498,10 +511,15 @@ export function buildBarcelonaDayTimeline(
     }
 
     if (index < stops.length - 1) {
-      const leg = legs[index];
-      const advance = transportAdvance(leg);
-      if (advance.approximate) anyApproximate = true;
-      clock += advance.minutes;
+      if (legBetween && lastPlaceId !== stop.placeId) {
+        // The customer walks from the meal to the next stop, not from the previous stop.
+        clock += mealAdvance(lastPlaceId, stops[index + 1].placeId);
+      } else {
+        const leg = legs[index];
+        const advance = transportAdvance(leg);
+        if (advance.approximate) anyApproximate = true;
+        clock += advance.minutes;
+      }
     }
   });
 
@@ -521,4 +539,53 @@ export function formatTimelineClock(totalMinutes: number): string {
   const hours = Math.floor(wrapped / 60);
   const minutes = wrapped % 60;
   return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+}
+
+/**
+ * Cities with `mealLegsInTimeline`: whether a food place can serve a meal that starts at `start` (minutes) for its assumed
+ * length -- an interval must cover the whole meal, and the meal must start by the place's last entry / last seating when one
+ * is known. `null` = not verifiable (no fixed schedule, or a flexible-date plan whose schedule changes by weekday).
+ */
+export function canServeMealAt(rawHours: HoursInfo | undefined, weekday: Weekday | null, start: number, mealType: MealType): boolean | null {
+  const hours = planningHoursOf(rawHours);
+  if (!hours || hours.type !== "fixed" || !resolveEffectiveWeekday(hours, weekday)) return null;
+  const covering = findCoveringInterval(hours, weekday, start);
+  if (!covering || covering.close < start + MEAL_ASSUMED_DURATION_MINUTES[mealType]) return false;
+  if (hours.lastEntry && start > timeToMinutes(hours.lastEntry)) return false;
+  return true;
+}
+
+/**
+ * Cities with `mealLegsInTimeline`: where lunch goes, read from the day's real timeline (same rules as
+ * buildBarcelonaDayTimeline: opening hours, rounding, legs) instead of an estimated clock. For every stop that is not the
+ * last one, the lunch start is estimated as that stop's real end + the inter-stop margin + a typical short walk, never before
+ * 12:30; the choice minimises waiting before 12:30 plus twice the lateness after 13:30, and avoids a start after 14:30 when
+ * any other position allows it. Returns the stop index to put lunch after and the estimated start (for the restaurant's
+ * hours check); `null` when the day has fewer than two stops.
+ */
+export function lunchPlacementFromTimeline(
+  stops: TimelineStopInput[],
+  legs: PlannerRouteLeg[],
+  weekday: Weekday | null,
+  month: number | null,
+  hasBreakfast: boolean | { placeId: string; hours?: HoursInfo },
+  startMinutesOverride: number | null = null,
+  legBetween?: (fromPlaceId: string, toPlaceId: string) => PlannerRouteLeg | undefined
+): { afterIndex: number; estimatedStart: number } | null {
+  if (stops.length < 2) return null;
+  // The real breakfast place when known (its opening time and walk to the first stop count), else a placeholder at 8:00.
+  const meals: TimelineMealInput[] =
+    typeof hasBreakfast === "object" ? [{ placeId: hasBreakfast.placeId, mealType: "breakfast", afterStopIndex: -1, hours: hasBreakfast.hours }] : hasBreakfast ? [{ placeId: "__breakfast__", mealType: "breakfast", afterStopIndex: -1 }] : [];
+  const safeLeg = legBetween ? (a: string, b: string) => (a.startsWith("__") || b.startsWith("__") ? undefined : legBetween(a, b)) : undefined;
+  const timeline = buildBarcelonaDayTimeline(stops, legs, meals, weekday, month, startMinutesOverride, safeLeg);
+  const TYPICAL_WALK = 10;
+  const earliest = MEAL_TARGET_WINDOW.lunch.earliest;
+  let best: { afterIndex: number; estimatedStart: number; cost: number } | null = null;
+  for (let i = 0; i < stops.length - 1; i++) {
+    const ready = timeline.stops[i].endMinutes + INTER_STOP_BUFFER_MINUTES + TYPICAL_WALK;
+    const start = roundUpToBoundary(Math.max(ready, earliest));
+    const cost = Math.max(0, earliest - ready) + 2 * Math.max(0, start - (13 * 60 + 30)) + (start > MEAL_TARGET_WINDOW.lunch.latest ? 1000 : 0);
+    if (!best || cost < best.cost || (cost === best.cost && i > best.afterIndex)) best = { afterIndex: i, estimatedStart: start, cost };
+  }
+  return best ? { afterIndex: best.afterIndex, estimatedStart: best.estimatedStart } : null;
 }
