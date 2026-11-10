@@ -328,6 +328,10 @@ const WARNINGS: Record<string, PlannerOperationalWarning[]> = {
   "municipal-house": [{ textAr: "⚠️ مشروطة بالحجز: القاعات بجولة مرشدة (ساعة) بمواعيد ثابتة منشورة لكل يوم على obecnidum.cz/en/tours. احجز الجولة الأقرب لوقتها بالخطة." }],
   "troja-chateau": [{ textAr: "⚠️ القصر بيفتح بموسمه بس (2026: 1 أبريل–29 أكتوبر)؛ برّا الموسم مسكّر." }],
   "prague-zoo": [{ textAr: "المواعيد بتتغير حسب الشهر (بالشتاء لحد 16:00)." }],
+  // katedralasvatehovita.cz (checked 2026-11-10): Mon-Sat 9:00-17:00, Sunday 12:00-17:00, last admission 20 minutes before closing.
+  "prague-castle": [{ textAr: "الأحد: كاتدرائية St. Vitus بتفتح للزوار من 12:00 بس، فابدأ بالقصر الملكي وGolden Lane وخلّي الكاتدرائية للآخر.", onlyRelevantOnWeekday: "sunday" }],
+  // prague.eu (checked 2026-11-10): the Fata Morgana greenhouse is open Tuesday-Sunday; the outdoor garden every day.
+  "botanical-garden": [{ textAr: "الاثنين: البيت الزجاجي Fata Morgana مسكّر، والحديقة برّا بس مفتوحة.", onlyRelevantOnWeekday: "monday" }],
 };
 
 function warningsFor(placeId: string, weekday?: Weekday | null): PlannerOperationalWarning[] | undefined {

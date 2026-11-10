@@ -68,6 +68,18 @@ export const PRAGUE_PHOTOS: Record<string, PlacePhoto> = {
   "reduta-jazz-club": {"image":"/images-prague/reduta-jazz-club.jpg","imageSource":"Wikimedia Commons","imageSourceUrl":"https://commons.wikimedia.org/wiki/File:Reduta_Jazz_Club_Prague_Concert_Stage.jpg","imageAuthor":"Alessandro Giangiulio","imageLicense":"CC BY 2.0","imageLicenseUrl":"https://creativecommons.org/licenses/by/2.0/"},
 };
 
+/**
+ * Added 2026-11-10: checked on each Commons file page the same day (licence and author) and looked at. Kolkovna: the "V Kolkovně"
+ * sign and "Restaurant" on the corner of V Kolkovně 8; Kavárna Obecní dům: the café hall inside the Municipal House; Bredovský
+ * dvůr: the building at Politických vězňů 13 with its name over the gate.
+ */
+export const PRAGUE_PHOTOS_2026_11_10: Record<string, PlacePhoto> = {
+  "kolkovna-v-kolkovne": {"image":"/images-prague/kolkovna-v-kolkovne.jpg","imageSource":"Wikimedia Commons","imageSourceUrl":"https://commons.wikimedia.org/wiki/File:Restaurant_Kolkovna.jpg","imageAuthor":"Tiia Monto","imageLicense":"CC BY-SA 4.0","imageLicenseUrl":"https://creativecommons.org/licenses/by-sa/4.0/"},
+  "kavarna-obecni-dum": {"image":"/images-prague/kavarna-obecni-dum.jpg","imageSource":"Wikimedia Commons","imageSourceUrl":"https://commons.wikimedia.org/wiki/File:Praha_-_Kav%C3%A1rna_Obecn%C3%AD_d%C5%AFm.jpg","imageAuthor":"Fred Romero from Paris, France","imageLicense":"CC BY 2.0","imageLicenseUrl":"https://creativecommons.org/licenses/by/2.0/"},
+  "bredovsky-dvur": {"image":"/images-prague/bredovsky-dvur.jpg","imageSource":"Wikimedia Commons","imageSourceUrl":"https://commons.wikimedia.org/wiki/File:Praha_Bredovsk%C3%BD_dv%C5%AFr_1.jpg","imageAuthor":"VitVit","imageLicense":"CC BY-SA 4.0","imageLicenseUrl":"https://creativecommons.org/licenses/by-sa/4.0/"},
+};
+Object.assign(PRAGUE_PHOTOS, PRAGUE_PHOTOS_2026_11_10);
+
 /** Adds the photo and its credit to a place that has one (the place's own fields win only where no photo exists). */
 export function withPhoto<T extends { id: string; image?: string }>(place: T): T {
   const photo = PRAGUE_PHOTOS[place.id];
