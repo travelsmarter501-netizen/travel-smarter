@@ -54,11 +54,15 @@ export type V2ResolvedStop = ResolvedPlaceSummary & {
   hours?: HoursInfo;
   /** Outside-only stop (cities with outside stops): short visit of the outside; the card says so. */
   visitMode?: "outside";
+  /** Cities with ticketEstimate: estimated adult entry (0 free / outside, null = price not known). */
+  ticket?: { amount: number | null; currency: string };
 };
 
 export type V2ResolvedNearby = ResolvedPlaceSummary & {
   type: PlannerOptionalSuggestion["type"];
   reason?: string;
+  /** Cities with ticketEstimate: estimated adult entry of this optional place (null = not known). */
+  ticket?: { amount: number | null; currency: string };
 };
 
 export type V2Day = {
@@ -192,15 +196,18 @@ export function resolveStop(city: CityPlannerModule, placeId: string, score: num
   const warnings = city.operationalWarnings(placeId, weekday) ?? [];
 
   const outside = visitMode === "outside" ? city.outsideVisit?.(placeId) : undefined;
+  const estimate = city.ticketEstimate;
   if (outside) {
-    return { ...summary, visitDurationMinutes: outside.visitDurationMinutes, score, warnings: [], hours: outside.hours, visitMode: "outside" };
+    return { ...summary, visitDurationMinutes: outside.visitDurationMinutes, score, warnings: [], hours: outside.hours, visitMode: "outside", ...(estimate ? { ticket: { amount: 0, currency: estimate.currency } } : {}) };
   }
+  const amount = estimate?.forPlace(placeId);
   return {
     ...summary,
     visitDurationMinutes: metadata?.visitDurationMinutes ?? 0,
     score,
     warnings,
     hours: getHoursForResolved(resolved),
+    ...(estimate && amount !== undefined ? { ticket: { amount, currency: estimate.currency } } : {}),
   };
 }
 
@@ -217,7 +224,8 @@ function resolveOptionalNearby(city: CityPlannerModule, suggestion: PlannerOptio
     const resolved = resolvePlace(suggestion.placeId, placeType, city.places);
     if (resolved) {
       placeDetails[suggestion.placeId] = resolved;
-      return { ...summarizeResolvedPlace(resolved), type: suggestion.type, reason: suggestion.reason };
+      const amount = city.ticketEstimate?.forPlace(suggestion.placeId);
+      return { ...summarizeResolvedPlace(resolved), type: suggestion.type, reason: suggestion.reason, ...(city.ticketEstimate && amount !== undefined && (placeType === "attraction" || placeType === "experience") ? { ticket: { amount, currency: city.ticketEstimate.currency } } : {}) };
     }
   }
   return null;
@@ -259,7 +267,7 @@ export function mealSlotHintsFromTimeline(
   const lunch = lunchPlacementFromTimeline(timelineStops, legs, weekday, month, true, startMinutesOverride, legBetween);
   const plain = buildBarcelonaDayTimeline(timelineStops, legs, [], weekday, month, startMinutesOverride, legBetween);
   const lunchExtra = lunch ? MEAL_ASSUMED_DURATION_MINUTES.lunch + 2 * 25 : 0;
-  const dinnerStart = Math.max(MEAL_TARGET_WINDOW.dinner.earliest, Math.ceil((plain.dayEndMinutes + lunchExtra + 25) / 15) * 15);
+  const dinnerStart = Math.max(city.mealStops.flexibleMeals?.dinnerEarliest ?? MEAL_TARGET_WINDOW.dinner.earliest, Math.ceil((plain.dayEndMinutes + lunchExtra + 25) / 15) * 15);
   return {
     lunchAfterIndex: lunch?.afterIndex,
     // Breakfast places must be open by 9:00 (the rule the breakfast list was chosen by); the timeline then starts breakfast at
@@ -284,7 +292,8 @@ export function buildMealAdjacentLegs(city: CityPlannerModule, day: V2Day): Reco
     if (entry.kind === "place" && next.kind === "place" && next.stopIndex === entry.stopIndex + 1) continue; // already covered by day.legs
     const fromId = idOf(entry);
     const toId = idOf(next);
-    if (!fromId || !toId) continue;
+    // A lunch break has no set place, so no leg can be computed to or from it.
+    if (!fromId || !toId || fromId === "lunch-break" || toId === "lunch-break") continue;
     legs[`${fromId}::${toId}`] = city.routeLeg(fromId, toId);
   }
   return legs;
@@ -367,7 +376,10 @@ export function resolveV2Plan(
           month
         )
       : undefined;
-    const mealStops = buildMealStopsForDay(mealStopCity, stopClusters, weekday ?? null, v2Interests, usedPlaceIds, usedFoodCategoryIds, surpriseMe, stopVisitMinutes, slotHints);
+    const mealStopsAll = buildMealStopsForDay(mealStopCity, stopClusters, weekday ?? null, v2Interests, usedPlaceIds, usedFoodCategoryIds, surpriseMe, stopVisitMinutes, slotHints);
+    // Cities with flexibleMeals: breakfast is a suggestion, not a timed stop (the day starts at the first visit).
+    const breakfastSuggestion = city.mealStops.flexibleMeals ? mealStopsAll.find((meal) => meal.mealType === "breakfast") : undefined;
+    const mealStops = breakfastSuggestion ? mealStopsAll.filter((meal) => meal !== breakfastSuggestion) : mealStopsAll;
     for (const id of excludedToday) if (!mealStops.some((meal) => meal.id === id)) usedPlaceIds.delete(id);
     for (const meal of mealStops) {
       const resolved = resolvePlace(meal.id, "food", city.places);
@@ -383,6 +395,10 @@ export function resolveV2Plan(
       .map((suggestion) => resolveOptionalNearby(city, suggestion, placeDetails))
       .filter((entry): entry is V2ResolvedNearby => entry !== null);
     for (const nearby of optionalNearby) usedPlaceIds.add(nearby.id);
+    if (breakfastSuggestion) {
+      const entry = resolveOptionalNearby(city, { placeId: breakfastSuggestion.id, type: "food", reason: "فطور اختياري قريب من أول محطة (قبل ما تبلّش يومك)" }, placeDetails);
+      if (entry) optionalNearby.unshift(entry);
+    }
 
     // Cities with `coffeeBreakCategories`: one optional coffee break per day, a café in (or right next to) the area of the day's
     // middle stops, open that day and at 15:00 when that can be checked, never one already used in the trip. Shown with the
@@ -455,6 +471,8 @@ export function resolveV2Plan(
       mealType: meal.mealType,
       afterStopIndex: meal.afterStopIndex,
       hours: meal.hours,
+      ...(meal.optional ? { optional: true } : {}),
+      ...(meal.earliestStart !== undefined ? { earliestStart: meal.earliestStart } : {}),
     }));
     const timeline = buildBarcelonaDayTimeline(timelineStops, legs, timelineMeals, weekday ?? null, month, null, timelineLegBetween(city));
 

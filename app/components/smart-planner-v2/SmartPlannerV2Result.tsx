@@ -15,6 +15,7 @@ import { PLAN_TEXT, formatDayMonth, formatDays, storedTextDir } from "../../lib/
 import type { ReactNode } from "react";
 import type { V2Day, V2Plan } from "../../lib/planner/barcelonaV2Resolve";
 import type { V2PlannerInterest } from "../../lib/planner/v2PlannerTypes";
+import { formatTicketAmount, planTickets } from "../../lib/planner/planTickets";
 
 /** The change as the customer sees it right away (the server then sends the exact day: times, legs, meals). */
 function applyLocally(plan: V2Plan, change: PlanChange): V2Plan {
@@ -217,6 +218,21 @@ export default function SmartPlannerV2Result({
           <p className="mt-1 text-xs text-slate-500">{ui.stayUnresolved}</p>
         )}
         {plan.routeFirstApplied && <p className="mt-1 text-xs font-medium text-teal-700">{ui.routeFirst}</p>}
+        {(() => {
+          // Estimated entry tickets of the whole plan (cities with ticket estimates; old saved plans show nothing).
+          const t = planTickets(plan.days);
+          if (!t) return null;
+          return (
+            <div className="mt-2 border-t border-slate-200 pt-2">
+              <p className="text-xs font-bold text-slate-700">
+                {ui.ticketsPlan(formatTicketAmount(t.included, t.currency))}
+                {t.unknown > 0 && <span className="font-medium text-slate-400"> {ui.ticketsUnknown(t.unknown)}</span>}
+                {t.optional > 0 && <span className="font-medium text-slate-400"> · {ui.ticketsOptional(formatTicketAmount(t.optional, t.currency))}</span>}
+              </p>
+              <p className="mt-0.5 text-[11px] leading-4 text-slate-500">{ui.ticketsNote}</p>
+            </div>
+          );
+        })()}
       </div>
 
       {plan.capacityWarning && (

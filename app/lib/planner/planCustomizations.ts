@@ -270,7 +270,7 @@ function effectiveDay(city: CityPlannerModule, baseDay: V2Day, edit: DayCustomiz
       ? lunchIndexByClock(stops.map((stop) => stop.visitDurationMinutes), hasBreakfast)
       : undefined;
   const mealStops = placeMeals(baseDay, stops.length, lunchAfterIndex);
-  const timelineMeals: TimelineMealInput[] = mealStops.map((meal) => ({ placeId: meal.id, mealType: meal.mealType, afterStopIndex: meal.afterStopIndex, hours: meal.hours }));
+  const timelineMeals: TimelineMealInput[] = mealStops.map((meal) => ({ placeId: meal.id, mealType: meal.mealType, afterStopIndex: meal.afterStopIndex, hours: meal.hours, ...(meal.optional ? { optional: true } : {}), ...(meal.earliestStart !== undefined ? { earliestStart: meal.earliestStart } : {}) }));
   const timeline = buildBarcelonaDayTimeline(timelineStops, legs, timelineMeals, baseDay.weekday ?? null, month, edit.startMinutes ?? null, timelineLegBetween(city));
 
   let day: V2Day = {

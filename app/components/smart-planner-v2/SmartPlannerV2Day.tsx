@@ -10,6 +10,7 @@ import { buildUnifiedTimelineEntries, type UnifiedTimelineEntry } from "../../li
 import { PLAN_TEXT, formatDayHeader, formatMealCount, formatMinutes, formatPlaceCount, storedTextDir, type PlanLanguage } from "../../lib/i18n/planText";
 import type { PlanChange } from "../../lib/planner/planCustomizations";
 import { formatTimelineClock } from "../../lib/planner/barcelonaV2Timeline";
+import { dayTickets, formatTicketAmount } from "../../lib/planner/planTickets";
 import type { ResolvedPlace, ResolvedPlaceSummary } from "../../lib/readyPlan";
 import type { V2Day } from "../../lib/planner/barcelonaV2Resolve";
 import type { V2MealStop } from "../../lib/planner/barcelonaV2MealStops";
@@ -220,7 +221,7 @@ export default function SmartPlannerV2Day({
             </span>
           )}
           <span>
-            {ui.dayEnd} <bdi dir="ltr">{formatTimelineClock(day.timeline.dayEndMinutes)}</bdi>
+            {ui.dayEnd} <bdi dir="ltr">{formatTimelineClock(day.timeline.activityEndMinutes ?? day.timeline.dayEndMinutes)}</bdi>
             {day.timeline.approximate && <span className="text-slate-400"> · {ui.approximate}</span>}
           </span>
           <span>📍 {formatPlaceCount(lang, day.stops.length)}</span>
@@ -240,6 +241,19 @@ export default function SmartPlannerV2Day({
               </span>
             );
           })()}
+          {(() => {
+            // Estimated entry tickets of the day (cities with ticket estimates; old saved plans show nothing).
+            const t = dayTickets(day);
+            if (!t) return null;
+            return (
+              <span>
+                {ui.ticketsDay(formatTicketAmount(t.included, t.currency))}
+                {t.unknown > 0 && <span className="text-slate-400"> {ui.ticketsUnknown(t.unknown)}</span>}
+                {t.optional > 0 && <span className="text-slate-400"> · {ui.ticketsOptional(formatTicketAmount(t.optional, t.currency))}</span>}
+              </span>
+            );
+          })()}
+          {day.timeline.activityEndMinutes !== undefined && day.timeline.activityEndMinutes <= 17 * 60 && <span className="text-teal-700">{ui.freeAfter(formatTimelineClock(day.timeline.activityEndMinutes))}</span>}
         </div>
       )}
 
@@ -318,6 +332,16 @@ export default function SmartPlannerV2Day({
                           priority={entry.number <= 2}
                           lang={lang}
                         />
+                      ) : entry.meal.flexible ? (
+                        // A lunch break with no set restaurant: nothing to open, just the time and the note.
+                        <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-4 py-3">
+                          <p dir={storedTextDir(entry.meal.name, lang)} className="text-sm font-bold text-slate-800">
+                            {MEAL_TYPE_ICON.lunch} {entry.meal.name}
+                          </p>
+                          <p dir={storedTextDir(entry.meal.reason, lang)} className="mt-1 text-xs leading-5 text-slate-500">
+                            {entry.meal.reason}
+                          </p>
+                        </div>
                       ) : (
                         <SmartPlannerStopCardBody
                           summary={entry.meal}
@@ -325,7 +349,7 @@ export default function SmartPlannerV2Day({
                           lang={lang}
                           foodMeta={{
                             mealTypeIcon: MEAL_TYPE_ICON[entry.meal.mealType],
-                            mealTypeLabel: ui.mealType[entry.meal.mealType],
+                            mealTypeLabel: entry.meal.optional ? `${ui.mealType[entry.meal.mealType]} · ${ui.optionalTag}` : ui.mealType[entry.meal.mealType],
                             // Not repeated when the category says the same as the meal (e.g. "فطور" twice).
                             cuisineLabel: entry.meal.categoryLabel === ui.mealType[entry.meal.mealType] ? "" : `${entry.meal.categoryIcon} ${entry.meal.categoryLabel}`,
                             priceLevel: entry.meal.priceLevel,

@@ -43,7 +43,7 @@ export type TimelineWindow = {
 };
 
 export type TimelineStopWindow = TimelineWindow & { placeId: string };
-export type TimelineMealWindow = TimelineWindow & { placeId: string; mealType: MealType; afterStopIndex: number };
+export type TimelineMealWindow = TimelineWindow & { placeId: string; mealType: MealType; afterStopIndex: number; /** An optional meal (cities with flexibleMeals: dinner). */ optional?: boolean };
 
 /**
  * Timeline Final Customer-Experience Polish -- a genuinely large, unscheduled gap between two
@@ -64,6 +64,8 @@ export type DayTimeline = {
   /** Gaps of at least FREE_TIME_GAP_THRESHOLD_MINUTES between two consecutive scheduled entries
    * -- see this file's own header comment on FreeTimeBlock. */
   freeTimeBlocks: FreeTimeBlock[];
+  /** End of the day's program: the last stop or non-optional meal (an optional dinner is not counted). */
+  activityEndMinutes?: number;
 };
 
 export type TimelineStopInput = {
@@ -82,6 +84,10 @@ export type TimelineMealInput = {
    * real stop index, same as before. */
   afterStopIndex: number;
   hours?: HoursInfo;
+  /** Cities with flexibleMeals: an optional meal (dinner) -- placed after the day's program, not counted in its end. */
+  optional?: boolean;
+  /** Cities with flexibleMeals: this meal's own earliest start (e.g. dinner from 18:00 instead of 20:00). */
+  earliestStart?: number;
 };
 
 // ── Centralized policy (destination-level defaults, per this task's own "keep the policy
@@ -475,9 +481,11 @@ export function buildBarcelonaDayTimeline(
   // call below (breakfast only ever pushes things later via the buffer, never earlier).
   const breakfast = meals.find((m) => m.afterStopIndex === -1);
   if (breakfast) {
-    const target = MEAL_TARGET_WINDOW.breakfast;
-    const breakfastWindow = fitWindow(startMinutesOverride ?? target.earliest, MEAL_ASSUMED_DURATION_MINUTES.breakfast, breakfast.hours, weekday);
-    mealWindows.push({ placeId: breakfast.placeId, mealType: "breakfast", afterStopIndex: -1, ...breakfastWindow });
+    // Before the first stop: breakfast (every city), or -- cities with flexibleMeals, on a one-stop day that starts late -- lunch.
+    const preType: MealType = breakfast.mealType === "lunch" ? "lunch" : "breakfast";
+    const target = MEAL_TARGET_WINDOW[preType];
+    const breakfastWindow = fitWindow(startMinutesOverride ?? breakfast.earliestStart ?? target.earliest, MEAL_ASSUMED_DURATION_MINUTES[preType], breakfast.hours, weekday);
+    mealWindows.push({ placeId: breakfast.placeId, mealType: preType, afterStopIndex: -1, ...breakfastWindow });
     if (breakfastWindow.approximate) anyApproximate = true;
     dayStartMinutes = breakfastWindow.startMinutes;
     clock = Math.max(clock, breakfastWindow.endMinutes + (legBetween ? mealAdvance(breakfast.placeId, stops[0].placeId) : INTER_STOP_BUFFER_MINUTES));
@@ -502,10 +510,10 @@ export function buildBarcelonaDayTimeline(
     let lastPlaceId = stop.placeId;
     for (const meal of meals.filter((m) => m.afterStopIndex === index)) {
       const target = MEAL_TARGET_WINDOW[meal.mealType];
-      const earliestStart = Math.max(clock + (legBetween ? mealAdvance(lastPlaceId, meal.placeId) : INTER_STOP_BUFFER_MINUTES), target.earliest);
+      const earliestStart = Math.max(clock + (legBetween ? mealAdvance(lastPlaceId, meal.placeId) : INTER_STOP_BUFFER_MINUTES), meal.earliestStart ?? target.earliest);
       lastPlaceId = meal.placeId;
       const mealWindow = fitWindow(earliestStart, MEAL_ASSUMED_DURATION_MINUTES[meal.mealType], meal.hours, weekday);
-      mealWindows.push({ placeId: meal.placeId, mealType: meal.mealType, afterStopIndex: meal.afterStopIndex, ...mealWindow });
+      mealWindows.push({ placeId: meal.placeId, mealType: meal.mealType, afterStopIndex: meal.afterStopIndex, ...mealWindow, ...(meal.optional ? { optional: true } : {}) });
       if (mealWindow.approximate) anyApproximate = true;
       clock = mealWindow.endMinutes;
     }
@@ -530,6 +538,7 @@ export function buildBarcelonaDayTimeline(
     meals: mealWindows,
     approximate: anyApproximate,
     freeTimeBlocks: computeFreeTimeBlocks(stopWindows, mealWindows),
+    ...(meals.some((m) => m.optional) ? { activityEndMinutes: Math.max(...stopWindows.map((w) => w.endMinutes), ...mealWindows.filter((w) => !w.optional).map((w) => w.endMinutes)) } : {}),
   };
 }
 
@@ -572,7 +581,13 @@ export function lunchPlacementFromTimeline(
   startMinutesOverride: number | null = null,
   legBetween?: (fromPlaceId: string, toPlaceId: string) => PlannerRouteLeg | undefined
 ): { afterIndex: number; estimatedStart: number } | null {
-  if (stops.length < 2) return null;
+  if (stops.length === 0) return null;
+  if (stops.length === 1) {
+    // A one-stop day: lunch after its only stop, never before 12:30 -- or at 12:30 before it when that stop starts at 13:00 or later.
+    const one = buildBarcelonaDayTimeline(stops, legs, [], weekday, month, startMinutesOverride, legBetween);
+    if (one.stops[0].startMinutes >= 13 * 60) return { afterIndex: -1, estimatedStart: MEAL_TARGET_WINDOW.lunch.earliest };
+    return { afterIndex: 0, estimatedStart: roundUpToBoundary(Math.max(one.stops[0].endMinutes + INTER_STOP_BUFFER_MINUTES + 10, MEAL_TARGET_WINDOW.lunch.earliest)) };
+  }
   // The real breakfast place when known (its opening time and walk to the first stop count), else a placeholder at 8:00.
   const meals: TimelineMealInput[] =
     typeof hasBreakfast === "object" ? [{ placeId: hasBreakfast.placeId, mealType: "breakfast", afterStopIndex: -1, hours: hasBreakfast.hours }] : hasBreakfast ? [{ placeId: "__breakfast__", mealType: "breakfast", afterStopIndex: -1 }] : [];

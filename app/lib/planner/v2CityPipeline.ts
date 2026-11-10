@@ -213,7 +213,7 @@ export async function generateCityPlanV2(baseCity: CityPlannerModule, input: Gen
         ...city.destinationConfig.dayBuilderConfig,
         isPlaceEligibleForDay,
         ...(relevance ? { isPlaceRelevant: (placeId: string) => relevance(placeId) >= (city.relevanceThreshold ?? 5), placeRelevance: relevance } : {}),
-        ...(city.mealLegsInTimeline && (surpriseMe || v2Interests.includes("food")) ? { mealMinutesPerDay: 75 } : {}),
+        ...(city.mealLegsInTimeline && (city.mealStops.flexibleMeals || surpriseMe || v2Interests.includes("food")) ? { mealMinutesPerDay: 75 } : {}),
         flagshipCoverageGoals,
         placeSelectionBonus,
         secondaryCoverageGoals,

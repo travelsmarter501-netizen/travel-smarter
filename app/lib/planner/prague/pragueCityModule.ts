@@ -9,6 +9,14 @@ import type { PlannerRouteLeg, TransportOption } from "../plannerTransportTypes"
 export const ROUTED_WALK_NOTE_AR = "المسافة من مسار مشي فعلي (OpenStreetMap)، والوقت محسوب على مشي 4.5 كم بالساعة.";
 export const ROUTED_WALK_CLIMB_NOTE_AR = "المسافة من مسار مشي فعلي (OpenStreetMap) وفيه طلعة، فالوقت محسوب على مشي 4.5 كم بالساعة مع 20% زيادة للطلعة.";
 
+const HILL_CLUSTERS = new Set(["hradcany", "petrin"]);
+const NO_TRANSIT_PAIRS = new Set(["spravovna|vitkov-memorial"]);
+function noPracticalTransit(a: string, b: string): boolean {
+  const cluster = (id: string) => getPraguePlannerMetadataById(id)?.cluster ?? FOOD_PLACE_CLUSTER[id] ?? "";
+  if (HILL_CLUSTERS.has(cluster(a)) && HILL_CLUSTERS.has(cluster(b))) return true;
+  return NO_TRANSIT_PAIRS.has([a, b].sort().join("|"));
+}
+
 function pragueLeg(fromPlaceId: string, toPlaceId: string): PlannerRouteLeg {
   const leg = buildEstimatedLeg(fromPlaceId, toPlaceId, PRAGUE_PLACE_COORDINATES);
   const routed = PRAGUE_ROUTED_WALKS[`${fromPlaceId}>${toPlaceId}`];
@@ -33,6 +41,9 @@ function pragueLeg(fromPlaceId: string, toPlaceId: string): PlannerRouteLeg {
     note: leg.options[0]?.note,
   };
   const routeUrl = `https://www.openstreetmap.org/directions?engine=fossgis_osrm_foot&route=${from.lat}%2C${from.lng}%3B${to.lat}%2C${to.lng}`;
+  // No practical public transport on these walks (Google Maps transit found no route, 2026-11-10: Castle-Petřín Tower,
+  // Spravovna-Vítkov): walking is recommended up to 40 minutes instead of an estimated tram time that does not exist.
+  if (noPracticalTransit(fromPlaceId, toPlaceId) && walking.durationMinutesMax <= 40) return { fromPlaceId, toPlaceId, recommendedMode: "walking", options: [walking], sourceStatus: "estimated", routeUrl };
   if (walking.durationMinutesMax <= 20) return { fromPlaceId, toPlaceId, recommendedMode: "walking", options: [walking], sourceStatus: "estimated", routeUrl };
   const options = walking.durationMinutesMax <= 60 ? [walking, transit] : [transit];
   return { fromPlaceId, toPlaceId, recommendedMode: "transit", options, sourceStatus: "estimated", routeUrl };
@@ -230,7 +241,10 @@ function presentPraguePlan(plan: GeneratedPlannerPlan): PresentedPlannerPlan {
     const summary =
       names.length === 0 ? "" : names.length === 1 ? `محطة اليوم: ${names[0]}.` : `محطات اليوم: ${names.slice(0, -1).join("، ")} و${names[names.length - 1]}.`;
     // Day balance: places taken off a full day stay visible as optional suggestions of that day.
-    const optionalNearby = (day.optionalPlaceIds ?? []).map((placeId) => ({ placeId, type: "experience" as const, reason: "اختياري: اليوم مليان، زوره إذا ضل عندك وقت" }));
+    const optionalNearby = [
+      ...(day.optionalPlaceIds ?? []).map((placeId) => ({ placeId, type: "experience" as const, reason: "اختياري: اليوم مليان، زوره إذا ضل عندك وقت" })),
+      ...(day.freeTimePlaceIds ?? []).map((placeId) => ({ placeId, type: "experience" as const, reason: "عندك وقت حر: قريب من مسارك إذا حابب" })),
+    ];
     return { title, summary, optionalNearby };
   });
   return { byDay };
@@ -352,6 +366,15 @@ function warningsFor(placeId: string, weekday?: Weekday | null): PlannerOperatio
   return relevant.length > 0 ? relevant : undefined;
 }
 
+// ── Entry ticket estimates ────────────────────────────────────────────────────────────────────────────
+function pragueTicketEstimate(placeId: string): number | null | undefined {
+  const place = [...PRAGUE_PLACES.attractions, ...PRAGUE_PLACES.experiences].find((p) => p.id === placeId) as { priceType?: string; priceText?: string } | undefined;
+  if (!place || !place.priceType) return undefined;
+  if (place.priceType === "free") return 0;
+  const match = (place.priceText ?? "").replace(/(\d)[ ,.](\d{3})/g, "$1$2").match(/(\d+)\s*CZK/);
+  return match ? Number(match[1]) : null;
+}
+
 // ── Personalization ─────────────────────────────────────────────────────────────────────────────────
 const SHOPPING_STRONG = new Set(["na-prikope", "palladium", "havelske-market"]);
 const SHOPPING_MIXED = new Set(["wenceslas-square", "old-town-square"]);
@@ -416,6 +439,8 @@ export const PRAGUE_CITY_MODULE: CityPlannerModule = {
     // A light lunch at a café with food when no restaurant near the day fits (Troja, Letná, the castle on some days).
     lunchFallbackCategories: ["cafes"],
     coffeeBreakCategories: ["cafes"],
+    // Lunch for every customer; breakfast only suggested; dinner optional from 18:00 right after the day's program.
+    flexibleMeals: { dinnerEarliest: 18 * 60 },
     eveningSpecialCategory: null,
     dinnerCategories: ["local", "middle-eastern", "restaurants"],
   },
@@ -437,10 +462,14 @@ export const PRAGUE_CITY_MODULE: CityPlannerModule = {
         lightMinutes: 170,
         minPriorityToAdd: 5,
         keepInsideRelevance: 9,
+        regroup: { splitPenalty: 45, lightPenalty: 40, restoreBonus: 20 },
+        freeTimeIdeas: { minRelevance: 3 },
       }
     );
   },
   mealLegsInTimeline: true,
+  // Entry tickets: the first CZK amount of the place's own price text (adult), 0 when free, null when paid without a known price.
+  ticketEstimate: { currency: "CZK", forPlace: pragueTicketEstimate },
   metadataForInterests: praguePlannerMetadataForInterests,
   placeRelevance: praguePlaceRelevance,
   relevanceThreshold: 5,

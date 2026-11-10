@@ -29,6 +29,15 @@ export type DayBalanceOptions = {
   minPriorityToAdd: number;
   /** Optional: a place this strongly matching the request's interests (placeRelevance >= this) is never cut to an outside stop. */
   keepInsideRelevance?: number;
+  /**
+   * Optional: regroup the trip after balancing. Single places move or swap between days (and an optional place may come back)
+   * when that lowers: travel inside each day + `splitPenalty` for every extra day an area is spread over + `lightPenalty`
+   * per light day - `restoreBonus` per optional place brought back. A day never goes above `heavyMinutes` (meals counted),
+   * never loses its last stop, and a place only moves to a day it is open on.
+   */
+  regroup?: { splitPenalty: number; lightPenalty: number; restoreBonus: number };
+  /** Optional: ideas for a light day's free time (see step 7), with the lowest interest match they need. */
+  freeTimeIdeas?: { minRelevance: number };
 };
 
 type WorkDay = { dayNumber: number; ids: string[]; scores: Map<string, number>; outside: Set<string>; optional: string[] };
@@ -164,6 +173,111 @@ export function balanceCityDays(context: DayGeographyRepairContext, options: Day
     changed = true;
   }
 
+  // 6. Regroup (cities that opt in): keep each area on one day where it fits, keep linked places together, bring back an
+  //    optional place when a fitting day has room. Local search over single moves and swaps, bounded.
+  const rg = options.regroup;
+  if (rg && days.length > 1) {
+    const tripCost = (ws: WorkDay[]): number => {
+      let cost = 0;
+      const daysOfArea = new Map<string, Set<number>>();
+      ws.forEach((w, i) => {
+        cost += travel(w.ids);
+        if (w.ids.length > 0 && dayLoad(w) < options.lightMinutes) cost += rg.lightPenalty;
+        for (const id of w.ids) for (const area of areasOf(id)) (daysOfArea.get(area) ?? daysOfArea.set(area, new Set()).get(area)!).add(i);
+        cost -= 0; // (kept for readability)
+      });
+      for (const set of daysOfArea.values()) cost += rg.splitPenalty * Math.max(0, set.size - 1);
+      return cost - rg.restoreBonus * ws.reduce((n, w) => n + w.ids.length, 0);
+    };
+    const fits = (w: WorkDay, ids: string[]) => heavyLoad(ids, w.outside) <= Math.max(options.heavyMinutes, dayHeavyLoad(w));
+    for (let iteration = 0; iteration < 40; iteration++) {
+      const base = tripCost(days);
+      let best: { cost: number; apply: () => void } | null = null;
+      const consider = (trial: WorkDay[], apply: () => void) => {
+        const c = tripCost(trial);
+        if (c < base - 1 && (!best || c < best.cost)) best = { cost: c, apply };
+      };
+      days.forEach((a, ai) => {
+        days.forEach((b, bi) => {
+          if (ai === bi) return;
+          // Move one stop a -> b, or bring back one of a's optional places into b (or into a itself when bi === ai is skipped).
+          for (const id of a.ids) {
+            if (a.ids.length <= 1 || !eligible(id, b.dayNumber) || !b.ids.some((x) => linked(x, id))) continue;
+            const nb = insertCheapest(b.ids, id);
+            if (!fits(b, nb)) continue;
+            const na = a.ids.filter((x) => x !== id);
+            consider(days.map((w, k) => (k === ai ? { ...w, ids: na } : k === bi ? { ...w, ids: nb } : w)), () => {
+              b.ids = nb; b.scores.set(id, a.scores.get(id) ?? 0); a.ids = na;
+              if (a.outside.delete(id)) b.outside.add(id);
+            });
+          }
+          // Swap one stop of a with one stop of b.
+          if (bi > ai) {
+            for (const x of a.ids) for (const y of b.ids) {
+              if (!eligible(x, b.dayNumber) || !eligible(y, a.dayNumber)) continue;
+              const na = insertCheapest(a.ids.filter((v) => v !== x), y);
+              const nb = insertCheapest(b.ids.filter((v) => v !== y), x);
+              if (!fits(a, na) || !fits(b, nb)) continue;
+              consider(days.map((w, k) => (k === ai ? { ...w, ids: na } : k === bi ? { ...w, ids: nb } : w)), () => {
+                a.ids = na; b.ids = nb;
+                const sx = a.scores.get(x) ?? 0, sy = b.scores.get(y) ?? 0;
+                a.scores.set(y, sy); b.scores.set(x, sx);
+                const ox = a.outside.delete(x), oy = b.outside.delete(y);
+                if (ox) b.outside.add(x);
+                if (oy) a.outside.add(y);
+              });
+            }
+          }
+        });
+        // Move a whole area (every stop of one cluster) from another day into a, when it fits there.
+        for (const from of days) {
+          if (from === a) continue;
+          for (const area of new Set(from.ids.map(clusterOf))) {
+            const group = from.ids.filter((x) => clusterOf(x) === area);
+            if (group.length === 0 || group.length >= from.ids.length || !group.every((x) => eligible(x, a.dayNumber)) || !a.ids.some((x) => group.some((g) => linked(x, g)))) continue;
+            let na = [...a.ids];
+            for (const g of group) na = insertCheapest(na, g);
+            if (!fits(a, na)) continue;
+            const nf = from.ids.filter((x) => !group.includes(x));
+            consider(days.map((w) => (w === a ? { ...w, ids: na } : w === from ? { ...w, ids: nf } : w)), () => {
+              for (const g of group) { a.scores.set(g, from.scores.get(g) ?? 0); if (from.outside.delete(g)) a.outside.add(g); }
+              a.ids = na; from.ids = nf;
+            });
+          }
+        }
+        // Bring back an optional place of any day into a (when linked, open, relevant and it fits).
+        for (const from of days) for (const id of from.optional) {
+          if (!eligible(id, a.dayNumber) || !a.ids.some((x) => linked(x, id)) || (relevant && !relevant(id))) continue;
+          const na = insertCheapest(a.ids, id);
+          if (heavyLoad(na, a.outside) > options.heavyMinutes) continue;
+          consider(days.map((w) => (w === a ? { ...w, ids: na } : w === from ? { ...w, optional: w.optional.filter((v) => v !== id) } : w)), () => {
+            a.ids = na; a.scores.set(id, 0); from.optional = from.optional.filter((v) => v !== id);
+          });
+        }
+      });
+      if (!best) break;
+      (best as { apply: () => void }).apply();
+      changed = true;
+    }
+  }
+
+  // 7. A day that stays light gets up to two nearby ideas for its free time (unused places of its own or a closely linked
+  //    area that are open that day and match the request at least a little), shown apart from the plan. Nothing is scheduled.
+  const ideas = new Map<number, string[]>();
+  if (options.freeTimeIdeas) {
+    const taken = new Set(days.flatMap((d) => [...d.ids, ...d.optional]));
+    for (const day of days) {
+      if (day.ids.length === 0 || dayLoad(day) >= options.lightMinutes) continue;
+      const list = config.plannerMetadata
+        .filter((m) => !taken.has(m.placeId) && !options.gatedPlaceIds.has(m.placeId) && eligible(m.placeId, day.dayNumber) && day.ids.some((x) => linked(x, m.placeId)) && (!relevance || relevance(m.placeId) >= options.freeTimeIdeas!.minRelevance))
+        .sort((x, y) => y.priority - x.priority || x.placeId.localeCompare(y.placeId))
+        .slice(0, 2)
+        .map((m) => m.placeId);
+      list.forEach((id) => taken.add(id));
+      if (list.length) { ideas.set(day.dayNumber, list); changed = true; }
+    }
+  }
+
   if (!changed) return { plan, legsByDay };
   const balanced: GeneratedPlannerPlan = {
     ...plan,
@@ -175,6 +289,7 @@ export function balanceCityDays(context: DayGeographyRepairContext, options: Day
         totalVisitMinutes: w.ids.reduce((s, id) => s + visit(id, w.outside), 0),
         clusters: [...new Set(w.ids.map(clusterOf))],
         ...(w.optional.length > 0 ? { optionalPlaceIds: w.optional } : {}),
+        ...(ideas.get(w.dayNumber)?.length ? { freeTimePlaceIds: ideas.get(w.dayNumber) } : {}),
       };
     }),
   };

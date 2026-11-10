@@ -10,6 +10,15 @@
  * A park or long street is one stored point, so its route distance is to that point.
  */
 export const PRAGUE_ROUTED_WALKS: Record<string, [km: number, climb: 0 | 1]> = {
+  // Added 2026-11-10 from the same FOSSGIS OSRM foot router (route API), after a Google Maps walking check showed the straight-line
+  // estimate too short: Loreta-Castle 0.85 km (Google walk 0.96 km / 13 min), U Kroka-Vyšehrad 0.54 km (Google 0.61 km / 10 min),
+  // Havlíček Gardens-Riegrovy sady 1.70 km (Google 1.61 km / 24 min).
+  "loreta>prague-castle": [0.9, 1],
+  "prague-castle>loreta": [0.9, 1],
+  "u-kroka>vysehrad": [0.5, 1],
+  "vysehrad>u-kroka": [0.5, 1],
+  "havlicek-gardens>riegrovy-sady": [1.7, 1],
+  "riegrovy-sady>havlicek-gardens": [1.7, 1],
   "botanical-garden>dox": [4.1, 1],
   "botanical-garden>letna-park": [4.3, 1],
   "botanical-garden>national-technical-museum": [3.9, 1],

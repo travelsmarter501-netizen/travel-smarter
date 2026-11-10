@@ -91,6 +91,12 @@ export type V2MealStop = ResolvedPlaceSummary & {
    * Timeline Resolver (barcelonaV2Timeline.ts) can fit this meal's displayed clock window against
    * its actual schedule -- never re-fetched/duplicated, same record already resolved here. */
   hours?: HoursInfo;
+  /** Cities with flexibleMeals: an optional meal (dinner), shown as optional and not counted in the day's end. */
+  optional?: boolean;
+  /** Cities with flexibleMeals: a lunch break with no set restaurant (none fits near the route at that time). */
+  flexible?: boolean;
+  /** Cities with flexibleMeals: the meal's own earliest start on the timeline (dinner from 18:00). */
+  earliestStart?: number;
 };
 
 
@@ -395,7 +401,11 @@ export function buildMealStopsForDay(
 ): V2MealStop[] {
   const rules = city.rules;
   const mainStopCount = stopClusters.length;
-  if ((!v2Interests.includes("food") && !surpriseMe) || mainStopCount === 0) return [];
+  // Cities with flexibleMeals: every customer gets a lunch slot; "food" (or Surprise Me) adds breakfast and dinner suggestions
+  // and the stronger restaurant focus.
+  const flexibleMeals = rules.flexibleMeals;
+  const foodChosen = v2Interests.includes("food") || surpriseMe;
+  if ((!foodChosen && !flexibleMeals) || mainStopCount === 0) return [];
 
   const mealStops: V2MealStop[] = [];
 
@@ -415,7 +425,7 @@ export function buildMealStopsForDay(
   };
   const REUSED_REASON = "نفس مطعم يوم سابق: ما في مطعم تاني قريب ومفتوح بهالوقت";
 
-  const breakfastPick = pick(rules.breakfastCategories, null, stopClusters[0], "breakfast", slotHints?.breakfastStart);
+  const breakfastPick = foodChosen ? pick(rules.breakfastCategories, null, stopClusters[0], "breakfast", slotHints?.breakfastStart) : null;
   const breakfastPlace = breakfastPick?.place ?? null;
   if (breakfastPlace) {
     const stop = toMealStop(city, breakfastPlace, "breakfast", -1, breakfastPick?.reused ? REUSED_REASON : REASON_BY_MEAL_TYPE.breakfast);
@@ -430,12 +440,13 @@ export function buildMealStopsForDay(
   // Slot 1: LUNCH -- positioned roughly mid-day (after the day's own midpoint stop). A 1-stop
   // day has no real "middle", so lunch is skipped there in favor of the single evening slot
   // below (never two meals crowded onto one attraction's day).
-  if (mainStopCount >= 2) {
-    const breakfastChosen = mealStops.find((meal) => meal.mealType === "breakfast");
+  if (mainStopCount >= 2 || (flexibleMeals && mainStopCount >= 1)) {
+    // With flexibleMeals the breakfast is only a suggestion (not on the clock), so lunch is placed without it.
+    const breakfastChosen = flexibleMeals ? undefined : mealStops.find((meal) => meal.mealType === "breakfast");
     const lunchHint = slotHints?.lunchFor?.(breakfastChosen ? { placeId: breakfastChosen.id, hours: breakfastChosen.hours } : null);
     if (lunchHint && slotHints) slotHints = { ...slotHints, lunchAfterIndex: lunchHint.afterIndex, lunchStart: lunchHint.estimatedStart };
     const lunchAfterIndex = slotHints?.lunchAfterIndex ?? (rules.lunchByClock && stopVisitMinutes ? lunchIndexByClock(stopVisitMinutes) : Math.floor((mainStopCount - 1) / 2));
-    const lunchPrevCluster = stopClusters[lunchAfterIndex];
+    const lunchPrevCluster = stopClusters[lunchAfterIndex] ?? null; // -1: lunch before a late one-stop day
     const lunchNextCluster = stopClusters[lunchAfterIndex + 1] ?? null;
     let lunchPick = pick(rules.lunchCategories, lunchPrevCluster, lunchNextCluster, "lunch", slotHints?.lunchStart);
     let lightLunch = false;
@@ -445,7 +456,7 @@ export function buildMealStopsForDay(
     }
     const lunchPlace = lunchPick?.place ?? null;
     if (lunchPlace) {
-      const stop = toMealStop(city, lunchPlace, "lunch", lunchAfterIndex, lightLunch ? "غدا خفيف بمقهى قريب: ما في مطعم قريب مفتوح بهالوقت" : lunchPick?.reused ? REUSED_REASON : REASON_BY_MEAL_TYPE.lunch);
+      const stop = toMealStop(city, lunchPlace, "lunch", lunchAfterIndex, lightLunch ? "غدا خفيف بمقهى قريب: ما في مطعم قريب مفتوح بهالوقت" : lunchPick?.reused ? REUSED_REASON : flexibleMeals && !foodChosen ? "وقت الغدا: مطعم قريب من مسارك إذا حابب" : REASON_BY_MEAL_TYPE.lunch);
       if (stop) {
         mealStops.push(stop);
         todaysMealIds.add(lunchPlace.id);
@@ -454,6 +465,15 @@ export function buildMealStopsForDay(
       }
     }
   }
+
+  // Cities with flexibleMeals: no restaurant fits the lunch time near the route -> a lunch break in the area (no set place),
+  // never a dropped meal and never a far restaurant.
+  if (flexibleMeals && !mealStops.some((meal) => meal.mealType === "lunch") && mainStopCount >= 1) {
+    const lunchAfterIndex = slotHints?.lunchAfterIndex ?? Math.floor((mainStopCount - 1) / 2);
+    mealStops.push({ id: "lunch-break", name: "استراحة غدا بالمنطقة", categoryLabel: "", kind: "meal", mealType: "lunch", afterStopIndex: lunchAfterIndex, reason: "ما لقينا مطعم مناسب قريب ومفتوح بهالوقت؛ خذ ساعة غدا بأي مكان قريب من مسارك", categoryIcon: "🍽️", priceLevel: undefined, flexible: true } as V2MealStop);
+  }
+
+  if (flexibleMeals && !foodChosen) return mealStops;
 
   // Slot 2: EVENING meal (tapas preferred, falling back to dinner-style categories) --
   // positioned after the day's last stop, so there is no "next" stop to consider (nextCluster is
@@ -465,7 +485,9 @@ export function buildMealStopsForDay(
   const eveningPlace = tapasPlace ?? dinnerPick?.place ?? null;
   if (eveningPlace) {
     const mealType: V2MealStop["mealType"] = special !== null && eveningPlace.categoryId === special ? "tapas" : "dinner";
-    const stop = toMealStop(city, eveningPlace, mealType, mainStopCount - 1, dinnerPick?.reused ? REUSED_REASON : REASON_BY_MEAL_TYPE[mealType]);
+    const made = toMealStop(city, eveningPlace, mealType, mainStopCount - 1, dinnerPick?.reused ? REUSED_REASON : flexibleMeals ? "عشا اختياري قريب من آخر محطة، بعد ما يخلص برنامج اليوم" : REASON_BY_MEAL_TYPE[mealType]);
+    // Cities with flexibleMeals: dinner is optional, from the city's earliest dinner time, right after the day's program.
+    const stop = made && flexibleMeals ? { ...made, optional: true, earliestStart: flexibleMeals.dinnerEarliest } : made;
     if (stop) {
       mealStops.push(stop);
       usedPlaceIds.add(eveningPlace.id);

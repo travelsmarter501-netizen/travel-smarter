@@ -8,6 +8,7 @@ import type { PlannerRouteLeg } from "./plannerTransportTypes";
 export function timelineLegBetween(city: CityPlannerModule): ((fromPlaceId: string, toPlaceId: string) => PlannerRouteLeg | undefined) | undefined {
   if (!city.mealLegsInTimeline) return undefined;
   return (fromPlaceId, toPlaceId) => {
+    if (fromPlaceId === "lunch-break" || toPlaceId === "lunch-break") return undefined; // no set place
     try {
       return city.routeLeg(fromPlaceId, toPlaceId);
     } catch {

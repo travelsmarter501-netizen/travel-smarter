@@ -46,6 +46,11 @@ export type CityMealStopRules = {
   lunchFallbackCategories?: readonly string[];
   /** Optional: categories offered as one optional coffee break per day near the day's route (Prague: cafés); unset = none. */
   coffeeBreakCategories?: readonly string[];
+  /**
+   * Optional: lunch for every customer (a restaurant, or a lunch break in the area when none fits), breakfast as a suggestion
+   * only (not on the clock), dinner optional from `dinnerEarliest` right after the day's program. Unset = unchanged.
+   */
+  flexibleMeals?: { dinnerEarliest: number };
 };
 
 export type CityAccommodationRules = {
@@ -147,4 +152,9 @@ export type CityPlannerModule = {
   capacityWarning: (daysGenerated: number) => string;
   /** Optional: the short "outside only" visit of a paid place (minutes, and the outside access hours when the outside closes). */
   outsideVisit?: (placeId: string) => { visitDurationMinutes: number; hours?: HoursInfo } | undefined;
+  /**
+   * Optional: estimated adult entry ticket of a place in the city's currency (0 = free, null = paid but the price is not known,
+   * undefined = not an entry place). Shown as an estimate only; unset = no ticket estimates (Barcelona).
+   */
+  ticketEstimate?: { currency: string; forPlace: (placeId: string) => number | null | undefined };
 };

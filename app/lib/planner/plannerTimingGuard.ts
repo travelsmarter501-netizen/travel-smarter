@@ -93,7 +93,7 @@ function simulate(city: CityPlannerModule, day: V2Day, order: number[], month: n
   });
   const legs: PlannerRouteLeg[] = [];
   for (let i = 0; i < order.length - 1; i++) legs.push(city.routeLeg(day.stops[order[i]].id, day.stops[order[i + 1]].id));
-  const meals: TimelineMealInput[] = (day.mealStops ?? []).map((meal) => ({ placeId: meal.id, mealType: meal.mealType, afterStopIndex: meal.afterStopIndex, hours: meal.hours }));
+  const meals: TimelineMealInput[] = (day.mealStops ?? []).map((meal) => ({ placeId: meal.id, mealType: meal.mealType, afterStopIndex: meal.afterStopIndex, hours: meal.hours, ...(meal.optional ? { optional: true } : {}), ...(meal.earliestStart !== undefined ? { earliestStart: meal.earliestStart } : {}) }));
   return { timeline: buildBarcelonaDayTimeline(stops, legs, meals, day.weekday ?? null, month, null, timelineLegBetween(city)), legs };
 }
 

@@ -71,6 +71,8 @@ export type PlannerDay = {
   clusters: string[];
   /** Day balance (cities that opt in): places taken off a full day, shown as optional suggestions of that day. */
   optionalPlaceIds?: string[];
+  /** Cities with day balance: ideas for a light day's free time (not scheduled, shown apart from the plan). */
+  freeTimePlaceIds?: string[];
 };
 
 export type GeneratedPlannerPlan = {
