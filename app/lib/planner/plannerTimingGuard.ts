@@ -67,6 +67,29 @@ export function findTimingViolations(day: Pick<V2Day, "dayNumber" | "weekday" | 
   return out;
 }
 
+/**
+ * What is wrong with a day's schedule, as keys: a visit or meal outside the place's opening hours, cut short at closing or after
+ * the last entry, one that starts before the previous one ends (overlap), or a day that runs past midnight (the clock then shows
+ * 00:30 after 23:00). Used by the guard (order search and repair) and to check a customer's chosen start.
+ */
+export function scheduleProblems(day: Pick<V2Day, "dayNumber" | "weekday" | "stops" | "mealStops" | "timeline">): Set<string> {
+  const problems = new Set<string>();
+  for (const v of findTimingViolations(day)) problems.add(`${v.kind}:${v.placeId}`);
+  const timeline = day.timeline;
+  if (!timeline) return problems;
+  // Sequence of the day: breakfast, stop 1, its meals, stop 2, its meals, ...
+  const seq: { id: string; start: number; end: number }[] = [];
+  timeline.meals.filter((m) => m.afterStopIndex === -1).forEach((m) => seq.push({ id: m.placeId, start: m.startMinutes, end: m.endMinutes }));
+  timeline.stops.forEach((w, i) => {
+    seq.push({ id: w.placeId, start: w.startMinutes, end: w.endMinutes });
+    timeline.meals.filter((m) => m.afterStopIndex === i).forEach((m) => seq.push({ id: m.placeId, start: m.startMinutes, end: m.endMinutes }));
+  });
+  for (let i = 1; i < seq.length; i++) if (seq[i].start < seq[i - 1].end) problems.add(`order:${seq[i].id}`);
+  // The clock shows 00:30 after 23:00 when a day runs past midnight, which reads as going back in time: not a valid day.
+  for (const w of seq) if (w.end > 24 * 60) problems.add(`midnight:${w.id}`);
+  return problems;
+}
+
 function permutations(n: number): number[][] {
   const result: number[][] = [];
   const walk = (prefix: number[], rest: number[]) => {
@@ -97,12 +120,27 @@ function simulate(city: CityPlannerModule, day: V2Day, order: number[], month: n
   return { timeline: buildBarcelonaDayTimeline(stops, legs, meals, day.weekday ?? null, month, null, timelineLegBetween(city)), legs };
 }
 
-type Ranked = { violations: number; hops: number; travel: number; moved: number };
+/** Schedule problems as a cost: a flagship stop that cannot fit weighs as much as ten smaller problems. */
+function problemWeight(problems: ReadonlySet<string>, flagships: ReadonlySet<string>): number {
+  let sum = 0;
+  for (const key of problems) sum += key.startsWith("stop:") && flagships.has(key.slice(5)) ? 10 : 1;
+  return sum;
+}
 
-/** Fewer violations first, then fewer hops between non-neighbouring areas, then less travel, then fewer moved stops. */
+type Ranked = { violations: number; lateLunch: number; hops: number; unresolved: number; travel: number; moved: number };
+
+/** A lunch that starts at 15:00 or later counts against an order (the day is otherwise valid, but lunch is not a late snack). */
+const LATE_LUNCH_MINUTES = 15 * 60;
+
+/**
+ * Fewer violations first, then no lunch from 15:00 on, then fewer hops between non-neighbouring areas, then fewer legs with no transport data (an unresolved leg
+ * counts as 0 minutes of travel, which must not make it look cheaper), then less travel, then fewer moved stops.
+ */
 function isBetter(a: Ranked, b: Ranked): boolean {
   if (a.violations !== b.violations) return a.violations < b.violations;
+  if (a.lateLunch !== b.lateLunch) return a.lateLunch < b.lateLunch;
   if (a.hops !== b.hops) return a.hops < b.hops;
+  if (a.unresolved !== b.unresolved) return a.unresolved < b.unresolved;
   if (a.travel !== b.travel) return a.travel < b.travel;
   return a.moved < b.moved;
 }
@@ -115,22 +153,26 @@ function bestOrderForDay(city: CityPlannerModule, day: V2Day): number[] | null {
   const clusterOf = (index: number) => city.metadataById(day.stops[index].id)?.cluster ?? "";
   // A hop between areas that are not neighbours (the same rule the day builder uses) counts against an order.
   const hopsOf = (order: number[]) => order.slice(0, -1).filter((value, k) => { const a = clusterOf(value), b = clusterOf(order[k + 1]); return a !== b && !compatibility[a]?.[b] && !compatibility[b]?.[a]; }).length;
-  let best: { order: number[]; violations: number; hops: number; travel: number; moved: number } | null = null;
+  let best: (Ranked & { order: number[] }) | null = null;
   for (const order of permutations(n)) {
     const { timeline, legs } = simulate(city, day, order, month);
     const simulatedDay = { ...day, stops: order.map((i) => day.stops[i]), timeline };
     // A flagship that cannot fit weighs as much as ten smaller stops: better to lose a small stop than cut the castle short.
     const flagships = new Set(city.compositionProtectedPlaceIds ?? []);
-    const violations = findTimingViolations(simulatedDay).reduce((sum, v) => sum + (flagships.has(v.placeId) ? 10 : 1), 0);
+    const violations = problemWeight(scheduleProblems(simulatedDay), flagships);
     const travel = legs.reduce((sum, leg) => sum + legMinutes(leg), 0);
     const moved = order.filter((value, index) => value !== index).length;
     const hops = hopsOf(order);
-    const candidate = { order, violations, hops, travel, moved };
+    const unresolved = legs.filter((leg) => leg.sourceStatus === "unresolved").length;
+    const lunchStart = timeline.meals.find((m) => m.mealType === "lunch")?.startMinutes;
+    // Cities that place lunch from the real timeline (mealLegsInTimeline) already choose it by the clock: not counted for them.
+    const lateLunch = !city.mealLegsInTimeline && lunchStart !== undefined && lunchStart >= LATE_LUNCH_MINUTES ? 1 : 0;
+    const candidate = { order, violations, lateLunch, hops, unresolved, travel, moved };
     if (!best || isBetter(candidate, best)) best = candidate;
   }
   if (!best) return null;
   const currentFlagships = new Set(city.compositionProtectedPlaceIds ?? []);
-  const current = findTimingViolations(day).reduce((sum, v) => sum + (currentFlagships.has(v.placeId) ? 10 : 1), 0);
+  const current = problemWeight(scheduleProblems(day), currentFlagships);
   if (best.violations >= current) return null;
   return best.order;
 }
@@ -156,7 +198,7 @@ export function applyTimingGuard(params: {
     let changed = false;
     const days = plan.days.map((day, index) => {
       const v2Day = data.days[index];
-      if (!v2Day || findTimingViolations(v2Day).length === 0) return day;
+      if (!v2Day || scheduleProblems(v2Day).size === 0) return day;
       const order = bestOrderForDay(city, v2Day);
       if (!order) return day;
       changed = true;

@@ -4,7 +4,7 @@ import { timelineLegBetween } from "./timelineLegs";
 import { buildMealAdjacentLegs, resolveStop, withShowWindowNotes, type V2Day, type V2Plan } from "./barcelonaV2Resolve";
 import { lunchIndexByClock } from "./barcelonaV2MealStops";
 import type { CityPlannerModule } from "./cityPlannerModule";
-import { findTimingViolations, TIMING_WARNING_AR } from "./plannerTimingGuard";
+import { findTimingViolations, scheduleProblems, TIMING_WARNING_AR } from "./plannerTimingGuard";
 import { nearestValidStart } from "./startChoices";
 import type { PlannerRouteLeg } from "./plannerTransportTypes";
 import { resolvePlannerPlace, summarizeResolvedPlace, type ResolvedPlace, type ResolvedPlaceSummary } from "../readyPlan";
@@ -254,29 +254,6 @@ function placeMeals(baseDay: V2Day, stopCount: number, lunchAfterIndex?: number)
 }
 
 /**
- * What is wrong with a day's schedule, as keys: a visit or meal outside the place's opening hours, cut short at closing or after
- * the last entry (the timing guard's check), or one that starts before the previous one ends. Used to compare a chosen start with
- * the day's own start: a start is valid when it adds no problem the day does not already have.
- */
-export function scheduleProblems(day: V2Day): Set<string> {
-  const problems = new Set<string>();
-  for (const v of findTimingViolations(day)) problems.add(`${v.kind}:${v.placeId}`);
-  const timeline = day.timeline;
-  if (!timeline) return problems;
-  // Sequence of the day: breakfast, stop 1, its meals, stop 2, its meals, ...
-  const seq: { id: string; start: number; end: number }[] = [];
-  timeline.meals.filter((m) => m.afterStopIndex === -1).forEach((m) => seq.push({ id: m.placeId, start: m.startMinutes, end: m.endMinutes }));
-  timeline.stops.forEach((w, i) => {
-    seq.push({ id: w.placeId, start: w.startMinutes, end: w.endMinutes });
-    timeline.meals.filter((m) => m.afterStopIndex === i).forEach((m) => seq.push({ id: m.placeId, start: m.startMinutes, end: m.endMinutes }));
-  });
-  for (let i = 1; i < seq.length; i++) if (seq[i].start < seq[i - 1].end) problems.add(`order:${seq[i].id}`);
-  // The clock shows 00:30 after 23:00 when a day runs past midnight, which reads as going back in time: not a valid day.
-  for (const w of seq) if (w.end > 24 * 60) problems.add(`midnight:${w.id}`);
-  return problems;
-}
-
-/**
  * A start is valid when the day built with it has no schedule problem: every visit and meal full length inside its opening hours,
  * nothing overlapping, nothing past midnight. No start is exempt, the day's own start included: a day whose own schedule has such a
  * problem accepts only a start that removes it.
@@ -313,7 +290,7 @@ export function dayValidStarts(city: CityPlannerModule, base: V2Plan, customizat
   return START_CHOICES.filter((minutes) => startIsValid(buildDay(city, baseDay, { ...edit, startMinutes: minutes }, placeDetails)));
 }
 
-export { nearestValidStart };
+export { nearestValidStart, scheduleProblems };
 
 function buildDay(city: CityPlannerModule, baseDay: V2Day, edit: DayCustomization, placeDetails: Record<string, ResolvedPlace>): V2Day {
   const baseStops = new Map(baseDay.stops.map((s) => [s.id, s]));

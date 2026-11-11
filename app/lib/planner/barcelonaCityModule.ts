@@ -36,6 +36,10 @@ export const BARCELONA_CITY_MODULE: CityPlannerModule = {
   routeLeg: getBarcelonaRouteLeg,
   operationalWarnings: getBarcelonaPlannerOperationalWarnings,
   mealStops: BARCELONA_MEAL_STOP_RULES,
+  // Opening hours as a hard constraint on the final plan: a day whose visit or meal would run past closing is repaired (re-ordered, or
+  // the closed restaurant is swapped). Days without a violation are generated exactly as before (no strict restaurant selection).
+  timingGuard: true,
+  strictMealSelection: false,
   // Beach Timing Guard (dated plans only): keeps Barceloneta Beach out of a late-evening slot on limited-hours days.
   postProcessDatedPlan: ({ plan, legsByDay, config, resolveHoursForPlace, weekdayForDayNumber }) =>
     applyBeachTimingGuard(plan, legsByDay, config.plannerMetadata, weekdayForDayNumber, resolveHoursForPlace, config.buildPlanRouteLegs),

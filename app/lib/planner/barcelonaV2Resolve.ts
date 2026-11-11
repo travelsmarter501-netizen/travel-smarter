@@ -359,7 +359,7 @@ export function resolveV2Plan(
     foodCategories: city.places.foodCategories,
     clusterCompatibility: city.destinationConfig.dayBuilderConfig.clusterCompatibility,
     rules: city.mealStops,
-    ...(city.timingGuard ? { strictMealHours: true } : {}),
+    ...((city.strictMealSelection ?? city.timingGuard) ? { strictMealHours: true } : {}),
     ...(city.mealLegsInTimeline ? { travelMinutes: (from: string, to: string) => legMidMinutes(city, from, to) } : {}),
   };
 

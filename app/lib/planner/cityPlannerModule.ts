@@ -116,6 +116,12 @@ export type CityPlannerModule = {
    */
   timingGuard?: boolean;
   /**
+   * With `timingGuard`: also choose every restaurant so that the WHOLE meal fits inside its opening hours (a stricter selection that
+   * can change days that had no problem). Default = the value of `timingGuard`; false keeps the selection as it was and lets the
+   * guard repair only the days that end up with a violation.
+   */
+  strictMealSelection?: boolean;
+  /**
    * Optional: count the trip to and from each meal on the day's clock, place lunch from the real timeline, check each
    * restaurant against the meal's estimated start, and reuse another day's restaurant rather than leave a meal slot empty.
    * Unset = unchanged behaviour (Barcelona).
