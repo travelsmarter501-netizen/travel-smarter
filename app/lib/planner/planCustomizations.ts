@@ -5,6 +5,7 @@ import { buildMealAdjacentLegs, resolveStop, withShowWindowNotes, type V2Day, ty
 import { lunchIndexByClock } from "./barcelonaV2MealStops";
 import type { CityPlannerModule } from "./cityPlannerModule";
 import { findTimingViolations, TIMING_WARNING_AR } from "./plannerTimingGuard";
+import { nearestValidStart } from "./startChoices";
 import type { PlannerRouteLeg } from "./plannerTransportTypes";
 import { resolvePlannerPlace, summarizeResolvedPlace, type ResolvedPlace, type ResolvedPlaceSummary } from "../readyPlan";
 
@@ -157,13 +158,20 @@ export function addCandidates(city: CityPlannerModule, base: V2Plan, customizati
   return out;
 }
 
-export type PlanAddOptions = { byDay: Record<string, ResolvedPlaceSummary[]>; details: Record<string, ResolvedPlace> };
+export type PlanAddOptions = {
+  byDay: Record<string, ResolvedPlaceSummary[]>;
+  details: Record<string, ResolvedPlace>;
+  /** Per day: the start choices (minutes) the day can hold; the rest would break opening hours or the order of visits. */
+  starts: Record<string, number[]>;
+};
 
 /** The add candidates of every day, ready for the page (card summaries + the details sheet data). */
 export function planAddOptions(city: CityPlannerModule, base: V2Plan, customizations: PlanCustomizations): PlanAddOptions {
   const byDay: Record<string, ResolvedPlaceSummary[]> = {};
   const details: Record<string, ResolvedPlace> = {};
+  const starts: Record<string, number[]> = {};
   for (const day of base.days) {
+    starts[String(day.dayNumber)] = dayValidStarts(city, base, customizations, day.dayNumber);
     byDay[String(day.dayNumber)] = addCandidates(city, base, customizations, day.dayNumber).flatMap((id) => {
       const resolved = resolvePlannerPlace(id, city.places);
       if (!resolved) return [];
@@ -171,7 +179,7 @@ export function planAddOptions(city: CityPlannerModule, base: V2Plan, customizat
       return [summarizeResolvedPlace(resolved)];
     });
   }
-  return { byDay, details };
+  return { byDay, details, starts };
 }
 
 /** Applies one change to the stored edits; null when it does not apply to this plan. */
@@ -225,6 +233,14 @@ export function applyPlanChange(city: CityPlannerModule, base: V2Plan, current: 
     }
   }
   next[key] = day;
+  // A start saved earlier that the day can no longer hold (an old plan, or after this change) is dropped, so the plan never shows one time
+  // and keeps another in storage, and the start cannot come back by itself later.
+  if (change.kind !== "start" && day.startMinutes !== undefined && !isDayStartValid(city, base, next, change.dayNumber, day.startMinutes)) {
+    const rest: DayCustomization = { ...day };
+    delete rest.startMinutes;
+    if (Object.keys(rest).length === 0) delete next[key];
+    else next[key] = rest;
+  }
   return next;
 }
 
@@ -237,7 +253,69 @@ function placeMeals(baseDay: V2Day, stopCount: number, lunchAfterIndex?: number)
   }));
 }
 
+/**
+ * What is wrong with a day's schedule, as keys: a visit or meal outside the place's opening hours, cut short at closing or after
+ * the last entry (the timing guard's check), or one that starts before the previous one ends. Used to compare a chosen start with
+ * the day's own start: a start is valid when it adds no problem the day does not already have.
+ */
+export function scheduleProblems(day: V2Day): Set<string> {
+  const problems = new Set<string>();
+  for (const v of findTimingViolations(day)) problems.add(`${v.kind}:${v.placeId}`);
+  const timeline = day.timeline;
+  if (!timeline) return problems;
+  // Sequence of the day: breakfast, stop 1, its meals, stop 2, its meals, ...
+  const seq: { id: string; start: number; end: number }[] = [];
+  timeline.meals.filter((m) => m.afterStopIndex === -1).forEach((m) => seq.push({ id: m.placeId, start: m.startMinutes, end: m.endMinutes }));
+  timeline.stops.forEach((w, i) => {
+    seq.push({ id: w.placeId, start: w.startMinutes, end: w.endMinutes });
+    timeline.meals.filter((m) => m.afterStopIndex === i).forEach((m) => seq.push({ id: m.placeId, start: m.startMinutes, end: m.endMinutes }));
+  });
+  for (let i = 1; i < seq.length; i++) if (seq[i].start < seq[i - 1].end) problems.add(`order:${seq[i].id}`);
+  // The clock shows 00:30 after 23:00 when a day runs past midnight, which reads as going back in time: not a valid day.
+  for (const w of seq) if (w.end > 24 * 60) problems.add(`midnight:${w.id}`);
+  return problems;
+}
+
+/**
+ * A start is valid when the day built with it has no schedule problem: every visit and meal full length inside its opening hours,
+ * nothing overlapping, nothing past midnight. No start is exempt, the day's own start included: a day whose own schedule has such a
+ * problem accepts only a start that removes it.
+ */
+function startIsValid(withStart: V2Day): boolean {
+  return scheduleProblems(withStart).size === 0;
+}
+
 function effectiveDay(city: CityPlannerModule, baseDay: V2Day, edit: DayCustomization, placeDetails: Record<string, ResolvedPlace>): V2Day {
+  if (edit.startMinutes === undefined) return buildDay(city, baseDay, edit, placeDetails);
+  const plain = buildDay(city, baseDay, { ...edit, startMinutes: undefined }, placeDetails);
+  const chosen = buildDay(city, baseDay, edit, placeDetails);
+  // A saved start the day cannot hold (e.g. a visit would run past closing) is not applied: the day keeps its own start.
+  return startIsValid(chosen) ? chosen : plain;
+}
+
+const START_CHOICES = Array.from({ length: (START_MAX - START_MIN) / 30 + 1 }, (_, i) => START_MIN + i * 30);
+
+/** Can this day (with the customer's other edits) hold this start? */
+export function isDayStartValid(city: CityPlannerModule, base: V2Plan, customizations: PlanCustomizations, dayNumber: number, minutes: number): boolean {
+  const baseDay = base.days.find((d) => d.dayNumber === dayNumber);
+  if (!baseDay) return false;
+  const edit = customizations[String(dayNumber)] ?? {};
+  const placeDetails = { ...(base.placeDetails ?? {}) };
+  return startIsValid(buildDay(city, baseDay, { ...edit, startMinutes: minutes }, placeDetails));
+}
+
+/** The start choices of the day (06:00-20:00, every 30 minutes) that the day can hold. */
+export function dayValidStarts(city: CityPlannerModule, base: V2Plan, customizations: PlanCustomizations, dayNumber: number): number[] {
+  const baseDay = base.days.find((d) => d.dayNumber === dayNumber);
+  if (!baseDay) return [];
+  const edit = customizations[String(dayNumber)] ?? {};
+  const placeDetails = { ...(base.placeDetails ?? {}) };
+  return START_CHOICES.filter((minutes) => startIsValid(buildDay(city, baseDay, { ...edit, startMinutes: minutes }, placeDetails)));
+}
+
+export { nearestValidStart };
+
+function buildDay(city: CityPlannerModule, baseDay: V2Day, edit: DayCustomization, placeDetails: Record<string, ResolvedPlace>): V2Day {
   const baseStops = new Map(baseDay.stops.map((s) => [s.id, s]));
   // Stored edits are re-checked: a stop is either one of the original day's or a real main-stop place of this city.
   const order = (edit.order ?? baseDay.stops.map((s) => s.id)).filter((id) => baseStops.has(id) || (!!city.metadataById(id) && !!resolvePlannerPlace(id, city.places)));

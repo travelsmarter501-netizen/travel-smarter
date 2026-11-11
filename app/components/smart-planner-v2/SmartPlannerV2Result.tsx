@@ -159,7 +159,7 @@ export default function SmartPlannerV2Result({
       setPending(pendingRef.current);
       if (!result.ok) {
         // "invalid" can follow a change the screen already showed (e.g. two quick moves): reload the saved plan.
-        setSaveFailed(result.code !== "invalid");
+        setSaveFailed(result.code !== "invalid" && result.code !== "start_infeasible");
         router.refresh();
         return;
       }
@@ -301,7 +301,7 @@ export default function SmartPlannerV2Result({
             guideSlug={plan.destination}
             placeDetails={allDetails}
             lang={language}
-            editing={editablePlanId ? { onChange: applyChange, saving, edited: edited.has(activeDay.dayNumber), addOptions: liveAddOptions?.byDay[String(activeDay.dayNumber)] ?? [] } : undefined}
+            editing={editablePlanId ? { onChange: applyChange, saving, edited: edited.has(activeDay.dayNumber), addOptions: liveAddOptions?.byDay[String(activeDay.dayNumber)] ?? [], startOptions: liveAddOptions?.starts?.[String(activeDay.dayNumber)] } : undefined}
           />
         )}
       </div>

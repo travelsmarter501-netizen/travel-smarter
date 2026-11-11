@@ -11,6 +11,7 @@ import { PLAN_TEXT, formatDayHeader, formatDistance, formatMinutes, formatPlaceC
 import type { PlanChange } from "../../lib/planner/planCustomizations";
 import { formatTimelineClock } from "../../lib/planner/barcelonaV2Timeline";
 import { dayDistanceKm, stripFreeTimePrefix } from "../../lib/planner/planDistance";
+import { nearestValidStart } from "../../lib/planner/startChoices";
 import type { ResolvedPlace, ResolvedPlaceSummary } from "../../lib/readyPlan";
 import type { V2Day } from "../../lib/planner/barcelonaV2Resolve";
 import type { V2MealStop } from "../../lib/planner/barcelonaV2MealStops";
@@ -92,12 +93,13 @@ export default function SmartPlannerV2Day({
   /** Display language. The day passed in is already the translated display copy (localizePlan). */
   lang?: PlanLanguage;
   /** Saved-plan page: edit this day with buttons (start time, duration, order, remove, add a nearby place, reset). */
-  editing?: { onChange: (change: PlanChange) => void; saving: boolean; edited: boolean; addOptions: ResolvedPlaceSummary[] };
+  editing?: { onChange: (change: PlanChange) => void; saving: boolean; edited: boolean; addOptions: ResolvedPlaceSummary[]; /** Start choices (minutes) this day can hold; absent = every choice is offered. */ startOptions?: number[] };
 }) {
   const ui = PLAN_TEXT[lang];
   const [activePlaceId, setActivePlaceId] = useState<string | null>(null);
   const [editMode, setEditMode] = useState(false);
   const [startSheetOpen, setStartSheetOpen] = useState(false);
+  const [blockedStart, setBlockedStart] = useState<number | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const change = (c: PlanChange) => editing?.onChange(c);
   const busy = !!editing?.saving;
@@ -464,26 +466,71 @@ export default function SmartPlannerV2Day({
       )}
 
       {editing && (
-        <BottomSheet open={startSheetOpen} onClose={() => setStartSheetOpen(false)} title={ui.chooseStart} closeLabel={ui.doneEditing}>
+        <BottomSheet
+          open={startSheetOpen}
+          onClose={() => {
+            setStartSheetOpen(false);
+            setBlockedStart(null);
+          }}
+          title={ui.chooseStart}
+          closeLabel={ui.doneEditing}
+        >
           <div className="grid grid-cols-4 gap-2 pb-2">
             {START_TIMES.map((minutes) => {
               const active = day.timeline?.dayStartMinutes === minutes;
+              const possible = active || !editing.startOptions || editing.startOptions.includes(minutes);
               return (
                 <button
                   key={minutes}
                   type="button"
-                 
+                  aria-disabled={!possible}
                   onClick={() => {
+                    if (active) {
+                      // The time the day already starts at: nothing to change.
+                      setBlockedStart(null);
+                      setStartSheetOpen(false);
+                      return;
+                    }
+                    if (!possible) {
+                      setBlockedStart(minutes);
+                      return;
+                    }
+                    setBlockedStart(null);
                     setStartSheetOpen(false);
                     change({ kind: "start", dayNumber: day.dayNumber, minutes });
                   }}
-                  className={`rounded-xl border py-2.5 text-sm font-bold ${active ? "border-teal-700 bg-teal-50 text-slate-900 shadow-[inset_0_0_0_1px_var(--color-teal-700)]" : "border-slate-200 bg-white text-slate-700"}`}
+                  className={`rounded-xl border py-2.5 text-sm font-bold ${active ? "border-teal-700 bg-teal-50 text-slate-900 shadow-[inset_0_0_0_1px_var(--color-teal-700)]" : possible ? "border-slate-200 bg-white text-slate-700" : "border-slate-100 bg-slate-50 text-slate-300"}`}
                 >
                   <bdi dir="ltr">{formatTimelineClock(minutes)}</bdi>
                 </button>
               );
             })}
           </div>
+          {editing.startOptions && editing.startOptions.length < START_TIMES.length && <p className="pb-2 text-xs text-slate-500">{ui.startDim}</p>}
+          {blockedStart !== null &&
+            (() => {
+              const suggestion = nearestValidStart(editing.startOptions ?? [], blockedStart);
+              return (
+                <div role="alert" className="mb-2 rounded-xl bg-amber-50 px-3 py-2.5 text-xs leading-5 text-amber-900">
+                  <p className="font-semibold">{ui.startBlocked}</p>
+                  {suggestion !== null ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setBlockedStart(null);
+                        setStartSheetOpen(false);
+                        change({ kind: "start", dayNumber: day.dayNumber, minutes: suggestion });
+                      }}
+                      className="mt-2 rounded-full border border-amber-300 bg-white px-3 py-1.5 font-bold text-amber-900"
+                    >
+                      {ui.startSuggest(formatTimelineClock(suggestion))}
+                    </button>
+                  ) : (
+                    <p className="mt-1">{ui.startNone}</p>
+                  )}
+                </div>
+              );
+            })()}
         </BottomSheet>
       )}
 
