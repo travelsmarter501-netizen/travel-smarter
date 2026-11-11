@@ -5,9 +5,10 @@
  * coordinates of the two places; door to door (walk to the stop, wait, ride, walk). One direction was asked per pair (the
  * direction listed); the other direction uses the same value, which is an assumption. Times change with the departure time.
  *
- * What it showed: on these 14 pairs the distance-based estimate (estimatedRouteLegs.ts) was about 30% too short on average
- * (from 19% too long to 80% too short). So every OTHER Prague public-transport estimate is lengthened by
- * `UNCHECKED_TRANSIT_FACTOR`; it stays an estimate and is still labelled as one.
+ * What it showed: on these 14 pairs the distance-based estimate (estimatedRouteLegs.ts, middle of its range) was 0.78 of the
+ * Google time on average, i.e. 22% too short (from 23% too long to 44% too short; 11 of 14 pairs too short). So every OTHER
+ * Prague public-transport estimate is lengthened by `UNCHECKED_TRANSIT_FACTOR` (1.3, which brings the average to 1.0); it stays
+ * an estimate and is still labelled as one.
  */
 export const PRAGUE_CHECKED_TRANSIT_MINUTES: Record<string, number> = {
   "letna-park>stromovka": 25,
