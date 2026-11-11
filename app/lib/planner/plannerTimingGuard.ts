@@ -89,7 +89,7 @@ function simulate(city: CityPlannerModule, day: V2Day, order: number[], month: n
   const stops: TimelineStopInput[] = order.map((i) => {
     const stop = day.stops[i];
     const meta = city.metadataById(stop.id);
-    return { placeId: stop.id, visitDurationMinutes: stop.visitDurationMinutes, hours: stop.hours, preferredTime: meta?.preferredTime ?? "anytime", arrivalBufferMinutes: meta?.arrivalBufferMinutes };
+    return { placeId: stop.id, visitDurationMinutes: stop.visitDurationMinutes, hours: stop.hours, preferredTime: meta?.preferredTime ?? "anytime", arrivalBufferMinutes: meta?.arrivalBufferMinutes, showWindow: meta?.showWindow };
   });
   const legs: PlannerRouteLeg[] = [];
   for (let i = 0; i < order.length - 1; i++) legs.push(city.routeLeg(day.stops[order[i]].id, day.stops[order[i + 1]].id));

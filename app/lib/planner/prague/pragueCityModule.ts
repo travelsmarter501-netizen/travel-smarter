@@ -3,6 +3,7 @@ import { resolvePlannerPlace } from "../../readyPlan";
 import { haversineDistanceKm, type GeoPoint } from "../geoDistance";
 import { buildEstimatedLeg, estimatedWalkingMinutes } from "../estimatedRouteLegs";
 import { PRAGUE_ROUTED_WALKS } from "./pragueRoutedWalks";
+import { CHECKED_TRANSIT_NOTE_AR, checkedTransitMinutes, UNCHECKED_TRANSIT_FACTOR } from "./pragueCheckedTransit";
 import type { PlannerRouteLeg, TransportOption } from "../plannerTransportTypes";
 
 // ── Transfers: straight-line estimate, except sensitive ones measured on a real walking route (pragueRoutedWalks.ts) ──
@@ -17,7 +18,31 @@ function noPracticalTransit(a: string, b: string): boolean {
   return NO_TRANSIT_PAIRS.has([a, b].sort().join("|"));
 }
 
+/**
+ * The public-transport option of a leg: the checked time where the pair was checked (pragueCheckedTransit.ts), otherwise the
+ * distance estimate lengthened by the factor those checks showed. When walking is then no slower (within 3 minutes), walking
+ * is the recommended way.
+ */
+function withTransitCheck(leg: PlannerRouteLeg): PlannerRouteLeg {
+  const index = leg.options.findIndex((option) => option.mode === "transit");
+  if (index === -1) return leg;
+  const checked = checkedTransitMinutes(leg.fromPlaceId, leg.toPlaceId);
+  const old = leg.options[index];
+  const transit: TransportOption = checked !== null
+    ? { ...old, durationMinutesMin: Math.round(checked * 0.95), durationMinutesMax: Math.round(checked * 1.15), note: CHECKED_TRANSIT_NOTE_AR }
+    : { ...old, durationMinutesMin: Math.round(old.durationMinutesMin * UNCHECKED_TRANSIT_FACTOR), durationMinutesMax: Math.round(old.durationMinutesMax * UNCHECKED_TRANSIT_FACTOR) };
+  const options = leg.options.map((option, i) => (i === index ? transit : option));
+  const walking = options.find((option) => option.mode === "walking");
+  const mid = (option: TransportOption) => (option.durationMinutesMin + option.durationMinutesMax) / 2;
+  const recommendedMode = leg.recommendedMode === "transit" && walking && mid(walking) <= mid(transit) + 3 ? "walking" : leg.recommendedMode;
+  return { ...leg, options, recommendedMode };
+}
+
 function pragueLeg(fromPlaceId: string, toPlaceId: string): PlannerRouteLeg {
+  return withTransitCheck(pragueLegBase(fromPlaceId, toPlaceId));
+}
+
+function pragueLegBase(fromPlaceId: string, toPlaceId: string): PlannerRouteLeg {
   const leg = buildEstimatedLeg(fromPlaceId, toPlaceId, PRAGUE_PLACE_COORDINATES);
   const routed = PRAGUE_ROUTED_WALKS[`${fromPlaceId}>${toPlaceId}`];
   const from = PRAGUE_PLACE_COORDINATES[fromPlaceId];
@@ -171,7 +196,12 @@ function flagshipGoals(context: { surpriseMe: boolean; days: number }): Flagship
   ];
 }
 
+// Minutes between two places as the plan itself shows them: the recommended option of the leg (a real walking route where one
+// is stored, otherwise the distance estimate; public transport on long hops).
 const travelMinutes = (fromPlaceId: string, toPlaceId: string): number | null => {
+  const leg = pragueLeg(fromPlaceId, toPlaceId);
+  const option = leg.sourceStatus === "unresolved" ? undefined : leg.options.find((o) => o.mode === leg.recommendedMode);
+  if (option) return Math.round((option.durationMinutesMin + option.durationMinutesMax) / 2);
   const minutes = estimatedWalkingMinutes(PRAGUE_PLACE_COORDINATES[fromPlaceId], PRAGUE_PLACE_COORDINATES[toPlaceId]);
   return minutes === null ? null : Math.round(minutes);
 };
@@ -314,8 +344,9 @@ const FOOD_PLACE_CLUSTER: Record<string, string> = {
   "kavarna-obecni-dum": "republiky",
   "lobkowicz-palace-cafe": "hradcany",
   "kavarna-novy-svet": "hradcany",
-  // "cafe-kupka" is not offered (2026-11-10): prague.eu's Café Kupka page puts it on the top floor of the Army Museum Žižkov
-  // building, while its Vítkov page names the memorial's café "Café Vítkov". Kept out until the place is confirmed.
+  // Café Kupka is on the top floor of the Army Museum Žižkov building (prague.eu, checked 2026-11-10); the memorial on the hill has
+  // its own café (Café Vítkov), which is a different place. Description corrected, so it is offered again.
+  "cafe-kupka": "zizkov",
   "kavarna-lucerna": "new-town",
   kuchyn: "hradcany",
   mlynec: "old-town",
@@ -343,7 +374,7 @@ const FOOD_PLACE_CLUSTER: Record<string, string> = {
 
 // ── Warnings shown on a stop ────────────────────────────────────────────────────────────────────────
 const WARNINGS: Record<string, PlannerOperationalWarning[]> = {
-  "vltava-one-hour-cruise": [{ textAr: "⚠️ الرحلات موسمية حسب prague.eu: أبريل–سبتمبر يوميًا، أكتوبر بالويكند فقط، ومتوقفة نوفمبر–مارس." }, { textAr: "فحصنا موقع الشركة (8 نوفمبر 2026): موسم 2026 خلص، ومواعيد وأسعار 2027 لسا مش منشورة." }],
+  "vltava-one-hour-cruise": [{ textAr: "⚠️ الرحلات موسمية حسب prague.eu: أبريل–سبتمبر يوميًا، أكتوبر بالويكند فقط، ومتوقفة نوفمبر–مارس." }, { textAr: "فحصنا موقع الشركة (10 نوفمبر 2026): بموسم 2026 الرحلات كانت كل ساعة على رأس الساعة من رصيف رقم 2 (Rašínovo nábřeží)، ومواعيد وأسعار 2027 لسا مش منشورة. وقت الخطة تقريبي: ثبّته على موعد انطلاق وكون عالرصيف قبله." }],
   // The tower closure of 7-14 Nov 2026 is a one-off date range; warnings here are not date-aware, so it lives in the place
   // tip (praguePlaces.ts) instead of showing on every plan.
   "jewish-museum": [{ textAr: "⚠️ مغلق كل سبت وبالأعياد اليهودية." }],
@@ -368,9 +399,12 @@ function warningsFor(placeId: string, weekday?: Weekday | null): PlannerOperatio
 
 // ── Entry ticket estimates ────────────────────────────────────────────────────────────────────────────
 function pragueTicketEstimate(placeId: string): number | null | undefined {
+  const experience = PRAGUE_PLACES.experiences.some((p) => p.id === placeId);
   const place = [...PRAGUE_PLACES.attractions, ...PRAGUE_PLACES.experiences].find((p) => p.id === placeId) as { priceType?: string; priceText?: string } | undefined;
-  if (!place || !place.priceType) return undefined;
+  if (!place) return undefined;
   if (place.priceType === "free") return 0;
+  // An experience is a paid activity: without a published price it counts as "price not available", never as free.
+  if (!place.priceType && !experience) return undefined;
   const match = (place.priceText ?? "").replace(/(\d)[ ,.](\d{3})/g, "$1$2").match(/(\d+)\s*CZK/);
   return match ? Number(match[1]) : null;
 }
@@ -441,6 +475,9 @@ export const PRAGUE_CITY_MODULE: CityPlannerModule = {
     coffeeBreakCategories: ["cafes"],
     // Lunch for every customer; breakfast only suggested; dinner optional from 18:00 right after the day's program.
     flexibleMeals: { dinnerEarliest: 18 * 60 },
+    // Café Ornament is inside the Botanical Garden and Lobkowicz Palace Café inside the castle complex (prague.eu): whether they
+    // can be reached without the visit is not stated, so they are offered only on a day that goes there.
+    insideStop: { "cafe-ornament": "botanical-garden", "lobkowicz-palace-cafe": "prague-castle" },
     eveningSpecialCategory: null,
     dinnerCategories: ["local", "middle-eastern", "restaurants"],
   },
@@ -462,7 +499,9 @@ export const PRAGUE_CITY_MODULE: CityPlannerModule = {
         lightMinutes: 170,
         minPriorityToAdd: 5,
         keepInsideRelevance: 9,
-        regroup: { splitPenalty: 45, lightPenalty: 40, restoreBonus: 20 },
+        regroup: { splitPenalty: 45, lightWeight: 6, emptyPenalty: 300, comfortStops: 5, crowdPenalty: 25, maxStops: 6, hopPenalty: 60, restoreBonus: 20 },
+        // A light day may take one free place of at most 45 minutes in an area it already visits (Kampa, the Lennon Wall, a garden).
+        walkByStop: { isFreeShort: (placeId) => pragueTicketEstimate(placeId) === 0 && (getPraguePlannerMetadataById(placeId)?.visitDurationMinutes ?? 999) <= 45, minRelevance: 3 },
         freeTimeIdeas: { minRelevance: 3 },
       }
     );
@@ -473,6 +512,14 @@ export const PRAGUE_CITY_MODULE: CityPlannerModule = {
   metadataForInterests: praguePlannerMetadataForInterests,
   placeRelevance: praguePlaceRelevance,
   relevanceThreshold: 5,
+  // A place needs a match of 5 of 10 to be added. When the trip is longer than the places at that level can fill (about 3.5 hours
+  // of visits a day), the level drops to 4 and then 3 (still a real match, never an unrelated place), so a long trip with one
+  // narrow interest is not spread over days of a single stop.
+  relevanceThresholdFor: ({ days, relevance }) => {
+    const minutesAt = (level: number) => PRAGUE_PLANNER_METADATA.filter((m) => m.placeId !== "vltava-one-hour-cruise" && relevance(m.placeId) >= level).reduce((sum, m) => sum + m.visitDurationMinutes, 0);
+    for (const level of [5, 4]) if (minutesAt(level) >= days * 210) return level;
+    return 3;
+  },
   outsideVisit: (placeId) => (OUTSIDE_STOP_MINUTES[placeId] ? { visitDurationMinutes: OUTSIDE_STOP_MINUTES[placeId] } : undefined),
   capacityWarning: (daysGenerated) => `قدرنا نبني خطة قوية لـ ${daysGenerated} أيام من البيانات المتاحة حاليًا لبراغ. عم نوسّع المحتوى للأيام الأطول.`,
 };

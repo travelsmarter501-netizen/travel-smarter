@@ -907,7 +907,7 @@ export const PRAGUE_FOOD_PLACES: FoodPlace[] = [
   food({ id: "kavarna-obecni-dum", name: "Kavárna Obecní dům", categoryId: "cafes", area: "Staré Město (náměstí Republiky)", address: "náměstí Republiky 5, 110 00 Praha 1", why: "مقهى داخل Municipal House بقاعة آرت نوفو وكيكات.", officialUrl: "https://www.kavarnaod.cz", dietaryTags: ["coffee", "dessert"], hoursSchedule: everyDay(["08:00", "23:00"]), sourceUrl: "https://prague.eu/en/objevujte/kavarna-obecni-dum/" }),
   food({ id: "lobkowicz-palace-cafe", name: "Lobkowicz Palace Café", categoryId: "cafes", area: "Hradčany (Prague Castle)", address: "Jiřská 1, 110 00 Praha 1", why: "داخل مجمع القلعة: شوربات وسلطات وسندويشات وحلويات بيتية.", officialUrl: "https://www.lobkowicz.cz/lobkowicz-palace-cafe", dietaryTags: ["coffee", "dessert", "vegetarian"], hoursSchedule: everyDay(["10:00", "18:00"]), sourceUrl: "https://prague.eu/en/objevujte/lobkowicz-palace-cafe-lobkowiczky-palac/" }),
   food({ id: "kavarna-novy-svet", name: "Kavárna Nový Svět", categoryId: "cafes", area: "Hradčany (Nový Svět)", address: "Nový Svět 2, 118 00 Praha 1", why: "مقهى صغير بشارع Nový Svět الهادي قرب Loreta.", dietaryTags: ["coffee"], hoursSchedule: { ...days(["tuesday", "wednesday", "thursday", "friday", "saturday"], ["10:00", "19:00"]), sunday: [{ open: "10:00", close: "18:00" }] }, sourceUrl: "https://prague.eu/en/objevujte/kavarna-novy-svet-new-world-cafe/" }),
-  food({ id: "cafe-kupka", name: "Café Kupka", categoryId: "cafes", area: "Žižkov (Vítkov)", address: "U Památníku 1600/2, 130 00 Praha 3", why: "مقهى نصب Vítkov: قهوة وحلويات بيتية وسناكات، مع تراس بإطلالة.", dietaryTags: ["coffee", "dessert"], hoursSchedule: days(TUE_TO_SUN, ["10:00", "18:00"]), sourceUrl: "https://prague.eu/en/objevujte/cafe-kupka/" }),
+  food({ id: "cafe-kupka", name: "Café Kupka", categoryId: "cafes", area: "Žižkov (Army Museum)", address: "U Památníku 1600/2, 130 00 Praha 3", why: "مقهى بالطابق الأخير لمبنى المتحف العسكري Žižkov (Army Museum) تحت تلة Vítkov: قهوة وحلويات بيتية وسندويشات، مع تراس بإطلالة.", dietaryTags: ["coffee", "dessert"], hoursSchedule: days(TUE_TO_SUN, ["10:00", "18:00"]), sourceUrl: "https://prague.eu/en/objevujte/cafe-kupka/" }),
   food({ id: "kavarna-lucerna", name: "Kavárna Lucerna", categoryId: "cafes", area: "Nové Město (Lucerna Palace)", address: "Vodičkova 36, 110 00 Praha 1", why: "مقهى تاريخي داخل ممر Lucerna قرب ساحة فاتسلاف.", officialUrl: "https://kavarna.lucerna.cz", dietaryTags: ["coffee", "dessert"], hoursSchedule: { ...days(MON_TO_FRI, ["11:00", "23:00"]), ...days(WEEKEND, ["12:00", "23:00"]) }, sourceUrl: "https://prague.eu/en/objevujte/kavarna-lucerna/" }),
   food({ id: "kuchyn", name: "Kuchyň", categoryId: "local", area: "Hradčany (Hradčanské náměstí)", address: "Hradčanské náměstí 1, 118 00 Praha 1", why: "مطبخ تشيكي تقليدي من وصفات قديمة، جنب بوابة القلعة.", officialUrl: "https://kuchyn.ambi.cz", dietaryTags: ["meat", "pork-maybe"], hoursSchedule: everyDay(["11:30", "23:00"]), sourceUrl: "https://prague.eu/en/objevujte/kitchen-kuchyn/" }),
   food({ id: "mlynec", name: "Mlýnec", categoryId: "restaurants", area: "Staré Město (Charles Bridge)", address: "Novotného lávka 9, 110 00 Praha 1", why: "أطباق تشيكية بأسلوب حديث جنب Charles Bridge.", officialUrl: "https://www.mlynec.cz", dietaryTags: ["meat", "pork-maybe"], hoursSchedule: { ...days(MON_TO_FRI, ["11:30", "15:00"], ["17:00", "22:00"]), ...days(WEEKEND, ["11:30", "15:00"], ["17:30", "22:00"]) }, sourceUrl: "https://www.mlynec.cz/en/", hoursSource: "mlynec.cz (official)", verifiedOn: "2026-11-08" }),
@@ -983,7 +983,7 @@ export const PRAGUE_NIGHTLIFE_VENUES: NightlifeVenue[] = [
 // restaurant's last lunch reservation); the customer still sees the displayed hours.
 // source / sourceUrl / lastVerified: where the stored values above were last checked, so the record shows the source of the hours
 // actually used (not the source of an older read).
-type PlanningHours = { seasonalSchedules?: SeasonalSchedule[]; dateExceptions?: HoursDateException[]; lastEntry?: string; conflict?: string; planningSchedule?: WeeklySchedule; source?: string; sourceUrl?: string; lastVerified?: string };
+type PlanningHours = { planningOpenFrom?: Partial<Record<Weekday, string>>; seasonalSchedules?: SeasonalSchedule[]; dateExceptions?: HoursDateException[]; lastEntry?: string; conflict?: string; planningSchedule?: WeeklySchedule; source?: string; sourceUrl?: string; lastVerified?: string };
 const R = (open: string, close: string): TimeRange[] => [{ open, close }];
 const season = (from: string, to: string, schedule: WeeklySchedule, lastEntry?: string): SeasonalSchedule => ({ from, to, schedule, ...(lastEntry ? { lastEntry } : {}) });
 const TOWERS: SeasonalSchedule[] = [
@@ -998,6 +998,9 @@ const TYN_MAR_JUN_SEP_NOV: WeeklySchedule = { ...days(["tuesday", "wednesday", "
 
 const PLANNING_HOURS: Record<string, PlanningHours> = {
   "prague-castle": {
+    // katedralasvatehovita.cz (checked 2026-11-10): the cathedral opens to visitors Mon-Sat 9:00, Sunday 12:00. On a dated Sunday
+    // the 150-minute visit is planned from 10:30, so its last hour is inside the cathedral's hours.
+    planningOpenFrom: { sunday: "10:30" },
     seasonalSchedules: [season("04-01", "10-31", everyDay(["09:00", "17:00"])), season("11-01", "03-31", everyDay(["09:00", "16:00"]))],
     dateExceptions: [
       { from: "2026-11-16", to: "2026-11-16", hours: R("09:00", "16:00"), lastEntry: "15:40", note: "St. Vitus Cathedral limited opening for liturgical reasons (hrad.cz/tickets notice)" },

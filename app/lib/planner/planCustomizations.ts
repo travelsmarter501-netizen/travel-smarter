@@ -1,7 +1,7 @@
 import "server-only";
 import { buildBarcelonaDayTimeline, lunchPlacementFromTimeline, type TimelineMealInput, type TimelineStopInput } from "./barcelonaV2Timeline";
 import { timelineLegBetween } from "./timelineLegs";
-import { buildMealAdjacentLegs, resolveStop, type V2Day, type V2Plan } from "./barcelonaV2Resolve";
+import { buildMealAdjacentLegs, resolveStop, withShowWindowNotes, type V2Day, type V2Plan } from "./barcelonaV2Resolve";
 import { lunchIndexByClock } from "./barcelonaV2MealStops";
 import type { CityPlannerModule } from "./cityPlannerModule";
 import { findTimingViolations, TIMING_WARNING_AR } from "./plannerTimingGuard";
@@ -259,6 +259,7 @@ function effectiveDay(city: CityPlannerModule, baseDay: V2Day, edit: DayCustomiz
     hours: stop.hours,
     preferredTime: city.metadataById(stop.id)?.preferredTime ?? "anytime",
     arrivalBufferMinutes: city.metadataById(stop.id)?.arrivalBufferMinutes,
+    showWindow: city.metadataById(stop.id)?.showWindow,
   }));
   const month = baseDay.actualDate ? Number(baseDay.actualDate.slice(5, 7)) : null;
   const breakfastMeal = (baseDay.mealStops ?? []).find((m) => m.mealType === "breakfast");
@@ -275,7 +276,7 @@ function effectiveDay(city: CityPlannerModule, baseDay: V2Day, edit: DayCustomiz
 
   let day: V2Day = {
     ...baseDay,
-    stops,
+    stops: withShowWindowNotes(city, stops, timeline),
     legs,
     mealStops,
     timeline,

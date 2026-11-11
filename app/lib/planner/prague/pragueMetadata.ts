@@ -39,7 +39,7 @@ export const PRAGUE_PLANNER_METADATA: PlannerPlaceMetadata[] = [
   place("loreta", "hradcany", [4, 8, 1, 0, 0, 0], 5, "daytime", 45),
   // Malá Strana
   place("st-nicholas-mala-strana", "mala-strana", [6, 8, 0, 0, 0, 0], 6, "daytime", 30),
-  place("john-lennon-wall", "mala-strana", [7, 4, 2, 0, 1, 0], 6, "anytime", 15),
+  place("john-lennon-wall", "mala-strana", [7, 5, 2, 0, 1, 0], 6, "anytime", 15),
   place("kampa-island", "mala-strana", [5, 4, 6, 4, 0, 0], 5, "afternoon", 30),
   place("franz-kafka-museum", "mala-strana", [4, 7, 0, 0, 1, 0], 4, "daytime", 60),
   place("museum-kampa", "mala-strana", [4, 7, 2, 0, 0, 0], 5, "daytime", 60),
@@ -53,7 +53,7 @@ export const PRAGUE_PLANNER_METADATA: PlannerPlaceMetadata[] = [
   place("tyn-church", "old-town", [6, 7, 0, 0, 0, 0], 5, "morning", 20),
   // Guided tours at set times: arrive 15 minutes before (our own planning margin; no official instruction found).
   { ...place("clementinum", "old-town", [7, 9, 6, 0, 1, 0], 8, "daytime", 60), arrivalBufferMinutes: 15 },
-  place("old-town-bridge-tower", "old-town", [5, 4, 8, 0, 2, 0], 6, "daytime/sunset", 30),
+  place("old-town-bridge-tower", "old-town", [5, 6, 8, 0, 2, 0], 6, "daytime/sunset", 30),
   place("havelske-market", "old-town", [5, 4, 0, 0, 0, 7], 5, "morning", 20),
   // náměstí Republiky
   { ...place("municipal-house", "republiky", [6, 8, 0, 0, 1, 2], 6, "afternoon", 60), arrivalBufferMinutes: 15 },
@@ -68,11 +68,12 @@ export const PRAGUE_PLANNER_METADATA: PlannerPlaceMetadata[] = [
   place("national-museum", "new-town", [6, 8, 1, 0, 2, 0], 6, "morning/daytime", 120),
   place("mucha-museum", "new-town", [4, 8, 0, 0, 0, 1], 5, "daytime", 60),
   place("franciscan-garden", "new-town", [3, 2, 5, 5, 0, 0], 4, "anytime", 20),
-  place("kafka-head", "new-town", [6, 5, 0, 0, 2, 0], 4, "anytime", 15),
+  // quadrio.cz: the head moves "during the first 15 minutes of every full hour, from 9:00 to 23:00".
+  { ...place("kafka-head", "new-town", [6, 5, 0, 0, 2, 0], 4, "anytime", 15), showWindow: { everyMinutes: 60, minutes: 15, maxWaitMinutes: 30, missNoteAr: "حسب وقت الخطة الرأس بيكون واقف: بيتحرك أول 15 دقيقة من كل ساعة (9:00–23:00). قدّم الوقفة أو أخّرها لرأس الساعة إذا بدّك تشوف الحركة." } },
   // Riverside (Nové Město, south)
   place("dancing-house", "riverside", [6, 3, 2, 0, 0, 0], 5, "anytime", 15),
   place("naplavka", "riverside", [3, 3, 5, 6, 1, 3], 4, "afternoon", 45),
-  place("vltava-one-hour-cruise", "riverside", [6, 2, 8, 3, 8, 0], 6, "afternoon", 60),
+  { ...place("vltava-one-hour-cruise", "riverside", [6, 2, 8, 3, 8, 0], 6, "afternoon", 60), arrivalBufferMinutes: 15, showWindow: { everyMinutes: 60, minutes: 1, maxWaitMinutes: 45, missNoteAr: "الرحلات بتنطلق على رأس الساعة (جدول 2026؛ 2027 لسا مش منشور). وقت الخطة تقريبي: خلّي موعدك على أقرب انطلاق وكون عالرصيف قبله." } },
   // Vyšehrad
   place("vysehrad", "vysehrad", [6, 7, 9, 3, 0, 0], 7, "afternoon", 90),
   // Žižkov / Vinohrady

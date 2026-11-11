@@ -75,7 +75,17 @@ export type TimelineStopInput = {
   preferredTime: PreferredTime;
   /** Minutes to arrive before the visit starts (a guided tour at a set time); omitted = 0, as before. */
   arrivalBufferMinutes?: number;
+  /** Something to see only in the first `minutes` of every `everyMinutes`: wait for the next window when that costs at most `maxWaitMinutes`. */
+  showWindow?: { everyMinutes: number; minutes: number; maxWaitMinutes: number };
 };
+
+/** A lunch break with no set restaurant (cities with flexibleMeals): taken in the area of the stop before it. */
+export const LUNCH_BREAK_ID = "lunch-break";
+
+/** Whether a visit that starts at `startMinutes` begins inside the place's show window. */
+export function startsInShowWindow(startMinutes: number, showWindow: { everyMinutes: number; minutes: number }): boolean {
+  return startMinutes % showWindow.everyMinutes < showWindow.minutes;
+}
 
 export type TimelineMealInput = {
   placeId: string;
@@ -488,13 +498,19 @@ export function buildBarcelonaDayTimeline(
     mealWindows.push({ placeId: breakfast.placeId, mealType: preType, afterStopIndex: -1, ...breakfastWindow });
     if (breakfastWindow.approximate) anyApproximate = true;
     dayStartMinutes = breakfastWindow.startMinutes;
-    clock = Math.max(clock, breakfastWindow.endMinutes + (legBetween ? mealAdvance(breakfast.placeId, stops[0].placeId) : INTER_STOP_BUFFER_MINUTES));
+    clock = Math.max(clock, breakfastWindow.endMinutes + (legBetween && breakfast.placeId !== LUNCH_BREAK_ID ? mealAdvance(breakfast.placeId, stops[0].placeId) : INTER_STOP_BUFFER_MINUTES));
   }
 
   stops.forEach((stop, index) => {
     const sunsetFloor = minimumStartForPreferredTime(stop.preferredTime, month);
     const arrival = clock + (stop.arrivalBufferMinutes ?? 0);
-    const earliestStart = sunsetFloor !== null ? Math.max(arrival, sunsetFloor) : arrival;
+    let earliestStart = sunsetFloor !== null ? Math.max(arrival, sunsetFloor) : arrival;
+    if (stop.showWindow) {
+      // A short wait for the next show window (e.g. the top of the hour) when it is close; otherwise the time stays as it is.
+      const rounded = roundUpToBoundary(earliestStart);
+      const wait = stop.showWindow.everyMinutes - (rounded % stop.showWindow.everyMinutes);
+      if (!startsInShowWindow(rounded, stop.showWindow) && wait <= stop.showWindow.maxWaitMinutes) earliestStart = rounded + wait;
+    }
     const window = fitWindow(earliestStart, stop.visitDurationMinutes, stop.hours, weekday);
     stopWindows.push({ placeId: stop.placeId, ...window });
     if (window.approximate) anyApproximate = true;
@@ -510,8 +526,11 @@ export function buildBarcelonaDayTimeline(
     let lastPlaceId = stop.placeId;
     for (const meal of meals.filter((m) => m.afterStopIndex === index)) {
       const target = MEAL_TARGET_WINDOW[meal.mealType];
-      const earliestStart = Math.max(clock + (legBetween ? mealAdvance(lastPlaceId, meal.placeId) : INTER_STOP_BUFFER_MINUTES), meal.earliestStart ?? target.earliest);
-      lastPlaceId = meal.placeId;
+      // A lunch break has no place of its own: it is taken where the previous stop is, and the walk to the next stop is the
+      // normal stop-to-stop leg.
+      const breakHere = meal.placeId === LUNCH_BREAK_ID;
+      const earliestStart = Math.max(clock + (legBetween && !breakHere ? mealAdvance(lastPlaceId, meal.placeId) : INTER_STOP_BUFFER_MINUTES), meal.earliestStart ?? target.earliest);
+      if (!breakHere) lastPlaceId = meal.placeId;
       const mealWindow = fitWindow(earliestStart, MEAL_ASSUMED_DURATION_MINUTES[meal.mealType], meal.hours, weekday);
       mealWindows.push({ placeId: meal.placeId, mealType: meal.mealType, afterStopIndex: meal.afterStopIndex, ...mealWindow, ...(meal.optional ? { optional: true } : {}) });
       if (mealWindow.approximate) anyApproximate = true;

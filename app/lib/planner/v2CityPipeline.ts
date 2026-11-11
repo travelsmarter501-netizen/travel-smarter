@@ -206,13 +206,14 @@ export async function generateCityPlanV2(baseCity: CityPlannerModule, input: Gen
     // Cities with metadataForInterests / placeRelevance (Prague): scores and additions follow this request's interests.
     const plannerMetadata = city.metadataForInterests ? city.metadataForInterests(v2Interests, surpriseMe) : city.destinationConfig.plannerMetadata;
     const relevance = city.placeRelevance ? city.placeRelevance(v2Interests, surpriseMe) : null;
+    const relevanceThreshold = relevance && city.relevanceThresholdFor ? city.relevanceThresholdFor({ days, relevance }) : (city.relevanceThreshold ?? 5);
     const configForRequest: DestinationConfig = {
       ...city.destinationConfig,
       plannerMetadata,
       dayBuilderConfig: {
         ...city.destinationConfig.dayBuilderConfig,
         isPlaceEligibleForDay,
-        ...(relevance ? { isPlaceRelevant: (placeId: string) => relevance(placeId) >= (city.relevanceThreshold ?? 5), placeRelevance: relevance } : {}),
+        ...(relevance ? { isPlaceRelevant: (placeId: string) => relevance(placeId) >= relevanceThreshold, placeRelevance: relevance } : {}),
         ...(city.mealLegsInTimeline && (city.mealStops.flexibleMeals || surpriseMe || v2Interests.includes("food")) ? { mealMinutesPerDay: 75 } : {}),
         flagshipCoverageGoals,
         placeSelectionBonus,

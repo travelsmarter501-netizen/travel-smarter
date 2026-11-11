@@ -78,6 +78,12 @@ export type HoursInfo =
       planningSchedule?: WeeklySchedule;
       planningLastEntry?: string;
       /**
+       * Planner, dated trips only: on these weekdays a visit is planned to start no earlier than this time ("HH:MM"), because
+       * a part of the place opens later that day (Prague Castle: St. Vitus Cathedral opens to visitors at 12:00 on Sunday).
+       * The customer still sees `display`; plans without dates are not affected.
+       */
+      planningOpenFrom?: Partial<Record<Weekday, string>>;
+      /**
        * Operational Hours Integrity Audit: a narrow, OPTIONAL, purely additive escape hatch for
        * the specific case where a place's exact opening/closing TIMES genuinely vary (so it
        * can't honestly be modeled as `type: "fixed"`) but the project already has verified,

@@ -30,12 +30,14 @@ export type DayBalanceOptions = {
   /** Optional: a place this strongly matching the request's interests (placeRelevance >= this) is never cut to an outside stop. */
   keepInsideRelevance?: number;
   /**
-   * Optional: regroup the trip after balancing. Single places move or swap between days (and an optional place may come back)
-   * when that lowers: travel inside each day + `splitPenalty` for every extra day an area is spread over + `lightPenalty`
-   * per light day - `restoreBonus` per optional place brought back. A day never goes above `heavyMinutes` (meals counted),
-   * never loses its last stop, and a place only moves to a day it is open on.
+   * Optional: regroup the trip after balancing (see step 6 for the cost and the limits).
    */
-  regroup?: { splitPenalty: number; lightPenalty: number; restoreBonus: number };
+  regroup?: { splitPenalty: number; lightWeight: number; emptyPenalty: number; comfortStops: number; crowdPenalty: number; maxStops: number; hopPenalty: number; restoreBonus: number };
+  /**
+   * Optional: a light day may also take ONE short, free place of an area it already visits (a walk-by: a park, a wall, an
+   * island) that matches the request at least `minRelevance`, even below the normal threshold for added places.
+   */
+  walkByStop?: { isFreeShort: (placeId: string) => boolean; minRelevance: number };
   /** Optional: ideas for a light day's free time (see step 7), with the lowest interest match they need. */
   freeTimeIdeas?: { minRelevance: number };
 };
@@ -121,23 +123,32 @@ export function balanceCityDays(context: DayGeographyRepairContext, options: Day
     changed = true;
   }
 
-  // 4. Light days (only when there is more than one day) get one more nearby place.
-  const used = new Set(days.flatMap((d) => [...d.ids, ...d.optional]));
-  for (const day of plan.days.length > 1 ? days : []) {
-    if (day.ids.length === 0 || dayLoad(day) >= options.lightMinutes) continue;
-    const candidates = config.plannerMetadata
-      .filter((m) => !used.has(m.placeId) && !options.gatedPlaceIds.has(m.placeId) && m.priority >= options.minPriorityToAdd && (!relevant || relevant(m.placeId)) && eligible(m.placeId, day.dayNumber) && day.ids.some((x) => linked(x, m.placeId)))
-      .sort((a, b) => b.priority - a.priority || a.placeId.localeCompare(b.placeId));
-    for (const c of candidates) {
-      const next = insertCheapest(day.ids, c.placeId);
-      if (heavyLoad(next, day.outside) > options.heavyMinutes) continue;
-      day.ids = next;
-      day.scores.set(c.placeId, 0);
-      used.add(c.placeId);
-      changed = true;
-      break;
+  // 4. Light days (only when there is more than one day) get one more nearby place: a place that matches the request, or
+  //    (cities with walkByStop) one short free place of an area the day already visits.
+  const addNearbyToLightDays = () => {
+    const used = new Set(days.flatMap((d) => [...d.ids, ...d.optional]));
+    for (const day of plan.days.length > 1 ? days : []) {
+      if (day.ids.length === 0 || dayLoad(day) >= options.lightMinutes) continue;
+      const dayAreas = new Set(day.ids.flatMap((x) => [...areasOf(x)]));
+      const nextDoor = (cluster: string) => dayAreas.has(cluster) || [...dayAreas].some((a) => options.compatibility[a]?.[cluster] === "strong");
+      const walkBy = (id: string) => !!options.walkByStop && options.walkByStop.isFreeShort(id) && nextDoor(clusterOf(id)) && (relevance?.(id) ?? 0) >= options.walkByStop.minRelevance;
+      const strongMatch = (id: string) => (relevance?.(id) ?? 0) >= 7;
+      const candidates = config.plannerMetadata
+        .filter((m) => !used.has(m.placeId) && !options.gatedPlaceIds.has(m.placeId) && eligible(m.placeId, day.dayNumber) && day.ids.some((x) => linked(x, m.placeId)))
+        .filter((m) => ((m.priority >= options.minPriorityToAdd || strongMatch(m.placeId)) && (!relevant || relevant(m.placeId))) || walkBy(m.placeId))
+        .sort((a, b) => Number(!!relevant?.(b.placeId)) - Number(!!relevant?.(a.placeId)) || b.priority - a.priority || a.placeId.localeCompare(b.placeId));
+      for (const c of candidates) {
+        const next = insertCheapest(day.ids, c.placeId);
+        if (heavyLoad(next, day.outside) > options.heavyMinutes) continue;
+        day.ids = next;
+        day.scores.set(c.placeId, 0);
+        used.add(c.placeId);
+        changed = true;
+        break;
+      }
     }
-  }
+  };
+  addNearbyToLightDays();
 
   // 5. A light day that is still light takes, from another day, an optional suggestion or a movable stop (that day keeping
   //    more than 3 stops and not becoming light itself) of a closely linked area, choosing the move that evens the two days
@@ -173,91 +184,203 @@ export function balanceCityDays(context: DayGeographyRepairContext, options: Day
     changed = true;
   }
 
-  // 6. Regroup (cities that opt in): keep each area on one day where it fits, keep linked places together, bring back an
-  //    optional place when a fitting day has room. Local search over single moves and swaps, bounded.
+  // 6. Regroup (cities that opt in). Local search over: one stop moved to another day, two stops swapped, a whole area moved,
+  //    an optional place brought back. A move is taken when it lowers the trip cost:
+  //        travel inside each day
+  //      + lightWeight x (minutes a day is short of lightMinutes, in half hours) squared   -> light days are filled first
+  //      + emptyPenalty per day without stops, crowdPenalty per stop above comfortStops
+  //      + hopPenalty per walk between two areas that are not neighbours
+  //      + splitPenalty for every extra day an area is spread over          -> an area stays on one day unless a day needs it
+  //      - restoreBonus per stop in the plan.
+  //    A normal day is never taken apart only because another day is a little shorter. Limits: a move never takes a day above
+  //    heavyMinutes (meals counted), maxStops stops or 3 areas, never empties a day, a place only moves to a day it is open on,
+  //    and every stop that arrives must be next to (same or neighbouring area) a stop that stays on that day. A day without
+  //    stops may receive any open place.
   const rg = options.regroup;
+  const touched = new Set<number>();
+  const areaCount = (ids: readonly string[]) => new Set(ids.map(clusterOf)).size;
+  const canJoin = (w: WorkDay, id: string) => w.ids.length === 0 || w.ids.some((x) => linked(x, id));
   if (rg && days.length > 1) {
     const tripCost = (ws: WorkDay[]): number => {
       let cost = 0;
       const daysOfArea = new Map<string, Set<number>>();
       ws.forEach((w, i) => {
-        cost += travel(w.ids);
-        if (w.ids.length > 0 && dayLoad(w) < options.lightMinutes) cost += rg.lightPenalty;
+        const short = Math.max(0, options.lightMinutes - load(w.ids, w.outside));
+        cost += travel(w.ids) + rg.lightWeight * (short / 30) ** 2;
+        cost += rg.hopPenalty * w.ids.slice(0, -1).filter((id, k) => !linked(id, w.ids[k + 1])).length;
+        if (w.ids.length === 0) cost += rg.emptyPenalty;
+        if (w.ids.length > rg.comfortStops) cost += rg.crowdPenalty * (w.ids.length - rg.comfortStops);
         for (const id of w.ids) for (const area of areasOf(id)) (daysOfArea.get(area) ?? daysOfArea.set(area, new Set()).get(area)!).add(i);
-        cost -= 0; // (kept for readability)
       });
       for (const set of daysOfArea.values()) cost += rg.splitPenalty * Math.max(0, set.size - 1);
       return cost - rg.restoreBonus * ws.reduce((n, w) => n + w.ids.length, 0);
     };
-    const fits = (w: WorkDay, ids: string[]) => heavyLoad(ids, w.outside) <= Math.max(options.heavyMinutes, dayHeavyLoad(w));
-    for (let iteration = 0; iteration < 40; iteration++) {
+    const fits = (was: WorkDay, now: WorkDay) =>
+      heavyLoad(now.ids, now.outside) <= Math.max(options.heavyMinutes, dayHeavyLoad(was)) && now.ids.length <= Math.max(rg.maxStops, was.ids.length) && areaCount(now.ids) <= Math.max(3, areaCount(was.ids));
+    const without = (w: WorkDay, gone: readonly string[]): WorkDay => ({ ...w, ids: w.ids.filter((x) => !gone.includes(x)), outside: new Set([...w.outside].filter((x) => !gone.includes(x))) });
+    const withStops = (w: WorkDay, added: readonly string[], from: WorkDay): WorkDay => {
+      let ids = [...w.ids];
+      for (const id of added) ids = insertCheapest(ids, id);
+      return { ...w, ids, outside: new Set([...w.outside, ...added.filter((x) => from.outside.has(x))]), scores: new Map([...w.scores, ...added.map((x) => [x, from.scores.get(x) ?? 0] as [string, number])]) };
+    };
+    for (let iteration = 0; iteration < 80; iteration++) {
       const base = tripCost(days);
-      let best: { cost: number; apply: () => void } | null = null;
-      const consider = (trial: WorkDay[], apply: () => void) => {
+      let best: { cost: number; next: [number, WorkDay][] } | null = null;
+      const consider = (next: [number, WorkDay][]) => {
+        const trial = days.map((w, k) => next.find(([i]) => i === k)?.[1] ?? w);
         const c = tripCost(trial);
-        if (c < base - 1 && (!best || c < best.cost)) best = { cost: c, apply };
+        if (c < base - 1 && (!best || c < best.cost)) best = { cost: c, next };
       };
-      days.forEach((a, ai) => {
-        days.forEach((b, bi) => {
-          if (ai === bi) return;
-          // Move one stop a -> b, or bring back one of a's optional places into b (or into a itself when bi === ai is skipped).
-          for (const id of a.ids) {
-            if (a.ids.length <= 1 || !eligible(id, b.dayNumber) || !b.ids.some((x) => linked(x, id))) continue;
-            const nb = insertCheapest(b.ids, id);
-            if (!fits(b, nb)) continue;
-            const na = a.ids.filter((x) => x !== id);
-            consider(days.map((w, k) => (k === ai ? { ...w, ids: na } : k === bi ? { ...w, ids: nb } : w)), () => {
-              b.ids = nb; b.scores.set(id, a.scores.get(id) ?? 0); a.ids = na;
-              if (a.outside.delete(id)) b.outside.add(id);
-            });
+      for (let ai = 0; ai < days.length; ai++) {
+        const a = days[ai];
+        for (let bi = 0; bi < days.length; bi++) {
+          if (ai === bi) continue;
+          const b = days[bi];
+          // One stop a -> b.
+          if (a.ids.length > 1) {
+            for (const id of a.ids) {
+              if (!eligible(id, b.dayNumber) || !canJoin(b, id)) continue;
+              const tb = withStops(b, [id], a);
+              if (fits(b, tb)) consider([[ai, without(a, [id])], [bi, tb]]);
+            }
           }
-          // Swap one stop of a with one stop of b.
+          // Two stops swapped.
           if (bi > ai) {
             for (const x of a.ids) for (const y of b.ids) {
               if (!eligible(x, b.dayNumber) || !eligible(y, a.dayNumber)) continue;
-              const na = insertCheapest(a.ids.filter((v) => v !== x), y);
-              const nb = insertCheapest(b.ids.filter((v) => v !== y), x);
-              if (!fits(a, na) || !fits(b, nb)) continue;
-              consider(days.map((w, k) => (k === ai ? { ...w, ids: na } : k === bi ? { ...w, ids: nb } : w)), () => {
-                a.ids = na; b.ids = nb;
-                const sx = a.scores.get(x) ?? 0, sy = b.scores.get(y) ?? 0;
-                a.scores.set(y, sy); b.scores.set(x, sx);
-                const ox = a.outside.delete(x), oy = b.outside.delete(y);
-                if (ox) b.outside.add(x);
-                if (oy) a.outside.add(y);
-              });
+              if (!canJoin(without(a, [x]), y) || !canJoin(without(b, [y]), x)) continue;
+              const ta = withStops(without(a, [x]), [y], b);
+              const tb = withStops(without(b, [y]), [x], a);
+              if (fits(a, ta) && fits(b, tb)) consider([[ai, ta], [bi, tb]]);
             }
           }
-        });
-        // Move a whole area (every stop of one cluster) from another day into a, when it fits there.
-        for (const from of days) {
-          if (from === a) continue;
-          for (const area of new Set(from.ids.map(clusterOf))) {
-            const group = from.ids.filter((x) => clusterOf(x) === area);
-            if (group.length === 0 || group.length >= from.ids.length || !group.every((x) => eligible(x, a.dayNumber)) || !a.ids.some((x) => group.some((g) => linked(x, g)))) continue;
-            let na = [...a.ids];
-            for (const g of group) na = insertCheapest(na, g);
-            if (!fits(a, na)) continue;
-            const nf = from.ids.filter((x) => !group.includes(x));
-            consider(days.map((w) => (w === a ? { ...w, ids: na } : w === from ? { ...w, ids: nf } : w)), () => {
-              for (const g of group) { a.scores.set(g, from.scores.get(g) ?? 0); if (from.outside.delete(g)) a.outside.add(g); }
-              a.ids = na; from.ids = nf;
-            });
+          // A whole area a -> b.
+          for (const area of new Set(a.ids.map(clusterOf))) {
+            const group = a.ids.filter((x) => clusterOf(x) === area);
+            if (group.length < 2 || group.length >= a.ids.length || !group.every((x) => eligible(x, b.dayNumber))) continue;
+            if (b.ids.length > 0 && !b.ids.some((x) => group.some((g) => linked(x, g)))) continue;
+            const tb = withStops(b, group, a);
+            if (fits(b, tb)) consider([[ai, without(a, group)], [bi, tb]]);
           }
         }
-        // Bring back an optional place of any day into a (when linked, open, relevant and it fits).
-        for (const from of days) for (const id of from.optional) {
-          if (!eligible(id, a.dayNumber) || !a.ids.some((x) => linked(x, id)) || (relevant && !relevant(id))) continue;
-          const na = insertCheapest(a.ids, id);
-          if (heavyLoad(na, a.outside) > options.heavyMinutes) continue;
-          consider(days.map((w) => (w === a ? { ...w, ids: na } : w === from ? { ...w, optional: w.optional.filter((v) => v !== id) } : w)), () => {
-            a.ids = na; a.scores.set(id, 0); from.optional = from.optional.filter((v) => v !== id);
-          });
+        // The stops of one area of a spread over several other days, each to the lightest day next to it that has room
+        // (when no single day can take the whole area).
+        for (const area of new Set(a.ids.map(clusterOf))) {
+          const group = a.ids.filter((x) => clusterOf(x) === area);
+          if (group.length < 2 || group.length >= a.ids.length) continue;
+          const moved = new Map<number, WorkDay>();
+          let placedAll = true;
+          for (const id of group) {
+            let target: { i: number; w: WorkDay; minutes: number } | null = null;
+            for (let bi = 0; bi < days.length; bi++) {
+              if (bi === ai) continue;
+              const b = moved.get(bi) ?? days[bi];
+              if (b.ids.length === 0 || !eligible(id, b.dayNumber) || !canJoin(b, id)) continue;
+              const tb = withStops(b, [id], a);
+              if (!fits(days[bi], tb)) continue;
+              const minutes = load(tb.ids, tb.outside);
+              if (!target || minutes < target.minutes) target = { i: bi, w: tb, minutes };
+            }
+            if (!target) {
+              placedAll = false;
+              break;
+            }
+            moved.set(target.i, target.w);
+          }
+          if (placedAll && moved.size > 1) consider([[ai, without(a, group)], ...moved.entries()]);
         }
-      });
+        // An optional place of any day brought back into a (linked, open, matching, and the day has room).
+        for (let fi = 0; fi < days.length; fi++) {
+          for (const id of days[fi].optional) {
+            if (!eligible(id, a.dayNumber) || !canJoin(a, id) || (relevant && !relevant(id))) continue;
+            const ta: WorkDay = { ...a, ids: insertCheapest(a.ids, id), scores: new Map([...a.scores, [id, 0] as [string, number]]) };
+            if (heavyLoad(ta.ids, ta.outside) > options.heavyMinutes || ta.ids.length > rg.maxStops || areaCount(ta.ids) > Math.max(3, areaCount(a.ids))) continue;
+            if (fi === ai) consider([[ai, { ...ta, optional: a.optional.filter((v) => v !== id) }]]);
+            else consider([[ai, ta], [fi, { ...days[fi], optional: days[fi].optional.filter((v) => v !== id) }]]);
+          }
+        }
+      }
       if (!best) break;
-      (best as { apply: () => void }).apply();
+      for (const [i, w] of (best as { next: [number, WorkDay][] }).next) {
+        days[i] = w;
+        touched.add(w.dayNumber);
+      }
       changed = true;
+    }
+
+    // 6b. An outside-only stop becomes a full visit again when its day has room for it (meals counted); a strong match
+    //     (relevance 7+) may instead move, as a full visit, to another open, linked day that has room.
+    for (let di = 0; di < days.length; di++) {
+      for (const id of [...days[di].outside].sort((x, y) => (relevance?.(y) ?? 0) - (relevance?.(x) ?? 0))) {
+        const day = days[di];
+        const inside = new Set([...day.outside].filter((x) => x !== id));
+        if (heavyLoad(day.ids, inside) <= options.heavyMinutes) {
+          days[di] = { ...day, outside: inside };
+          touched.add(day.dayNumber);
+          changed = true;
+          continue;
+        }
+        if (day.ids.length < 2 || (relevance?.(id) ?? 0) < 7) continue;
+        const target = days
+          .map((d, i) => ({ d, i, ids: insertCheapest(d.ids, id) }))
+          .filter(({ d, i, ids }) => i !== di && eligible(id, d.dayNumber) && canJoin(d, id) && ids.length <= rg.maxStops && heavyLoad(ids, d.outside) <= options.heavyMinutes && areaCount(ids) <= Math.max(3, areaCount(d.ids)))
+          .sort((x, y) => dayLoad(x.d) - dayLoad(y.d))[0];
+        if (!target) continue;
+        days[target.i] = { ...target.d, ids: target.ids, scores: new Map([...target.d.scores, [id, day.scores.get(id) ?? 0] as [string, number]]) };
+        days[di] = { ...day, ids: day.ids.filter((x) => x !== id), outside: inside };
+        touched.add(day.dayNumber);
+        touched.add(target.d.dayNumber);
+        changed = true;
+      }
+    }
+
+    // 6c. Light days once more (a walk-by or a matching place), now that the days are regrouped.
+    const countsBefore = days.map((d) => d.ids.length);
+    addNearbyToLightDays();
+    days.forEach((d, i) => {
+      if (d.ids.length !== countsBefore[i]) touched.add(d.dayNumber);
+    });
+
+    // 6d. A day that changed is walked in the order with the least travel, when that saves at least 5 minutes over the order
+    //     it has; of two orders with the same travel, the one closer to the order it had.
+    const agreement = (order: readonly string[], reference: readonly string[]) => {
+      let n = 0;
+      for (let i = 0; i < order.length; i++) for (let j = i + 1; j < order.length; j++) if (reference.indexOf(order[i]) < reference.indexOf(order[j])) n++;
+      return n;
+    };
+    for (let di = 0; di < days.length; di++) {
+      const day = days[di];
+      if (!touched.has(day.dayNumber) || day.ids.length < 3 || day.ids.length > 7) continue;
+      let bestOrder: string[] | null = null;
+      let bestTravel = travel(day.ids) - 4;
+      const walk = (prefix: string[], rest: string[]) => {
+        if (rest.length === 0) {
+          const t = travel(prefix);
+          if (t < bestTravel || (bestOrder !== null && t === bestTravel && agreement(prefix, day.ids) > agreement(bestOrder, day.ids))) {
+            bestTravel = t;
+            bestOrder = [...prefix];
+          }
+          return;
+        }
+        for (let i = 0; i < rest.length; i++) walk([...prefix, rest[i]], [...rest.slice(0, i), ...rest.slice(i + 1)]);
+      };
+      walk([], day.ids);
+      if (bestOrder) days[di] = { ...day, ids: bestOrder };
+    }
+
+    // 6e. A day still without stops: the last day that has stops and is open for all of them on this date moves here, so
+    //     days without a program can only be the last ones; those are left out of the plan (the plan then says it covers
+    //     fewer days than asked, with the city's own notice).
+    for (let k = 0; k < days.length; k++) {
+      if (days[k].ids.length > 0) continue;
+      for (let j = days.length - 1; j > k; j--) {
+        const donor = days[j];
+        if (donor.ids.length === 0 || !donor.ids.every((x) => eligible(x, days[k].dayNumber))) continue;
+        days[k] = { ...donor, dayNumber: days[k].dayNumber };
+        days[j] = { dayNumber: donor.dayNumber, ids: [], scores: new Map(), outside: new Set(), optional: [] };
+        changed = true;
+        break;
+      }
     }
   }
 
@@ -279,9 +402,11 @@ export function balanceCityDays(context: DayGeographyRepairContext, options: Day
   }
 
   if (!changed) return { plan, legsByDay };
+  let kept = days.length;
+  if (rg) while (kept > 1 && days[kept - 1].ids.length === 0) kept--;
   const balanced: GeneratedPlannerPlan = {
     ...plan,
-    days: plan.days.map((d, i): PlannerDay => {
+    days: plan.days.slice(0, kept).map((d, i): PlannerDay => {
       const w = days[i];
       return {
         ...d,

@@ -51,6 +51,8 @@ export type CityMealStopRules = {
    * only (not on the clock), dinner optional from `dinnerEarliest` right after the day's program. Unset = unchanged.
    */
   flexibleMeals?: { dinnerEarliest: number };
+  /** Optional: food places that sit inside a ticketed or enclosed place (food place id -> that place's id): offered only on a day that visits it. */
+  insideStop?: Readonly<Record<string, string>>;
 };
 
 export type CityAccommodationRules = {
@@ -131,6 +133,11 @@ export type CityPlannerModule = {
   placeRelevance?: (v2Interests: readonly V2PlannerInterest[], surpriseMe: boolean) => (placeId: string) => number;
   /** With `placeRelevance`: the lowest match (0-10) a place needs to be added; default 5. */
   relevanceThreshold?: number;
+  /**
+   * Optional, with `placeRelevance`: the threshold for THIS request (trip length, interests). A city may lower it for a trip
+   * that is longer than its strongly matching places can fill, instead of leaving days nearly empty.
+   */
+  relevanceThresholdFor?: (context: { days: number; relevance: (placeId: string) => number }) => number;
   /** One day's legs, used by the reclaim / cross-day / trip-composition passes when they test a changed day. Omit to use
    * Barcelona's checked route table (Barcelona omits it, so those passes behave exactly as before). */
   buildDayRouteLegs?: (day: PlannerDay) => PlannerRouteLeg[];

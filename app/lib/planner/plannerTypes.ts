@@ -46,6 +46,11 @@ export type PlannerPlaceMetadata = {
   visitDurationMinutes: number;
   /** Multi-city: minutes to arrive before a guided tour at a set time (Prague: Clementinum, Municipal House). Omitted = 0. */
   arrivalBufferMinutes?: number;
+  /**
+   * Optional: the place has something to see only during the first `minutes` of every `everyMinutes` (a moving statue). The
+   * timeline waits for the next window when that costs at most `maxWaitMinutes`; otherwise the stop carries `missNoteAr`.
+   */
+  showWindow?: { everyMinutes: number; minutes: number; maxWaitMinutes: number; missNoteAr: string };
 };
 
 /**

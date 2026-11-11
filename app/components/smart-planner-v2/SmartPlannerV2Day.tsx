@@ -262,7 +262,7 @@ export default function SmartPlannerV2Day({
       <div className="mt-4" data-day-stops>
         {entries.map((entry, i) => {
           const next = entries[i + 1];
-          const needsConnector = !!next && entry.kind !== "freeTime" && next.kind !== "freeTime";
+          const needsConnector = !!next && entry.kind !== "freeTime" && next.kind !== "freeTime" && !(next.kind === "meal" && next.meal.flexible);
           const leg =
             needsConnector && next
               ? entry.kind === "place" && next.kind === "place" && next.stopIndex === entry.stopIndex + 1

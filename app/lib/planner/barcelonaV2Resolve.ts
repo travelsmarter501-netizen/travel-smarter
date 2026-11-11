@@ -5,10 +5,10 @@ import { addDaysToIsoDate, weekdayOfIsoDate } from "./dateOnly";
 import { buildSupplementaryForDay, type V2FoodSuggestion, type V2ShoppingSuggestion, type V2NightlifeSuggestion } from "./barcelonaV2Supplementary";
 import { buildMealStopsForDay, type MealStopCityContext, type V2MealStop } from "./barcelonaV2MealStops";
 import type { CityPlannerModule } from "./cityPlannerModule";
-import { timelineLegBetween } from "./timelineLegs";
+import { legMidMinutes, timelineLegBetween } from "./timelineLegs";
 import { classifyDayDensity, buildDensitySummary, type PlannerDayDensity } from "./barcelonaV2Density";
 import { isPlaceClosedOnWeekday } from "./barcelonaV2DateEligibility";
-import { buildBarcelonaDayTimeline, findCoveringInterval, lunchPlacementFromTimeline, MEAL_ASSUMED_DURATION_MINUTES, MEAL_TARGET_WINDOW, type DayTimeline, type TimelineStopInput, type TimelineMealInput } from "./barcelonaV2Timeline";
+import { buildBarcelonaDayTimeline, findCoveringInterval, lunchPlacementFromTimeline, LUNCH_BREAK_ID, startsInShowWindow, MEAL_ASSUMED_DURATION_MINUTES, MEAL_TARGET_WINDOW, type DayTimeline, type TimelineStopInput, type TimelineMealInput } from "./barcelonaV2Timeline";
 import { buildUnifiedTimelineEntries, type UnifiedTimelineEntry } from "./v2TimelineItems";
 import type { GeneratedPlannerPlan } from "./plannerDayBuilder";
 import type { PlannerRouteLeg } from "./plannerTransportTypes";
@@ -262,6 +262,7 @@ export function mealSlotHintsFromTimeline(
   dinnerStart?: number;
   reuseWhenNoneLeft: boolean;
   lunchFor: (breakfast: { placeId: string; hours?: HoursInfo } | null) => { afterIndex: number; estimatedStart: number } | null;
+  stopIds: readonly string[];
 } {
   const legBetween = timelineLegBetween(city);
   const lunch = lunchPlacementFromTimeline(timelineStops, legs, weekday, month, true, startMinutesOverride, legBetween);
@@ -277,7 +278,23 @@ export function mealSlotHintsFromTimeline(
     dinnerStart,
     reuseWhenNoneLeft: true,
     lunchFor: (breakfast) => lunchPlacementFromTimeline(timelineStops, legs, weekday, month, breakfast ?? false, startMinutesOverride, legBetween),
+    stopIds: timelineStops.map((stop) => stop.placeId),
   };
+}
+
+/**
+ * Places with a show window (metadata `showWindow`): a stop scheduled outside the window carries the place's own note (and loses
+ * it again when an edit moves it into the window). Other stops are returned unchanged.
+ */
+export function withShowWindowNotes(city: CityPlannerModule, stops: V2ResolvedStop[], timeline: DayTimeline): V2ResolvedStop[] {
+  return stops.map((stop, i) => {
+    const show = city.metadataById(stop.id)?.showWindow;
+    if (!show) return stop;
+    const warnings = stop.warnings.filter((w) => w.textAr !== show.missNoteAr);
+    const window = timeline.stops[i];
+    const missed = !!window && !startsInShowWindow(window.startMinutes, show);
+    return { ...stop, warnings: missed ? [...warnings, { textAr: show.missNoteAr }] : warnings };
+  });
 }
 
 export function buildMealAdjacentLegs(city: CityPlannerModule, day: V2Day): Record<string, PlannerRouteLeg> {
@@ -292,8 +309,15 @@ export function buildMealAdjacentLegs(city: CityPlannerModule, day: V2Day): Reco
     if (entry.kind === "place" && next.kind === "place" && next.stopIndex === entry.stopIndex + 1) continue; // already covered by day.legs
     const fromId = idOf(entry);
     const toId = idOf(next);
-    // A lunch break has no set place, so no leg can be computed to or from it.
-    if (!fromId || !toId || fromId === "lunch-break" || toId === "lunch-break") continue;
+    if (!fromId || !toId) continue;
+    // A lunch break is taken where the stop before it is: no leg to it, and from it the leg of that stop to the next place.
+    if (toId === LUNCH_BREAK_ID) continue;
+    if (fromId === LUNCH_BREAK_ID) {
+      const previous = entries.slice(0, i).reverse().find((e) => e.kind === "place");
+      const previousId = previous && previous.kind === "place" ? previous.place.id : null;
+      if (previousId) legs[`${fromId}::${toId}`] = city.routeLeg(previousId, toId);
+      continue;
+    }
     legs[`${fromId}::${toId}`] = city.routeLeg(fromId, toId);
   }
   return legs;
@@ -336,6 +360,7 @@ export function resolveV2Plan(
     clusterCompatibility: city.destinationConfig.dayBuilderConfig.clusterCompatibility,
     rules: city.mealStops,
     ...(city.timingGuard ? { strictMealHours: true } : {}),
+    ...(city.mealLegsInTimeline ? { travelMinutes: (from: string, to: string) => legMidMinutes(city, from, to) } : {}),
   };
 
   const days: V2Day[] = plan.days.map((day, index) => {
@@ -370,7 +395,7 @@ export function resolveV2Plan(
     const slotHints = earlyStops
       ? mealSlotHintsFromTimeline(
           city,
-          day.stops.map((stop, i) => ({ placeId: stop.placeId, visitDurationMinutes: earlyStops[i].visitDurationMinutes, hours: earlyStops[i].hours, preferredTime: city.metadataById(stop.placeId)?.preferredTime ?? "anytime", arrivalBufferMinutes: city.metadataById(stop.placeId)?.arrivalBufferMinutes })),
+          day.stops.map((stop, i) => ({ placeId: stop.placeId, visitDurationMinutes: earlyStops[i].visitDurationMinutes, hours: earlyStops[i].hours, preferredTime: city.metadataById(stop.placeId)?.preferredTime ?? "anytime", arrivalBufferMinutes: city.metadataById(stop.placeId)?.arrivalBufferMinutes, showWindow: city.metadataById(stop.placeId)?.showWindow })),
           legsByDay[index] ?? [],
           weekday ?? null,
           month
@@ -407,8 +432,10 @@ export function resolveV2Plan(
     if (coffeeCategories?.length && day.stops.length > 0) {
       const middle = stopClusters[Math.floor((stopClusters.length - 1) / 2)];
       const fit = (cluster: string) => (stopClusters.includes(cluster) ? (cluster === middle ? 3 : 2) : stopClusters.some((c) => { const level = mealStopCity.clusterCompatibility[c]?.[cluster] ?? mealStopCity.clusterCompatibility[cluster]?.[c]; return level === "strong"; }) ? 1 : 0);
+      const insideStop = city.mealStops.insideStop ?? {};
       const cafe = city.places.foodPlaces
         .filter((place) => coffeeCategories.includes(place.categoryId) && !usedPlaceIds.has(place.id))
+        .filter((place) => !insideStop[place.id] || day.stops.some((stop) => stop.placeId === insideStop[place.id]))
         .map((place) => ({ place, cluster: city.mealStops.clusterForFoodPlace(place) }))
         .filter((entry): entry is { place: typeof entry.place; cluster: string } => !!entry.cluster && fit(entry.cluster) > 0)
         .filter(({ place }) => !weekday || !isPlaceClosedOnWeekday(place.hours, weekday))
@@ -465,6 +492,7 @@ export function resolveV2Plan(
       hours: resolvedStops[i].hours,
       preferredTime: city.metadataById(stop.placeId)?.preferredTime ?? "anytime",
       arrivalBufferMinutes: city.metadataById(stop.placeId)?.arrivalBufferMinutes,
+      showWindow: city.metadataById(stop.placeId)?.showWindow,
     }));
     const timelineMeals: TimelineMealInput[] = mealStops.map((meal) => ({
       placeId: meal.id,
@@ -476,6 +504,7 @@ export function resolveV2Plan(
     }));
     const timeline = buildBarcelonaDayTimeline(timelineStops, legs, timelineMeals, weekday ?? null, month, null, timelineLegBetween(city));
 
+    const notedStops = withShowWindowNotes(city, resolvedStops, timeline);
     const resolvedDay: V2Day = {
       dayNumber: day.dayNumber,
       actualDate: dateForDay ?? undefined,
@@ -486,7 +515,7 @@ export function resolveV2Plan(
       totalVisitMinutes: day.totalVisitMinutes,
       density,
       clusters: day.clusters,
-      stops: resolvedStops,
+      stops: notedStops,
       legs,
       optionalNearby,
       mealStops,

@@ -163,6 +163,13 @@ export function resolveHoursForTrip(hours: HoursInfo | undefined, dates: readonl
       planningSchedule = applied.schedule;
       lastEntry = applied.lastEntry;
     }
+    if (dates && hours.planningOpenFrom) {
+      const narrowed: WeeklySchedule = { ...planningSchedule };
+      for (const [weekday, from] of Object.entries(hours.planningOpenFrom) as [Weekday, string][]) {
+        if (dates.some((date) => weekdayOfIsoDate(date) === weekday)) narrowed[weekday] = intersectRanges(narrowed[weekday] ?? [], [{ open: from, close: "23:59" }]);
+      }
+      planningSchedule = narrowed;
+    }
     if (!dates) planningSchedule = sameEveryDay(planningSchedule) ?? planningSchedule;
     return { ...hours, planningSchedule, ...(lastEntry ? { planningLastEntry: lastEntry } : {}) };
   }
