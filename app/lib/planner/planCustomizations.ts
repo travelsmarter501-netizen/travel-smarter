@@ -41,7 +41,7 @@ export type PlanChange =
   | { kind: "reset"; dayNumber: number };
 
 export const START_MIN = 6 * 60;
-export const START_MAX = 13 * 60;
+export const START_MAX = 20 * 60;
 export const DURATION_MIN = 15;
 export const DURATION_MAX = 6 * 60;
 export const DURATION_STEP = 15;

@@ -1,4 +1,4 @@
-import { formatDistance, formatMinutesRange, PLAN_TEXT, type PlanLanguage } from "../i18n/planText";
+import { formatDistance, formatMinutes, formatMinutesRange, PLAN_TEXT, type PlanLanguage } from "../i18n/planText";
 import type { TransportMode, TransportOption } from "./plannerTransportTypes";
 
 /**
@@ -19,6 +19,14 @@ export const PLANNER_TRANSPORT_MODE_ORDER: TransportMode[] = ["walking", "transi
 export function formatPlannerTransportOptionLabel(option: TransportOption, lang: PlanLanguage = "ar"): string {
   const parts = [formatMinutesRange(lang, option.durationMinutesMin, option.durationMinutesMax)];
   if (option.distanceKm !== undefined) parts.push(formatDistance(lang, option.distanceKm));
+  return parts.join(" · ");
+}
+
+/** The label between two stops: one rounded minutes value and the distance ("7 دقائق · 500 م"). `fallbackKm` fills in when the option has no distance (e.g. transit). */
+export function formatPlannerConnectorLabel(option: TransportOption, lang: PlanLanguage = "ar", fallbackKm?: number | null): string {
+  const parts = [formatMinutes(lang, (option.durationMinutesMin + option.durationMinutesMax) / 2)];
+  const km = option.distanceKm ?? fallbackKm ?? undefined;
+  if (km !== undefined) parts.push(formatDistance(lang, km));
   return parts.join(" · ");
 }
 

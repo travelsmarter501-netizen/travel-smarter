@@ -7,10 +7,10 @@ import SmartPlannerNearbyCard from "../smart-planner/SmartPlannerNearbyCard";
 import PlaceDetailsSheet from "../guide/PlaceDetailsSheet";
 import BottomSheet from "../guide/BottomSheet";
 import { buildUnifiedTimelineEntries, type UnifiedTimelineEntry } from "../../lib/planner/v2TimelineItems";
-import { PLAN_TEXT, formatDayHeader, formatMealCount, formatMinutes, formatPlaceCount, storedTextDir, type PlanLanguage } from "../../lib/i18n/planText";
+import { PLAN_TEXT, formatDayHeader, formatDistance, formatMinutes, formatPlaceCount, storedTextDir, type PlanLanguage } from "../../lib/i18n/planText";
 import type { PlanChange } from "../../lib/planner/planCustomizations";
 import { formatTimelineClock } from "../../lib/planner/barcelonaV2Timeline";
-import { dayTickets, formatTicketAmount } from "../../lib/planner/planTickets";
+import { dayDistanceKm, stripFreeTimePrefix } from "../../lib/planner/planDistance";
 import type { ResolvedPlace, ResolvedPlaceSummary } from "../../lib/readyPlan";
 import type { V2Day } from "../../lib/planner/barcelonaV2Resolve";
 import type { V2MealStop } from "../../lib/planner/barcelonaV2MealStops";
@@ -52,8 +52,8 @@ const MEAL_TYPE_ICON: Record<V2MealStop["mealType"], string> = {
 };
 type SuggestionType = PlannerOptionalSuggestion["type"];
 /** Nearby suggestions that are places (not food or evening venues) can be added to the day. */
-/** Day start choices: 06:00-13:00, every 30 minutes. */
-const START_TIMES = Array.from({ length: 15 }, (_, i) => 6 * 60 + i * 30);
+/** Day start choices: 06:00-20:00, every 30 minutes (the server accepts any 15 minutes in that range). */
+const START_TIMES = Array.from({ length: 29 }, (_, i) => 6 * 60 + i * 30);
 type FoodMeal = V2FoodSuggestion["mealType"];
 
 /** A numbered stop's own rail segment: time label + numbered dot + connecting line stub. The
@@ -98,6 +98,7 @@ export default function SmartPlannerV2Day({
   const [activePlaceId, setActivePlaceId] = useState<string | null>(null);
   const [editMode, setEditMode] = useState(false);
   const [startSheetOpen, setStartSheetOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const change = (c: PlanChange) => editing?.onChange(c);
   const busy = !!editing?.saving;
 
@@ -177,6 +178,7 @@ export default function SmartPlannerV2Day({
   });
 
   const entries = buildUnifiedTimelineEntries(day);
+  const distanceKm = dayDistanceKm(day);
   const idOf = (entry: UnifiedTimelineEntry): string | null => (entry.kind === "place" ? entry.place.id : entry.kind === "meal" ? entry.meal.id : null);
 
   return (
@@ -191,26 +193,66 @@ export default function SmartPlannerV2Day({
           <p dir={storedTextDir(day.title, lang)} className="mt-0.5 text-sm font-semibold text-slate-700">{day.title}</p>
         </div>
         {editing && (
-          <div className="flex shrink-0 items-center gap-1.5">
-            {editing.edited && (
-              <button type="button" onClick={() => change({ kind: "reset", dayNumber: day.dayNumber })} className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-600 hover:border-slate-300 disabled:opacity-50">
-                {ui.resetDay}
+          <div className="relative flex shrink-0 items-center gap-1.5">
+            {editMode && (
+              <button type="button" onClick={() => setEditMode(false)} className="rounded-full bg-teal-700 px-3 py-1.5 text-xs font-bold text-white">
+                {ui.doneEditing}
               </button>
             )}
-            <button type="button" aria-pressed={editMode} onClick={() => setEditMode((v) => !v)} className={`rounded-full px-3 py-1.5 text-xs font-bold ${editMode ? "bg-teal-700 text-white" : "border border-slate-200 bg-white text-teal-700 hover:border-slate-300"}`}>
-              {editMode ? ui.doneEditing : ui.editDay}
+            <button
+              type="button"
+              aria-label={ui.dayOptions}
+              aria-haspopup="menu"
+              aria-expanded={menuOpen}
+              onClick={() => setMenuOpen((v) => !v)}
+              className="flex h-9 w-9 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100"
+            >
+              <span className="flex flex-col items-center gap-[3px]" aria-hidden="true">
+                <span className="h-1 w-1 rounded-full bg-current" />
+                <span className="h-1 w-1 rounded-full bg-current" />
+                <span className="h-1 w-1 rounded-full bg-current" />
+              </span>
             </button>
+            {menuOpen && (
+              <>
+                <button type="button" aria-hidden="true" tabIndex={-1} onClick={() => setMenuOpen(false)} className="fixed inset-0 z-30 cursor-default" />
+                <div role="menu" className="absolute end-0 top-full z-40 mt-1 min-w-40 overflow-hidden rounded-xl border border-slate-200 bg-white py-1 shadow-lg">
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      setMenuOpen(false);
+                      setEditMode(true);
+                    }}
+                    className="block w-full px-4 py-2.5 text-start text-sm font-semibold text-slate-800 hover:bg-slate-50"
+                  >
+                    {ui.editThisDay}
+                  </button>
+                  {editing.edited && (
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => {
+                        setMenuOpen(false);
+                        change({ kind: "reset", dayNumber: day.dayNumber });
+                      }}
+                      className="block w-full px-4 py-2.5 text-start text-sm font-semibold text-slate-800 hover:bg-slate-50"
+                    >
+                      {ui.resetDay}
+                    </button>
+                  )}
+                </div>
+              </>
+            )}
           </div>
         )}
       </div>
       {day.highlight && <span dir={storedTextDir(day.highlight, lang)} className="mt-2 inline-block rounded-full bg-teal-50 px-2.5 py-1 text-[11px] font-semibold text-teal-700">{day.highlight}</span>}
       {busy && <p className="mt-2 text-xs font-semibold text-slate-400">{ui.saving}</p>}
 
-      {/* Day summary -- start/finish clock, place/meal counts, a transport-mode summary ONLY
-          when every leg on this day is actually resolved (never a fake total when some legs are
-          unresolved). Omitted entirely on an old saved plan with no `timeline` field. */}
+      {/* Day summary, Rhyme-style: when the day starts (the customer can pick any hour) and how much walking it has -- nothing else. */}
       {day.timeline && day.stops.length > 0 && (
-        <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-600">
+        <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-xs font-semibold text-slate-600">
           {editing ? (
             <button type="button" onClick={() => setStartSheetOpen(true)} className="flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-slate-700 hover:border-slate-300 disabled:opacity-50">
               ⏰ {ui.dayStart} <bdi dir="ltr" className="font-bold text-slate-900">{formatTimelineClock(day.timeline.dayStartMinutes)}</bdi> <span aria-hidden="true">▾</span>
@@ -221,39 +263,9 @@ export default function SmartPlannerV2Day({
             </span>
           )}
           <span>
-            {ui.dayEnd} <bdi dir="ltr">{formatTimelineClock(day.timeline.activityEndMinutes ?? day.timeline.dayEndMinutes)}</bdi>
-            {day.timeline.approximate && <span className="text-slate-400"> · {ui.approximate}</span>}
+            📍 {formatPlaceCount(lang, day.stops.length)}
+            {distanceKm !== null && <> · <bdi dir="ltr">{formatDistance(lang, distanceKm)}</bdi></>}
           </span>
-          <span>📍 {formatPlaceCount(lang, day.stops.length)}</span>
-          {(day.mealStops?.length ?? 0) > 0 && <span>🍽️ {formatMealCount(lang, day.mealStops!.length)}</span>}
-          {(() => {
-            const resolvedLegs = day.legs.filter((leg) => leg.sourceStatus !== "unresolved" && leg.recommendedMode);
-            if (day.legs.length === 0 || resolvedLegs.length !== day.legs.length) return null;
-            const totalMinutes = resolvedLegs.reduce((sum, leg) => {
-              const option = leg.options.find((o) => o.mode === leg.recommendedMode);
-              return option ? sum + Math.round((option.durationMinutesMin + option.durationMinutesMax) / 2) : sum;
-            }, 0);
-            const walkingCount = resolvedLegs.filter((l) => l.recommendedMode === "walking").length;
-            const dominantIcon = walkingCount >= resolvedLegs.length / 2 ? "🚶" : "🚇";
-            return (
-              <span>
-                {dominantIcon} {ui.totalTransit(totalMinutes)}
-              </span>
-            );
-          })()}
-          {(() => {
-            // Estimated entry tickets of the day (cities with ticket estimates; old saved plans show nothing).
-            const t = dayTickets(day);
-            if (!t) return null;
-            return (
-              <span>
-                {ui.ticketsDay(formatTicketAmount(t.included, t.currency))}
-                {t.unknown > 0 && <span className="text-slate-400"> {ui.ticketsUnknown(t.unknown)}</span>}
-                {t.optional > 0 && <span className="text-slate-400"> · {ui.ticketsOptional(formatTicketAmount(t.optional, t.currency))}</span>}
-              </span>
-            );
-          })()}
-          {day.timeline.activityEndMinutes !== undefined && day.timeline.activityEndMinutes <= 17 * 60 && <span className="text-teal-700">{ui.freeAfter(formatTimelineClock(day.timeline.activityEndMinutes))}</span>}
         </div>
       )}
 
@@ -385,13 +397,6 @@ export default function SmartPlannerV2Day({
         })}
       </div>
 
-      {day.timeline?.activityEndMinutes !== undefined && day.timeline.activityEndMinutes <= 17 * 60 && !editMode && (
-        <div className="mt-1 rounded-2xl border border-dashed border-teal-300 bg-teal-50/60 px-4 py-3">
-          <p className="text-sm font-bold text-teal-800">{ui.freeDayTitle(formatTimelineClock(day.timeline.activityEndMinutes))}</p>
-          <p className="mt-0.5 text-xs leading-5 text-teal-900/80">{ui.freeDayNote}</p>
-        </div>
-      )}
-
       {day.foodSuggestions.length > 0 && (
         <div className="mt-4">
           <p className="mb-2 text-xs font-bold text-slate-500">{ui.foodSuggestions}</p>
@@ -431,7 +436,7 @@ export default function SmartPlannerV2Day({
           <div className="flex gap-2.5 overflow-x-auto pb-1">
             {day.optionalNearby.map((nearby) => (
               <div key={nearby.id} className="flex shrink-0 flex-col gap-1.5">
-                <SmartPlannerNearbyCard summary={nearby} typeLabel={ui.suggestionType[nearby.type as SuggestionType]} reason={nearby.reason} onClick={() => setActivePlaceId(nearby.id)} />
+                <SmartPlannerNearbyCard summary={nearby} typeLabel={ui.suggestionType[nearby.type as SuggestionType]} reason={stripFreeTimePrefix(nearby.reason)} onClick={() => setActivePlaceId(nearby.id)} />
               </div>
             ))}
           </div>

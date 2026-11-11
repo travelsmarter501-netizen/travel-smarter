@@ -273,7 +273,7 @@ function presentPraguePlan(plan: GeneratedPlannerPlan): PresentedPlannerPlan {
     // Day balance: places taken off a full day stay visible as optional suggestions of that day.
     const optionalNearby = [
       ...(day.optionalPlaceIds ?? []).map((placeId) => ({ placeId, type: "experience" as const, reason: "اختياري: اليوم مليان، زوره إذا ضل عندك وقت" })),
-      ...(day.freeTimePlaceIds ?? []).map((placeId) => ({ placeId, type: "experience" as const, reason: "عندك وقت حر: قريب من مسارك إذا حابب" })),
+      ...(day.freeTimePlaceIds ?? []).map((placeId) => ({ placeId, type: "experience" as const, reason: "قريب من مسارك إذا حابب" })),
     ];
     return { title, summary, optionalNearby };
   });

@@ -120,6 +120,8 @@ export const PLAN_TEXT = {
     totalTransit: (minutes: number) => `تنقل ~${minutes} د`,
     // Editing a saved plan with buttons (plan page).
     editDay: "✎ تعديل",
+    dayOptions: "خيارات اليوم",
+    editThisDay: "تعديل اليوم",
     doneEditing: "تم",
     resetDay: "↺ الأصلية",
     chooseStart: "بداية اليوم",
@@ -186,6 +188,8 @@ export const PLAN_TEXT = {
     totalTransit: (minutes: number) => `~${minutes} min travel`,
     // Editing a saved plan with buttons (plan page).
     editDay: "✎ Edit",
+    dayOptions: "Day options",
+    editThisDay: "Edit day",
     doneEditing: "Done",
     resetDay: "↺ Original",
     chooseStart: "Day starts",
@@ -252,6 +256,8 @@ export const PLAN_TEXT = {
     totalTransit: (minutes: number) => `~${minutes} דק׳ נסיעה`,
     // Editing a saved plan with buttons (plan page).
     editDay: "✎ עריכה",
+    dayOptions: "אפשרויות היום",
+    editThisDay: "עריכת היום",
     doneEditing: "סיום",
     resetDay: "↺ המקור",
     chooseStart: "תחילת היום",

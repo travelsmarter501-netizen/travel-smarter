@@ -3,7 +3,8 @@
 import { useState } from "react";
 import SmartPlannerTransportSheet from "./SmartPlannerTransportSheet";
 import { IconChevronDown } from "../icons";
-import { PLANNER_TRANSPORT_MODE_META, formatPlannerTransportOptionLabel } from "../../lib/planner/plannerTransportFormat";
+import { PLANNER_TRANSPORT_MODE_META, formatPlannerConnectorLabel } from "../../lib/planner/plannerTransportFormat";
+import { legDistanceKm } from "../../lib/planner/planDistance";
 import { PLAN_TEXT, type PlanLanguage } from "../../lib/i18n/planText";
 import type { ResolvedPlaceSummary } from "../../lib/readyPlan";
 import type { PlannerRouteLeg, TransportMode } from "../../lib/planner/plannerTransportTypes";
@@ -57,8 +58,7 @@ export default function SmartPlannerTransportConnector({
         {selectedMode && option ? (
           <span className="flex items-center gap-1 font-semibold text-slate-500">
             <span>{PLANNER_TRANSPORT_MODE_META[selectedMode].icon}</span>
-            <span>{formatPlannerTransportOptionLabel(option, lang)}</span>
-            {leg.sourceStatus === "estimated" && <span className="font-medium text-slate-400">{ui.estimate}</span>}
+            <span>{formatPlannerConnectorLabel(option, lang, legDistanceKm(leg, from, to))}</span>
           </span>
         ) : (
           <span className="font-semibold text-slate-400">{ui.transportUnknown}</span>
