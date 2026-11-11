@@ -385,6 +385,13 @@ export default function SmartPlannerV2Day({
         })}
       </div>
 
+      {day.timeline?.activityEndMinutes !== undefined && day.timeline.activityEndMinutes <= 17 * 60 && !editMode && (
+        <div className="mt-1 rounded-2xl border border-dashed border-teal-300 bg-teal-50/60 px-4 py-3">
+          <p className="text-sm font-bold text-teal-800">{ui.freeDayTitle(formatTimelineClock(day.timeline.activityEndMinutes))}</p>
+          <p className="mt-0.5 text-xs leading-5 text-teal-900/80">{ui.freeDayNote}</p>
+        </div>
+      )}
+
       {day.foodSuggestions.length > 0 && (
         <div className="mt-4">
           <p className="mb-2 text-xs font-bold text-slate-500">{ui.foodSuggestions}</p>

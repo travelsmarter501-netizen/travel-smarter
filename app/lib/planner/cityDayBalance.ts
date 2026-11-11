@@ -39,7 +39,7 @@ export type DayBalanceOptions = {
    */
   walkByStop?: { isFreeShort: (placeId: string) => boolean; minRelevance: number };
   /** Optional: ideas for a light day's free time (see step 7), with the lowest interest match they need. */
-  freeTimeIdeas?: { minRelevance: number };
+  freeTimeIdeas?: { minRelevance: number; /** Also a free, short place (walkByStop.isFreeShort) matching at least `nearFree.minRelevance` within `nearFree.maxMinutes` of a stop of the day, whatever its area. */ nearFree?: { minRelevance: number; maxMinutes: number } };
 };
 
 type WorkDay = { dayNumber: number; ids: string[]; scores: Map<string, number>; outside: Set<string>; optional: string[] };
@@ -389,13 +389,22 @@ export function balanceCityDays(context: DayGeographyRepairContext, options: Day
   const ideas = new Map<number, string[]>();
   if (options.freeTimeIdeas) {
     const taken = new Set(days.flatMap((d) => [...d.ids, ...d.optional]));
-    for (const day of days) {
+    // The lightest day chooses first, so a shared nearby idea goes to the day that has the most free time.
+    for (const day of [...days].sort((x, y) => dayLoad(x) - dayLoad(y))) {
       if (day.ids.length === 0 || dayLoad(day) >= options.lightMinutes) continue;
-      const list = config.plannerMetadata
+      const near = options.freeTimeIdeas!.nearFree;
+      const closeMinutes = (id: string) => Math.min(...day.ids.map((x) => options.travelMinutes(x, id) ?? 99));
+      const matching = config.plannerMetadata
         .filter((m) => !taken.has(m.placeId) && !options.gatedPlaceIds.has(m.placeId) && eligible(m.placeId, day.dayNumber) && day.ids.some((x) => linked(x, m.placeId)) && (!relevance || relevance(m.placeId) >= options.freeTimeIdeas!.minRelevance))
         .sort((x, y) => y.priority - x.priority || x.placeId.localeCompare(y.placeId))
-        .slice(0, 2)
         .map((m) => m.placeId);
+      const nearFree = near && options.walkByStop
+        ? config.plannerMetadata
+            .filter((m) => !taken.has(m.placeId) && !matching.includes(m.placeId) && !options.gatedPlaceIds.has(m.placeId) && eligible(m.placeId, day.dayNumber) && options.walkByStop!.isFreeShort(m.placeId) && (relevance?.(m.placeId) ?? 0) >= near.minRelevance && closeMinutes(m.placeId) <= near.maxMinutes)
+            .sort((x, y) => closeMinutes(x.placeId) - closeMinutes(y.placeId) || x.placeId.localeCompare(y.placeId))
+            .map((m) => m.placeId)
+        : [];
+      const list = [...matching, ...nearFree].slice(0, 2);
       list.forEach((id) => taken.add(id));
       if (list.length) { ideas.set(day.dayNumber, list); changed = true; }
     }

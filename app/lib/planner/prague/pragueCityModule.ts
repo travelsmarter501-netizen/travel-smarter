@@ -502,7 +502,9 @@ export const PRAGUE_CITY_MODULE: CityPlannerModule = {
         regroup: { splitPenalty: 45, lightWeight: 6, emptyPenalty: 300, comfortStops: 5, crowdPenalty: 25, maxStops: 6, hopPenalty: 60, restoreBonus: 20 },
         // A light day may take one free place of at most 45 minutes in an area it already visits (Kampa, the Lennon Wall, a garden).
         walkByStop: { isFreeShort: (placeId) => pragueTicketEstimate(placeId) === 0 && (getPraguePlannerMetadataById(placeId)?.visitDurationMinutes ?? 999) <= 45, minRelevance: 3 },
-        freeTimeIdeas: { minRelevance: 3 },
+        // For a light day: nearby ideas that match the request (3+), or a free place of at most 45 minutes within a 15-minute
+        // walk of the day's stops that matches at least a little (2+), e.g. the Lennon Wall next to the Old Town Bridge Tower.
+        freeTimeIdeas: { minRelevance: 3, nearFree: { minRelevance: 2, maxMinutes: 15 } },
       }
     );
   },

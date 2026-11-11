@@ -557,7 +557,7 @@ export function buildBarcelonaDayTimeline(
     meals: mealWindows,
     approximate: anyApproximate,
     freeTimeBlocks: computeFreeTimeBlocks(stopWindows, mealWindows),
-    ...(meals.some((m) => m.optional) ? { activityEndMinutes: Math.max(...stopWindows.map((w) => w.endMinutes), ...mealWindows.filter((w) => !w.optional).map((w) => w.endMinutes)) } : {}),
+    ...(meals.some((m) => m.optional) || legBetween ? { activityEndMinutes: Math.max(...stopWindows.map((w) => w.endMinutes), ...mealWindows.filter((w) => !w.optional).map((w) => w.endMinutes)) } : {}),
   };
 }
 
