@@ -5724,7 +5724,8 @@ const BARCELONA_ROUTE_LEG_BY_PAIR = new Map<string, RouteLegDataEntry>(
 export function getBarcelonaVerifiedTravelMinutes(fromPlaceId: string, toPlaceId: string): number | null {
   if (PERMANENTLY_UNRESOLVED_PLACE_IDS.has(fromPlaceId) || PERMANENTLY_UNRESOLVED_PLACE_IDS.has(toPlaceId)) return null;
 
-  const leg = resolveLeg(fromPlaceId, toPlaceId, BARCELONA_ROUTE_LEG_BY_PAIR);
+  // The same leg the customer sees (table, then the short walks measured on a real route): planning and display agree.
+  const leg = withBarcelonaRoutedData(resolveLeg(fromPlaceId, toPlaceId, BARCELONA_ROUTE_LEG_BY_PAIR));
   if (leg.sourceStatus === "unresolved" || !leg.recommendedMode) return null;
 
   const option = leg.options.find((candidate) => candidate.mode === leg.recommendedMode) ?? leg.options[0];

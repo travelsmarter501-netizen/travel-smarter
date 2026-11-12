@@ -6245,17 +6245,11 @@ export const barcelonaGuide: DestinationGuideContent = {
       ratingSource: "Google",
       ratingLastVerified: "2026-08",
       // Show times from the official schedule page (shows 17:40, 19:15, 21:00, 22:30; about 75 minutes; arrive 15-20 minutes
-      // before; "not all schedules may be available every day"). The planner books a session: arrive 15 minutes before the show,
-      // leave when it ends (90 minutes in all), never in the morning.
+      // before; "not all schedules may be available every day"; the 17:40 session is Tapas + Show, mostly in summer). Which
+      // sessions run on a date is only visible when booking, so the planner never schedules the show (see the planner metadata).
       hours: {
         type: "variable",
         display: "عروض: 17:40، 19:15، 21:00، 22:30 (مش كل العروض كل يوم)",
-        sessions: [
-          { open: "17:25", close: "18:55" },
-          { open: "19:00", close: "20:30" },
-          { open: "20:45", close: "22:15" },
-          { open: "22:15", close: "23:45" },
-        ],
         source: "Tablao Flamenco Cordobés, schedules page",
         sourceUrl: "https://tablaocordobes.es/schedules/",
         lastVerified: "2026-11-12",

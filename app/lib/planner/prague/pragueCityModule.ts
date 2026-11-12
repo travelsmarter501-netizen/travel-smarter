@@ -8,6 +8,8 @@ import type { PlannerRouteLeg, TransportOption } from "../plannerTransportTypes"
 
 // ── Transfers: straight-line estimate, except sensitive ones measured on a real walking route (pragueRoutedWalks.ts) ──
 export const ROUTED_WALK_NOTE_AR = "المسافة من مسار مشي فعلي (OpenStreetMap)، والوقت محسوب على مشي 4.5 كم بالساعة.";
+export const ROUTED_WALK_ACCESS_NOTE_AR = "المسافة: مسار مشي فعلي على شبكة الشوارع (OpenStreetMap) بين نقطتي المكانين، مع تقدير قصير بخط مستقيم من كل نقطة للشارع. الوقت محسوب على مشي 4.5 كم بالساعة.";
+export const ROUTED_WALK_ACCESS_CLIMB_NOTE_AR = "المسافة: مسار مشي فعلي على شبكة الشوارع (OpenStreetMap) بين نقطتي المكانين، مع تقدير قصير بخط مستقيم من كل نقطة للشارع. الوقت محسوب على مشي 4.5 كم بالساعة مع 20% زيادة للطلعة.";
 export const ROUTED_WALK_CLIMB_NOTE_AR = "المسافة من مسار مشي فعلي (OpenStreetMap) وفيه طلعة، فالوقت محسوب على مشي 4.5 كم بالساعة مع 20% زيادة للطلعة.";
 
 const HILL_CLUSTERS = new Set(["hradcany", "petrin"]);
@@ -48,14 +50,16 @@ function pragueLegBase(fromPlaceId: string, toPlaceId: string): PlannerRouteLeg 
   const from = PRAGUE_PLACE_COORDINATES[fromPlaceId];
   const to = PRAGUE_PLACE_COORDINATES[toPlaceId];
   if (!routed || !from || !to || leg.sourceStatus === "unresolved") return leg;
-  const [km, climb] = routed;
+  const [routeKm, climb, accessM] = routed;
+  // The access part (straight-line estimate to the road) is added to the shown distance and named in the note.
+  const km = Math.round((routeKm + (accessM ?? 0) / 1000) * 100) / 100;
   const minutes = (km / 4.5) * 60 * (climb ? 1.2 : 1);
   const walking: TransportOption = {
     mode: "walking",
     durationMinutesMin: Math.max(1, Math.round(minutes * 0.9)),
     durationMinutesMax: Math.max(1, Math.round(minutes * 1.15)),
     distanceKm: km,
-    note: climb ? ROUTED_WALK_CLIMB_NOTE_AR : ROUTED_WALK_NOTE_AR,
+    note: accessM !== undefined ? (climb ? ROUTED_WALK_ACCESS_CLIMB_NOTE_AR : ROUTED_WALK_ACCESS_NOTE_AR) : climb ? ROUTED_WALK_CLIMB_NOTE_AR : ROUTED_WALK_NOTE_AR,
   };
   // Same thresholds as estimatedRouteLegs.ts: walk only up to 20 minutes, walking still listed up to 60 minutes, transit estimated.
   const transitMinutes = ((haversineDistanceKm(from, to) * 1.3) / 18) * 60 + 10;

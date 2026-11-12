@@ -9,7 +9,8 @@
  * (4.5 km/h, +20% on a climb), and every other transfer keeps the straight-line estimate (estimatedRouteLegs.ts).
  * A park or long street is one stored point, so its route distance is to that point.
  */
-export const PRAGUE_ROUTED_WALKS: Record<string, [km: number, climb: 0 | 1]> = {
+/** [route km, 1 = climb, optional access m: straight-line estimate from the two points to their road points, kept apart from the computed route]. */
+export const PRAGUE_ROUTED_WALKS: Record<string, [km: number, climb: 0 | 1, accessM?: number]> = {
   // Added 2026-11-10 from the same FOSSGIS OSRM foot router (route API), after a Google Maps walking check showed the straight-line
   // estimate too short: Loreta-Castle 0.85 km (Google walk 0.96 km / 13 min), U Kroka-Vyšehrad 0.54 km (Google 0.61 km / 10 min),
   // Havlíček Gardens-Riegrovy sady 1.70 km (Google 1.61 km / 24 min).
@@ -650,14 +651,16 @@ export const PRAGUE_ROUTED_WALKS: Record<string, [km: number, climb: 0 | 1]> = {
   "zizkov-tower>national-technical-museum": [3.6, 1],
   "zizkov-tower>trade-fair-palace": [3.5, 1],
   "zizkov-tower>vitkov-memorial": [1.5, 1],
-  // Added 2026-11-12 after an independent review: both ends pinned on OpenStreetMap (named object next to the stored address or point,
-  // main entrance where tagged), FOSSGIS OSRM foot route accepted with road points within 30 m, door to door (route + the walk to each road point). Kept where the real
-  // route differs from
-  // the straight-line estimate shown before by more than 100 m and 25%.
-  "franz-kafka-museum>mlynec": [0.9, 0], // OSM node/443297509 (tourism=museum) named "Kafka Museum" -> OSM node/3154299219 (amenity=restaurant) named "Mlýnec"
-  "kafka-head>u-pinkasu": [0.58, 0], // OSM node/3166450188 (tourism=artwork) named "Franz Kafka" -> OSM node/7412701685 (amenity=biergarten) named "U Pinkasů"
-  "mlynec>franz-kafka-museum": [0.9, 0], // OSM node/3154299219 (amenity=restaurant) named "Mlýnec" -> OSM node/443297509 (tourism=museum) named "Kafka Museum"
-  "museum-kampa>u-modre-kachnicky-mala-strana": [0.45, 0], // OSM node/1083723494 (tourism=museum) named "Museum Kampa" -> OSM node/1719924572 (amenity=restaurant) named "U Modré kachničky"
-  "u-modre-kachnicky-mala-strana>museum-kampa": [0.45, 0], // OSM node/1719924572 (amenity=restaurant) named "U Modré kachničky" -> OSM node/1083723494 (tourism=museum) named "Museum Kampa"
-  "u-pinkasu>kafka-head": [0.58, 0], // OSM node/7412701685 (amenity=biergarten) named "U Pinkasů" -> OSM node/3166450188 (tourism=artwork) named "Franz Kafka"
+  // Added 2026-11-12 after an independent review, corrected the same day: the point of a museum is an entrance on its own OSM outline
+  // facing the street of its address, else the façade point nearest that street; a restaurant / sculpture keeps its OSM point. FOSSGIS
+  // OSRM foot route accepted with road points within 30 m. Third value: the access from the points to their road points (straight-line
+  // estimate), kept apart from the computed route. Kept where the route differs from the estimate shown before by more than 100 m and 25%.
+  "bredovsky-dvur>mucha-museum": [0.27, 0, 4], // node/1324254950 (amenity=restaurant) named "Bredovský dvůr" -> node/3270484912 (tourism=museum) named "Mucha museum"
+  "franz-kafka-museum>mlynec": [0.82, 0, 9], // node/443297509 (tourism=museum) named "Kafka Museum" -> node/3154299219 (amenity=restaurant) named "Mlýnec"
+  "kafka-head>u-pinkasu": [0.55, 0, 30], // node/3166450188 (tourism=artwork) named "Franz Kafka" -> node/7412701685 (amenity=biergarten) named "U Pinkasů"
+  "mlynec>franz-kafka-museum": [0.82, 0, 9], // node/3154299219 (amenity=restaurant) named "Mlýnec" -> node/443297509 (tourism=museum) named "Kafka Museum"
+  "mucha-museum>bredovsky-dvur": [0.27, 0, 4], // node/3270484912 (tourism=museum) named "Mucha museum" -> node/1324254950 (amenity=restaurant) named "Bredovský dvůr"
+  "museum-kampa>u-modre-kachnicky-mala-strana": [0.42, 0, 8], // node/1083723494 (tourism=museum) named "Museum Kampa" -> node/1719924572 (amenity=restaurant) named "U Modré kachničky"
+  "u-modre-kachnicky-mala-strana>museum-kampa": [0.42, 0, 8], // node/1719924572 (amenity=restaurant) named "U Modré kachničky" -> node/1083723494 (tourism=museum) named "Museum Kampa"
+  "u-pinkasu>kafka-head": [0.55, 0, 30], // node/7412701685 (amenity=biergarten) named "U Pinkasů" -> node/3166450188 (tourism=artwork) named "Franz Kafka"
 };

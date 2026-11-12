@@ -135,18 +135,10 @@ export const BARCELONA_V2_EXTRA_PLANNER_METADATA: PlannerPlaceMetadata[] = [
     cluster: "seafront-east",
     visitDurationMinutes: 150,
   },
-  {
-    // Real, long-running (since 1970), highly-rated flamenco venue on La Rambla -- a ticketed
-    // cultural performance, never treated as a dining/nightlife venue (foodShoppingNightlife
-    // weight kept minimal). Guide duration: "~1 hour" (the show itself).
-    placeId: "tablao-cordobes-flamenco",
-    weights: { popular: 1, cultureLocal: 5, viewsNature: 0, beachRelax: 0, footballExperiences: 0, foodShoppingNightlife: 1 },
-    priority: 1,
-    preferredTime: "evening",
-    cluster: "old-city",
-    // Arrive 15 minutes before the show + the show itself (about 75 minutes, official schedule page): one session of 90 minutes.
-    visitDurationMinutes: 90,
-  },
+  // Tablao Cordobés (flamenco) is NOT a plannable stop any more (2026-11-12): its show times are published, but which
+  // sessions run on a given date, and for which ticket type, is only visible in the booking system (the 17:40 session is
+  // Tapas + Show and mostly seasonal). It is offered as one evening suggestion that depends on booking
+  // (barcelona-planner-presentation.ts, FLAMENCO_SUGGESTION), so the day's program stays valid without it.
   {
     // Real guided 3-4hr small-group bike tour covering multiple Gaudí landmarks, starts
     // Plaça Reial. cultureLocal kept well below 9 so this deliberately does NOT qualify for

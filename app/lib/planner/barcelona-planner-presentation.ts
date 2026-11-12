@@ -47,7 +47,18 @@ const BEACH_IDS = new Set(["barceloneta-beach", "bogatell", "nova-icaria"]);
 const CULTURE_IDS = new Set(["gothic-quarter", "barcelona-cathedral", "palau-musica", "boqueria", "sant-pau", "ciutadella"]);
 const PHOTOWORTHY_IDS = new Set([...GAUDI_CORE_IDS, ...VIEW_SPOT_IDS, "barceloneta-beach"]);
 /** Never suggested as optionalNearby — see the Montjuïc safety rule note above. */
-const PRESENTATION_EXCLUDED_PLACE_IDS = new Set(["montjuic"]);
+const PRESENTATION_EXCLUDED_PLACE_IDS = new Set(["montjuic", "tablao-cordobes-flamenco"]);
+
+/**
+ * Flamenco (Tablao Cordobés) is never a scheduled stop: which shows run on a date, and for which ticket, is only visible when
+ * booking. It is offered once per plan, as an evening suggestion that depends on booking, to visitors who chose culture or
+ * food / nightlife: on the first day that passes through the old city (the venue is on La Rambla), else on the last day.
+ * The suggestion says the time is not confirmed and that the "Dinner & Show" package replaces the day's dinner, so a meal is
+ * never counted twice. Excluded above from the generic "nearby" pick, so it is never shown twice or with a generic reason.
+ */
+const FLAMENCO_ID = "tablao-cordobes-flamenco";
+export const FLAMENCO_SUGGESTION_REASON = "عرض مسائي اختياري بشرط الحجز: «عرض + مشروب» حوالي 75 دقيقة. الموعد غير مؤكد (مثلًا 19:15 قبل العشا أو 22:30 بعده)، والمتاح بيبيّن وقت الحجز. باقة «عشاء + عرض» بتغني عن عشا اليوم.";
+const FLAMENCO_INTERESTS: readonly PlannerInterest[] = ["cultureLocal", "foodShoppingNightlife"];
 const OLD_CITY_CLUSTERS = new Set(["old-city", "city-center", "born"]);
 /**
  * Day-title bug fix: a day's title must reflect what its main stops actually ARE, not just the
@@ -571,6 +582,12 @@ export function presentBarcelonaSmartPlan(plan: GeneratedPlannerPlan, preference
 
     return { title, summary, highlight, optionalNearby };
   });
+
+  if (preferences.interests.some((interest) => FLAMENCO_INTERESTS.includes(interest)) && byDay.length > 0) {
+    const index = plan.days.findIndex((day) => day.clusters.includes("old-city"));
+    const target = byDay[index >= 0 ? index : byDay.length - 1];
+    target.optionalNearby = [{ placeId: FLAMENCO_ID, type: "experience" as const, reason: FLAMENCO_SUGGESTION_REASON }, ...target.optionalNearby].slice(0, MAX_OPTIONAL_NEARBY);
+  }
 
   return { byDay };
 }

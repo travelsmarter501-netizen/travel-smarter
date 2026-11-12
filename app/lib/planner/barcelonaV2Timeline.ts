@@ -373,15 +373,6 @@ function fitWindow(earliestStart: number, durationMinutes: number, rawHours: Hou
   // allow the day-invariant flexible-mode exception.
   const canUseHours = !!hours && hours.type === "fixed" && resolveEffectiveWeekday(hours, weekday) !== null;
 
-  // A place with fixed sessions (a show): the first session that starts at or after the clock and holds the whole visit. When no
-  // session is left that day, the normal rules below place it and the timing checks report it.
-  if (canUseHours && hours && hours.type === "fixed" && hours.sessionsOnly) {
-    const day = resolveEffectiveWeekday(hours, weekday)!;
-    const sessions = (hours.schedule[day] ?? []).map((iv) => ({ open: timeToMinutes(iv.open), close: timeToMinutes(iv.close) })).sort((a, b) => a.open - b.open);
-    const next = sessions.find((session) => session.open >= earliestStart && session.open + durationMinutes <= session.close);
-    if (next) return { startMinutes: next.open, endMinutes: next.open + durationMinutes, approximate };
-  }
-
   if (canUseHours) {
     let covering = findCoveringInterval(hours, weekday, start);
     if (!covering) {
