@@ -1,6 +1,7 @@
 import { buildPlannerRouteLegs, buildPlannerPlanRouteLegs, resolveLeg } from "./plannerRouteLegs";
 import type { PlannerRouteLeg, RouteLegDataEntry } from "./plannerTransportTypes";
 import type { GeneratedPlannerPlan, PlannerDay } from "./plannerDayBuilder";
+import { withBarcelonaRoutedData } from "./barcelonaRoutedLegs";
 
 /**
  * Barcelona-specific route-leg data for the Smart Planner's Route Legs layer.
@@ -5694,11 +5695,11 @@ function enforceMontjuicSafetyRule(legs: PlannerRouteLeg[]): PlannerRouteLeg[] {
 }
 
 export function buildBarcelonaPlannerRouteLegs(optimizedDay: PlannerDay): PlannerRouteLeg[] {
-  return enforceMontjuicSafetyRule(buildPlannerRouteLegs(optimizedDay, BARCELONA_ROUTE_LEG_DATA));
+  return enforceMontjuicSafetyRule(buildPlannerRouteLegs(optimizedDay, BARCELONA_ROUTE_LEG_DATA).map(withBarcelonaRoutedData));
 }
 
 export function buildBarcelonaPlannerPlanRouteLegs(optimizedPlan: GeneratedPlannerPlan): PlannerRouteLeg[][] {
-  return buildPlannerPlanRouteLegs(optimizedPlan, BARCELONA_ROUTE_LEG_DATA).map(enforceMontjuicSafetyRule);
+  return buildPlannerPlanRouteLegs(optimizedPlan, BARCELONA_ROUTE_LEG_DATA).map((legs) => enforceMontjuicSafetyRule(legs.map(withBarcelonaRoutedData)));
 }
 
 // Built once at module load, reused by every getBarcelonaVerifiedTravelMinutes call below --
@@ -5747,5 +5748,6 @@ export function getBarcelonaRouteLeg(fromPlaceId: string, toPlaceId: string): Pl
   if (PERMANENTLY_UNRESOLVED_PLACE_IDS.has(fromPlaceId) || PERMANENTLY_UNRESOLVED_PLACE_IDS.has(toPlaceId)) {
     return { fromPlaceId, toPlaceId, recommendedMode: null, options: [], sourceStatus: "unresolved" };
   }
-  return resolveLeg(fromPlaceId, toPlaceId, BARCELONA_ROUTE_LEG_BY_PAIR);
+  // Customer-facing legs only: short walks / corrections / car distances measured on a real route (barcelonaRoutedLegs.ts).
+  return withBarcelonaRoutedData(resolveLeg(fromPlaceId, toPlaceId, BARCELONA_ROUTE_LEG_BY_PAIR));
 }

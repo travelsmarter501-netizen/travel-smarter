@@ -16,6 +16,17 @@ export function legDistanceKm(leg: Pick<PlannerRouteLeg, "recommendedMode" | "op
   return null;
 }
 
+/**
+ * The distance shown next to ONE transport option: that option's own distance only. A walk with no stored distance shows the
+ * straight line x 1.3 (an estimate of the same walk); a car or public-transport time never borrows the walking distance or the
+ * straight line, which would describe a different trip (e.g. a mountain road three times longer than the straight line).
+ */
+export function optionDistanceKm(option: Pick<TransportOption, "mode" | "distanceKm">, from?: Point, to?: Point): number | null {
+  if (option.distanceKm !== undefined) return option.distanceKm;
+  if (option.mode === "walking" && from?.coordinates && to?.coordinates) return haversineDistanceKm(from.coordinates, to.coordinates) * WALK_FACTOR;
+  return null;
+}
+
 /** Total distance between the day's places in order (km), or null when no leg could be measured. */
 export function dayDistanceKm(day: { stops: Point[]; legs: PlannerRouteLeg[] }): number | null {
   let total = 0;
