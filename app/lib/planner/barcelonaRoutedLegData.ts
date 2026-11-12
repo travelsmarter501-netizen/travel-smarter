@@ -2,10 +2,13 @@
  * Barcelona: data for barcelonaRoutedLegs.ts, generated 2026-11-12 (third pass: visitor points with their evidence).
  *
  * Visitor point of each place, strongest evidence first:
- * - official door: an official source names the visitor door, matched on OpenStreetMap (Sagrada Família: Nativity façade on
- *   Carrer de la Marina; Casa Milà: main entrance Passeig de Gràcia 92; La Boqueria: main entrance on La Rambla 91);
+ * - official visitor entrance: an official source names where visitors go in, and that entrance is on OpenStreetMap
+ *   (Sagrada Família: the source names the general entrance on the Nativity side, Carrer de la Marina; the point is the
+ *   visitor STREET GATE there, OSM "onlineticket entrance", not the basilica door "Porta de la Caritat" 27 m inside and not
+ *   the group gate. Casa Milà: main entrance Passeig de Gràcia 92, an OSM entrance=main on the building outline);
  * - official address street: the official site gives only the address; the point is an entrance on the landmark's own OSM
- *   outline facing that street, else the point of the outline nearest that street (the door is not published);
+ *   outline facing that street, else the point of the outline nearest that street. NOT a verified door (La Boqueria: its arch
+ *   on La Rambla is not mapped; the point is the market frontage nearest La Rambla, a façade point);
  * - project address, not re-checked: the same rule with the address stored in the guide data;
  * - open-air monument: its own point; restaurant / shop: its OSM point (matched by name next to the address, or house number).
  * Large places (parks, squares, streets, quarters, beaches, tour meeting points) have no single verified point and get nothing.
@@ -29,7 +32,7 @@ export const BARCELONA_PINNED_POINTS: Record<string, [number, number]> = {
   // official address street, door not published: catedralbcn.org: Pla de la Seu s/n (no visitor door named on the official pages)
   //   relation/3298476 (amenity=place_of_worship) named "Catedral de la Santa Creu i Santa Eulàlia"; entrance node/3884081073 (main) on the outline (relatio
   "barcelona-cathedral": [41.3842719, 2.1761538],
-  // official: ajuntament.barcelona.cat/mercats (Mercat de Sant Josep - Boqueria): La Rambla 91, main entrance with the 1913 modernist arch; point = the ma
+  // official address street, door not located: ajuntament.barcelona.cat/mercats: La Rambla 91, main entrance with the 1913 arch; the arch itself is not ma
   //   relation/6288735 (amenity=marketplace) named "Mercat de Sant Josep - La Boqueria"; façade point node/1457731299 of the outline (relation/6288735) near
   "boqueria": [41.3821871, 2.1718375],
   // business point: OSM object matched by name next to the address, or by house number (not checked on an official site)
@@ -50,7 +53,7 @@ export const BARCELONA_PINNED_POINTS: Record<string, [number, number]> = {
   // official address street, door not published: casabatllo.es/en/visit: Passeig de Gràcia 43 (no door named)
   //   relation/9427554 (tourism=artwork) named "Casa Batlló"; entrance node/6357890937 (main) on the outline (relation/9427554), 14 m from Passeig de Gràcia
   "casa-batllo": [41.3917008, 2.1649663],
-  // official: lapedrera.com/en/accessibility: main entrance on Passeig de Gràcia 92
+  // official visitor entrance: lapedrera.com/en/accessibility: main entrance on Passeig de Gràcia 92
   //   relation/8974896 (tourism=artwork) named "Casa Milà"; entrance node/6071058572 (main) on the outline (relation/8974896), 16 m from Passeig de Gràcia (
   "casa-mila": [41.3951924, 2.1617827],
   // business point: OSM object matched by name next to the address, or by house number (not checked on an official site)
@@ -229,6 +232,109 @@ export const BARCELONA_ROUTED_WALKS: Record<string, [networkKm: number, accessM:
  */
 export const BARCELONA_WALK_CORRECTIONS: Record<string, [networkKm: number, accessM: number, climb: 0 | 1]> = {
   "mercat-santa-caterina>arc-de-triomf": [0.77, 0, 0],
+};
+
+/**
+ * A point for EVERY place, used only to ESTIMATE a transfer that has no checked or routed value (barcelonaRoutedLegs.ts):
+ * [lat, lng, 0 = a point of the place itself | 1 = area-level (a large place stored as one point, or the centre of its area)].
+ * An estimate that touches an area-level point shows a time only, no distance.
+ */
+export const BARCELONA_ESTIMATE_POINTS: Record<string, [number, number, 0 | 1]> = {
+  "100-montaditos": [41.387824, 2.167620, 0], // visitor / business point (see BARCELONA_PINNED_POINTS or the pinning file)
+  "1881-sagardi": [41.380751, 2.186055, 0], // visitor / business point (see BARCELONA_PINNED_POINTS or the pinning file)
+  "7-portes": [41.382172, 2.183247, 0], // visitor / business point (see BARCELONA_PINNED_POINTS or the pinning file)
+  "agut": [41.382000, 2.174670, 1], // no point stored (foodPlaces): centre of its area "old-city"
+  "arc-de-triomf": [41.391042, 2.180645, 0], // visitor / business point (see BARCELONA_PINNED_POINTS or the pinning file)
+  "baluard-barceloneta": [41.380023, 2.188861, 0], // visitor / business point (see BARCELONA_PINNED_POINTS or the pinning file)
+  "bar-lobo": [41.382000, 2.174670, 1], // no point stored (foodPlaces): centre of its area "old-city"
+  "bar-mut": [41.397300, 2.161278, 0], // visitor / business point (see BARCELONA_PINNED_POINTS or the pinning file)
+  "barcelona-cathedral": [41.384272, 2.176154, 0], // visitor / business point (see BARCELONA_PINNED_POINTS or the pinning file)
+  "barceloneta": [41.379390, 2.189190, 1], // stored point of a large place (park, square, street, hill...): area-level
+  "barceloneta-beach": [41.379390, 2.189190, 1], // stored point of a large place (park, square, street, hill...): area-level
+  "bogatell": [41.393954, 2.206673, 1], // no point stored (beach): OSM relation/2175041 Platja del Bogatell (Nominatim), area-level
+  "boqueria": [41.382187, 2.171838, 0], // visitor / business point (see BARCELONA_PINNED_POINTS or the pinning file)
+  "brunch-and-cake": [41.388283, 2.161560, 0], // visitor / business point (see BARCELONA_PINNED_POINTS or the pinning file)
+  "bubo": [41.387570, 2.181390, 1], // no point stored (foodPlaces): centre of its area "born"
+  "bunkers-carmel": [41.419280, 2.161710, 1], // stored point of a large place (park, square, street, hill...): area-level
+  "cafe-de-lopera": [41.380970, 2.173777, 0], // visitor / business point (see BARCELONA_PINNED_POINTS or the pinning file)
+  "cafes-el-magnifico": [41.387570, 2.181390, 1], // no point stored (foodPlaces): centre of its area "born"
+  "cal-pep": [41.383935, 2.183386, 0], // visitor / business point (see BARCELONA_PINNED_POINTS or the pinning file)
+  "camp-nou": [41.380800, 2.122800, 1], // stored point; OpenStreetMap places it more than 120 m away: area-level
+  "can-culleretes": [41.382000, 2.174670, 1], // no point stored (foodPlaces): centre of its area "old-city"
+  "can-sole": [41.378983, 2.188354, 0], // visitor / business point (see BARCELONA_PINNED_POINTS or the pinning file)
+  "canete": [41.379140, 2.173138, 0], // visitor / business point (see BARCELONA_PINNED_POINTS or the pinning file)
+  "casa-batllo": [41.391701, 2.164966, 0], // visitor / business point (see BARCELONA_PINNED_POINTS or the pinning file)
+  "casa-mila": [41.395192, 2.161783, 0], // visitor / business point (see BARCELONA_PINNED_POINTS or the pinning file)
+  "cerveceria-catalana": [41.392403, 2.160901, 0], // visitor / business point (see BARCELONA_PINNED_POINTS or the pinning file)
+  "ciutadella": [41.388060, 2.187500, 1], // stored point of a large place (park, square, street, hill...): area-level
+  "ciutat-comtal": [41.388827, 2.166883, 0], // visitor / business point (see BARCELONA_PINNED_POINTS or the pinning file)
+  "conesa-entrepans": [41.383052, 2.177101, 0], // visitor / business point (see BARCELONA_PINNED_POINTS or the pinning file)
+  "cook-and-taste-paella-class": [41.383215, 2.176950, 0], // visitor / business point (see BARCELONA_PINNED_POINTS or the pinning file)
+  "cosmocaixa": [41.412818, 2.130159, 0], // visitor / business point (see BARCELONA_PINNED_POINTS or the pinning file)
+  "eixample": [41.391580, 2.164920, 1], // stored point of a large place (park, square, street, hill...): area-level
+  "el-born": [41.384730, 2.182860, 1], // stored point of a large place (park, square, street, hill...): area-level
+  "el-nacional": [41.390693, 2.168479, 0], // visitor / business point (see BARCELONA_PINNED_POINTS or the pinning file)
+  "el-noa-noa": [41.403049, 2.159305, 0], // visitor / business point (see BARCELONA_PINNED_POINTS or the pinning file)
+  "el-xampanyet": [41.384509, 2.181675, 0], // visitor / business point (see BARCELONA_PINNED_POINTS or the pinning file)
+  "els-quatre-gats": [41.385738, 2.173639, 0], // visitor / business point (see BARCELONA_PINNED_POINTS or the pinning file)
+  "escriba": [41.382000, 2.174670, 1], // no point stored (foodPlaces): centre of its area "old-city"
+  "federal-cafe": [41.382000, 2.174670, 1], // no point stored (foodPlaces): centre of its area "old-city"
+  "flax-and-kale": [41.385154, 2.165530, 0], // visitor / business point (see BARCELONA_PINNED_POINTS or the pinning file)
+  "fundacio-joan-miro": [41.368638, 2.160467, 0], // visitor / business point (see BARCELONA_PINNED_POINTS or the pinning file)
+  "gaudi-bike-tour": [41.382000, 2.174670, 1], // no point stored (experiences): centre of its area "old-city"
+  "gelaaati-di-marco": [41.387570, 2.181390, 1], // no point stored (foodPlaces): centre of its area "born"
+  "gothic-quarter": [41.382780, 2.176940, 1], // stored point of a large place (park, square, street, hill...): area-level
+  "gothic-quarter-tapas-wine-tour": [41.382000, 2.174670, 1], // no point stored (experiences): centre of its area "old-city"
+  "gracia": [41.400110, 2.157640, 1], // stored point of a large place (park, square, street, hill...): area-level
+  "granja-viader": [41.382000, 2.174670, 1], // no point stored (foodPlaces): centre of its area "old-city"
+  "jardins-palau-pedralbes": [41.388390, 2.117030, 1], // stored point of a large place (park, square, street, hill...): area-level
+  "kiosko-universal": [41.381736, 2.171352, 0], // visitor / business point (see BARCELONA_PINNED_POINTS or the pinning file)
+  "la-bodegueta": [41.393543, 2.160317, 0], // visitor / business point (see BARCELONA_PINNED_POINTS or the pinning file)
+  "la-cova-fumada": [41.379298, 2.189194, 0], // visitor / business point (see BARCELONA_PINNED_POINTS or the pinning file)
+  "la-isabela-rooftop": [41.387057, 2.174336, 0], // visitor / business point (see BARCELONA_PINNED_POINTS or the pinning file)
+  "la-rambla": [41.381390, 2.173060, 1], // stored point of a large place (park, square, street, hill...): area-level
+  "mercat-sagrada-familia": [41.405891, 2.176763, 0], // visitor / business point (see BARCELONA_PINNED_POINTS or the pinning file)
+  "mercat-sant-antoni": [41.378623, 2.162842, 0], // visitor / business point (see BARCELONA_PINNED_POINTS or the pinning file)
+  "mercat-santa-caterina": [41.386123, 2.177895, 0], // visitor / business point (see BARCELONA_PINNED_POINTS or the pinning file)
+  "milk-bar-bistro": [41.387570, 2.181390, 1], // no point stored (foodPlaces): centre of its area "born"
+  "miramar-barcelona": [41.370795, 2.171016, 0], // visitor / business point (see BARCELONA_PINNED_POINTS or the pinning file)
+  "mnac": [41.368602, 2.153462, 0], // visitor / business point (see BARCELONA_PINNED_POINTS or the pinning file)
+  "monestir-pedralbes": [41.395745, 2.112697, 0], // visitor / business point (see BARCELONA_PINNED_POINTS or the pinning file)
+  "montjuic": [41.364170, 2.160830, 1], // stored point of a large place (park, square, street, hill...): area-level
+  "museu-historia-catalunya": [41.380817, 2.185869, 0], // visitor / business point (see BARCELONA_PINNED_POINTS or the pinning file)
+  "museu-maritim": [41.375870, 2.176079, 0], // visitor / business point (see BARCELONA_PINNED_POINTS or the pinning file)
+  "museu-picasso": [41.385088, 2.180910, 0], // visitor / business point (see BARCELONA_PINNED_POINTS or the pinning file)
+  "nomad-coffee": [41.388911, 2.177173, 0], // visitor / business point (see BARCELONA_PINNED_POINTS or the pinning file)
+  "nova-icaria": [41.390215, 2.201733, 1], // no point stored (beach): OSM relation/2175044 Platja de la Nova Icària (Nominatim), area-level
+  "palau-musica": [41.387593, 2.174893, 0], // visitor / business point (see BARCELONA_PINNED_POINTS or the pinning file)
+  "park-guell": [41.413610, 2.152780, 1], // stored point of a large place (park, square, street, hill...): area-level
+  "passeig-de-gracia": [41.393430, 2.163290, 1], // no point stored (shoppingAreas): centre of its area "passeig-gracia"
+  "placa-catalunya": [41.386670, 2.170000, 1], // stored point of a large place (park, square, street, hill...): area-level
+  "placa-reial": [41.380000, 2.175000, 1], // stored point of a large place (park, square, street, hill...): area-level
+  "placa-vila-gracia": [41.400087, 2.157423, 1], // stored point of a large place (park, square, street, hill...): area-level
+  "poble-espanyol": [41.369117, 2.146725, 1], // stored point; OpenStreetMap places it more than 120 m away: area-level
+  "portal-angel": [41.382000, 2.174670, 1], // no point stored (shoppingAreas): centre of its area "old-city"
+  "quimet-y-quimet": [41.374222, 2.165739, 0], // visitor / business point (see BARCELONA_PINNED_POINTS or the pinning file)
+  "rambla-poblenou": [41.398151, 2.205220, 1], // stored point of a large place (park, square, street, hill...): area-level
+  "sagrada-familia": [41.404039, 2.174787, 0], // visitor / business point (see BARCELONA_PINNED_POINTS or the pinning file)
+  "sant-pau": [41.411404, 2.174327, 0], // visitor / business point (see BARCELONA_PINNED_POINTS or the pinning file)
+  "santa-maria-del-mar": [41.384152, 2.182272, 0], // visitor / business point (see BARCELONA_PINNED_POINTS or the pinning file)
+  "satans-coffee-corner": [41.382000, 2.174670, 1], // no point stored (foodPlaces): centre of its area "old-city"
+  "sky-bar-grand-central": [41.385131, 2.177865, 0], // visitor / business point (see BARCELONA_PINNED_POINTS or the pinning file)
+  "slowmov": [41.398478, 2.154019, 0], // visitor / business point (see BARCELONA_PINNED_POINTS or the pinning file)
+  "sunset-catamaran-sail": [41.386130, 2.199835, 1], // no meeting point stored; the guide links to Port Olímpic: OSM way/209586285 marina (Nominatim), area-level
+  "tablao-cordobes-flamenco": [41.379230, 2.174700, 0], // visitor / business point (see BARCELONA_PINNED_POINTS or the pinning file)
+  "teleferic-montjuic": [41.368440, 2.153570, 1], // no point stored (experiences): centre of its area "montjuic"
+  "tibidabo": [41.422500, 2.118610, 1], // stored point of a large place (park, square, street, hill...): area-level
+};
+
+/**
+ * Two places in the same building: no street route. The transfer is estimated from the two points like any other
+ * (barcelonaRoutedLegs.ts) and says it is inside the building. Value: what the building is.
+ */
+export const BARCELONA_SAME_BUILDING: Record<string, string> = {
+  "museu-historia-catalunya>1881-sagardi": "Palau de Mar (Plaça de Pau Vila 3): the restaurant is on the top floor of the museum building",
+  "1881-sagardi>museu-historia-catalunya": "Palau de Mar (Plaça de Pau Vila 3): the restaurant is on the top floor of the museum building",
 };
 
 /** Car distance on the road network between the two points, for car times without a distance. Empty: no frequent car pair has both points. */

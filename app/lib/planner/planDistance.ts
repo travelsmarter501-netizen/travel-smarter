@@ -1,44 +1,42 @@
-import { haversineDistanceKm } from "./geoDistance";
 import type { PlannerRouteLeg, TransportOption } from "./plannerTransportTypes";
 
-/** Straight-line distance is shorter than a real walk; the same 1.3 factor the transit estimates use. */
-const WALK_FACTOR = 1.3;
-
+/**
+ * Distances shown to the customer come from the legs only (checked, routed or estimated, each says which). Nothing is filled in
+ * here: a leg or option without a distance of its own shows no distance (e.g. an estimate to a park, which gives a time only).
+ */
 type Point = { coordinates?: { lat: number; lng: number } } | undefined;
 
-/** Distance between two stops in km, for display: the leg's own number (recommended mode, then walking, then any), else straight line x 1.3. null when nothing is known. */
-export function legDistanceKm(leg: Pick<PlannerRouteLeg, "recommendedMode" | "options"> | undefined, from?: Point, to?: Point): number | null {
+/** Distance of a leg in km, for display: recommended mode, then walking, then any option with a distance. null when none has one. */
+export function legDistanceKm(leg: Pick<PlannerRouteLeg, "recommendedMode" | "options"> | undefined): number | null {
   const options: TransportOption[] = leg?.options ?? [];
   const pick = (mode: string | null | undefined) => options.find((o) => o.mode === mode && o.distanceKm !== undefined)?.distanceKm;
-  const known = pick(leg?.recommendedMode) ?? pick("walking") ?? options.find((o) => o.distanceKm !== undefined)?.distanceKm;
-  if (known !== undefined) return known;
-  if (from?.coordinates && to?.coordinates) return haversineDistanceKm(from.coordinates, to.coordinates) * WALK_FACTOR;
-  return null;
+  return pick(leg?.recommendedMode) ?? pick("walking") ?? options.find((o) => o.distanceKm !== undefined)?.distanceKm ?? null;
 }
 
 /**
- * The distance shown next to ONE transport option: that option's own distance only. A walk with no stored distance shows the
- * straight line x 1.3 (an estimate of the same walk); a car or public-transport time never borrows the walking distance or the
- * straight line, which would describe a different trip (e.g. a mountain road three times longer than the straight line).
+ * The distance shown next to ONE transport option: that option's own distance only. A car or public-transport time never borrows
+ * the walking distance or the straight line, which would describe a different trip.
  */
-export function optionDistanceKm(option: Pick<TransportOption, "mode" | "distanceKm">, from?: Point, to?: Point): number | null {
-  if (option.distanceKm !== undefined) return option.distanceKm;
-  if (option.mode === "walking" && from?.coordinates && to?.coordinates) return haversineDistanceKm(from.coordinates, to.coordinates) * WALK_FACTOR;
-  return null;
+export function optionDistanceKm(option: Pick<TransportOption, "mode" | "distanceKm">): number | null {
+  return option.distanceKm ?? null;
 }
 
-/** Total distance between the day's places in order (km), or null when no leg could be measured. */
-export function dayDistanceKm(day: { stops: Point[]; legs: PlannerRouteLeg[] }): number | null {
+/**
+ * Total distance between the day's places in order: shown only when EVERY leg has a distance (a partial sum would read as the
+ * whole day). `estimated` = at least one leg is an estimate, shown as "≈".
+ */
+export function dayDistanceKm(day: { stops: Point[]; legs: PlannerRouteLeg[] }): { km: number; estimated: boolean } | null {
+  if (day.stops.length < 2) return null;
   let total = 0;
-  let any = false;
+  let estimated = false;
   for (let i = 0; i + 1 < day.stops.length; i++) {
-    const km = legDistanceKm(day.legs[i], day.stops[i], day.stops[i + 1]);
-    if (km !== null) {
-      total += km;
-      any = true;
-    }
+    const leg = day.legs[i];
+    const km = legDistanceKm(leg);
+    if (km === null) return null;
+    total += km;
+    if (leg?.sourceStatus !== "verified" && leg?.sourceStatus !== "existing-project-data") estimated = true;
   }
-  return any ? total : null;
+  return { km: total, estimated };
 }
 
 /** Idea reasons saved before "free time" was dropped from the plan start with this prefix; show only what follows it. */

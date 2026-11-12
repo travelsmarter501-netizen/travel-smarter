@@ -57,7 +57,9 @@ const PRESENTATION_EXCLUDED_PLACE_IDS = new Set(["montjuic", "tablao-cordobes-fl
  * never counted twice. Excluded above from the generic "nearby" pick, so it is never shown twice or with a generic reason.
  */
 const FLAMENCO_ID = "tablao-cordobes-flamenco";
-export const FLAMENCO_SUGGESTION_REASON = "عرض مسائي اختياري بشرط الحجز: «عرض + مشروب» حوالي 75 دقيقة. الموعد غير مؤكد (مثلًا 19:15 قبل العشا أو 22:30 بعده)، والمتاح بيبيّن وقت الحجز. باقة «عشاء + عرض» بتغني عن عشا اليوم.";
+export const FLAMENCO_SUGGESTION_REASON = "عرض مسائي اختياري، بس إذا حجزت: «عرض + مشروب» حوالي 75 دقيقة. العروض المنشورة مسائية ومش كلها كل يوم، والموعد بيتأكد بس وقت الحجز. عشا اليوم بيضل بالخطة؛ إذا حجزت باقة فيها عشا، إنت بتقرر إذا بتستغني عنه.";
+/** Same wording as Prague (translated in PLAN_PHRASES, "prague/optional/full-day"). */
+const FULL_DAY_OPTIONAL_REASON = "اختياري: اليوم مليان، زوره إذا ضل عندك وقت";
 const FLAMENCO_INTERESTS: readonly PlannerInterest[] = ["cultureLocal", "foodShoppingNightlife"];
 const OLD_CITY_CLUSTERS = new Set(["old-city", "city-center", "born"]);
 /**
@@ -576,8 +578,11 @@ export function presentBarcelonaSmartPlan(plan: GeneratedPlannerPlan, preference
     usedSummaries.add(summary);
     const highlight = buildDayHighlight(signals, day);
 
+    // Timing guard: a visit taken off a day whose evening ran too late stays visible as that day's optional suggestion.
+    const fullDay = (day.optionalPlaceIds ?? []).map((placeId) => ({ placeId, type: "experience" as const, reason: FULL_DAY_OPTIONAL_REASON }));
+    for (const suggestion of fullDay) usedSuggestionIds.add(suggestion.placeId);
     const excludeIds = new Set([...allMainStopIds, ...usedSuggestionIds]);
-    const optionalNearby = pickOptionalNearby(day, preferences, excludeIds);
+    const optionalNearby = [...fullDay, ...pickOptionalNearby(day, preferences, excludeIds)].slice(0, MAX_OPTIONAL_NEARBY);
     for (const suggestion of optionalNearby) usedSuggestionIds.add(suggestion.placeId);
 
     return { title, summary, highlight, optionalNearby };

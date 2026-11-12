@@ -1,7 +1,7 @@
 import { buildPlannerRouteLegs, buildPlannerPlanRouteLegs, resolveLeg } from "./plannerRouteLegs";
 import type { PlannerRouteLeg, RouteLegDataEntry } from "./plannerTransportTypes";
 import type { GeneratedPlannerPlan, PlannerDay } from "./plannerDayBuilder";
-import { withBarcelonaRoutedData } from "./barcelonaRoutedLegs";
+import { barcelonaEstimateOnlyLeg, isDistanceModelEstimate, withBarcelonaRoutedData } from "./barcelonaRoutedLegs";
 
 /**
  * Barcelona-specific route-leg data for the Smart Planner's Route Legs layer.
@@ -5685,11 +5685,15 @@ export const BARCELONA_ROUTE_LEG_DATA: RouteLegDataEntry[] = [
 // fallback", not a blanket allow.
 const PERMANENTLY_UNRESOLVED_PLACE_IDS = new Set(["montjuic"]);
 
-/** Forces any leg touching a permanently-guarded place to unresolved, regardless of table contents — see the safety rule above. */
+/**
+ * Any leg touching a permanently-guarded place never takes a table value, regardless of table contents — see the safety rule above.
+ * Since 2026-11-12 it is the distance estimate alone (area-level: a time only, marked as a rough estimate), so the transfer is not
+ * planned as zero minutes; unresolved only when the other place has no point.
+ */
 function enforceMontjuicSafetyRule(legs: PlannerRouteLeg[]): PlannerRouteLeg[] {
   return legs.map((leg) =>
     PERMANENTLY_UNRESOLVED_PLACE_IDS.has(leg.fromPlaceId) || PERMANENTLY_UNRESOLVED_PLACE_IDS.has(leg.toPlaceId)
-      ? { fromPlaceId: leg.fromPlaceId, toPlaceId: leg.toPlaceId, recommendedMode: null, options: [], sourceStatus: "unresolved" as const }
+      ? barcelonaEstimateOnlyLeg(leg.fromPlaceId, leg.toPlaceId)
       : leg
   );
 }
@@ -5711,27 +5715,34 @@ const BARCELONA_ROUTE_LEG_BY_PAIR = new Map<string, RouteLegDataEntry>(
 );
 
 /**
- * Route-First Planning Upgrade: real, verified/existing-project-data travel minutes between
- * two placeIds (directional), or null when no trustworthy data exists for that exact
- * direction/pair -- NEVER a guessed, straight-line, or cluster-derived number. Reuses the
- * EXACT SAME resolution rules as the customer-facing route legs (`resolveLeg`: exact match,
- * then opt-in reverse-walking-reuse, then unresolved) and the same permanent Montjuïc guard --
- * so a number this function returns to the Day Builder/Route Optimizer is always a number the
- * customer could also see rendered on the actual connector for that pair. Used only as an
- * optional selection tie-break and ordering-cost input; never influences which places exist in
- * the candidate pool or their scores.
+ * Route-First Planning Upgrade: travel minutes between two placeIds (directional), from the SAME leg the customer sees on the
+ * connector (getBarcelonaRouteLeg: the table, then routed walks, then the distance estimate of barcelonaRoutedLegs.ts, which
+ * documents its basis and limits), or null when even an estimate is impossible (a place with no point at all). The name is
+ * historical: since 2026-11-12 an estimated value is returned too, so an unknown transfer does not look free when ordering.
+ * Used only as an optional selection tie-break and ordering-cost input; never influences which places exist in the candidate
+ * pool or their scores.
  */
 export function getBarcelonaVerifiedTravelMinutes(fromPlaceId: string, toPlaceId: string): number | null {
-  if (PERMANENTLY_UNRESOLVED_PLACE_IDS.has(fromPlaceId) || PERMANENTLY_UNRESOLVED_PLACE_IDS.has(toPlaceId)) return null;
-
-  // The same leg the customer sees (table, then the short walks measured on a real route): planning and display agree.
-  const leg = withBarcelonaRoutedData(resolveLeg(fromPlaceId, toPlaceId, BARCELONA_ROUTE_LEG_BY_PAIR));
+  // The same leg the customer sees (table, routed walks, then estimates; the guarded hill id: the estimate alone), so planning and
+  // display agree. Since 2026-11-12 an estimated leg counts too: a transfer with no checked value is not planned as zero minutes.
+  const leg = getBarcelonaRouteLeg(fromPlaceId, toPlaceId);
   if (leg.sourceStatus === "unresolved" || !leg.recommendedMode) return null;
 
   const option = leg.options.find((candidate) => candidate.mode === leg.recommendedMode) ?? leg.options[0];
   if (!option) return null;
 
   return Math.round((option.durationMinutesMin + option.durationMinutesMax) / 2);
+}
+
+/**
+ * The day builder's tie-break between two equally fitting candidates (which place goes into a day): the same minutes as
+ * getBarcelonaVerifiedTravelMinutes, but only from the checked table or a computed route -- null for a distance-model estimate
+ * (see barcelonaRoutedLegs.ts for why), so the tie falls back to the place's priority.
+ */
+export function getBarcelonaSelectionTravelMinutes(fromPlaceId: string, toPlaceId: string): number | null {
+  const leg = getBarcelonaRouteLeg(fromPlaceId, toPlaceId);
+  if (isDistanceModelEstimate(leg)) return null;
+  return getBarcelonaVerifiedTravelMinutes(fromPlaceId, toPlaceId);
 }
 
 /**
@@ -5742,13 +5753,11 @@ export function getBarcelonaVerifiedTravelMinutes(fromPlaceId: string, toPlaceId
  * consecutive MAIN-STOP pair this way; this is the same lookup exposed for pairs that fall
  * outside that per-day consecutive-stop array -- specifically, a connector where one or both
  * sides is a meal stop (see barcelonaV2Resolve.ts's `buildMealAdjacentLegs`, the only caller).
- * Never a second data table, never a different resolution rule -- a pair resolved here is
- * exactly as real/verified as a pair resolved for an attraction-to-attraction leg.
+ * Never a second data table, never a different resolution rule -- a pair resolved here has the
+ * same source (checked, routed or estimated, stated on the leg) as an attraction-to-attraction leg.
  */
 export function getBarcelonaRouteLeg(fromPlaceId: string, toPlaceId: string): PlannerRouteLeg {
-  if (PERMANENTLY_UNRESOLVED_PLACE_IDS.has(fromPlaceId) || PERMANENTLY_UNRESOLVED_PLACE_IDS.has(toPlaceId)) {
-    return { fromPlaceId, toPlaceId, recommendedMode: null, options: [], sourceStatus: "unresolved" };
-  }
-  // Customer-facing legs only: short walks / corrections / car distances measured on a real route (barcelonaRoutedLegs.ts).
+  if (PERMANENTLY_UNRESOLVED_PLACE_IDS.has(fromPlaceId) || PERMANENTLY_UNRESOLVED_PLACE_IDS.has(toPlaceId)) return barcelonaEstimateOnlyLeg(fromPlaceId, toPlaceId);
+  // Customer-facing legs: the table, then routed walks / corrections / car distances / estimates (barcelonaRoutedLegs.ts).
   return withBarcelonaRoutedData(resolveLeg(fromPlaceId, toPlaceId, BARCELONA_ROUTE_LEG_BY_PAIR));
 }

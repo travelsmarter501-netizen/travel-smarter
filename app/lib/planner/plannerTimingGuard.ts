@@ -274,6 +274,34 @@ export function applyTimingGuard(params: {
     }
   }
 
+  // Every city with the guard: a day whose evening still runs too late after the re-order and the restaurant swap (a meal past its
+  // restaurant's closing, or the day past midnight) loses its LAST visit, which becomes that day's optional suggestion, and the day
+  // is rebuilt (at most 3 rounds). Never a protected flagship, never a day's only stop. Days without such a problem are untouched.
+  for (let lateRound = 0; lateRound < 3; lateRound++) {
+    const protectedIds = new Set(city.compositionProtectedPlaceIds ?? []);
+    let dropped = false;
+    const days = plan.days.map((day, index) => {
+      const v2Day = data.days[index];
+      if (!v2Day || day.stops.length < 2) return day;
+      const lateEvening = [...scheduleProblems(v2Day)].some((key) => key.startsWith("midnight:") || key.startsWith("meal:"));
+      if (!lateEvening) return day;
+      const last = [...day.stops].reverse().find((stop) => !protectedIds.has(stop.placeId));
+      if (!last) return day;
+      dropped = true;
+      const removedMinutes = v2Day.stops.find((s) => s.id === last.placeId)?.visitDurationMinutes ?? 0;
+      return {
+        ...day,
+        stops: day.stops.filter((s) => s.placeId !== last.placeId),
+        totalVisitMinutes: Math.max(0, day.totalVisitMinutes - removedMinutes),
+        optionalPlaceIds: [...(day.optionalPlaceIds ?? []).filter((id) => id !== last.placeId), last.placeId],
+      };
+    });
+    if (!dropped) break;
+    plan = { ...plan, days };
+    legsByDay = days.map((day) => (city.buildDayRouteLegs ? city.buildDayRouteLegs(day) : day.stops.slice(0, -1).map((stop, i) => city.routeLeg(stop.placeId, day.stops[i + 1].placeId))));
+    data = build(plan, legsByDay, mealExclusions);
+  }
+
   // Whatever still cannot fit is said plainly on the stop (meals are re-chosen by the normal hours rules and are only reported).
   const days = data.days.map((day) => {
     const stopViolations = findTimingViolations(day).filter((v) => v.kind === "stop");

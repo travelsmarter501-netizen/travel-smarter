@@ -58,7 +58,8 @@ export default function SmartPlannerTransportConnector({
         {selectedMode && option ? (
           <span className="flex items-center gap-1 font-semibold text-slate-500">
             <span>{PLANNER_TRANSPORT_MODE_META[selectedMode].icon}</span>
-            <span>{formatPlannerConnectorLabel(option, lang, optionDistanceKm(option, from, to))}</span>
+            {/* "≈": an estimate (distance model or a route measured here, not a checked trip); the sheet's note says how. */}
+            <span>{leg.sourceStatus === "estimated" ? "≈ " : ""}{formatPlannerConnectorLabel(option, lang, optionDistanceKm(option))}</span>
           </span>
         ) : (
           <span className="font-semibold text-slate-400">{ui.transportUnknown}</span>

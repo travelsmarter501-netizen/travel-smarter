@@ -40,6 +40,8 @@ export const BARCELONA_CITY_MODULE: CityPlannerModule = {
   // the closed restaurant is swapped). Days without a violation are generated exactly as before (no strict restaurant selection).
   timingGuard: true,
   strictMealSelection: false,
+  // The trip to and from each restaurant counts on the clock (checked, routed or estimated leg), not a flat 15-minute margin.
+  mealTransfersInTimeline: true,
   // Beach Timing Guard (dated plans only): keeps Barceloneta Beach out of a late-evening slot on limited-hours days.
   postProcessDatedPlan: ({ plan, legsByDay, config, resolveHoursForPlace, weekdayForDayNumber }) =>
     applyBeachTimingGuard(plan, legsByDay, config.plannerMetadata, weekdayForDayNumber, resolveHoursForPlace, config.buildPlanRouteLegs),

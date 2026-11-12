@@ -1,6 +1,6 @@
 import { BARCELONA_DESTINATION_CONFIG } from "./barcelonaDestinationConfig";
 import { getBarcelonaV2PlannerPlaces } from "./barcelonaV2Metadata";
-import { getBarcelonaVerifiedTravelMinutes } from "./barcelona-planner-route-legs";
+import { getBarcelonaSelectionTravelMinutes, getBarcelonaVerifiedTravelMinutes } from "./barcelona-planner-route-legs";
 import type { DestinationConfig } from "./destinationConfig";
 
 /**
@@ -35,7 +35,8 @@ export const BARCELONA_V2_DESTINATION_CONFIG: DestinationConfig = {
   plannerMetadata: getBarcelonaV2PlannerPlaces(),
   dayBuilderConfig: {
     ...BARCELONA_DESTINATION_CONFIG.dayBuilderConfig,
-    getVerifiedTravelMinutes: getBarcelonaVerifiedTravelMinutes,
+    // Choosing places: checked / routed minutes only; ordering below also uses the distance estimates (barcelonaRoutedLegs.ts).
+    getVerifiedTravelMinutes: getBarcelonaSelectionTravelMinutes,
   },
   routeOptimizationConfig: {
     ...BARCELONA_DESTINATION_CONFIG.routeOptimizationConfig,

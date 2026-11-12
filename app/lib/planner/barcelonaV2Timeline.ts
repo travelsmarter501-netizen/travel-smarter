@@ -462,9 +462,9 @@ export function buildBarcelonaDayTimeline(
   /** Customer-chosen day start (minutes after midnight); null = derived from the stops as before. */
   startMinutesOverride: number | null = null,
   /**
-   * Optional (cities with `mealLegsInTimeline`): the real leg between any two places of the day. When given, the trip to and
+   * Optional (cities with `mealLegsInTimeline` or `mealTransfersInTimeline`, i.e. Prague and Barcelona): the real leg between any two places of the day. When given, the trip to and
    * from each meal is counted on the clock (breakfast -> first stop, stop -> meal, meal -> next stop) instead of a flat
-   * 15-minute buffer and the stop-to-stop leg. Omitted = the previous behaviour, unchanged (Barcelona).
+   * 15-minute buffer and the stop-to-stop leg. Omitted = a flat 15-minute margin around meals (callers that place stops only, e.g. the beach guard).
    */
   legBetween?: (fromPlaceId: string, toPlaceId: string) => PlannerRouteLeg | undefined
 ): DayTimeline {

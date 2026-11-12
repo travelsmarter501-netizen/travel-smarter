@@ -266,7 +266,7 @@ export default function SmartPlannerV2Day({
           )}
           <span>
             📍 {formatPlaceCount(lang, day.stops.length)}
-            {distanceKm !== null && <> · <bdi dir="ltr">{formatDistance(lang, distanceKm)}</bdi></>}
+            {distanceKm !== null && <> · <bdi dir="ltr">{distanceKm.estimated ? "≈ " : ""}{formatDistance(lang, distanceKm.km)}</bdi></>}
           </span>
         </div>
       )}

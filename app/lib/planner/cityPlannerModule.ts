@@ -128,6 +128,12 @@ export type CityPlannerModule = {
    */
   mealLegsInTimeline?: boolean;
   /**
+   * Optional, the clock part of `mealLegsInTimeline` only: the trip to and from each meal is counted on the day's clock with the
+   * real (or estimated) leg instead of a flat margin, and the walk to the next stop starts at the meal. Meal choice and lunch
+   * position are unchanged. Implied by `mealLegsInTimeline`.
+   */
+  mealTransfersInTimeline?: boolean;
+  /**
    * Optional: the planner metadata for this request's interests (Prague: "food" no longer scores shopping places, which share
    * the legacy foodShoppingNightlife key). Unset = the city's metadata unchanged (Barcelona).
    */
