@@ -144,7 +144,8 @@ export const BARCELONA_V2_EXTRA_PLANNER_METADATA: PlannerPlaceMetadata[] = [
     priority: 1,
     preferredTime: "evening",
     cluster: "old-city",
-    visitDurationMinutes: 60,
+    // Arrive 15 minutes before the show + the show itself (about 75 minutes, official schedule page): one session of 90 minutes.
+    visitDurationMinutes: 90,
   },
   {
     // Real guided 3-4hr small-group bike tour covering multiple Gaudí landmarks, starts

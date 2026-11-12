@@ -63,6 +63,8 @@ export type HoursInfo =
       lastEntry?: string;
       /** Planner, set per trip only: the schedule to plan against when it differs from `schedule` (see tripHours.ts). */
       planningSchedule?: WeeklySchedule;
+      /** Planner only: each interval is a fixed SESSION (a show): a visit starts at an interval's opening, never inside it. */
+      sessionsOnly?: boolean;
     } & HoursMeta)
   | ({
       type: "variable";
@@ -99,6 +101,12 @@ export type HoursInfo =
        * hard-exclusion check, which is the only real defect this field fixes.
        */
       closedWeekdays?: Weekday[];
+      /**
+       * Planner only: the place runs fixed sessions every day (e.g. a show): each interval is arrival time -> end of the session.
+       * The engine plans the visit at the start of a session (planningHoursOf turns this into a sessions-only fixed schedule);
+       * the customer still sees `display`.
+       */
+      sessions?: TimeRange[];
     } & HoursMeta)
   | ({ type: "event"; display?: string } & HoursMeta)
   | ({ type: "always-open" } & HoursMeta)
@@ -174,6 +182,11 @@ export function isOpenNow(schedule: WeeklySchedule, timeZone: string = "Europe/M
  * without structured seasons (every Barcelona entry) behave exactly as before.
  */
 export function planningHoursOf(hours: HoursInfo | undefined): HoursInfo | undefined {
+  if (hours && hours.type === "variable" && hours.sessions && !hours.planningSchedule) {
+    const sessions = hours.sessions;
+    const schedule: WeeklySchedule = Object.fromEntries(ORDERED_WEEKDAYS.map((day) => [day, sessions]));
+    return { type: "fixed", schedule, sessionsOnly: true, source: hours.source, sourceUrl: hours.sourceUrl, lastVerified: hours.lastVerified };
+  }
   if (hours && hours.type === "fixed" && hours.planningSchedule) return { ...hours, schedule: hours.planningSchedule };
   if (hours && hours.type === "variable" && hours.planningSchedule) {
     return {

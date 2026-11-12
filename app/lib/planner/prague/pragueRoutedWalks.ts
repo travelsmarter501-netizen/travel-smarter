@@ -651,12 +651,13 @@ export const PRAGUE_ROUTED_WALKS: Record<string, [km: number, climb: 0 | 1]> = {
   "zizkov-tower>trade-fair-palace": [3.5, 1],
   "zizkov-tower>vitkov-memorial": [1.5, 1],
   // Added 2026-11-12 after an independent review: both ends pinned on OpenStreetMap (named object next to the stored address or point,
-  // main entrance where tagged), FOSSGIS OSRM foot route accepted with road points within 30 m. Kept where the real route differs from
+  // main entrance where tagged), FOSSGIS OSRM foot route accepted with road points within 30 m, door to door (route + the walk to each road point). Kept where the real
+  // route differs from
   // the straight-line estimate shown before by more than 100 m and 25%.
-  "franz-kafka-museum>mlynec": [0.88, 0], // OSM node/443297509 (tourism=museum) named "Kafka Museum" -> OSM node/3154299219 (amenity=restaurant) named "Mlýnec"
-  "kafka-head>u-pinkasu": [0.55, 0], // OSM node/3166450188 (tourism=artwork) named "Franz Kafka" -> OSM node/7412701685 (amenity=biergarten) named "U Pinkasů"
-  "mlynec>franz-kafka-museum": [0.88, 0], // OSM node/3154299219 (amenity=restaurant) named "Mlýnec" -> OSM node/443297509 (tourism=museum) named "Kafka Museum"
-  "museum-kampa>u-modre-kachnicky-mala-strana": [0.44, 0], // OSM node/1083723494 (tourism=museum) named "Museum Kampa" -> OSM node/1719924572 (amenity=restaurant) named "U Modré kachničky"
-  "u-modre-kachnicky-mala-strana>museum-kampa": [0.44, 0], // OSM node/1719924572 (amenity=restaurant) named "U Modré kachničky" -> OSM node/1083723494 (tourism=museum) named "Museum Kampa"
-  "u-pinkasu>kafka-head": [0.55, 0], // OSM node/7412701685 (amenity=biergarten) named "U Pinkasů" -> OSM node/3166450188 (tourism=artwork) named "Franz Kafka"
+  "franz-kafka-museum>mlynec": [0.9, 0], // OSM node/443297509 (tourism=museum) named "Kafka Museum" -> OSM node/3154299219 (amenity=restaurant) named "Mlýnec"
+  "kafka-head>u-pinkasu": [0.58, 0], // OSM node/3166450188 (tourism=artwork) named "Franz Kafka" -> OSM node/7412701685 (amenity=biergarten) named "U Pinkasů"
+  "mlynec>franz-kafka-museum": [0.9, 0], // OSM node/3154299219 (amenity=restaurant) named "Mlýnec" -> OSM node/443297509 (tourism=museum) named "Kafka Museum"
+  "museum-kampa>u-modre-kachnicky-mala-strana": [0.45, 0], // OSM node/1083723494 (tourism=museum) named "Museum Kampa" -> OSM node/1719924572 (amenity=restaurant) named "U Modré kachničky"
+  "u-modre-kachnicky-mala-strana>museum-kampa": [0.45, 0], // OSM node/1719924572 (amenity=restaurant) named "U Modré kachničky" -> OSM node/1083723494 (tourism=museum) named "Museum Kampa"
+  "u-pinkasu>kafka-head": [0.58, 0], // OSM node/7412701685 (amenity=biergarten) named "U Pinkasů" -> OSM node/3166450188 (tourism=artwork) named "Franz Kafka"
 };
