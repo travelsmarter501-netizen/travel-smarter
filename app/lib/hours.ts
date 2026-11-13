@@ -173,7 +173,21 @@ export function isOpenNow(schedule: WeeklySchedule, timeZone: string = "Europe/M
  * is planned as a fixed schedule (opening / closing / last entry checked); everything else is returned unchanged, so places
  * without structured seasons (every Barcelona entry) behave exactly as before.
  */
+// The result depends only on the (never mutated) input object, and is only read: kept per input, so the same place is not re-resolved on
+// every timeline check.
+const PLANNING_HOURS_OF = new WeakMap<object, HoursInfo>();
 export function planningHoursOf(hours: HoursInfo | undefined): HoursInfo | undefined {
+  if (hours && (hours.type === "fixed" || hours.type === "variable") && hours.planningSchedule) {
+    const cached = PLANNING_HOURS_OF.get(hours);
+    if (cached) return cached;
+    const resolved = resolvePlanningHours(hours);
+    PLANNING_HOURS_OF.set(hours, resolved);
+    return resolved;
+  }
+  return hours;
+}
+
+function resolvePlanningHours(hours: HoursInfo): HoursInfo {
   if (hours && hours.type === "fixed" && hours.planningSchedule) return { ...hours, schedule: hours.planningSchedule };
   if (hours && hours.type === "variable" && hours.planningSchedule) {
     return {

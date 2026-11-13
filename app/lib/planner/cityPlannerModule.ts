@@ -74,6 +74,11 @@ export type DayGeographyRepairContext = {
   config: DestinationConfig;
   /** Dated plans: whether a place is open on that day number; undefined for flexible plans. */
   isPlaceEligibleForDay?: (placeId: string, dayNumber: number) => boolean;
+  /** The place's hours as planned for this trip (seasonal / dated, cities with resolveHoursPerTrip), for trying a day on the clock. */
+  hoursForPlace?: (placeId: string) => HoursInfo | undefined;
+  /** Dated plans: the weekday and month of a day number (null for flexible plans). */
+  weekdayForDayNumber?: (dayNumber: number) => Weekday | null;
+  monthForDayNumber?: (dayNumber: number) => number | null;
 };
 
 /** Context handed to a city's optional post-processing step for dated plans (Barcelona: the beach timing guard). */
@@ -100,7 +105,7 @@ export type CityPlannerModule = {
   supportedInterests: readonly V2PlannerInterest[];
   /** Places that may only appear when the customer chose an experiences / nightlife interest. */
   experiencesGatedPlaceIds: ReadonlySet<string>;
-  flagshipCoverageGoals: (context: { surpriseMe: boolean; days: number }) => FlagshipCoverageGoal[];
+  flagshipCoverageGoals: (context: { surpriseMe: boolean; days: number; interests?: readonly V2PlannerInterest[] }) => FlagshipCoverageGoal[];
   placeSelectionBonus: (interests: readonly V2PlannerInterest[]) => (placeId: string) => number;
   secondaryCoverageGoals: (interests: readonly V2PlannerInterest[], days: number) => SecondaryCoverageGoal[];
   /** One leg between any two place ids (meal-adjacent legs); never invents data -- unknown pairs come back "unresolved" or "estimated". */

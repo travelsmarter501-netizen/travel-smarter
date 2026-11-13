@@ -217,7 +217,9 @@ export function resolveStop(city: CityPlannerModule, placeId: string, score: num
 // either an Attraction or an Experience), so this tries each in the same order
 // resolvePlannerPlace already uses for main stops, plus food/nightlife. A suggestion that
 // still can't be resolved is dropped rather than shown with invented/blank data.
-const NEARBY_RESOLUTION_ORDER: ReadyPlanPlaceType[] = ["attraction", "food", "experience", "nightlife"];
+// "shopping" last: a shopping area suggested next to a day (Prague, an unmet shopping goal) resolves from the shopping collection; every
+// id that already resolves as one of the other types resolves exactly as before.
+const NEARBY_RESOLUTION_ORDER: ReadyPlanPlaceType[] = ["attraction", "food", "experience", "nightlife", "shopping"];
 
 function resolveOptionalNearby(city: CityPlannerModule, suggestion: PlannerOptionalSuggestion, placeDetails: Record<string, ResolvedPlace>): V2ResolvedNearby | null {
   for (const placeType of NEARBY_RESOLUTION_ORDER) {
@@ -395,7 +397,7 @@ export function resolveV2Plan(
     const slotHints = earlyStops
       ? mealSlotHintsFromTimeline(
           city,
-          day.stops.map((stop, i) => ({ placeId: stop.placeId, visitDurationMinutes: earlyStops[i].visitDurationMinutes, hours: earlyStops[i].hours, preferredTime: city.metadataById(stop.placeId)?.preferredTime ?? "anytime", arrivalBufferMinutes: city.metadataById(stop.placeId)?.arrivalBufferMinutes, showWindow: city.metadataById(stop.placeId)?.showWindow })),
+          day.stops.map((stop, i) => ({ placeId: stop.placeId, visitDurationMinutes: earlyStops[i].visitDurationMinutes, hours: earlyStops[i].hours, preferredTime: city.metadataById(stop.placeId)?.preferredTime ?? "anytime", arrivalBufferMinutes: earlyStops[i].visitMode === "outside" ? undefined : city.metadataById(stop.placeId)?.arrivalBufferMinutes, showWindow: city.metadataById(stop.placeId)?.showWindow })),
           legsByDay[index] ?? [],
           weekday ?? null,
           month
@@ -491,7 +493,8 @@ export function resolveV2Plan(
       visitDurationMinutes: resolvedStops[i].visitDurationMinutes,
       hours: resolvedStops[i].hours,
       preferredTime: city.metadataById(stop.placeId)?.preferredTime ?? "anytime",
-      arrivalBufferMinutes: city.metadataById(stop.placeId)?.arrivalBufferMinutes,
+      // The arrival margin is for a guided tour / ticketed entry; an outside-only stop has neither.
+      arrivalBufferMinutes: resolvedStops[i].visitMode === "outside" ? undefined : city.metadataById(stop.placeId)?.arrivalBufferMinutes,
       showWindow: city.metadataById(stop.placeId)?.showWindow,
     }));
     const timelineMeals: TimelineMealInput[] = mealStops.map((meal) => ({

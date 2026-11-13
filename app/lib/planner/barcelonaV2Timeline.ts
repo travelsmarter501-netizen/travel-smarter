@@ -223,9 +223,17 @@ export const MEAL_TARGET_WINDOW: Record<MealType, { earliest: number; latest: nu
 
 // ── Hours-window helpers (shared by meal-stop selection AND timeline placement) ────────────────
 
+// "HH:MM" strings come from a small set of stored schedules and are parsed thousands of times when a city tries every order of a day
+// (Prague's day balance): parsed once each.
+const MINUTES_OF_TIME = new Map<string, number>();
 function timeToMinutes(time: string): number {
-  const [h, m] = time.split(":").map(Number);
-  return h * 60 + m;
+  let minutes = MINUTES_OF_TIME.get(time);
+  if (minutes === undefined) {
+    const [h, m] = time.split(":").map(Number);
+    minutes = h * 60 + m;
+    MINUTES_OF_TIME.set(time, minutes);
+  }
+  return minutes;
 }
 
 const ALL_WEEKDAYS: Weekday[] = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
@@ -246,13 +254,20 @@ function intervalsEqual(a: { open: string; close: string }[] = [], b: { open: st
  * this only improves the STARTING TIME chosen, never the honesty label shown to the customer
  * (see this task's own section 14: a flexible plan's timing is always "قد تحتاج تعديل").
  */
+// Whether a weekly schedule is identical on every weekday: a property of the (never mutated) schedule object, kept per object.
+const DAY_INVARIANT_SCHEDULE = new WeakMap<object, boolean>();
 function resolveEffectiveWeekday(rawHours: HoursInfo | undefined, weekday: Weekday | null): Weekday | null {
+  if (weekday) return weekday;
   // Seasonal places carry a per-trip planning schedule (hours.ts planningHoursOf); every other place is unchanged.
   const hours = planningHoursOf(rawHours);
-  if (weekday) return weekday;
   if (!hours || hours.type !== "fixed") return null;
-  const [first, ...rest] = ALL_WEEKDAYS.map((day) => hours.schedule[day] ?? []);
-  return rest.every((intervals) => intervalsEqual(first, intervals)) ? "monday" : null;
+  let invariant = DAY_INVARIANT_SCHEDULE.get(hours.schedule);
+  if (invariant === undefined) {
+    const [first, ...rest] = ALL_WEEKDAYS.map((day) => hours.schedule[day] ?? []);
+    invariant = rest.every((intervals) => intervalsEqual(first, intervals));
+    DAY_INVARIANT_SCHEDULE.set(hours.schedule, invariant);
+  }
+  return invariant ? "monday" : null;
 }
 
 /**

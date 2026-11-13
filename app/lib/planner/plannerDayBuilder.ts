@@ -71,6 +71,16 @@ export type PlannerDay = {
   clusters: string[];
   /** Day balance (cities that opt in): places taken off a full day, shown as optional suggestions of that day. */
   optionalPlaceIds?: string[];
+  /**
+   * Why an optional place left the day, when it was decided on the real schedule (Prague): "closing" = it cannot be visited within
+   * its opening hours / last entry that day; "full" = the day's program runs too long with it. Absent = "full" (older plans).
+   */
+  optionalReasons?: Record<string, "full" | "closing">;
+  /**
+   * Cities with day balance: places of a request goal that no day's route could take (e.g. shopping on a castle day) but that are
+   * close to this day's stops: shown as a nearby suggestion of this day, never scheduled.
+   */
+  goalSuggestionPlaceIds?: string[];
   /** Cities with day balance: ideas for a light day's free time (not scheduled, shown apart from the plan). */
   freeTimePlaceIds?: string[];
 };
@@ -166,6 +176,12 @@ export type FlagshipCoverageGoal = {
 export type SecondaryCoverageGoal = {
   candidates: string[];
   minCoverage: number;
+  /**
+   * Optional (Prague): a candidate is only added to a day that already visits its area or a neighbouring one (cluster
+   * compatibility above 0). Left short rather than placed on a day it does not fit (e.g. a shopping market in the Old Town put on the
+   * castle day). Unset = the previous behaviour (the best-fitting day, whatever its areas).
+   */
+  onlyInLinkedDay?: boolean;
 };
 
 export type DayBuilderConfig = {
@@ -234,6 +250,25 @@ export type DayBuilderConfig = {
    * this field existed.
    */
   getVerifiedTravelMinutes?: (fromPlaceId: string, toPlaceId: string) => number | null;
+  /**
+   * Optional (Prague), with `getVerifiedTravelMinutes`: within the same cluster-compatibility tier, a candidate (the weaker) is put
+   * behind another (the stronger) when ALL of these hold; otherwise the minutes tie-break decides as before:
+   * - the stronger one's selection priority is clearly higher: (stronger - weaker) / stronger >= `minRelativeGap`, the difference divided
+   *   by the STRONGER priority (scale-free: the priority adds one weight per selected interest). 0.15 = stronger >= 1.176 x weaker;
+   *   0.20 = stronger >= 1.25 x weaker. Example: 20.0 against 16.5 is (20.0 - 16.5) / 20.0 = 17.5% (21.2% over the weaker).
+   * - the stronger one fits the route of the day so far: from the last stop and from every stop already in the day it is at most
+   *   `maxHopMinutes` away, and from the last stop at most `maxExtraMinutes` farther than the weaker one;
+   * - taking the weaker one first would shut the stronger one out of THIS day: the weaker one opens the day's second area, so the
+   *   stronger one's area would be a third (needs extra value to be added). Where both can still be added, the order only changes the
+   *   sequence inside the day, and moving a strong place earlier re-orders what is left for the later days (measured on 82 Prague
+   *   plans: an unconditional rule emptied a day of a 3-day experiences plan and cost a 5-day nature plan its botanical garden).
+   *   On a ONE-day trip there are no later days, so this condition is not needed: the stronger place goes first whenever the first two
+   *   hold (what the day holds is then decided by priority, not by which sight is a few minutes nearer).
+   * Without this a nearer, weaker place wins every tie of the minutes tie-break above, so an estimate of a few minutes can keep a
+   * place that matters far more for the request out of the day (e.g. the nearer park beside the castle closing the day to the city's
+   * best viewpoint). Omitted (the default, and Barcelona): behaviour identical to before this field existed.
+   */
+  priorityOverTravel?: { minRelativeGap: number; maxHopMinutes: number; maxExtraMinutes: number };
   /**
    * P1 Personalization Fix (Shopping/Nightlife) -- optional per-place selection-priority bonus,
    * computed by the caller from information the legacy `PlannerInterest` model has already lost
@@ -535,6 +570,64 @@ function removeStopFromState(state: DayBuildState, placeId: string, byId: Map<st
   state.clusters = state.clusters.filter((cluster) => state.stopIds.some((id) => byId.get(id)!.metadata.cluster === cluster));
 }
 
+/**
+ * DayBuilderConfig.priorityOverTravel: the candidates that a clearly better-matching candidate of the same cluster-compatibility
+ * tier outranks, because that better one fits the day's route (see the config field). Pure: the order the fill loop's comparator
+ * then uses is "not outranked first", then the minutes tie-break, then priority, as before.
+ */
+function findOutrankedCandidates(
+  candidates: readonly string[],
+  state: DayBuildState,
+  byId: Map<string, ScoredPlannerPlace>,
+  selectionPriority: Map<string, number>,
+  config: DayBuilderConfig,
+  singleDayTrip: boolean
+): Set<string> {
+  const rule = config.priorityOverTravel!;
+  const lastStopId = state.stopIds[state.stopIds.length - 1];
+  const minutesCache = new Map<string, number | null>();
+  const minutes = (from: string, to: string): number | null => {
+    const key = `${from}>${to}`;
+    if (!minutesCache.has(key)) minutesCache.set(key, config.getVerifiedTravelMinutes!(from, to));
+    return minutesCache.get(key)!;
+  };
+  const tierCache = new Map<string, number>();
+  const tierOf = (id: string): number => {
+    if (!tierCache.has(id)) tierCache.set(id, Math.max(...state.clusters.map((c) => clusterCompatibility(config.clusterCompatibility, c, byId.get(id)!.metadata.cluster))));
+    return tierCache.get(id)!;
+  };
+  const fitCache = new Map<string, boolean>();
+  const fitsRoute = (id: string): boolean => {
+    if (!fitCache.has(id)) {
+      const hop = minutes(lastStopId, id);
+      fitCache.set(id, hop !== null && hop <= rule.maxHopMinutes && state.stopIds.every((stop) => { const m = minutes(stop, id); return m === null || m <= rule.maxHopMinutes; }));
+    }
+    return fitCache.get(id)!;
+  };
+  // Would adding x first close this day to y's area (see DayBuilderConfig.priorityOverTravel)? A day normally spans two areas; a third
+  // needs extra value (isWorthAdding), so after x opens a new second area, y in yet another area is shut out.
+  const shutsOut = (x: string, y: string): boolean => {
+    const areasAfterX = new Set([...state.clusters, byId.get(x)!.metadata.cluster]);
+    return !areasAfterX.has(byId.get(y)!.metadata.cluster) && areasAfterX.size >= PREFERRED_MAX_CLUSTERS_PER_DAY;
+  };
+  const outranked = new Set<string>();
+  for (const x of candidates) {
+    const px = selectionPriority.get(x) ?? 0;
+    for (const y of candidates) {
+      if (x === y) continue;
+      const py = selectionPriority.get(y) ?? 0;
+      if (py <= 0 || (py - px) / py < rule.minRelativeGap) continue;
+      if (tierOf(y) !== tierOf(x) || !fitsRoute(y) || !(singleDayTrip || shutsOut(x, y))) continue;
+      const mx = minutes(lastStopId, x);
+      const my = minutes(lastStopId, y);
+      if (mx !== null && my !== null && my > mx + rule.maxExtraMinutes) continue;
+      outranked.add(x);
+      break;
+    }
+  }
+  return outranked;
+}
+
 function addStopToState(state: DayBuildState, placeId: string, byId: Map<string, ScoredPlannerPlace>): void {
   const metadata = byId.get(placeId)!.metadata;
   state.stopIds.push(placeId);
@@ -566,7 +659,8 @@ function findBestDayForInsertion(
   candidateId: string,
   dayStates: DayBuildState[],
   byId: Map<string, ScoredPlannerPlace>,
-  config: DayBuilderConfig
+  config: DayBuilderConfig,
+  requireLinkedDay = false
 ): number {
   const metadata = byId.get(candidateId)!.metadata;
   let bestIndex = -1;
@@ -586,6 +680,7 @@ function findBestDayForInsertion(
     const compatibility = isNewCluster
       ? Math.max(0, ...state.clusters.map((cluster) => clusterCompatibility(config.clusterCompatibility, cluster, metadata.cluster)))
       : SAME_CLUSTER_SCORE;
+    if (requireLinkedDay && isNewCluster && compatibility <= 0) return; // SecondaryCoverageGoal.onlyInLinkedDay
     const score = compatibility - (isNewCluster ? 0.5 : 0); // small nudge to prefer not introducing a new cluster
 
     if (score > bestScore) {
@@ -619,7 +714,8 @@ function attemptCoverageSwap(
   config: DayBuilderConfig,
   protectedPlaceIds: Set<string>,
   sameGoalPlaceIds: Set<string>,
-  softAvoidPlaceIds: ReadonlySet<string> = new Set()
+  softAvoidPlaceIds: ReadonlySet<string> = new Set(),
+  requireLinkedDay = false
 ): boolean {
   if (dayStates.some((state) => state.stopIds.includes(candidateId))) return true; // already present
 
@@ -657,7 +753,7 @@ function attemptCoverageSwap(
       continue;
     }
 
-    const targetDayIndex = findBestDayForInsertion(candidateId, dayStates, byId, config);
+    const targetDayIndex = findBestDayForInsertion(candidateId, dayStates, byId, config, requireLinkedDay);
     if (targetDayIndex === -1) {
       state.stopIds = savedStopIds;
       state.clusters = savedClusters;
@@ -705,7 +801,7 @@ function attemptCoverageSwap(
           continue;
         }
 
-        const targetDayIndex = findBestDayForInsertion(candidateId, dayStates, byId, config);
+        const targetDayIndex = findBestDayForInsertion(candidateId, dayStates, byId, config, requireLinkedDay);
         if (targetDayIndex === -1) {
           state.stopIds = savedStopIds;
           state.clusters = savedClusters;
@@ -904,7 +1000,7 @@ function applyCoverageRepairs(
     for (const candidateId of availableCandidates) {
       if (satisfiedCount >= goal.minCoverage) break;
       if (protectedPlaceIds.has(candidateId)) continue;
-      const inserted = attemptCoverageSwap(candidateId, dayStates, byId, selectionPriority, preferences, config, protectedPlaceIds, sameGoalPlaceIds);
+      const inserted = attemptCoverageSwap(candidateId, dayStates, byId, selectionPriority, preferences, config, protectedPlaceIds, sameGoalPlaceIds, undefined, goal.onlyInLinkedDay);
       if (inserted) {
         protectedPlaceIds.add(candidateId);
         satisfiedCount++;
@@ -1276,17 +1372,21 @@ export function buildPlannerPlan(places: PlannerPlaceMetadata[], request: Planne
     while (state.stopIds.length < EXTENDED_MAX_STOPS_PER_DAY && progressed) {
       progressed = false;
 
-      const compatible = sortedUnassignedByPriority(unassigned)
-        .filter((id) => {
-          const cluster = byId.get(id)!.metadata.cluster;
-          return state.clusters.some((existing) => clusterCompatibility(config.clusterCompatibility, existing, cluster) > 0);
-        })
+      const compatibleUnsorted = sortedUnassignedByPriority(unassigned).filter((id) => {
+        const cluster = byId.get(id)!.metadata.cluster;
+        return state.clusters.some((existing) => clusterCompatibility(config.clusterCompatibility, existing, cluster) > 0);
+      });
+      const outranked = config.priorityOverTravel && config.getVerifiedTravelMinutes && state.stopIds.length > 0 ? findOutrankedCandidates(compatibleUnsorted, state, byId, selectionPriority, config, request.days === 1) : null;
+      const compatible = compatibleUnsorted
         .sort((a, b) => {
           const clusterA = byId.get(a)!.metadata.cluster;
           const clusterB = byId.get(b)!.metadata.cluster;
           const bestA = Math.max(...state.clusters.map((c) => clusterCompatibility(config.clusterCompatibility, c, clusterA)));
           const bestB = Math.max(...state.clusters.map((c) => clusterCompatibility(config.clusterCompatibility, c, clusterB)));
           if (bestB !== bestA) return bestB - bestA;
+
+          // priorityOverTravel: a candidate clearly outranked by a better one that fits the day's route goes behind it.
+          if (outranked && outranked.has(a) !== outranked.has(b)) return outranked.has(a) ? 1 : -1;
 
           // Route-First Planning Upgrade: within the SAME cluster-compatibility tier, prefer
           // whichever candidate has a LOWER verified real travel time from the day's

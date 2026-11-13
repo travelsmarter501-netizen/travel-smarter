@@ -14,7 +14,13 @@ import type { PlannerRouteLeg } from "./plannerTransportTypes";
  *  4. a light day (load below `lightMinutes`) gets one unused place of its own or a closely linked area (highest planner
  *     priority, never one gated behind an interest), when one is open that day.
  * Stops are inserted where they add the least travel; route legs are rebuilt. Nothing else changes.
+ *
+ * Cities that give `tryInDay` (Prague since 2026-11-13): "crowded" and "has room" are decided on the day's REAL schedule (the
+ * same clock the customer sees: walks, lunch, margins, rounding, opening hours, last entry) instead of `heavyMinutes`. A stop
+ * that leaves a day because a place cannot fit its hours is the place that does not fit, and its reason is kept
+ * (`optionalReasons`: "closing"); a stop that leaves because the day runs too long keeps the reason "full".
  */
+export type DayFit = { ok: true } | { ok: false; reason: "closing" | "late"; placeId?: string };
 export type DayBalanceOptions = {
   compatibility: ClusterCompatibilityMap;
   connectors?: Record<string, readonly string[]>;
@@ -25,6 +31,11 @@ export type DayBalanceOptions = {
   /** Minutes of the outside-only visit of a place, or undefined when the place has no useful free outside. */
   outsideMinutes?: (placeId: string) => number | undefined;
   heavyMinutes: number;
+  /**
+   * Optional: whether the day's real schedule holds these stops (in this order, `outside` = outside-only visits). When given,
+   * it replaces `heavyMinutes` everywhere a day is judged crowded or a stop is checked to fit.
+   */
+  tryInDay?: (ids: readonly string[], dayNumber: number, outside: ReadonlySet<string>) => DayFit;
   lightMinutes: number;
   minPriorityToAdd: number;
   /** Optional: a place this strongly matching the request's interests (placeRelevance >= this) is never cut to an outside stop. */
@@ -38,11 +49,16 @@ export type DayBalanceOptions = {
    * island) that matches the request at least `minRelevance`, even below the normal threshold for added places.
    */
   walkByStop?: { isFreeShort: (placeId: string) => boolean; minRelevance: number };
+  /**
+   * Optional: a request goal (DayBuilderConfig.secondaryCoverageGoals, e.g. shopping) that is still short after balancing gets its
+   * nearest candidate as a SUGGESTION of the day it is closest to, when it is within `maxMinutes` of one of that day's stops (see step 8).
+   */
+  unmetGoalSuggestions?: { maxMinutes: number };
   /** Optional: ideas for a light day's free time (see step 7), with the lowest interest match they need. */
   freeTimeIdeas?: { minRelevance: number; /** Also a free, short place (walkByStop.isFreeShort) matching at least `nearFree.minRelevance` within `nearFree.maxMinutes` of a stop of the day, whatever its area. */ nearFree?: { minRelevance: number; maxMinutes: number } };
 };
 
-type WorkDay = { dayNumber: number; ids: string[]; scores: Map<string, number>; outside: Set<string>; optional: string[] };
+type WorkDay = { dayNumber: number; ids: string[]; scores: Map<string, number>; outside: Set<string>; optional: string[]; reasons?: Record<string, "full" | "closing"> };
 
 export function balanceCityDays(context: DayGeographyRepairContext, options: DayBalanceOptions): { plan: GeneratedPlannerPlan; legsByDay: PlannerRouteLeg[][] } {
   const { plan, legsByDay, config, isPlaceEligibleForDay } = context;
@@ -60,6 +76,18 @@ export function balanceCityDays(context: DayGeographyRepairContext, options: Day
   const mealMinutes = config.dayBuilderConfig.mealMinutesPerDay ?? 0;
   const heavyLoad = (ids: readonly string[], outside: ReadonlySet<string>) => load(ids, outside) + (ids.length > 1 ? mealMinutes : 0);
   const dayHeavyLoad = (d: WorkDay) => heavyLoad(d.ids, d.outside);
+  // The real schedule when the city gives one (memoised: the same day is tried many times), else the minutes limit.
+  const fitCache = new Map<string, DayFit>();
+  const fitOf = (ids: readonly string[], outside: ReadonlySet<string>, dayNumber: number): DayFit => {
+    if (!options.tryInDay) return heavyLoad(ids, outside) <= options.heavyMinutes ? { ok: true } : { ok: false, reason: "late" };
+    if (ids.length === 0) return { ok: true };
+    const key = `${dayNumber}|${ids.join(",")}|${[...outside].sort().join(",")}`;
+    let fit = fitCache.get(key);
+    if (!fit) { fit = options.tryInDay(ids, dayNumber, outside); fitCache.set(key, fit); }
+    return fit;
+  };
+  const fits = (ids: readonly string[], outside: ReadonlySet<string>, dayNumber: number) => fitOf(ids, outside, dayNumber).ok;
+  const dayFits = (d: WorkDay) => fits(d.ids, d.outside, d.dayNumber);
   const eligible = (id: string, dayNumber: number) => isPlaceEligibleForDay?.(id, dayNumber) ?? true;
   const priority = (id: string) => meta(id)?.priority ?? 0;
   const relevance = config.dayBuilderConfig.placeRelevance;
@@ -82,14 +110,23 @@ export function balanceCityDays(context: DayGeographyRepairContext, options: Day
     scores: new Map(d.stops.map((s) => [s.placeId, s.score])),
     outside: new Set(d.stops.filter((s) => s.visitMode === "outside").map((s) => s.placeId)),
     optional: [...(d.optionalPlaceIds ?? [])],
+    ...(d.optionalReasons ? { reasons: { ...d.optionalReasons } } : {}),
   }));
   let changed = false;
 
-  for (let round = 0; round < plan.days.length * 3; round++) {
-    const heavy = [...days].filter((d) => d.ids.length > 1 && dayHeavyLoad(d) > options.heavyMinutes).sort((a, b) => dayHeavyLoad(b) - dayHeavyLoad(a))[0];
+  // With the real schedule (tryInDay) a day that cannot be improved (every stop protected, nothing movable) is set aside and the other
+  // days still get balanced; before, the first such day ended the whole step and left every later unfit day as it was (2026-11-13: four
+  // days of one sample ended at 20:15 for that reason). Each round changes something or sets a day aside, so the budget is the number of
+  // possible changes. Without tryInDay the step is unchanged.
+  const setAside = new Set<number>();
+  const maxRounds = options.tryInDay ? plan.days.length * 3 + plan.days.reduce((n, d) => n + d.stops.length, 0) : plan.days.length * 3;
+  for (let round = 0; round < maxRounds; round++) {
+    const heavy = [...days].filter((d) => d.ids.length > 1 && !setAside.has(d.dayNumber) && !dayFits(d)).sort((a, b) => dayHeavyLoad(b) - dayHeavyLoad(a))[0];
     if (!heavy) break;
     // 1. An outside-only stop first: the place stays in the plan, only shorter.
-    const toOutside = heavy.ids
+    const heavyFit = fitOf(heavy.ids, heavy.outside, heavy.dayNumber);
+    const closingId = !heavyFit.ok && heavyFit.reason === "closing" ? heavyFit.placeId : undefined;
+    const toOutside = closingId ? undefined : heavy.ids
       .filter((id) => !options.protectedPlaceIds.has(id) && !wantedInside(id) && !heavy.outside.has(id) && (options.outsideMinutes?.(id) ?? 0) > 0 && (options.outsideMinutes?.(id) ?? 0) < (meta(id)?.visitDurationMinutes ?? 0))
       .sort((a, b) => priority(a) - priority(b) || (meta(b)?.visitDurationMinutes ?? 0) - (meta(a)?.visitDurationMinutes ?? 0))[0];
     if (toOutside) {
@@ -98,14 +135,18 @@ export function balanceCityDays(context: DayGeographyRepairContext, options: Day
       continue;
     }
     // 2. Move a stop to a lighter, close day.
-    const movable = heavy.ids.filter((id) => !options.protectedPlaceIds.has(id) && !heavy.outside.has(id)).sort((a, b) => priority(a) - priority(b) || (meta(b)?.visitDurationMinutes ?? 0) - (meta(a)?.visitDurationMinutes ?? 0));
+    const movable = heavy.ids
+      .filter((id) => !options.protectedPlaceIds.has(id) && !heavy.outside.has(id))
+      .sort((a, b) => priority(a) - priority(b) || (meta(b)?.visitDurationMinutes ?? 0) - (meta(a)?.visitDurationMinutes ?? 0))
+      // The place that does not fit its own hours goes first (it is the real cause), when it may move at all.
+      .sort((a, b) => Number(b === closingId) - Number(a === closingId));
     let moved = false;
     for (const id of movable) {
       const targets = days.filter((d) => d !== heavy && d.ids.length > 0 && eligible(id, d.dayNumber) && d.ids.some((x) => linked(x, id))).sort((a, b) => dayLoad(a) - dayLoad(b));
       for (const target of targets) {
         const next = insertCheapest(target.ids, id);
         const nextLoad = heavyLoad(next, target.outside);
-        if (nextLoad > options.heavyMinutes || nextLoad >= dayHeavyLoad(heavy)) continue;
+        if (!fits(next, target.outside, target.dayNumber) || nextLoad >= dayHeavyLoad(heavy)) continue;
         target.ids = next;
         target.scores.set(id, heavy.scores.get(id) ?? 0);
         heavy.ids = heavy.ids.filter((x) => x !== id);
@@ -116,10 +157,16 @@ export function balanceCityDays(context: DayGeographyRepairContext, options: Day
     }
     if (moved) continue;
     // 3. Nowhere to move it: the lowest-priority stop becomes an optional suggestion of the same day.
-    const toOptional = heavy.ids.length > 3 ? movable[0] : undefined;
-    if (!toOptional) break;
+    // With the real schedule, a day of 2-3 stops may also give one up (a closing place, or a day that really runs too long).
+    const toOptional = heavy.ids.length > (options.tryInDay ? 1 : 3) ? movable[0] : undefined;
+    if (!toOptional) {
+      if (!options.tryInDay) break;
+      setAside.add(heavy.dayNumber);
+      continue;
+    }
     heavy.ids = heavy.ids.filter((x) => x !== toOptional);
     heavy.optional.push(toOptional);
+    if (options.tryInDay) heavy.reasons = { ...heavy.reasons, [toOptional]: toOptional === closingId ? "closing" : "full" };
     changed = true;
   }
 
@@ -139,7 +186,7 @@ export function balanceCityDays(context: DayGeographyRepairContext, options: Day
         .sort((a, b) => Number(!!relevant?.(b.placeId)) - Number(!!relevant?.(a.placeId)) || b.priority - a.priority || a.placeId.localeCompare(b.placeId));
       for (const c of candidates) {
         const next = insertCheapest(day.ids, c.placeId);
-        if (heavyLoad(next, day.outside) > options.heavyMinutes) continue;
+        if (!fits(next, day.outside, day.dayNumber)) continue;
         day.ids = next;
         day.scores.set(c.placeId, 0);
         used.add(c.placeId);
@@ -168,7 +215,7 @@ export function balanceCityDays(context: DayGeographyRepairContext, options: Day
         const reachable = (x: string) => linked(x, id) || (day.ids.length === 1 && areasOf(x).some((a) => areasOf(id).some((b) => options.compatibility[a]?.[b] === "weak")));
         if (!eligible(id, day.dayNumber) || !day.ids.some(reachable) || (relevant && !relevant(id))) continue;
         const next = insertCheapest(day.ids, id);
-        if (heavyLoad(next, day.outside) > options.heavyMinutes) continue;
+        if (!fits(next, day.outside, day.dayNumber)) continue;
         const rest = from.ids.filter((x) => x !== id);
         if (!asOptional && load(rest, from.outside) < options.lightMinutes) continue;
         const score = Math.abs(load(next, day.outside) - (asOptional ? dayLoad(from) : load(rest, from.outside)));
@@ -178,7 +225,7 @@ export function balanceCityDays(context: DayGeographyRepairContext, options: Day
     if (!best) continue;
     day.ids = insertCheapest(day.ids, best.id);
     day.scores.set(best.id, best.from.scores.get(best.id) ?? 0);
-    if (best.asOptional) best.from.optional = best.from.optional.filter((x) => x !== best!.id);
+    if (best.asOptional) { best.from.optional = best.from.optional.filter((x) => x !== best!.id); if (best.from.reasons) delete best.from.reasons[best.id]; }
     else best.from.ids = best.from.ids.filter((x) => x !== best!.id);
     if (best.from.outside.delete(best.id)) day.outside.add(best.id);
     changed = true;
@@ -215,8 +262,11 @@ export function balanceCityDays(context: DayGeographyRepairContext, options: Day
       for (const set of daysOfArea.values()) cost += rg.splitPenalty * Math.max(0, set.size - 1);
       return cost - rg.restoreBonus * ws.reduce((n, w) => n + w.ids.length, 0);
     };
-    const fits = (was: WorkDay, now: WorkDay) =>
-      heavyLoad(now.ids, now.outside) <= Math.max(options.heavyMinutes, dayHeavyLoad(was)) && now.ids.length <= Math.max(rg.maxStops, was.ids.length) && areaCount(now.ids) <= Math.max(3, areaCount(was.ids));
+    // The cheap counts first, the day-fit (a search of the day's orders with tryInDay) last: same result, far fewer searches.
+    const fitsMove = (was: WorkDay, now: WorkDay) =>
+      now.ids.length <= Math.max(rg.maxStops, was.ids.length) &&
+      areaCount(now.ids) <= Math.max(3, areaCount(was.ids)) &&
+      (options.tryInDay ? fits(now.ids, now.outside, now.dayNumber) || (!dayFits(was) && heavyLoad(now.ids, now.outside) <= dayHeavyLoad(was)) : heavyLoad(now.ids, now.outside) <= Math.max(options.heavyMinutes, dayHeavyLoad(was)));
     const without = (w: WorkDay, gone: readonly string[]): WorkDay => ({ ...w, ids: w.ids.filter((x) => !gone.includes(x)), outside: new Set([...w.outside].filter((x) => !gone.includes(x))) });
     const withStops = (w: WorkDay, added: readonly string[], from: WorkDay): WorkDay => {
       let ids = [...w.ids];
@@ -241,7 +291,7 @@ export function balanceCityDays(context: DayGeographyRepairContext, options: Day
             for (const id of a.ids) {
               if (!eligible(id, b.dayNumber) || !canJoin(b, id)) continue;
               const tb = withStops(b, [id], a);
-              if (fits(b, tb)) consider([[ai, without(a, [id])], [bi, tb]]);
+              if (fitsMove(b, tb)) consider([[ai, without(a, [id])], [bi, tb]]);
             }
           }
           // Two stops swapped.
@@ -251,7 +301,7 @@ export function balanceCityDays(context: DayGeographyRepairContext, options: Day
               if (!canJoin(without(a, [x]), y) || !canJoin(without(b, [y]), x)) continue;
               const ta = withStops(without(a, [x]), [y], b);
               const tb = withStops(without(b, [y]), [x], a);
-              if (fits(a, ta) && fits(b, tb)) consider([[ai, ta], [bi, tb]]);
+              if (fitsMove(a, ta) && fitsMove(b, tb)) consider([[ai, ta], [bi, tb]]);
             }
           }
           // A whole area a -> b.
@@ -260,7 +310,7 @@ export function balanceCityDays(context: DayGeographyRepairContext, options: Day
             if (group.length < 2 || group.length >= a.ids.length || !group.every((x) => eligible(x, b.dayNumber))) continue;
             if (b.ids.length > 0 && !b.ids.some((x) => group.some((g) => linked(x, g)))) continue;
             const tb = withStops(b, group, a);
-            if (fits(b, tb)) consider([[ai, without(a, group)], [bi, tb]]);
+            if (fitsMove(b, tb)) consider([[ai, without(a, group)], [bi, tb]]);
           }
         }
         // The stops of one area of a spread over several other days, each to the lightest day next to it that has room
@@ -277,7 +327,7 @@ export function balanceCityDays(context: DayGeographyRepairContext, options: Day
               const b = moved.get(bi) ?? days[bi];
               if (b.ids.length === 0 || !eligible(id, b.dayNumber) || !canJoin(b, id)) continue;
               const tb = withStops(b, [id], a);
-              if (!fits(days[bi], tb)) continue;
+              if (!fitsMove(days[bi], tb)) continue;
               const minutes = load(tb.ids, tb.outside);
               if (!target || minutes < target.minutes) target = { i: bi, w: tb, minutes };
             }
@@ -294,9 +344,10 @@ export function balanceCityDays(context: DayGeographyRepairContext, options: Day
           for (const id of days[fi].optional) {
             if (!eligible(id, a.dayNumber) || !canJoin(a, id) || (relevant && !relevant(id))) continue;
             const ta: WorkDay = { ...a, ids: insertCheapest(a.ids, id), scores: new Map([...a.scores, [id, 0] as [string, number]]) };
-            if (heavyLoad(ta.ids, ta.outside) > options.heavyMinutes || ta.ids.length > rg.maxStops || areaCount(ta.ids) > Math.max(3, areaCount(a.ids))) continue;
-            if (fi === ai) consider([[ai, { ...ta, optional: a.optional.filter((v) => v !== id) }]]);
-            else consider([[ai, ta], [fi, { ...days[fi], optional: days[fi].optional.filter((v) => v !== id) }]]);
+            if (!fits(ta.ids, ta.outside, ta.dayNumber) || ta.ids.length > rg.maxStops || areaCount(ta.ids) > Math.max(3, areaCount(a.ids))) continue;
+            const dropReason = (w: WorkDay) => (w.reasons && id in w.reasons ? { reasons: Object.fromEntries(Object.entries(w.reasons).filter(([k]) => k !== id)) } : {});
+            if (fi === ai) consider([[ai, { ...ta, optional: a.optional.filter((v) => v !== id), ...dropReason(a) }]]);
+            else consider([[ai, ta], [fi, { ...days[fi], optional: days[fi].optional.filter((v) => v !== id), ...dropReason(days[fi]) }]]);
           }
         }
       }
@@ -314,7 +365,7 @@ export function balanceCityDays(context: DayGeographyRepairContext, options: Day
       for (const id of [...days[di].outside].sort((x, y) => (relevance?.(y) ?? 0) - (relevance?.(x) ?? 0))) {
         const day = days[di];
         const inside = new Set([...day.outside].filter((x) => x !== id));
-        if (heavyLoad(day.ids, inside) <= options.heavyMinutes) {
+        if (fits(day.ids, inside, day.dayNumber)) {
           days[di] = { ...day, outside: inside };
           touched.add(day.dayNumber);
           changed = true;
@@ -323,7 +374,7 @@ export function balanceCityDays(context: DayGeographyRepairContext, options: Day
         if (day.ids.length < 2 || (relevance?.(id) ?? 0) < 7) continue;
         const target = days
           .map((d, i) => ({ d, i, ids: insertCheapest(d.ids, id) }))
-          .filter(({ d, i, ids }) => i !== di && eligible(id, d.dayNumber) && canJoin(d, id) && ids.length <= rg.maxStops && heavyLoad(ids, d.outside) <= options.heavyMinutes && areaCount(ids) <= Math.max(3, areaCount(d.ids)))
+          .filter(({ d, i, ids }) => i !== di && eligible(id, d.dayNumber) && canJoin(d, id) && ids.length <= rg.maxStops && fits(ids, d.outside, d.dayNumber) && areaCount(ids) <= Math.max(3, areaCount(d.ids)))
           .sort((x, y) => dayLoad(x.d) - dayLoad(y.d))[0];
         if (!target) continue;
         days[target.i] = { ...target.d, ids: target.ids, scores: new Map([...target.d.scores, [id, day.scores.get(id) ?? 0] as [string, number]]) };
@@ -410,6 +461,26 @@ export function balanceCityDays(context: DayGeographyRepairContext, options: Day
     }
   }
 
+  // 8. A request goal that is still short (the day builder leaves it short rather than put a place on a day it does not fit): its nearest
+  //    candidate is offered as a suggestion of the day whose stops it is closest to, within `maxMinutes`. Nothing is scheduled.
+  const goalSuggestions = new Map<number, string[]>();
+  if (options.unmetGoalSuggestions) {
+    const inPlan = new Set(days.flatMap((d) => [...d.ids, ...d.optional]));
+    for (const goal of config.dayBuilderConfig.secondaryCoverageGoals ?? []) {
+      if (goal.candidates.filter((id) => inPlan.has(id)).length >= goal.minCoverage) continue;
+      let best: { dayNumber: number; id: string; minutes: number } | null = null;
+      for (const id of goal.candidates) {
+        if (inPlan.has(id)) continue;
+        for (const day of days) {
+          if (day.ids.length === 0 || !eligible(id, day.dayNumber)) continue;
+          const minutes = Math.min(...day.ids.map((x) => options.travelMinutes(x, id) ?? 999));
+          if (minutes <= options.unmetGoalSuggestions.maxMinutes && (!best || minutes < best.minutes)) best = { dayNumber: day.dayNumber, id, minutes };
+        }
+      }
+      if (best) { goalSuggestions.set(best.dayNumber, [...(goalSuggestions.get(best.dayNumber) ?? []), best.id]); inPlan.add(best.id); changed = true; }
+    }
+  }
+
   if (!changed) return { plan, legsByDay };
   let kept = days.length;
   if (rg) while (kept > 1 && days[kept - 1].ids.length === 0) kept--;
@@ -423,7 +494,9 @@ export function balanceCityDays(context: DayGeographyRepairContext, options: Day
         totalVisitMinutes: w.ids.reduce((s, id) => s + visit(id, w.outside), 0),
         clusters: [...new Set(w.ids.map(clusterOf))],
         ...(w.optional.length > 0 ? { optionalPlaceIds: w.optional } : {}),
+        ...(w.reasons && w.optional.some((id) => w.reasons![id]) ? { optionalReasons: Object.fromEntries(w.optional.filter((id) => w.reasons![id]).map((id) => [id, w.reasons![id]])) } : {}),
         ...(ideas.get(w.dayNumber)?.length ? { freeTimePlaceIds: ideas.get(w.dayNumber) } : {}),
+        ...(goalSuggestions.get(w.dayNumber)?.length ? { goalSuggestionPlaceIds: goalSuggestions.get(w.dayNumber) } : {}),
       };
     }),
   };

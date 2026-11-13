@@ -32,7 +32,7 @@ function toMinutes(time: string): number {
   return h * 60 + m;
 }
 
-function checkWindow(rawHours: HoursInfo | undefined, weekday: Weekday | null, start: number, end: number, fullDuration: number): TimingViolation["reason"] | null {
+export function checkWindow(rawHours: HoursInfo | undefined, weekday: Weekday | null, start: number, end: number, fullDuration: number): TimingViolation["reason"] | null {
   const hours = planningHoursOf(rawHours);
   if (!hours || hours.type !== "fixed") return null;
   if (!weekday) {
@@ -90,7 +90,11 @@ export function scheduleProblems(day: Pick<V2Day, "dayNumber" | "weekday" | "sto
   return problems;
 }
 
+// Every order of n stops, built once per n (the arrays are only read): the guard and the label check ask for the same sizes again and again.
+const PERMUTATIONS_OF = new Map<number, number[][]>();
 function permutations(n: number): number[][] {
+  const cached = PERMUTATIONS_OF.get(n);
+  if (cached) return cached;
   const result: number[][] = [];
   const walk = (prefix: number[], rest: number[]) => {
     if (rest.length === 0) {
@@ -100,6 +104,7 @@ function permutations(n: number): number[][] {
     rest.forEach((value, i) => walk([...prefix, value], [...rest.slice(0, i), ...rest.slice(i + 1)]));
   };
   walk([], Array.from({ length: n }, (_, i) => i));
+  PERMUTATIONS_OF.set(n, result);
   return result;
 }
 
@@ -112,7 +117,7 @@ function simulate(city: CityPlannerModule, day: V2Day, order: number[], month: n
   const stops: TimelineStopInput[] = order.map((i) => {
     const stop = day.stops[i];
     const meta = city.metadataById(stop.id);
-    return { placeId: stop.id, visitDurationMinutes: stop.visitDurationMinutes, hours: stop.hours, preferredTime: meta?.preferredTime ?? "anytime", arrivalBufferMinutes: meta?.arrivalBufferMinutes, showWindow: meta?.showWindow };
+    return { placeId: stop.id, visitDurationMinutes: stop.visitDurationMinutes, hours: stop.hours, preferredTime: meta?.preferredTime ?? "anytime", arrivalBufferMinutes: stop.visitMode === "outside" ? undefined : meta?.arrivalBufferMinutes, showWindow: meta?.showWindow };
   });
   const legs: PlannerRouteLeg[] = [];
   for (let i = 0; i < order.length - 1; i++) legs.push(city.routeLeg(day.stops[order[i]].id, day.stops[order[i + 1]].id));
@@ -243,6 +248,21 @@ export function applyTimingGuard(params: {
       return (hours.schedule[weekday] ?? []).length > 0;
     };
     const protectedIds = new Set(city.compositionProtectedPlaceIds ?? []);
+    // The reason a dropped stop shows: "closing" only when ITS OWN hours / last entry keep it out, i.e. in no order of the day's stops
+    // (the real meals stay where they are, as in the order search above) does it fit them. When it fits in some order, the day is what
+    // cannot hold it (another stop would break its hours instead, or the day runs too long): "full". Days of more than 7 stops are not
+    // searched (that is the guard's own limit) and keep "closing".
+    const closesInEveryOrder = (v2Day: V2Day, placeId: string): boolean => {
+      const n = v2Day.stops.length;
+      if (n < 2 || n > 7) return true;
+      const month = v2Day.actualDate ? Number(v2Day.actualDate.slice(5, 7)) : null;
+      for (const order of permutations(n)) {
+        const { timeline } = simulate(city, v2Day, order, month);
+        const simulated = { ...v2Day, stops: order.map((i) => v2Day.stops[i]), timeline };
+        if (!findTimingViolations(simulated).some((v) => v.kind === "stop" && v.placeId === placeId)) return false;
+      }
+      return true;
+    };
     // Repeated (at most 3 rounds): dropping a stop re-chooses the meals, which can move a later stop past closing.
     for (let dropRound = 0; dropRound < 3; dropRound++) {
     let dropped = false;
@@ -263,6 +283,8 @@ export function applyTimingGuard(params: {
         stops: day.stops.filter((s) => !remove.includes(s.placeId)),
         totalVisitMinutes: Math.max(0, day.totalVisitMinutes - removedMinutes),
         optionalPlaceIds: [...(day.optionalPlaceIds ?? []), ...remove.filter((id) => !(day.optionalPlaceIds ?? []).includes(id))],
+        // The real reason (see closesInEveryOrder): its own hours, or the day that cannot hold it.
+        optionalReasons: { ...day.optionalReasons, ...Object.fromEntries(remove.map((id) => [id, closesInEveryOrder(v2Day, id) ? ("closing" as const) : ("full" as const)])) },
       };
     });
     if (dropped) {

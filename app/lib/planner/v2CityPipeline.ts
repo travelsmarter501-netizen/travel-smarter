@@ -193,7 +193,7 @@ export async function generateCityPlanV2(baseCity: CityPlannerModule, input: Gen
     // getBarcelonaFlagshipCoverageGoals's own doc comment in barcelonaMustSeePolicy.ts for the
     // full root-cause/evidence. V1 (generateBarcelonaSmartPlan.ts) never calls this and keeps
     // using the static BARCELONA_DAY_BUILDER_CONFIG.flagshipCoverageGoals unchanged.
-    const flagshipCoverageGoals = city.flagshipCoverageGoals({ surpriseMe, days });
+    const flagshipCoverageGoals = city.flagshipCoverageGoals({ surpriseMe, days, interests: v2Interests });
     // P1 Personalization Fix (Shopping/Nightlife): built from the REAL, un-collapsed v2Interests
     // -- always a no-op (0 for every place) for Surprise Me, which sets v2Interests to `[]`. See
     // barcelonaV2PersonalizationScoring.ts for the full root-cause note and candidate rationale.
@@ -317,7 +317,20 @@ let { plan: optimizedPlan, legsByDay: optimizedLegsByDay } = applyCrossDayOptimi
     // already in it, so a day can end up pairing two areas that are not neighbours. A city may fix that here (reorder / swap
     // stops between days, same places). Barcelona has no such hook, so its plans are unchanged.
     if (city.repairDayGeography) {
-      const repaired = city.repairDayGeography({ plan: optimizedPlan, legsByDay: optimizedLegsByDay, config: configForRequest, isPlaceEligibleForDay });
+      const arrival = arrivalDateForResolution;
+      const isoOf = (dayNumber: number) => (arrival ? addDaysToIsoDate(arrival, dayNumber - 1) : null);
+      const repaired = city.repairDayGeography({
+        plan: optimizedPlan,
+        legsByDay: optimizedLegsByDay,
+        config: configForRequest,
+        isPlaceEligibleForDay,
+        hoursForPlace: (placeId) => {
+          const resolved = resolvePlannerPlace(placeId, city.places);
+          return resolved && "hours" in resolved.place ? resolved.place.hours : undefined;
+        },
+        weekdayForDayNumber: (dayNumber) => { const iso = isoOf(dayNumber); return iso ? (weekdayOfIsoDate(iso) ?? null) : null; },
+        monthForDayNumber: (dayNumber) => { const iso = isoOf(dayNumber); return iso ? Number(iso.slice(5, 7)) : null; },
+      });
       optimizedPlan = repaired.plan;
       optimizedLegsByDay = repaired.legsByDay;
     }

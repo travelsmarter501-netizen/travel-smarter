@@ -78,7 +78,10 @@ function pragueLegBase(fromPlaceId: string, toPlaceId: string): PlannerRouteLeg 
   return { fromPlaceId, toPlaceId, recommendedMode: "transit", options, sourceStatus: "estimated", routeUrl };
 }
 import { repairCityDayGeography } from "../cityGeographyRepair";
-import { balanceCityDays } from "../cityDayBalance";
+import { balanceCityDays, type DayFit } from "../cityDayBalance";
+import { buildBarcelonaDayTimeline, lunchPlacementFromTimeline, LUNCH_BREAK_ID, type TimelineMealInput, type TimelineStopInput } from "../barcelonaV2Timeline";
+import { checkWindow } from "../plannerTimingGuard";
+import type { DayGeographyRepairContext } from "../cityPlannerModule";
 import { ENABLE_MUST_SEE_PRIORITY, FLAGSHIP_MUST_SEE_BOOST, FLAGSHIP_TIER_B_BOOST, FLAGSHIP_TIER_B_SURPRISE_ME_BOOST } from "../barcelonaMustSeePolicy";
 import { V2_PLANNER_INTERESTS, type V2PlannerInterest } from "../v2PlannerTypes";
 import { PRAGUE_PLACES, PRAGUE_PLACE_COORDINATES } from "./praguePlaces";
@@ -180,10 +183,139 @@ const OUTSIDE_STOP_MINUTES: Record<string, number> = {
   "zizkov-tower": 15,
 };
 const BALANCE_PROTECTED = new Set([...TIER_A, ...TIER_B]);
+
+// ── A day tried on the real clock (day balance, 2026-11-13) ─────────────────────────────────────────
+// The restaurant is chosen later (barcelonaV2MealStops.ts); its walk is not known while days are balanced, so lunch is tried as
+// a break where the previous stop is, and everything after lunch is checked as if the walk to and from the restaurant took one more
+// margin (15 minutes). The final plan is checked again on its real schedule by the timing guard.
+const LUNCH_DETOUR_ALLOWANCE_MINUTES = 15;
+/** Prague's dinner is suggested from 18:00 right after the day's program (mealStops.flexibleMeals below). */
+const DINNER_FROM_MINUTES = 18 * 60;
+
+/** One order of a day, tried on the clock: the places that break their opening hours / last entry, and when the program ends. */
+export type DayOnClock = { failing: string[]; programEnd: number; windows: { placeId: string; start: number; end: number }[]; lunchAfterIndex: number | null };
+
+/**
+ * One order of a day on the clock: the same timeline the plan shows (walks, lunch, the 15-minute margin, rounding to the quarter
+ * hour, opening hours and last entry for the trip's dates), lunch placed by the clock. An evening place (preferred time "evening",
+ * e.g. the Žižkov tower) does not count for the end of the program.
+ */
+export function pragueDayOnClock(context: DayGeographyRepairContext): (ids: readonly string[], dayNumber: number, outside: ReadonlySet<string>) => DayOnClock {
+  // Legs are pure functions of the two places and only read here; kept for the life of this closure (one plan's balance), so the
+  // every-order search below does not rebuild the same estimate thousands of times.
+  const legCache = new Map<string, PlannerRouteLeg>();
+  const leg = (a: string, b: string): PlannerRouteLeg => {
+    const key = `${a}>${b}`;
+    let cached = legCache.get(key);
+    if (!cached) { cached = pragueLeg(a, b); legCache.set(key, cached); }
+    return cached;
+  };
+  const legBetween = (a: string, b: string) => (a === LUNCH_BREAK_ID || b === LUNCH_BREAK_ID ? undefined : leg(a, b));
+  return (ids, dayNumber, outside) => {
+    const weekday = context.weekdayForDayNumber?.(dayNumber) ?? null;
+    const month = context.monthForDayNumber?.(dayNumber) ?? null;
+    const stops: TimelineStopInput[] = ids.map((id) => {
+      const meta = getPraguePlannerMetadataById(id);
+      const outsideMinutes = outside.has(id) ? OUTSIDE_STOP_MINUTES[id] : undefined;
+      return {
+        placeId: id,
+        visitDurationMinutes: outsideMinutes ?? meta?.visitDurationMinutes ?? 60,
+        hours: outsideMinutes ? undefined : context.hoursForPlace?.(id),
+        preferredTime: meta?.preferredTime ?? "anytime",
+        arrivalBufferMinutes: outsideMinutes ? undefined : meta?.arrivalBufferMinutes,
+        showWindow: meta?.showWindow,
+      };
+    });
+    const legs = ids.slice(0, -1).map((id, i) => leg(id, ids[i + 1]));
+    const lunch = ids.length > 1 ? lunchPlacementFromTimeline(stops, legs, weekday, month, false, null, legBetween) : null;
+    const meals: TimelineMealInput[] = lunch ? [{ placeId: LUNCH_BREAK_ID, mealType: "lunch", afterStopIndex: lunch.afterIndex, earliestStart: lunch.estimatedStart }] : [];
+    const timeline = buildBarcelonaDayTimeline(stops, legs, meals, weekday, month, null, legBetween);
+    const failing: string[] = [];
+    const windows: DayOnClock["windows"] = [];
+    let programEnd = 0;
+    for (let i = 0; i < timeline.stops.length; i++) {
+      const window = timeline.stops[i];
+      const shift = lunch && i > lunch.afterIndex ? LUNCH_DETOUR_ALLOWANCE_MINUTES : 0;
+      const stop = stops[i];
+      windows.push({ placeId: stop.placeId, start: window.startMinutes + shift, end: window.endMinutes + shift });
+      if (checkWindow(stop.hours, weekday, window.startMinutes + shift, window.endMinutes + shift, stop.visitDurationMinutes)) failing.push(stop.placeId);
+      if (stop.preferredTime !== "evening") programEnd = Math.max(programEnd, window.endMinutes + shift);
+    }
+    return { failing, programEnd, windows, lunchAfterIndex: lunch ? lunch.afterIndex : null };
+  };
+}
+
+/**
+ * Whether a day's real schedule holds these stops. The given order is tried first, then every other order (up to 6 stops), because
+ * the plan's order is set later and the timing guard re-orders a day that breaks opening hours. The reason of a failure is decided
+ * across ALL orders:
+ * - "closing" (and the place): one place breaks its own opening hours / last entry in EVERY order, so its hours are what keeps it out;
+ * - "late": otherwise. Either the hours can be kept in some order but the program then runs past the start of dinner, or no order keeps
+ *   every place inside its hours but no single place is the cause (the day is simply too long to hold them all).
+ */
+export function pragueTryInDay(context: DayGeographyRepairContext): (ids: readonly string[], dayNumber: number, outside: ReadonlySet<string>) => DayFit {
+  const onClock = pragueDayOnClock(context);
+  const verdict = (clock: DayOnClock): boolean => clock.failing.length === 0 && clock.programEnd <= DINNER_FROM_MINUTES;
+  // Up to 6 stops every order is tried, so the verdict depends on the SET of stops (and which of them are outside-only), not on the
+  // order they were given in: kept per set. Larger days only look at the given order, so they are not cached.
+  const verdictCache = new Map<string, DayFit>();
+  return (ids, dayNumber, outside) => {
+    if (ids.length > 6) return tryOrders(ids, dayNumber, outside);
+    const key = `${dayNumber}|${[...ids].sort().join(",")}|${ids.filter((id) => outside.has(id)).sort().join(",")}`;
+    let cached = verdictCache.get(key);
+    if (!cached) { cached = tryOrders(ids, dayNumber, outside); verdictCache.set(key, cached); }
+    return cached;
+  };
+  function tryOrders(ids: readonly string[], dayNumber: number, outside: ReadonlySet<string>): DayFit {
+    const first = onClock(ids, dayNumber, outside);
+    if (verdict(first)) return { ok: true };
+    if (ids.length > 6) return first.failing.length > 0 ? { ok: false, reason: "closing", placeId: first.failing[0] } : { ok: false, reason: "late" };
+    // The earliest ANY order can end: the day starts at 9:00 at the earliest, every visit and the lunch (75 minutes) happen, and each
+    // transfer costs at least the 15-minute margin. When even that is past the start of dinner (and no evening place, which does not
+    // count for the end of the program, is in the day) no order can fit, so the search only has to find out whether SOME order keeps
+    // every hour: the first one found settles it ("late"), and the full search is needed only when none exists.
+    const evening = ids.some((id) => getPraguePlannerMetadataById(id)?.preferredTime === "evening");
+    const visitMinutes = ids.reduce((sum, id) => sum + ((outside.has(id) ? OUTSIDE_STOP_MINUTES[id] : undefined) ?? getPraguePlannerMetadataById(id)?.visitDurationMinutes ?? 60), 0);
+    const cannotEndByDinner = !evening && ids.length > 1 && 9 * 60 + visitMinutes + 75 + 15 * (ids.length - 1) > DINNER_FROM_MINUTES;
+    if (cannotEndByDinner && first.failing.length === 0) return { ok: false, reason: "late" };
+    let alwaysFailing: Set<string> | null = new Set(first.failing);
+    let hoursKeptSomewhere = first.failing.length === 0;
+    const permute = (prefix: string[], rest: string[]): boolean => {
+      if (rest.length === 0) {
+        if (prefix.every((id, i) => id === ids[i])) return false;
+        const clock = onClock(prefix, dayNumber, outside);
+        if (verdict(clock)) return true;
+        if (clock.failing.length === 0) {
+          hoursKeptSomewhere = true;
+          if (cannotEndByDinner) return true; // settled: "late" (nothing can end by dinner, and some order keeps the hours)
+        }
+        alwaysFailing = new Set([...alwaysFailing!].filter((id) => clock.failing.includes(id)));
+        return false;
+      }
+      for (let i = 0; i < rest.length; i++) if (permute([...prefix, rest[i]], [...rest.slice(0, i), ...rest.slice(i + 1)])) return true;
+      return false;
+    };
+    if (permute([], [...ids])) return cannotEndByDinner ? { ok: false, reason: "late" } : { ok: true };
+    // Several places can fail in every order: the first by id, so the answer does not depend on the order the day was given in.
+    const culprit = hoursKeptSomewhere ? undefined : [...alwaysFailing!].sort()[0];
+    return culprit ? { ok: false, reason: "closing", placeId: culprit } : { ok: false, reason: "late" };
+  };
+}
+
+/**
+ * A shopping place that no day's route can take is offered as a nearby suggestion only when it is at most this many minutes from one of
+ * that day's stops. Fixed at 20 (the walk-only limit used for every other leg): the nearest shopping place to a castle-based day is 23 to
+ * 28 minutes away by transit, which is not "nearby" (owner decision, 2026-11-13).
+ */
+const NEARBY_SHOPPING_MAX_MINUTES = 20;
 const FLAGSHIP_TIER_B_IDS = ["charles-bridge", "old-town-square"];
 
-function flagshipGoals(context: { surpriseMe: boolean; days: number }): FlagshipCoverageGoal[] {
+function flagshipGoals(context: { surpriseMe: boolean; days: number; interests?: readonly V2PlannerInterest[] }): FlagshipCoverageGoal[] {
   if (!ENABLE_MUST_SEE_PRIORITY) return [];
+  // One day and shopping as the ONLY interest: the day is built around a shopping area. No flagship is required or boosted (the castle
+  // and the Old Town landmarks would otherwise anchor the day); the place scoring starts from the shopping places and fills with the
+  // places of that area first, then the areas next to it. Every other request keeps the flagships.
+  if (context.days === 1 && !context.surpriseMe && context.interests?.length === 1 && context.interests[0] === "shopping") return [];
   const tierBBoost = context.surpriseMe && context.days >= 3 ? FLAGSHIP_TIER_B_SURPRISE_ME_BOOST : FLAGSHIP_TIER_B_BOOST;
   // PROPOSAL (owner review): from 2 days on, Charles Bridge and Old Town Square are required too (free, 30 minutes each); the
   // audit sample had 24 of 49 short plans without the bridge.
@@ -218,6 +350,14 @@ const DAY_BUILDER_CONFIG: DayBuilderConfig = {
   tierCoverageGoals: [{ interest: "popular", tierPlaceIds: TIER_A, minCoverage: 3 }],
   flagshipCoverageGoals: flagshipGoals({ surpriseMe: false, days: 1 }),
   getVerifiedTravelMinutes: travelMinutes,
+  // A clearly better-matching place whose route fits the day (at most 30 minutes from every stop so far, at most 15 minutes farther than
+  // the nearer one) goes first; closer priorities keep the minutes tie-break. "Clearly" = the code's gap
+  //     (stronger - weaker) / stronger >= minRelativeGap        (divided by the STRONGER priority, not by the weaker)
+  // so 0.15 means the weaker is at least 15% below the stronger, i.e. stronger >= 1.176 x weaker (17.6% above the weaker), and 0.20 means
+  // stronger >= 1.25 x weaker. 2026-11-13 review, 82 plans: 0.10 and 0.15 give the same plans (Petřín in every short nature plan). The
+  // contested pair, Kampa 16.5 against Petřín Tower 20.0: gap = (20.0 - 16.5) / 20.0 = 17.5% (the same pair is 21.2% above the weaker,
+  // 20.0 / 16.5 = 1.212), which passes 0.15 and fails 0.20 (needs 1.25), so at 0.20 it falls back to the minutes tie-break.
+  priorityOverTravel: { minRelativeGap: 0.15, maxHopMinutes: 30, maxExtraMinutes: 15 },
 };
 
 const ROUTE_CONFIG: RouteConfig = {
@@ -276,7 +416,13 @@ function presentPraguePlan(plan: GeneratedPlannerPlan): PresentedPlannerPlan {
       names.length === 0 ? "" : names.length === 1 ? `محطة اليوم: ${names[0]}.` : `محطات اليوم: ${names.slice(0, -1).join("، ")} و${names[names.length - 1]}.`;
     // Day balance: places taken off a full day stay visible as optional suggestions of that day.
     const optionalNearby = [
-      ...(day.optionalPlaceIds ?? []).map((placeId) => ({ placeId, type: "experience" as const, reason: "اختياري: اليوم مليان، زوره إذا ضل عندك وقت" })),
+      // The reason decided on the real schedule (day balance / timing guard): closing hours, or a day that runs too long.
+      ...(day.optionalPlaceIds ?? []).map((placeId) => ({
+        placeId,
+        type: "experience" as const,
+        reason: day.optionalReasons?.[placeId] === "closing" ? "اختياري: بيسكّر قبل ما توصله بهاليوم" : "اختياري: اليوم مليان، زوره إذا ضل عندك وقت",
+      })),
+      ...(day.goalSuggestionPlaceIds ?? []).map((placeId) => ({ placeId, type: "experience" as const, reason: "تسوّق قريب من مسارك إذا حابب" })),
       ...(day.freeTimePlaceIds ?? []).map((placeId) => ({ placeId, type: "experience" as const, reason: "قريب من مسارك إذا حابب" })),
     ];
     return { title, summary, optionalNearby };
@@ -431,9 +577,17 @@ function placeSelectionBonus(interests: readonly V2PlannerInterest[]): (placeId:
   };
 }
 
+/**
+ * Shopping places a "shopping" request must actually get. Old Town Square is NOT one: it is in almost every plan as a flagship,
+ * so counting it met the goal without any shopping (2026-11-13 review: a 1-day shopping plan had none, 2-3 day mixed plans only
+ * the 20-minute Havelské market). Order = what fits a usual route first (the market is in the Old Town every plan visits, then
+ * Na Příkopě and Palladium next to it, then Wenceslas Square); the goal is met by whichever of them the plan already has.
+ */
+const SHOPPING_COVERAGE_CANDIDATES = ["havelske-market", "na-prikope", "palladium", "wenceslas-square"];
+
 function shoppingCoverage(interests: readonly V2PlannerInterest[], days: number) {
-  if (!interests.includes("shopping") || days <= 2) return [];
-  return [{ candidates: [...SHOPPING_STRONG, ...SHOPPING_MIXED], minCoverage: days <= 4 ? 2 : 3 }];
+  if (!interests.includes("shopping")) return [];
+  return [{ candidates: SHOPPING_COVERAGE_CANDIDATES, minCoverage: days <= 2 ? 1 : days <= 4 ? 2 : 3, onlyInLinkedDay: true }];
 }
 
 export const PRAGUE_CITY_MODULE: CityPlannerModule = {
@@ -500,6 +654,9 @@ export const PRAGUE_CITY_MODULE: CityPlannerModule = {
         gatedPlaceIds: new Set(["vltava-one-hour-cruise"]),
         outsideMinutes: (placeId) => OUTSIDE_STOP_MINUTES[placeId],
         heavyMinutes: 380,
+        // Crowded / has room: decided on the day's real schedule (pragueTryInDay), not on the 380 minutes above.
+        tryInDay: pragueTryInDay(context),
+        unmetGoalSuggestions: { maxMinutes: NEARBY_SHOPPING_MAX_MINUTES },
         lightMinutes: 170,
         minPriorityToAdd: 5,
         keepInsideRelevance: 9,

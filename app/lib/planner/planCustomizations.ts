@@ -313,7 +313,7 @@ function buildDay(city: CityPlannerModule, baseDay: V2Day, edit: DayCustomizatio
     visitDurationMinutes: stop.visitDurationMinutes,
     hours: stop.hours,
     preferredTime: city.metadataById(stop.id)?.preferredTime ?? "anytime",
-    arrivalBufferMinutes: city.metadataById(stop.id)?.arrivalBufferMinutes,
+    arrivalBufferMinutes: stop.visitMode === "outside" ? undefined : city.metadataById(stop.id)?.arrivalBufferMinutes,
     showWindow: city.metadataById(stop.id)?.showWindow,
   }));
   const month = baseDay.actualDate ? Number(baseDay.actualDate.slice(5, 7)) : null;
