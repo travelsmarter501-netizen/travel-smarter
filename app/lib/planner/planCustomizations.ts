@@ -1,7 +1,7 @@
 import "server-only";
 import { buildBarcelonaDayTimeline, lunchPlacementFromTimeline, type TimelineMealInput, type TimelineStopInput } from "./barcelonaV2Timeline";
 import { timelineLegBetween } from "./timelineLegs";
-import { buildMealAdjacentLegs, resolveStop, withShowWindowNotes, type V2Day, type V2Plan } from "./barcelonaV2Resolve";
+import { buildMealAdjacentLegs, hoursOfPlaceIn, resolveStop, withDayHours, withShowWindowNotes, type V2Day, type V2Plan } from "./barcelonaV2Resolve";
 import { lunchIndexByClock } from "./barcelonaV2MealStops";
 import type { CityPlannerModule } from "./cityPlannerModule";
 import { findTimingViolations, scheduleProblems, TIMING_WARNING_AR } from "./plannerTimingGuard";
@@ -162,6 +162,11 @@ export function addCandidates(city: CityPlannerModule, base: V2Plan, customizati
 export type PlanAddOptions = {
   byDay: Record<string, ResolvedPlaceSummary[]>;
   details: Record<string, ResolvedPlace>;
+  /**
+   * Cities with per-day hours (tripHoursForAddedPlaces): the details of each day's candidates with THAT day's hours. Opened from a day,
+   * these win over `details` (which keeps one record per place, for older clients). Absent for other cities.
+   */
+  detailsByDay?: Record<string, Record<string, ResolvedPlace>>;
   /** Per day: the start choices (minutes) the day can hold; the rest would break opening hours or the order of visits. */
   starts: Record<string, number[]>;
 };
@@ -171,6 +176,7 @@ export function planAddOptions(city: CityPlannerModule, base: V2Plan, customizat
   const byDay: Record<string, ResolvedPlaceSummary[]> = {};
   const details: Record<string, ResolvedPlace> = {};
   const starts: Record<string, number[]> = {};
+  const detailsByDay: Record<string, Record<string, ResolvedPlace>> = {};
   for (const day of base.days) {
     starts[String(day.dayNumber)] = dayValidStarts(city, base, customizations, day.dayNumber);
     byDay[String(day.dayNumber)] = addCandidates(city, base, customizations, day.dayNumber).flatMap((id) => {
@@ -178,10 +184,11 @@ export function planAddOptions(city: CityPlannerModule, base: V2Plan, customizat
       const resolved = resolvePlannerPlace(id, cityForAddedPlaces(city, day).places);
       if (!resolved) return [];
       details[id] = resolved;
+      if (city.tripHoursForAddedPlaces) (detailsByDay[String(day.dayNumber)] ??= {})[id] = resolved;
       return [summarizeResolvedPlace(resolved)];
     });
   }
-  return { byDay, details, starts };
+  return { byDay, details, starts, ...(city.tripHoursForAddedPlaces ? { detailsByDay } : {}) };
 }
 
 /**
@@ -389,5 +396,19 @@ export function applyPlanCustomizations(city: CityPlannerModule, base: V2Plan, c
     const edit = customizations[String(day.dayNumber)];
     return edit ? effectiveDay(city, day, edit, placeDetails) : day;
   });
-  return { ...base, days, placeDetails };
+  if (!city.tripHoursForAddedPlaces) return { ...base, days, placeDetails };
+  // Per-day hours: a place ADDED to a day that the plan already shows elsewhere keeps the plan-level record, and gets this day's own
+  // record in dayPlaceDetails when its hours differ there; a place new to the plan gets this day's record as its only one.
+  let dayPlaceDetails = base.dayPlaceDetails;
+  days.forEach((day, index) => {
+    const baseDay = base.days[index];
+    const original = new Set(baseDay.stops.map((s) => s.id));
+    for (const stop of day.stops) {
+      if (original.has(stop.id) || !base.placeDetails?.[stop.id]) continue;
+      placeDetails[stop.id] = base.placeDetails[stop.id];
+      const own = withDayHours(base.placeDetails[stop.id], hoursOfPlaceIn(cityForAddedPlaces(city, baseDay).places, stop.id));
+      if (own) dayPlaceDetails = { ...(dayPlaceDetails ?? {}), [String(day.dayNumber)]: { ...(dayPlaceDetails?.[String(day.dayNumber)] ?? {}), [stop.id]: own } };
+    }
+  });
+  return { ...base, days, placeDetails, ...(dayPlaceDetails ? { dayPlaceDetails } : {}) };
 }

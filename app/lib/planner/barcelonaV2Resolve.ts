@@ -169,7 +169,28 @@ export type V2Plan = {
    * every consumer treats that the same as an empty map).
    */
   placeDetails: Record<string, ResolvedPlace>;
+  /**
+   * Optional (cities with per-day hours): by day number, the details of a place shown on that day when that day's date gives it other
+   * hours than `placeDetails` (e.g. a suggestion on 31 Dec and a visit on 30 Dec). Opened from that day, these win. Absent = none.
+   */
+  dayPlaceDetails?: Record<string, Record<string, ResolvedPlace>>;
 };
+
+/** A place's hours in a city's place data (any collection), or undefined when the place is not there. */
+export function hoursOfPlaceIn(places: CityPlannerModule["places"], placeId: string): HoursInfo | undefined {
+  for (const list of [places.attractions, places.experiences, places.beaches ?? [], places.foodPlaces, places.shoppingAreas, places.nightlifeVenues] as { id: string; hours?: HoursInfo }[][]) {
+    const hit = list.find((x) => x.id === placeId);
+    if (hit) return hit.hours;
+  }
+  return undefined;
+}
+
+/** A copy of a details record with other hours (per-day details); null when the hours are the same. */
+export function withDayHours(record: ResolvedPlace, hours: HoursInfo | undefined): ResolvedPlace | null {
+  const current = (record.place as { hours?: HoursInfo }).hours;
+  if (hours === undefined || JSON.stringify(hours) === JSON.stringify(current)) return null;
+  return { ...record, place: { ...record.place, hours } } as ResolvedPlace;
+}
 
 /** Extracts `hours` the same generic way barcelonaV2DateEligibility.ts already does -- every
  * main-stop guide type (attraction/shopping/experience) optionally carries it; beaches never do. */
@@ -554,6 +575,20 @@ export function resolveV2Plan(
     }
   }
 
+  // Per-day hours: a place shown on more than one day keeps, for each other day, that day's own hours (dayPlaceDetails).
+  let dayPlaceDetails: Record<string, Record<string, ResolvedPlace>> | undefined;
+  if (cityForDay) {
+    for (const day of days) {
+      const dayCity = cityForDay(day.dayNumber);
+      const ids = new Set([...day.stops, ...(day.mealStops ?? []), ...day.optionalNearby, ...(day.foodSuggestions ?? []), ...(day.shoppingSuggestions ?? []), ...(day.nightlifeSuggestions ?? [])].map((x) => x.id));
+      for (const id of ids) {
+        const record = placeDetails[id];
+        const own = record ? withDayHours(record, hoursOfPlaceIn(dayCity.places, id)) : null;
+        if (own) ((dayPlaceDetails ??= {})[String(day.dayNumber)] ??= {})[id] = own;
+      }
+    }
+  }
+
   const capacityWarning = daysGenerated < daysRequested ? city.capacityWarning(daysGenerated) : null;
 
   const densitySummary = buildDensitySummary(days.map((day) => ({ dayNumber: day.dayNumber, density: day.density })));
@@ -571,5 +606,6 @@ export function resolveV2Plan(
     routeFirstApplied: days.some((day) => day.legs.some((leg) => leg.sourceStatus === "verified" || leg.sourceStatus === "existing-project-data")),
     days,
     placeDetails,
+    ...(dayPlaceDetails ? { dayPlaceDetails } : {}),
   };
 }

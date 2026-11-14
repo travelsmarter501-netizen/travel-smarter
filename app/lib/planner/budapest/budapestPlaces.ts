@@ -183,14 +183,15 @@ export const BUDAPEST_ATTRACTIONS: Attraction[] = [
     priceType: "paid",
     bookingStatus: "بدون حجز",
     bestTime: "بعد الظهر",
-    tip: "الدخول لحد 17:00. القبة 10:00–17:00 حسب الطقس، وأقصى 15 شخص. ببلاش للكل 15 آذار و20 آب و23 تشرين الأول. الإغلاقات السنوية بصفحة منفصلة ما قرأناها.",
+    tip: "القبة مفتوحة ضمن ساعات المتحف ولحد 17:00 بالأكثر، حسب الطقس، ولحد 15 شخص بالمرة. الدخول ببلاش للكل 15 مارس و20 أغسطس و23 أكتوبر.",
     officialUrl: "https://en.mng.hu",
     mustSee: false,
     address: "Szent György tér 2, 1014 Budapest",
     priceText: "5,800 HUF (بالغ، كامل) · مخفّض 2,900 حسب العمر",
     // `variable` (not `fixed`) so the plan can end visits at 17:30 (halls start closing) while the card shows the building's 10:00-18:00.
-    // NEW CUSTOMER TEXT (for review): the display string below replaces the weekly table a `fixed` entry shows.
-    hours: variable("الثلاثاء–الأحد 10:00–18:00 (آخر دخول 17:00، القاعات بتبلش تسكّر 17:30) · الإثنين مسكّر · 24–25 كانون الأول مسكّر · 31 كانون الأول 10:00–16:00 · 1 كانون الثاني 12:00–18:00", "https://en.mng.hu/opening-hours/", "en.mng.hu (official)", ["monday"]),
+    // Customer text approved by the owner 2026-11-14 (holiday dates first, with their years; last entry per listed day; the 17:30 hall
+    // closing only for regular days). English / Hebrew in planCatalog.ts (Hebrew not yet reviewed).
+    hours: variable("مواعيد العطلة: 24–25 ديسمبر 2026 مسكّر · 26–30 ديسمبر 2026 (ومعها الإثنين 28) 10:00–18:00، آخر دخول 17:00 · 31 ديسمبر 2026 10:00–16:00، آخر دخول 15:00 · 1 يناير 2027 12:00–18:00، آخر دخول 17:00 — المواعيد العادية: الثلاثاء–الأحد 10:00–18:00، آخر دخول 17:00، والقاعات بتبلش تسكّر 17:30 · الإثنين مسكّر", "https://en.mng.hu/opening-hours/", "en.mng.hu (official)", ["monday"]),
     coordinates: { lat: 47.496282, lng: 19.039849 }, // OSM node/5842060882 entrance=main ref=C
   }),
   attraction({

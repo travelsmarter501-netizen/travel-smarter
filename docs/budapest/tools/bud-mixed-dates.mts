@@ -21,9 +21,11 @@ const TL = await imp("/app/lib/planner/barcelonaV2Timeline.ts");
 const M = await imp("/app/lib/planner/budapest/budapestCityModule.ts");
 const C = await imp("/app/lib/planner/planCustomizations.ts");
 const S = await imp("/docs/budapest/tools/bud-mixed-cases.mts");
+const SC = await imp("/app/lib/planner/savedPlanCity.ts");
 const { generateBarcelonaPlanV2 } = await imp("/app/smart-planner/barcelona-v2/actions.ts");
 
-const city = M.BUDAPEST_CITY_MODULE;
+// The edit functions get the same city as the saved-plan page and action (savedPlanCity.ts).
+let city = M.BUDAPEST_CITY_MODULE;
 const raw = (id: string) => [...P.BUDAPEST_PLACES.attractions, ...P.BUDAPEST_PLACES.experiences, ...P.BUDAPEST_PLACES.foodPlaces, ...P.BUDAPEST_PLACES.shoppingAreas].find((x: any) => x.id === id);
 /** That date's planning hours, from the place data (independent of the plan). */
 const onDate = (id: string, date: string) => H.planningHoursOf(T.resolveHoursForTrip(raw(id)?.hours, [date]));
@@ -57,6 +59,7 @@ for (const c of S.MIXED_CASES) {
   if (!r.ok) { expect(`${c.id} generates`, r.error, "ok"); continue; }
   const plan = r.data;
   plans[c.id] = plan;
+  city = SC.cityForSavedPlan(plan);
   out.push({ id: c.id, why: c.why, c: input, plan });
   for (const day of plan.days) {
     const tag = `${c.id} ${day.actualDate} ${day.weekday}`;
@@ -96,13 +99,14 @@ for (const c of S.MIXED_CASES) {
   const reset = C.applyPlanChange(city, plan, edits, { kind: "reset", dayNumber: 1 });
   expect(`E ${c.id}: reset day 1 restores the original day`, JSON.stringify(C.applyPlanCustomizations(city, plan, reset).days[0]) === JSON.stringify(plan.days[0]) ? "restored" : "differs", "restored");
   const reopened = JSON.parse(JSON.stringify({ plan, edits }));
-  expect(`E ${c.id}: save + reopen gives the same edited plan`, JSON.stringify(C.applyPlanCustomizations(city, reopened.plan, reopened.edits)) === JSON.stringify(C.applyPlanCustomizations(city, plan, edits)) ? "same" : "differs", "same");
+  expect(`E ${c.id}: data serialization round trip (JSON, not the site's save / reopen) gives the same edited plan`, JSON.stringify(C.applyPlanCustomizations(city, reopened.plan, reopened.edits)) === JSON.stringify(C.applyPlanCustomizations(city, plan, edits)) ? "same" : "differs", "same");
 }
 
 // D. The seven formerly failing cases, through the product's own day resolution: the stop's stored hours when the place is on that day,
 // otherwise the add path for that day (the same per-day resolution as creation, checked in B).
 function hoursOnPlanDay(caseId: string, date: string, placeId: string): { text: string; hours: any; weekday: string } {
   const plan = plans[caseId];
+  city = SC.cityForSavedPlan(plan);
   const day = plan.days.find((d: any) => d.actualDate === date);
   let stop = day.stops.find((s: any) => s.id === placeId);
   if (!stop) {
@@ -133,6 +137,7 @@ expect("D7d cruise Sat 2 Jan 2027 (no timetable published)", hoursOnPlanDay("M6-
 
 // F. Timeline and details agree on 28 Dec, 31 Dec 2026 and 1 Jan 2027 (trip 23 Dec - 1 Jan): the gallery on that day (planned or added
 // through the edit path), its stop hours, and the details record the plan returns for it.
+city = SC.cityForSavedPlan(plans["M7-A-2026-12-23"]);
 for (const [date, want] of [["2026-12-28", "10:00-17:30 last 17:00"], ["2026-12-31", "10:00-16:00 last 15:00"], ["2027-01-01", "12:00-17:30 last 17:00"]]) {
   const plan = plans["M7-A-2026-12-23"];
   const day = plan.days.find((d: any) => d.actualDate === date);
@@ -140,10 +145,87 @@ for (const [date, want] of [["2026-12-28", "10:00-17:30 last 17:00"], ["2026-12-
   const edited = has ? plan : C.applyPlanCustomizations(city, plan, { [String(day.dayNumber)]: { order: [MNG, ...day.stops.map((s: any) => s.id)] } });
   const eDay = edited.days.find((d: any) => d.dayNumber === day.dayNumber);
   const stopText = fmt(H.planningHoursOf(eDay.stops.find((s: any) => s.id === MNG).hours), day.weekday);
-  const detailsText = fmt(H.planningHoursOf(edited.placeDetails[MNG].place.hours), day.weekday);
+  // Opened from that day, the page shows the day's own record when there is one (dayPlaceDetails), else the plan-level one.
+  const opened = { ...(edited.placeDetails ?? {}), ...(edited.dayPlaceDetails?.[String(day.dayNumber)] ?? {}) }[MNG];
+  const detailsText = fmt(H.planningHoursOf(opened.place.hours), day.weekday);
   const w = eDay.timeline.stops.find((x: any) => x.placeId === MNG);
   const insideOwnDate = G.checkWindow(onDate(MNG, date), day.weekday, w.startMinutes, w.endMinutes, eDay.stops.find((s: any) => s.id === MNG).visitDurationMinutes) ?? "inside";
   expect(`F gallery ${date} (${has ? "planned" : "added"}): stop / details / visit ${hm(w.startMinutes)}-${hm(w.endMinutes)}`, `${stopText} / ${detailsText} / ${insideOwnDate}`, `${want} / ${want} / inside`);
+}
+
+// G. Details opened from a day = that day's date, with the SAME merge the plan page uses (SmartPlannerV2Result.tsx): add-candidate
+// details, the plan's details, then this day's candidates (detailsByDay) and this day's own records (dayPlaceDetails).
+const sameHours = (a: any, b: any) => JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
+function detailsOpenedFrom(plan: any, opts: any, dayNumber: number) {
+  const key = String(dayNumber);
+  return { ...(opts.details ?? {}), ...(plan.placeDetails ?? {}), ...(opts.detailsByDay?.[key] ?? {}), ...(plan.dayPlaceDetails?.[key] ?? {}) };
+}
+/** Every place shown on each day (visits, meals, suggestions, add candidates): its details record has that date's hours. */
+function detailsPerDayProblems(plan: any, edits: any): { checked: number; bad: string[] } {
+  const cityForPlan = SC.cityForSavedPlan(plan);
+  const shown = C.applyPlanCustomizations(cityForPlan, plan, edits);
+  const opts = C.planAddOptions(cityForPlan, plan, edits);
+  let checked = 0; const bad: string[] = [];
+  for (const day of shown.days) {
+    const merged = detailsOpenedFrom(shown, opts, day.dayNumber);
+    const ids = new Set<string>([...day.stops, ...(day.mealStops ?? []), ...day.optionalNearby, ...(day.foodSuggestions ?? []), ...(day.shoppingSuggestions ?? []), ...(day.nightlifeSuggestions ?? []), ...(opts.byDay[String(day.dayNumber)] ?? [])].map((x: any) => x.id).filter((id: string) => id !== "lunch-break"));
+    for (const id of ids) {
+      const rec = merged[id];
+      if (!rec || !raw(id)) continue;
+      checked++;
+      const want = T.resolveHoursForTrip(raw(id).hours, [day.actualDate]);
+      if (!sameHours(rec.place.hours, want)) bad.push(`${day.actualDate} ${id}`);
+    }
+  }
+  return { checked, bad };
+}
+for (const [id, plan] of Object.entries(plans)) {
+  const res = detailsPerDayProblems(plan, {});
+  expect(`G1 ${id}: details opened from each day = that date (${res.checked} places checked)`, res.bad.join(", ") || "all match", "all match");
+}
+{
+  // G2: the gallery as an add candidate on Wed 30 Dec (removed from that day) and as an added visit on Thu 31 Dec, same plan.
+  const plan = plans["M2-A-2026-12-29"];
+  const d30 = plan.days.find((d: any) => d.actualDate === "2026-12-30"), d31 = plan.days.find((d: any) => d.actualDate === "2026-12-31");
+  const removed = { [String(d30.dayNumber)]: { order: d30.stops.map((s: any) => s.id).filter((x: string) => x !== MNG) } };
+  const cityForPlan = SC.cityForSavedPlan(plan);
+  const opts = C.planAddOptions(cityForPlan, plan, removed);
+  const cand30 = opts.detailsByDay?.[String(d30.dayNumber)]?.[MNG];
+  expect("G2 gallery offered on Wed 30 Dec after removal: details = 30 Dec", cand30 ? fmt(H.planningHoursOf(cand30.place.hours), "wednesday") : "not offered", "10:00-17:30 last 17:00");
+  const both = { ...removed, [String(d31.dayNumber)]: { order: [MNG, ...d31.stops.map((s: any) => s.id)] } };
+  const shown = C.applyPlanCustomizations(cityForPlan, plan, both);
+  const opts2 = C.planAddOptions(cityForPlan, plan, both);
+  const on31 = detailsOpenedFrom(shown, opts2, d31.dayNumber)[MNG];
+  expect("G2 gallery added on Thu 31 Dec: details opened from 31 Dec", on31 ? fmt(H.planningHoursOf(on31.place.hours), "thursday") : "missing", "10:00-16:00 last 15:00");
+  const res = detailsPerDayProblems(plan, both);
+  expect(`G2 whole plan after both edits: details opened from each day = that date (${res.checked} checked)`, res.bad.join(", ") || "all match", "all match");
+}
+{
+  // G3: a place shown as a SUGGESTION on one day and added as a VISIT on another day whose date gives it other hours. Generated plans
+  // never show a place both ways (a visit is never also suggested), so the first such pair in the mixed plans is made through the edit path.
+  let found: { caseId: string; id: string; sugDay: any; addDay: any } | null = null;
+  for (const [caseId, plan] of Object.entries(plans)) {
+    for (const sugDay of plan.days) for (const o of sugDay.optionalNearby) {
+      if (found || !raw(o.id)?.hours || plan.days.some((d: any) => d.stops.some((st: any) => st.id === o.id))) continue;
+      const addDay = plan.days.find((d: any) => d !== sugDay && !sameHours(T.resolveHoursForTrip(raw(o.id).hours, [d.actualDate]), T.resolveHoursForTrip(raw(o.id).hours, [sugDay.actualDate])) && !!city.metadataById(o.id));
+      if (addDay) found = { caseId, id: o.id, sugDay, addDay };
+    }
+  }
+  if (!found) expect("G3 a suggestion whose hours differ on another day exists in the mixed plans", "none", "found");
+  else {
+    const { caseId, id, sugDay, addDay } = found;
+    const plan = plans[caseId];
+    const cityForPlan = SC.cityForSavedPlan(plan);
+    const edits = { [String(addDay.dayNumber)]: { order: [...addDay.stops.map((st: any) => st.id), id] } };
+    const shown = C.applyPlanCustomizations(cityForPlan, plan, edits);
+    const opts = C.planAddOptions(cityForPlan, plan, edits);
+    const onAdd = detailsOpenedFrom(shown, opts, addDay.dayNumber)[id];
+    const onSug = detailsOpenedFrom(shown, opts, sugDay.dayNumber)[id];
+    expect(`G3 ${caseId} ${id} added on ${addDay.actualDate}: details = that date`, sameHours(onAdd.place.hours, T.resolveHoursForTrip(raw(id).hours, [addDay.actualDate])) ? fmt(H.planningHoursOf(onAdd.place.hours), addDay.weekday) : "OTHER DAY'S HOURS", fmt(H.planningHoursOf(T.resolveHoursForTrip(raw(id).hours, [addDay.actualDate])), addDay.weekday));
+    expect(`G3 ${caseId} ${id} suggested on ${sugDay.actualDate}: details = that date`, sameHours(onSug.place.hours, T.resolveHoursForTrip(raw(id).hours, [sugDay.actualDate])) ? fmt(H.planningHoursOf(onSug.place.hours), sugDay.weekday) : "OTHER DAY'S HOURS", fmt(H.planningHoursOf(T.resolveHoursForTrip(raw(id).hours, [sugDay.actualDate])), sugDay.weekday));
+    const res = detailsPerDayProblems(plan, edits);
+    expect(`G3 whole plan: details opened from each day = that date (${res.checked} checked)`, res.bad.join(", ") || "all match", "all match");
+  }
 }
 
 if (process.argv[2]) writeFileSync(process.argv[2], JSON.stringify(out));

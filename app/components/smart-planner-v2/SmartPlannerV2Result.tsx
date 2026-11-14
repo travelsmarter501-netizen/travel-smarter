@@ -118,6 +118,8 @@ export default function SmartPlannerV2Result({
     setLiveAddOptions(addOptions);
   }
   const [saveFailed, setSaveFailed] = useState(false);
+  // Shown only after the server refused an "add" for that day (add_unavailable); cleared by the next change.
+  const [addUnavailable, setAddUnavailable] = useState(false);
   const router = useRouter();
   // The translation catalog (every city's texts, ~88 KB) is loaded only when the plan is shown in English or Hebrew;
   // Arabic shows the stored plan as it is.
@@ -144,6 +146,7 @@ export default function SmartPlannerV2Result({
   const applyChange = (change: PlanChange) => {
     if (!editablePlanId) return;
     setSaveFailed(false);
+    setAddUnavailable(false);
     setLivePlan((current) => applyLocally(current, change));
     setEdited((current) => {
       const next = new Set(current);
@@ -161,6 +164,7 @@ export default function SmartPlannerV2Result({
         // "invalid" can follow a change the screen already showed (e.g. two quick moves): reload the saved plan. "add_unavailable" (an
         // add the day cannot take; the button only offers places that fit) is handled the same way: nothing was saved.
         setSaveFailed(result.code !== "invalid" && result.code !== "start_infeasible" && result.code !== "add_unavailable");
+        setAddUnavailable(result.code === "add_unavailable");
         router.refresh();
         return;
       }
@@ -171,6 +175,7 @@ export default function SmartPlannerV2Result({
         ...current,
         days: current.days.map((d) => (d.dayNumber === result.dayNumber ? day : d)),
         placeDetails: { ...(current.placeDetails ?? {}), ...result.placeDetails },
+        ...(result.dayDetails ? { dayPlaceDetails: { ...(current.dayPlaceDetails ?? {}), [String(result.dayNumber)]: result.dayDetails } } : {}),
       }));
     });
   };
@@ -182,6 +187,16 @@ export default function SmartPlannerV2Result({
   }, [liveAddOptions, livePlan, language, localize, plan.placeDetails]); // eslint-disable-line react-hooks/exhaustive-deps
   const [activeDayIndex, setActiveDayIndex] = useState(0);
   const activeDay = plan.days[activeDayIndex];
+  // Cities with per-day hours: opened from this day, a place's details carry THIS day's hours (its add candidates, then the plan's own
+  // per-day records). Other cities have neither, so the map is the same as before.
+  const activeDayKey = activeDay ? String(activeDay.dayNumber) : "";
+  const dayDetails = useMemo(() => {
+    const addForDay = liveAddOptions?.detailsByDay?.[activeDayKey];
+    const planForDay = plan.dayPlaceDetails?.[activeDayKey];
+    if (!addForDay && !planForDay) return allDetails;
+    const addTranslated = addForDay ? translate({ ...livePlan, days: [], placeDetails: addForDay }).placeDetails : {};
+    return { ...allDetails, ...addTranslated, ...(planForDay ?? {}) };
+  }, [allDetails, liveAddOptions, activeDayKey, plan.dayPlaceDetails, livePlan, language, localize]); // eslint-disable-line react-hooks/exhaustive-deps
   const dayMonth = (iso: string) => (language === "ar" ? formatArabicDayMonth(iso) : formatDayMonth(language, iso));
   const cityName = plannerDestinationName(plan.destination, language);
   const groupLabel = (groupId: string) =>
@@ -289,6 +304,11 @@ export default function SmartPlannerV2Result({
         ))}
       </div>
 
+      {addUnavailable && (
+        <p role="alert" className="mt-3 rounded-xl bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800">
+          {ui.addUnavailable}
+        </p>
+      )}
       {saveFailed && (
         <p role="alert" className="mt-3 rounded-xl bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700">
           {ui.saveFailed}
@@ -300,7 +320,7 @@ export default function SmartPlannerV2Result({
           <SmartPlannerV2Day
             day={activeDay}
             guideSlug={plan.destination}
-            placeDetails={allDetails}
+            placeDetails={dayDetails}
             lang={language}
             editing={editablePlanId ? { onChange: applyChange, saving, edited: edited.has(activeDay.dayNumber), addOptions: liveAddOptions?.byDay[String(activeDay.dayNumber)] ?? [], startOptions: liveAddOptions?.starts?.[String(activeDay.dayNumber)] } : undefined}
           />

@@ -10,7 +10,7 @@ import type { V2Day } from "../../../../lib/planner/barcelonaV2Resolve";
 import type { ResolvedPlace } from "../../../../lib/readyPlan";
 
 /** Only the changed day goes back (with the details of the places it shows): a 7-day plan is ~177 KB, one day a fraction. */
-export type CustomizeSavedPlanResult = { ok: true; dayNumber: number; day: V2Day | null; placeDetails: Record<string, ResolvedPlace>; addOptions: PlanAddOptions } | { ok: false; code: "invalid" | "not_signed_in" | "not_found" | "save_failed" }
+export type CustomizeSavedPlanResult = { ok: true; dayNumber: number; day: V2Day | null; placeDetails: Record<string, ResolvedPlace>; /** Cities with per-day hours: this day's own records (V2Plan.dayPlaceDetails of the day). */ dayDetails?: Record<string, ResolvedPlace>; addOptions: PlanAddOptions } | { ok: false; code: "invalid" | "not_signed_in" | "not_found" | "save_failed" }
   /** An "add" the day cannot take (not offered: already in the trip, unknown, or no valid time that day). Nothing is saved. */
   | { ok: false; code: "add_unavailable" }
   /** The day cannot hold that start (a visit would run past closing or out of order); suggestion is the nearest start it can hold. */
@@ -64,5 +64,6 @@ export async function customizeSavedPlan(planId: unknown, rawChange: unknown): P
   const ids = new Set<string>();
   if (day) for (const x of [...day.stops, ...(day.mealStops ?? []), ...day.optionalNearby, ...(day.foodSuggestions ?? []), ...(day.shoppingSuggestions ?? []), ...(day.nightlifeSuggestions ?? [])]) ids.add(x.id);
   const placeDetails = Object.fromEntries(Object.entries(effective.placeDetails ?? {}).filter(([id]) => ids.has(id)));
-  return { ok: true, dayNumber: change.dayNumber, day, placeDetails, addOptions: planAddOptions(city, base, next) };
+  const dayDetails = effective.dayPlaceDetails ? (effective.dayPlaceDetails[String(change.dayNumber)] ?? {}) : undefined;
+  return { ok: true, dayNumber: change.dayNumber, day, placeDetails, ...(dayDetails ? { dayDetails } : {}), addOptions: planAddOptions(city, base, next) };
 }

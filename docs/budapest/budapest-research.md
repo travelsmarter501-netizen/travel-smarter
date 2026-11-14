@@ -513,3 +513,56 @@ Prague and Barcelona do not set the flag.
 - **Month names:** the site's plan and day headers use "ديسمبر / يناير". The Budapest data uses "كانون / تشرين" in 12 lines; aligning them is pre-launch text work.
 - **Current UI limit:** for this place type (`variable`) the card shows the written text, not a row for the visit date. The holiday dates therefore come first in the text, each with its year.
 - **Pre-launch work:** the Budapest English (and Hebrew) translations are still missing for every Budapest text. Only the texts proposed here have English.
+
+## 16. Review round 4 (2026-11-14): server action, details per day, refusal message, gallery text
+
+### 16.1 Server action and saving
+- **`bud-action-save.mts` (15 pass)** runs the REAL `customizeSavedPlan`. Only the two Supabase client modules are swapped for in-memory test doubles (`fake-supabase/`, through a Node resolution hook). Test data only: a generated plan, a made-up user and plan id.
+  - **Refused adds:** the cruise on a 2027 day of a trip whose 2026 days have it; the cruise on every day of a 2027-only trip; a place already in the trip; an unknown id. Each returns `add_unavailable`, the save RPC is never called, and the stored row is byte-identical.
+  - **Valid add:** the save RPC is called once. Reading the row back gives the same day the action returned, and the original plan is kept beside the edits.
+  - **The same add again (a stale screen):** refused, with no second save.
+  - **Another user's plan / signed out:** `not_found` / `not_signed_in`, unchanged.
+- **The real page (local test server + fake Supabase, test data):**
+  - **Refusal:** a stale screen's add was refused, and the message was shown. The server made only reads (no `replace_owned_plan_content`), and the stored row was unchanged.
+  - **Valid add:** the add called the save once, and after reopening the page the place is on its day.
+- **Not covered:** a real Supabase (row-level security, the SQL function itself) and real devices.
+- **Renamed:** the "save + reopen" check in `bud-mixed-dates.mts` is a JSON serialization round trip of the data, not the site's save / reopen.
+
+### 16.2 Details opened from a day
+- **Found:** `planAddOptions` kept one `details[id]` for all days (the last day won), and the plan keeps one record per place. A suggestion on one day could therefore show another day's hours.
+  - On the real saved-plan path there was a second leak: `cityForSavedPlan` gave the edit functions hours already merged for the whole trip.
+- **Fix (opt-in, Budapest only):**
+  - `cityForSavedPlan` returns the plain place data for cities with `resolveHoursPerDay`.
+  - `PlanAddOptions.detailsByDay`: each day's candidates with that day's hours.
+  - `V2Plan.dayPlaceDetails`: a day's own record, only where it differs from the plan-level one.
+  - `applyPlanCustomizations` keeps both for added places.
+  - The action returns the edited day's records.
+  - The page opens a place with the day's records on top. Without these fields (Prague, Barcelona, older plans) the page builds the same map as before.
+- **Tests (`bud-mixed-dates.mts`, 307 pass):**
+  - **G1:** on every day of the 7 mixed trips, every place shown (visits, meals, suggestions, add candidates) opens a record with that date's hours.
+  - **G2:** the gallery offered on Wed 30 Dec (after removing it from that day), then added on Thu 31 Dec, in one plan.
+  - **G3:** the Zoo suggested on 1 Jan 2027 and added on 31 Dec 2026.
+  - **Generated plans** never show a place both as a visit and as a suggestion. That case therefore exists only after an edit.
+- **What the page shows (screenshots):**
+  - **Gallery (`variable`):** the card shows its written text, the same on every day. That text lists the holiday dates with their years.
+  - **Museum of Fine Arts on Fri 1 Jan 2027 (fixed weekly table):** "ساعات يوم الجمعة: 12:00–18:00 · مفتوح هذا اليوم", that date's row (an ordinary Friday is 10:00–18:00).
+
+### 16.3 Refusal message
+- Shown only after the server refuses an add (`add_unavailable`), above the day, and cleared by the next change.
+- Arabic and English as approved. **Hebrew proposed by the developer, not reviewed:** «אי אפשר להוסיף את המקום הזה ליום הזה. נסו מקום אחר.»
+
+### 16.4 National Gallery text (applied as approved, with the requested corrections)
+- **Holiday hours first, each date with its year.** Last entry per listed day: 17:00 for 18:00 days, 15:00 for 31 Dec. The 17:30 hall closing is stated only under regular hours.
+- **Tip:** the dome only within the museum's hours (17:00 at the latest), and last entry is no longer repeated.
+- **English** is in the reviewed catalog (`planCatalog.ts`). **Hebrew** catalog entries proposed, not reviewed.
+- **Planning is unchanged:** visits on 26–30 Dec and 1 Jan still end by 17:30 (conservative); the text does not promise that for holidays.
+
+### 16.5 Prague and Barcelona
+- **Generation** on this commit: see the regression file in the package.
+- **Edit functions on the Prague (82) and Barcelona (104) samples:** add options, a removal, an add, a start change and a refused add are byte-identical to the published `925512d` code (`edit-reg.mts`, both trees).
+
+### 16.6 Still open before launch (unchanged scope)
+- The Budapest texts that use "كانون / تشرين" (e.g. the Museum of Fine Arts tip).
+- All other Budapest English / Hebrew translations: the card's description and price still show in Arabic in the English view.
+- Compact stored hours (deferred).
+- Day quality (next).
