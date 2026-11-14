@@ -3,7 +3,7 @@ import { resolvePlannerPlace } from "../../readyPlan";
 import { haversineDistanceKm, type GeoPoint } from "../geoDistance";
 import { buildEstimatedLeg, estimatedWalkingMinutes } from "../estimatedRouteLegs";
 import { BUDAPEST_ROUTED_WALKS } from "./budapestRoutedWalks";
-import { CHECKED_TRANSIT_NOTE_AR, checkedTransitMinutes, UNCHECKED_TRANSIT_FACTOR } from "./budapestCheckedTransit";
+import { checkedTransit, checkedTransitNoteAr, UNCHECKED_TRANSIT_FACTOR } from "./budapestCheckedTransit";
 import type { PlannerRouteLeg, TransportOption } from "../plannerTransportTypes";
 import { repairCityDayGeography } from "../cityGeographyRepair";
 import { balanceCityDays, type DayFit } from "../cityDayBalance";
@@ -53,10 +53,11 @@ function bothOnCastleHill(a: string, b: string): boolean {
 function withTransitCheck(leg: PlannerRouteLeg): PlannerRouteLeg {
   const index = leg.options.findIndex((option) => option.mode === "transit");
   if (index === -1) return leg;
-  const checked = checkedTransitMinutes(leg.fromPlaceId, leg.toPlaceId);
+  // Only the checked direction (no reverse-direction borrowing); the note names the one departure that was checked.
+  const checked = checkedTransit(leg.fromPlaceId, leg.toPlaceId);
   const old = leg.options[index];
   const transit: TransportOption = checked !== null
-    ? { ...old, durationMinutesMin: Math.round(checked * 0.95), durationMinutesMax: Math.round(checked * 1.15), note: CHECKED_TRANSIT_NOTE_AR }
+    ? { ...old, durationMinutesMin: Math.round(checked.minutes * 0.95), durationMinutesMax: Math.round(checked.minutes * 1.15), note: checkedTransitNoteAr(checked) }
     : { ...old, durationMinutesMin: Math.round(old.durationMinutesMin * UNCHECKED_TRANSIT_FACTOR), durationMinutesMax: Math.round(old.durationMinutesMax * UNCHECKED_TRANSIT_FACTOR) };
   const options = leg.options.map((option, i) => (i === index ? transit : option));
   const walking = options.find((option) => option.mode === "walking");

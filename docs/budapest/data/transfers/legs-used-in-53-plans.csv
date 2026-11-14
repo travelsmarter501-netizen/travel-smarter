@@ -1,0 +1,159 @@
+from,to,from_lat,from_lng,to_lat,to_lng,mode,min,max,km,classification,used_times
+margaret-island,parliament-exterior,47.5187875,19.0448154,47.5057199,19.0449808,walking,21,27,1.78,"computed walking route (OSRM); time estimated at 4.5 km/h",7
+parliament-exterior,shoes-on-the-danube,47.5057199,19.0449808,47.5039715,19.0447906,walking,3,3,0.21,"computed walking route (OSRM); time estimated at 4.5 km/h",27
+shoes-on-the-danube,st-stephens-basilica,47.5039715,19.0447906,47.5007189,19.0533363,walking,12,16,1.02,"computed walking route (OSRM); time estimated at 4.5 km/h",11
+st-stephens-basilica,opera-house-tour,47.5007189,19.0533363,47.502466,19.05868,walking,7,9,0.57,"computed walking route (OSRM); time estimated at 4.5 km/h",11
+shoes-on-the-danube,hungarikum-bisztro,47.5039715,19.0447906,47.5034621,19.0480568,walking,8,11,0.69,"computed walking route (OSRM); time estimated at 4.5 km/h",14
+hungarikum-bisztro,st-stephens-basilica,47.5034621,19.0480568,47.5007189,19.0533363,walking,8,11,0.7,"computed walking route (OSRM); time estimated at 4.5 km/h",11
+fishermans-bastion,matthias-church-exterior,47.5023053,19.0346998,47.5020118,19.0342109,walking,1,1,0.06,"computed walking route (OSRM); time estimated at 4.5 km/h",34
+matthias-church-exterior,hungarian-national-gallery,47.5020118,19.0342109,47.496282,19.039849,walking,12,15,0.97,"computed walking route (OSRM); time estimated at 4.5 km/h",20
+hungarian-national-gallery,chain-bridge,47.496282,19.039849,47.5000802,19.0466475,walking,17,21,1.16,"computed walking route (OSRM); time estimated at 4.5 km/h +20% hill",12
+hungarian-national-gallery,21-restaurant,47.496282,19.039849,47.5041419,19.0312808,walking,14,18,1.19,"computed walking route (OSRM); time estimated at 4.5 km/h",13
+21-restaurant,chain-bridge,47.5041419,19.0312808,47.5000802,19.0466475,transit,18,22,,"checked duration (Google transit)",9
+great-market-hall,vaci-utca,47.487212,19.058966,47.4921923,19.0534903,walking,9,12,0.78,"computed walking route (OSRM); time estimated at 4.5 km/h",21
+vaci-utca,citadella,47.4921923,19.0534903,47.487191,19.046005,walking,20,25,1.38,"computed walking route (OSRM); time estimated at 4.5 km/h +20% hill",9
+citadella,danube-legend-cruise,47.487191,19.046005,47.4941437,19.0488902,walking,24,31,1.67,"computed walking route (OSRM); time estimated at 4.5 km/h +20% hill",13
+shoes-on-the-danube,chain-bridge,47.5039715,19.0447906,47.5000802,19.0466475,walking,6,8,0.5,"computed walking route (OSRM); time estimated at 4.5 km/h",7
+chain-bridge,hungarian-national-gallery,47.5000802,19.0466475,47.496282,19.039849,walking,17,21,1.16,"computed walking route (OSRM); time estimated at 4.5 km/h +20% hill",4
+chain-bridge,21-restaurant,47.5000802,19.0466475,47.5041419,19.0312808,transit,11,14,,"checked duration (Google transit)",6
+21-restaurant,hungarian-national-gallery,47.5041419,19.0312808,47.496282,19.039849,walking,14,18,1.19,"computed walking route (OSRM); time estimated at 4.5 km/h",16
+matthias-church-exterior,st-stephens-basilica,47.5020118,19.0342109,47.5007189,19.0533363,transit,19,23,,"checked duration (Google transit)",6
+st-stephens-basilica,menza,47.5007189,19.0533363,47.5039614,19.0627699,walking,12,15,0.99,"computed walking route (OSRM); time estimated at 4.5 km/h",5
+menza,opera-house-tour,47.5039614,19.0627699,47.502466,19.05868,walking,5,7,0.44,"computed walking route (OSRM); time estimated at 4.5 km/h",20
+matthias-church-exterior,fishermans-bastion,47.5020118,19.0342109,47.5023053,19.0346998,walking,1,1,0.06,"computed walking route (OSRM); time estimated at 4.5 km/h",8
+fishermans-bastion,parliament-exterior,47.5023053,19.0346998,47.5057199,19.0449808,transit,16,22,,"estimate (straight line, distance model x factor)",5
+chain-bridge,andrassy-avenue,47.5000802,19.0466475,47.50287,19.05816,walking,13,17,1.1,"computed walking route (OSRM); time estimated at 4.5 km/h",2
+chain-bridge,hungarikum-bisztro,47.5000802,19.0466475,47.5034621,19.0480568,walking,7,8,0.55,"computed walking route (OSRM); time estimated at 4.5 km/h",6
+hungarikum-bisztro,andrassy-avenue,47.5034621,19.0480568,47.50287,19.05816,walking,12,15,0.98,"computed walking route (OSRM); time estimated at 4.5 km/h",3
+margaret-island,st-stephens-basilica,47.5187875,19.0448154,47.5007189,19.0533363,transit,21,31,,"estimate (straight line, distance model x factor)",1
+opera-house-tour,st-stephens-basilica,47.502466,19.05868,47.5007189,19.0533363,walking,7,9,0.57,"computed walking route (OSRM); time estimated at 4.5 km/h",7
+st-stephens-basilica,shoes-on-the-danube,47.5007189,19.0533363,47.5039715,19.0447906,walking,12,16,1.02,"computed walking route (OSRM); time estimated at 4.5 km/h",4
+shoes-on-the-danube,parliament-exterior,47.5039715,19.0447906,47.5057199,19.0449808,walking,3,3,0.21,"computed walking route (OSRM); time estimated at 4.5 km/h",20
+parliament-exterior,margaret-island,47.5057199,19.0449808,47.5187875,19.0448154,walking,21,27,1.78,"computed walking route (OSRM); time estimated at 4.5 km/h",3
+opera-house-tour,menza,47.502466,19.05868,47.5039614,19.0627699,walking,5,7,0.44,"computed walking route (OSRM); time estimated at 4.5 km/h",8
+menza,st-stephens-basilica,47.5039614,19.0627699,47.5007189,19.0533363,walking,12,15,0.99,"computed walking route (OSRM); time estimated at 4.5 km/h",7
+hungarian-national-gallery,matthias-church-exterior,47.496282,19.039849,47.5020118,19.0342109,walking,12,15,0.97,"computed walking route (OSRM); time estimated at 4.5 km/h",4
+fishermans-bastion,chain-bridge,47.5023053,19.0346998,47.5000802,19.0466475,walking,18,23,1.26,"computed walking route (OSRM); time estimated at 4.5 km/h +20% hill",6
+matthias-church-exterior,21-restaurant,47.5020118,19.0342109,47.5041419,19.0312808,walking,4,5,0.33,"computed walking route (OSRM); time estimated at 4.5 km/h",17
+21-restaurant,fishermans-bastion,47.5041419,19.0312808,47.5023053,19.0346998,walking,5,6,0.39,"computed walking route (OSRM); time estimated at 4.5 km/h",11
+citadella,vaci-utca,47.487191,19.046005,47.4921923,19.0534903,transit,14,22,,"estimate (straight line, distance model x factor)",10
+vaci-utca,great-market-hall,47.4921923,19.0534903,47.487212,19.058966,walking,9,12,0.78,"computed walking route (OSRM); time estimated at 4.5 km/h",16
+great-market-hall,citadella,47.487212,19.058966,47.487191,19.046005,transit,16,23,,"estimate (straight line, distance model x factor)",3
+great-market-hall,gerbeaud,47.487212,19.058966,47.4972059,19.0505484,walking,17,21,1.38,"computed walking route (OSRM); time estimated at 4.5 km/h",7
+gerbeaud,citadella,47.4972059,19.0505484,47.487191,19.046005,transit,17,25,,"estimate (straight line, distance model x factor)",3
+fishermans-bastion,hungarian-national-gallery,47.5023053,19.0346998,47.496282,19.039849,walking,11,14,0.93,"computed walking route (OSRM); time estimated at 4.5 km/h",4
+parliament-exterior,citadella,47.5057199,19.0449808,47.487191,19.046005,transit,21,31,,"estimate (straight line, distance model x factor)",4
+heroes-square,museum-of-fine-arts,47.5152112,19.0764759,47.515762,19.076938,walking,1,2,0.1,"computed walking route (OSRM); time estimated at 4.5 km/h",10
+museum-of-fine-arts,vajdahunyad-castle,47.515762,19.076938,47.5153549,19.0818753,walking,11,14,0.91,"computed walking route (OSRM); time estimated at 4.5 km/h",4
+vajdahunyad-castle,house-of-music,47.5153549,19.0818753,47.512794,19.083528,walking,6,8,0.49,"computed walking route (OSRM); time estimated at 4.5 km/h",12
+st-stephens-basilica,chain-bridge,47.5007189,19.0533363,47.5000802,19.0466475,walking,7,10,0.62,"computed walking route (OSRM); time estimated at 4.5 km/h",20
+chain-bridge,shoes-on-the-danube,47.5000802,19.0466475,47.5039715,19.0447906,walking,6,8,0.5,"computed walking route (OSRM); time estimated at 4.5 km/h",8
+st-stephens-basilica,gerbeaud,47.5007189,19.0533363,47.4972059,19.0505484,walking,7,9,0.56,"computed walking route (OSRM); time estimated at 4.5 km/h",4
+gerbeaud,chain-bridge,47.4972059,19.0505484,47.5000802,19.0466475,walking,7,10,0.62,"computed walking route (OSRM); time estimated at 4.5 km/h",3
+citadella,opera-house-tour,47.487191,19.046005,47.502466,19.05868,transit,21,30,,"estimate (straight line, distance model x factor)",2
+opera-house-tour,heroes-square,47.502466,19.05868,47.5152112,19.0764759,walking,25,32,2.07,"computed walking route (OSRM); time estimated at 4.5 km/h",2
+chain-bridge,gerbeaud,47.5000802,19.0466475,47.4972059,19.0505484,walking,7,10,0.62,"computed walking route (OSRM); time estimated at 4.5 km/h",1
+gerbeaud,shoes-on-the-danube,47.4972059,19.0505484,47.5039715,19.0447906,walking,13,17,1.11,"computed walking route (OSRM); time estimated at 4.5 km/h",1
+opera-house-tour,citadella,47.502466,19.05868,47.487191,19.046005,transit,35,43,,"checked duration (Google transit)",1
+menza,citadella,47.5039614,19.0627699,47.487191,19.046005,transit,22,33,,"estimate (straight line, distance model x factor)",1
+museum-of-fine-arts,opera-house-tour,47.515762,19.076938,47.502466,19.05868,transit,21,30,,"estimate (straight line, distance model x factor)",1
+museum-of-fine-arts,menza,47.515762,19.076938,47.5039614,19.0627699,walking,23,29,1.88,"computed walking route (OSRM); time estimated at 4.5 km/h",1
+chain-bridge,st-stephens-basilica,47.5000802,19.0466475,47.5007189,19.0533363,walking,7,10,0.62,"computed walking route (OSRM); time estimated at 4.5 km/h",10
+st-stephens-basilica,citadella,47.5007189,19.0533363,47.487191,19.046005,transit,18,27,,"estimate (straight line, distance model x factor)",1
+st-stephens-basilica,hungarikum-bisztro,47.5007189,19.0533363,47.5034621,19.0480568,walking,8,11,0.7,"computed walking route (OSRM); time estimated at 4.5 km/h",6
+hungarikum-bisztro,citadella,47.5034621,19.0480568,47.487191,19.046005,transit,20,29,,"estimate (straight line, distance model x factor)",1
+shoes-on-the-danube,vaci-utca,47.5039715,19.0447906,47.4921923,19.0534903,walking,20,25,1.65,"computed walking route (OSRM); time estimated at 4.5 km/h",6
+great-market-hall,danube-legend-cruise,47.487212,19.058966,47.4941437,19.0488902,walking,16,20,1.32,"computed walking route (OSRM); time estimated at 4.5 km/h",7
+gerbeaud,danube-legend-cruise,47.4972059,19.0505484,47.4941437,19.0488902,walking,6,8,0.53,"computed walking route (OSRM); time estimated at 4.5 km/h",7
+danube-legend-cruise,frici-papa,47.4941437,19.0488902,47.5024568,19.0639715,walking,19,25,1.6,"computed walking route (OSRM); time estimated at 4.5 km/h",5
+heroes-square,house-of-music,47.5152112,19.0764759,47.512794,19.083528,walking,9,11,0.71,"computed walking route (OSRM); time estimated at 4.5 km/h",15
+house-of-music,opera-house-tour,47.512794,19.083528,47.502466,19.05868,transit,22,31,,"estimate (straight line, distance model x factor)",10
+opera-house-tour,gozsdu-udvar,47.502466,19.05868,47.4980304,19.0601215,walking,8,11,0.69,"computed walking route (OSRM); time estimated at 4.5 km/h",2
+house-of-music,menza,47.512794,19.083528,47.5039614,19.0627699,transit,16,20,,"checked duration (Google transit)",14
+gozsdu-udvar,new-york-cafe,47.4980304,19.0601215,47.4986468,19.0707893,walking,13,17,1.1,"computed walking route (OSRM); time estimated at 4.5 km/h",3
+chain-bridge,fishermans-bastion,47.5000802,19.0466475,47.5023053,19.0346998,walking,18,23,1.26,"computed walking route (OSRM); time estimated at 4.5 km/h +20% hill",6
+hungarian-national-gallery,pierrot,47.496282,19.039849,47.503897,19.0309623,walking,14,18,1.18,"computed walking route (OSRM); time estimated at 4.5 km/h",6
+vaci-utca,shoes-on-the-danube,47.4921923,19.0534903,47.5039715,19.0447906,walking,20,25,1.65,"computed walking route (OSRM); time estimated at 4.5 km/h",6
+parliament-exterior,danube-legend-cruise,47.5057199,19.0449808,47.4941437,19.0488902,walking,17,22,1.42,"computed walking route (OSRM); time estimated at 4.5 km/h",1
+parliament-exterior,hungarikum-bisztro,47.5057199,19.0449808,47.5034621,19.0480568,walking,6,8,0.5,"computed walking route (OSRM); time estimated at 4.5 km/h",2
+hungarikum-bisztro,danube-legend-cruise,47.5034621,19.0480568,47.4941437,19.0488902,walking,16,20,1.3,"computed walking route (OSRM); time estimated at 4.5 km/h",2
+danube-legend-cruise,new-york-cafe,47.4941437,19.0488902,47.4986468,19.0707893,transit,20,29,,"estimate (straight line, distance model x factor)",2
+st-stephens-basilica,andrassy-avenue,47.5007189,19.0533363,47.50287,19.05816,walking,6,7,0.48,"computed walking route (OSRM); time estimated at 4.5 km/h",7
+andrassy-avenue,opera-house-tour,47.50287,19.05816,47.502466,19.05868,walking,1,2,0.1,"computed walking route (OSRM); time estimated at 4.5 km/h",8
+menza,andrassy-avenue,47.5039614,19.0627699,47.50287,19.05816,walking,6,8,0.54,"computed walking route (OSRM); time estimated at 4.5 km/h",1
+opera-house-tour,frici-papa,47.502466,19.05868,47.5024568,19.0639715,walking,7,8,0.55,"computed walking route (OSRM); time estimated at 4.5 km/h",3
+budapest-zoo,heroes-square,47.517311,19.07734,47.5152112,19.0764759,walking,3,4,0.28,"computed walking route (OSRM); time estimated at 4.5 km/h",13
+vaci-utca,st-stephens-basilica,47.4921923,19.0534903,47.5007189,19.0533363,walking,14,17,1.14,"computed walking route (OSRM); time estimated at 4.5 km/h",1
+st-stephens-basilica,parliament-exterior,47.5007189,19.0533363,47.5057199,19.0449808,walking,14,17,1.13,"computed walking route (OSRM); time estimated at 4.5 km/h",2
+gerbeaud,parliament-exterior,47.4972059,19.0505484,47.5057199,19.0449808,walking,15,19,1.27,"computed walking route (OSRM); time estimated at 4.5 km/h",1
+arena-mall,opera-house-tour,47.4984954,19.0918628,47.502466,19.05868,transit,23,34,,"estimate (straight line, distance model x factor)",1
+opera-house-tour,andrassy-avenue,47.502466,19.05868,47.50287,19.05816,walking,1,2,0.1,"computed walking route (OSRM); time estimated at 4.5 km/h",10
+andrassy-avenue,gozsdu-udvar,47.50287,19.05816,47.4980304,19.0601215,walking,9,11,0.72,"computed walking route (OSRM); time estimated at 4.5 km/h",1
+gozsdu-udvar,danube-legend-cruise,47.4980304,19.0601215,47.4941437,19.0488902,walking,15,19,1.23,"computed walking route (OSRM); time estimated at 4.5 km/h",1
+arena-mall,frici-papa,47.4984954,19.0918628,47.5024568,19.0639715,transit,21,31,,"estimate (straight line, distance model x factor)",2
+frici-papa,opera-house-tour,47.5024568,19.0639715,47.502466,19.05868,walking,7,8,0.55,"computed walking route (OSRM); time estimated at 4.5 km/h",1
+house-of-music,chain-bridge,47.512794,19.083528,47.5000802,19.0466475,transit,26,38,,"estimate (straight line, distance model x factor)",1
+menza,chain-bridge,47.5039614,19.0627699,47.5000802,19.0466475,walking,19,25,1.61,"computed walking route (OSRM); time estimated at 4.5 km/h",1
+fishermans-bastion,21-restaurant,47.5023053,19.0346998,47.5041419,19.0312808,walking,5,6,0.39,"computed walking route (OSRM); time estimated at 4.5 km/h",3
+vaci-utca,chain-bridge,47.4921923,19.0534903,47.5000802,19.0466475,walking,14,18,1.16,"computed walking route (OSRM); time estimated at 4.5 km/h",2
+fishermans-bastion,hungarikum-bisztro,47.5023053,19.0346998,47.5034621,19.0480568,transit,16,23,,"estimate (straight line, distance model x factor)",1
+andrassy-avenue,menza,47.50287,19.05816,47.5039614,19.0627699,walking,6,8,0.54,"computed walking route (OSRM); time estimated at 4.5 km/h",6
+museum-of-fine-arts,house-of-music,47.515762,19.076938,47.512794,19.083528,walking,9,11,0.72,"computed walking route (OSRM); time estimated at 4.5 km/h",10
+fishermans-bastion,pierrot,47.5023053,19.0346998,47.503897,19.0309623,walking,5,6,0.39,"computed walking route (OSRM); time estimated at 4.5 km/h",1
+heroes-square,vajdahunyad-castle,47.5152112,19.0764759,47.5153549,19.0818753,walking,11,14,0.92,"computed walking route (OSRM); time estimated at 4.5 km/h",20
+vajdahunyad-castle,arena-mall,47.5153549,19.0818753,47.4984954,19.0918628,transit,21,30,,"estimate (straight line, distance model x factor)",1
+hungarikum-bisztro,parliament-exterior,47.5034621,19.0480568,47.5057199,19.0449808,walking,6,8,0.5,"computed walking route (OSRM); time estimated at 4.5 km/h",5
+parliament-exterior,21-restaurant,47.5057199,19.0449808,47.5041419,19.0312808,transit,16,23,,"estimate (straight line, distance model x factor)",3
+gozsdu-udvar,frici-papa,47.4980304,19.0601215,47.5024568,19.0639715,walking,9,11,0.74,"computed walking route (OSRM); time estimated at 4.5 km/h",5
+hungarian-national-gallery,st-stephens-basilica,47.496282,19.039849,47.5007189,19.0533363,transit,17,25,,"estimate (straight line, distance model x factor)",1
+chain-bridge,matthias-church-exterior,47.5000802,19.0466475,47.5020118,19.0342109,walking,19,24,1.3,"computed walking route (OSRM); time estimated at 4.5 km/h +20% hill",1
+pierrot,st-stephens-basilica,47.503897,19.0309623,47.5007189,19.0533363,transit,20,29,,"estimate (straight line, distance model x factor)",1
+hungarian-national-gallery,fishermans-bastion,47.496282,19.039849,47.5023053,19.0346998,walking,11,14,0.93,"computed walking route (OSRM); time estimated at 4.5 km/h",7
+house-of-music,vajdahunyad-castle,47.512794,19.083528,47.5153549,19.0818753,walking,6,8,0.49,"computed walking route (OSRM); time estimated at 4.5 km/h",2
+vajdahunyad-castle,opera-house-tour,47.5153549,19.0818753,47.502466,19.05868,transit,22,33,,"estimate (straight line, distance model x factor)",4
+vajdahunyad-castle,menza,47.5153549,19.0818753,47.5039614,19.0627699,transit,21,30,,"estimate (straight line, distance model x factor)",2
+matthias-church-exterior,citadella,47.5020118,19.0342109,47.487191,19.046005,transit,20,30,,"estimate (straight line, distance model x factor)",1
+vaci-utca,danube-legend-cruise,47.4921923,19.0534903,47.4941437,19.0488902,walking,7,9,0.57,"computed walking route (OSRM); time estimated at 4.5 km/h",4
+matthias-church-exterior,vaci-utca,47.5020118,19.0342109,47.4921923,19.0534903,transit,20,29,,"estimate (straight line, distance model x factor)",1
+vaci-utca,gerbeaud,47.4921923,19.0534903,47.4972059,19.0505484,walking,8,10,0.64,"computed walking route (OSRM); time estimated at 4.5 km/h",2
+gerbeaud,great-market-hall,47.4972059,19.0505484,47.487212,19.058966,walking,17,21,1.38,"computed walking route (OSRM); time estimated at 4.5 km/h",2
+opera-house-tour,parliament-exterior,47.502466,19.05868,47.5057199,19.0449808,walking,17,21,1.4,"computed walking route (OSRM); time estimated at 4.5 km/h",2
+citadella,gerbeaud,47.487191,19.046005,47.4972059,19.0505484,transit,27,32,,"checked duration (Google transit)",3
+parliament-exterior,chain-bridge,47.5057199,19.0449808,47.5000802,19.0466475,walking,8,10,0.67,"computed walking route (OSRM); time estimated at 4.5 km/h",4
+st-stephens-basilica,margaret-island,47.5007189,19.0533363,47.5187875,19.0448154,transit,21,31,,"estimate (straight line, distance model x factor)",3
+hungarikum-bisztro,margaret-island,47.5034621,19.0480568,47.5187875,19.0448154,walking,24,31,2.04,"computed walking route (OSRM); time estimated at 4.5 km/h",4
+hungarikum-bisztro,chain-bridge,47.5034621,19.0480568,47.5000802,19.0466475,walking,7,8,0.55,"computed walking route (OSRM); time estimated at 4.5 km/h",1
+chain-bridge,margaret-island,47.5000802,19.0466475,47.5187875,19.0448154,transit,21,31,,"estimate (straight line, distance model x factor)",1
+hungarian-national-gallery,citadella,47.496282,19.039849,47.487191,19.046005,walking,25,32,1.74,"computed walking route (OSRM); time estimated at 4.5 km/h +20% hill",1
+21-restaurant,citadella,47.5041419,19.0312808,47.487191,19.046005,transit,22,31,,"estimate (straight line, distance model x factor)",1
+chain-bridge,parliament-exterior,47.5000802,19.0466475,47.5057199,19.0449808,walking,8,10,0.67,"computed walking route (OSRM); time estimated at 4.5 km/h",1
+vaci-utca,gozsdu-udvar,47.4921923,19.0534903,47.4980304,19.0601215,walking,13,17,1.08,"computed walking route (OSRM); time estimated at 4.5 km/h",6
+gozsdu-udvar,arena-mall,47.4980304,19.0601215,47.4984954,19.0918628,transit,22,33,,"estimate (straight line, distance model x factor)",6
+arena-mall,danube-legend-cruise,47.4984954,19.0918628,47.4941437,19.0488902,transit,27,39,,"estimate (straight line, distance model x factor)",3
+frici-papa,arena-mall,47.5024568,19.0639715,47.4984954,19.0918628,transit,21,31,,"estimate (straight line, distance model x factor)",4
+citadella,matthias-church-exterior,47.487191,19.046005,47.5020118,19.0342109,transit,20,30,,"estimate (straight line, distance model x factor)",2
+new-york-cafe,arena-mall,47.4986468,19.0707893,47.4984954,19.0918628,transit,18,27,,"estimate (straight line, distance model x factor)",2
+chain-bridge,citadella,47.5000802,19.0466475,47.487191,19.046005,transit,18,26,,"estimate (straight line, distance model x factor)",3
+parliament-exterior,st-stephens-basilica,47.5057199,19.0449808,47.5007189,19.0533363,walking,14,17,1.13,"computed walking route (OSRM); time estimated at 4.5 km/h",1
+margaret-island,fishermans-bastion,47.5187875,19.0448154,47.5023053,19.0346998,transit,21,30,,"estimate (straight line, distance model x factor)",1
+matthias-church-exterior,chain-bridge,47.5020118,19.0342109,47.5000802,19.0466475,walking,19,24,1.3,"computed walking route (OSRM); time estimated at 4.5 km/h +20% hill",1
+st-stephens-basilica,vaci-utca,47.5007189,19.0533363,47.4921923,19.0534903,walking,14,17,1.14,"computed walking route (OSRM); time estimated at 4.5 km/h",1
+chain-bridge,great-market-hall,47.5000802,19.0466475,47.487212,19.058966,walking,23,29,1.89,"computed walking route (OSRM); time estimated at 4.5 km/h",1
+hungarikum-bisztro,great-market-hall,47.5034621,19.0480568,47.487212,19.058966,transit,21,30,,"estimate (straight line, distance model x factor)",1
+great-market-hall,st-stephens-basilica,47.487212,19.058966,47.5007189,19.0533363,transit,18,27,,"estimate (straight line, distance model x factor)",2
+st-stephens-basilica,danube-legend-cruise,47.5007189,19.0533363,47.4941437,19.0488902,walking,12,16,1.03,"computed walking route (OSRM); time estimated at 4.5 km/h",1
+danube-legend-cruise,citadella,47.4941437,19.0488902,47.487191,19.046005,transit,14,22,,"estimate (straight line, distance model x factor)",1
+vaci-utca,hungarian-national-gallery,47.4921923,19.0534903,47.496282,19.039849,transit,17,25,,"estimate (straight line, distance model x factor)",1
+hungarian-national-gallery,shoes-on-the-danube,47.496282,19.039849,47.5039715,19.0447906,transit,16,23,,"estimate (straight line, distance model x factor)",1
+vaci-utca,hungarikum-bisztro,47.4921923,19.0534903,47.5034621,19.0480568,walking,17,22,1.44,"computed walking route (OSRM); time estimated at 4.5 km/h",1
+hungarikum-bisztro,hungarian-national-gallery,47.5034621,19.0480568,47.496282,19.039849,transit,16,23,,"estimate (straight line, distance model x factor)",1
+andrassy-avenue,hungarikum-bisztro,47.50287,19.05816,47.5034621,19.0480568,walking,12,15,0.98,"computed walking route (OSRM); time estimated at 4.5 km/h",3
+parliament-exterior,fishermans-bastion,47.5057199,19.0449808,47.5023053,19.0346998,transit,16,22,,"estimate (straight line, distance model x factor)",2
+matthias-church-exterior,pierrot,47.5020118,19.0342109,47.503897,19.0309623,walking,4,5,0.33,"computed walking route (OSRM); time estimated at 4.5 km/h",1
+great-market-hall,frici-papa,47.487212,19.058966,47.5024568,19.0639715,transit,20,29,,"estimate (straight line, distance model x factor)",1
+hungarian-national-gallery,hungarikum-bisztro,47.496282,19.039849,47.5034621,19.0480568,transit,16,23,,"estimate (straight line, distance model x factor)",1
+shoes-on-the-danube,pierrot,47.5039715,19.0447906,47.503897,19.0309623,transit,16,23,,"estimate (straight line, distance model x factor)",1
+citadella,21-restaurant,47.487191,19.046005,47.5041419,19.0312808,transit,22,31,,"estimate (straight line, distance model x factor)",1
+pierrot,chain-bridge,47.503897,19.0309623,47.5000802,19.0466475,transit,17,25,,"estimate (straight line, distance model x factor)",2
+andrassy-avenue,frici-papa,47.50287,19.05816,47.5024568,19.0639715,walking,8,10,0.65,"computed walking route (OSRM); time estimated at 4.5 km/h",1
+great-market-hall,hungarikum-bisztro,47.487212,19.058966,47.5034621,19.0480568,transit,21,30,,"estimate (straight line, distance model x factor)",1

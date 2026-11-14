@@ -1,0 +1,4176 @@
+[
+ {
+  "id": "st-stephens-basilica",
+  "name": "St. Stephen's Basilica (Szent István-bazilika)",
+  "type": "attraction",
+  "category": null,
+  "visitType": "visit",
+  "area": "lipotvaros",
+  "address": "Szent István tér 1, 1051 Budapest",
+  "coordinates": {
+   "lat": 47.5007189,
+   "lng": 19.0533363
+  },
+  "coordinateSource": "OSM node/11172119967, entrance=yes (west façade)",
+  "planningMinutes": 75,
+  "durationText": "ساعة وربع تقريبًا",
+  "preferredTime": "morning",
+  "showWindow": null,
+  "outsideStopMinutes": null,
+  "hours": {
+   "type": "fixed",
+   "schedule": {
+    "monday": [
+     {
+      "open": "09:00",
+      "close": "18:00"
+     }
+    ],
+    "tuesday": [
+     {
+      "open": "09:00",
+      "close": "18:00"
+     }
+    ],
+    "wednesday": [
+     {
+      "open": "09:00",
+      "close": "18:00"
+     }
+    ],
+    "thursday": [
+     {
+      "open": "09:00",
+      "close": "18:00"
+     }
+    ],
+    "friday": [
+     {
+      "open": "09:00",
+      "close": "18:00"
+     }
+    ],
+    "saturday": [
+     {
+      "open": "09:00",
+      "close": "18:00"
+     }
+    ],
+    "sunday": [
+     {
+      "open": "13:00",
+      "close": "18:00"
+     }
+    ]
+   },
+   "source": "bazilikabudapest.hu (official)",
+   "sourceUrl": "https://bazilikabudapest.hu/jegyarak/",
+   "lastVerified": "2026-11-13"
+  },
+  "priceText": "6,800 HUF (بالغ، الكنيسة والتراس) · الكنيسة لحالها 2,600 HUF",
+  "ticketEstimateHUF": 6800,
+  "booking": "بدون حجز",
+  "tip": "الكنيسة الإثنين–السبت 9:00–18:00 والأحد من 13:00 بس؛ التراس والخزنة كل يوم 9:00–19:00. التذكرة المشتركة 6,800 HUF للبالغ (الكنيسة لحالها 2,600). آخر دخول مش منشور.",
+  "officialUrl": "https://bazilikabudapest.hu",
+  "eligibility": null,
+  "interestWeights": {
+   "popular": 10,
+   "cultureLocal": 9,
+   "viewsNature": 6,
+   "beachRelax": 0,
+   "footballExperiences": 1,
+   "foodShoppingNightlife": 0
+  },
+  "priority": 10,
+  "weightReason": "landmark church (popular, culture) with the panorama terrace (views)",
+  "dietaryTags": null,
+  "status": "schedulable; addable by the customer (has planner metadata)"
+ },
+ {
+  "id": "parliament-exterior",
+  "name": "Hungarian Parliament (from outside, Kossuth tér)",
+  "type": "attraction",
+  "category": null,
+  "visitType": "outside",
+  "area": "lipotvaros",
+  "address": "Kossuth Lajos tér 1-3, 1055 Budapest",
+  "coordinates": {
+   "lat": 47.5057199,
+   "lng": 19.0449808
+  },
+  "coordinateSource": "OSM: Kossuth Lajos tér (square point), a public square",
+  "planningMinutes": 20,
+  "durationText": "20 دقيقة تقريبًا",
+  "preferredTime": "anytime",
+  "showWindow": null,
+  "outsideStopMinutes": null,
+  "hours": null,
+  "priceText": null,
+  "ticketEstimateHUF": 0,
+  "booking": "بدون حجز",
+  "tip": "الجولة الداخلية بحجز مسبق من مركز الزوار؛ سعرها ومواعيدها ما قدرنا نتحقق منهم من المصدر الرسمي، فهي خيار إضافي إلك.",
+  "officialUrl": "https://www.parlament.hu",
+  "eligibility": null,
+  "interestWeights": {
+   "popular": 10,
+   "cultureLocal": 8,
+   "viewsNature": 4,
+   "beachRelax": 0,
+   "footballExperiences": 1,
+   "foodShoppingNightlife": 0
+  },
+  "priority": 10,
+  "weightReason": "city icon from outside; culture (seat of parliament); views from the square and river",
+  "dietaryTags": null,
+  "status": "schedulable; addable by the customer (has planner metadata)"
+ },
+ {
+  "id": "shoes-on-the-danube",
+  "name": "Shoes on the Danube Bank (Cipők a Duna-parton)",
+  "type": "attraction",
+  "category": null,
+  "visitType": "visit",
+  "area": "lipotvaros",
+  "address": "Id. Antall József rakpart, 1054 Budapest",
+  "coordinates": {
+   "lat": 47.5039715,
+   "lng": 19.0447906
+  },
+  "coordinateSource": "OSM node/260536715 historic=memorial",
+  "planningMinutes": 10,
+  "durationText": "10 دقائق",
+  "preferredTime": "anytime",
+  "showWindow": null,
+  "outsideStopMinutes": null,
+  "hours": null,
+  "priceText": null,
+  "ticketEstimateHUF": 0,
+  "booking": "بدون حجز",
+  "tip": "على الرصيف النهري، بين البرلمان وجسر السلاسل.",
+  "officialUrl": null,
+  "eligibility": null,
+  "interestWeights": {
+   "popular": 6,
+   "cultureLocal": 8,
+   "viewsNature": 2,
+   "beachRelax": 0,
+   "footballExperiences": 0,
+   "foodShoppingNightlife": 0
+  },
+  "priority": 6,
+  "weightReason": "Holocaust memorial (culture); short stop on the Parliament route",
+  "dietaryTags": null,
+  "status": "schedulable; addable by the customer (has planner metadata)"
+ },
+ {
+  "id": "chain-bridge",
+  "name": "Széchenyi Chain Bridge (Széchenyi Lánchíd)",
+  "type": "attraction",
+  "category": null,
+  "visitType": "visit",
+  "area": "lipotvaros",
+  "address": "Széchenyi István tér, 1051 Budapest",
+  "coordinates": {
+   "lat": 47.5000802,
+   "lng": 19.0466475
+  },
+  "coordinateSource": "OSM: Széchenyi István tér (Pest end of the bridge)",
+  "planningMinutes": 15,
+  "durationText": "15 دقيقة",
+  "preferredTime": "anytime",
+  "showWindow": null,
+  "outsideStopMinutes": null,
+  "hours": null,
+  "priceText": null,
+  "ticketEstimateHUF": 0,
+  "booking": "بدون حجز",
+  "tip": "",
+  "officialUrl": null,
+  "eligibility": null,
+  "interestWeights": {
+   "popular": 9,
+   "cultureLocal": 6,
+   "viewsNature": 7,
+   "beachRelax": 1,
+   "footballExperiences": 1,
+   "foodShoppingNightlife": 0
+  },
+  "priority": 9,
+  "weightReason": "landmark bridge (popular), river views; the walking link Pest - Castle Hill",
+  "dietaryTags": null,
+  "status": "schedulable; addable by the customer (has planner metadata)"
+ },
+ {
+  "id": "fishermans-bastion",
+  "name": "Fisherman's Bastion (Halászbástya)",
+  "type": "attraction",
+  "category": null,
+  "visitType": "visit",
+  "area": "castle-hill",
+  "address": "Szentháromság tér, 1014 Budapest",
+  "coordinates": {
+   "lat": 47.5023053,
+   "lng": 19.0346998
+  },
+  "coordinateSource": "OSM relation/17948384 (open terraces, no single entrance)",
+  "planningMinutes": 40,
+  "durationText": "40 دقيقة تقريبًا",
+  "preferredTime": "morning",
+  "showWindow": null,
+  "outsideStopMinutes": null,
+  "hours": {
+   "type": "always-open",
+   "source": "fishermansbastion.com (operator)",
+   "sourceUrl": "https://fishermansbastion.com/",
+   "lastVerified": "2026-11-13"
+  },
+  "priceText": "1,700 HUF (التراسات العليا بساعات الدفع؛ فئة السعر مش مكتوبة)",
+  "ticketEstimateHUF": 1700,
+  "booking": "بدون حجز",
+  "tip": "التراسات مفتوحة كل السنة. الأبراج والتراسات العليا مدفوعة بس من 9:00 لـ19:00 (من 1 حزيران لـ30 أيلول لـ21:00)، وببلاش برّا هالساعات وبالأعياد الوطنية و24–31 كانون الأول (جدول 2026). الدفع بالكرت.",
+  "officialUrl": "https://fishermansbastion.com",
+  "eligibility": null,
+  "interestWeights": {
+   "popular": 10,
+   "cultureLocal": 6,
+   "viewsNature": 9,
+   "beachRelax": 1,
+   "footballExperiences": 1,
+   "foodShoppingNightlife": 0
+  },
+  "priority": 10,
+  "weightReason": "best-known viewpoint (popular, views)",
+  "dietaryTags": null,
+  "status": "schedulable; addable by the customer (has planner metadata)"
+ },
+ {
+  "id": "matthias-church-exterior",
+  "name": "Matthias Church (from outside, Szentháromság tér)",
+  "type": "attraction",
+  "category": null,
+  "visitType": "outside",
+  "area": "castle-hill",
+  "address": "Szentháromság tér 2, 1014 Budapest",
+  "coordinates": {
+   "lat": 47.5020118,
+   "lng": 19.0342109
+  },
+  "coordinateSource": "OSM way/37135081",
+  "planningMinutes": 15,
+  "durationText": "15 دقيقة",
+  "preferredTime": "anytime",
+  "showWindow": null,
+  "outsideStopMinutes": null,
+  "hours": null,
+  "priceText": null,
+  "ticketEstimateHUF": 0,
+  "booking": "بدون حجز",
+  "tip": "الدخول لجوا 3,400 HUF (بالغ). موقع الكنيسة بينشر ساعات «اليوم» بس (13 تشرين الثاني: 9:00–17:00، آخر دخول 16:45)، والطقوس والوفود لها أولوية، فما حطّينا الدخول بالجدول. البرج تذكرة بموعد (197 درجة).",
+  "officialUrl": "https://matyas-templom.hu",
+  "eligibility": null,
+  "interestWeights": {
+   "popular": 7,
+   "cultureLocal": 7,
+   "viewsNature": 3,
+   "beachRelax": 0,
+   "footballExperiences": 0,
+   "foodShoppingNightlife": 0
+  },
+  "priority": 7,
+  "weightReason": "landmark church, outside only (interior hours per date not verified)",
+  "dietaryTags": null,
+  "status": "schedulable; addable by the customer (has planner metadata)"
+ },
+ {
+  "id": "hungarian-national-gallery",
+  "name": "Hungarian National Gallery (Buda Castle)",
+  "type": "attraction",
+  "category": null,
+  "visitType": "visit",
+  "area": "castle-hill",
+  "address": "Szent György tér 2, 1014 Budapest",
+  "coordinates": {
+   "lat": 47.496282,
+   "lng": 19.039849
+  },
+  "coordinateSource": "OSM node/5842060882 entrance=main ref=C",
+  "planningMinutes": 120,
+  "durationText": "ساعتين تقريبًا (المتحف بيقترح 1.5–3 ساعات)",
+  "preferredTime": "daytime",
+  "showWindow": null,
+  "outsideStopMinutes": 15,
+  "hours": {
+   "type": "fixed",
+   "schedule": {
+    "tuesday": [
+     {
+      "open": "10:00",
+      "close": "18:00"
+     }
+    ],
+    "wednesday": [
+     {
+      "open": "10:00",
+      "close": "18:00"
+     }
+    ],
+    "thursday": [
+     {
+      "open": "10:00",
+      "close": "18:00"
+     }
+    ],
+    "friday": [
+     {
+      "open": "10:00",
+      "close": "18:00"
+     }
+    ],
+    "saturday": [
+     {
+      "open": "10:00",
+      "close": "18:00"
+     }
+    ],
+    "sunday": [
+     {
+      "open": "10:00",
+      "close": "18:00"
+     }
+    ]
+   },
+   "source": "en.mng.hu (official)",
+   "sourceUrl": "https://en.mng.hu/opening-hours/",
+   "lastVerified": "2026-11-13",
+   "lastEntry": "17:00",
+   "dateExceptions": [
+    {
+     "from": "2026-12-24",
+     "to": "2027-01-01",
+     "closed": true,
+     "note": "UNVERIFIED holiday hours: not scheduled (planning exclusion, not a closure fact); official page unreadable 2026-11-13/14 (HTTP 520)"
+    }
+   ],
+   "conflict": "en.mng.hu/opening-hours/ (read 2026-11-13): Tue-Sun 10-18, entry until 17:00 (also with pre-bought tickets), halls start closing 17:30 (top floor). Holiday page unreadable (520) on 13 and 14 Nov 2026: 24 Dec 2026 - 1 Jan 2027 are excluded from planning as UNVERIFIED, not stored as closed. An independent reviewer reported (14 Nov) the page shows 24-25 Dec closed, 26 and 28 Dec open, 31 Dec short, 1 Jan from noon; not re-read by us."
+  },
+  "priceText": "5,800 HUF (بالغ، كامل) · مخفّض 2,900 حسب العمر",
+  "ticketEstimateHUF": 5800,
+  "booking": "بدون حجز",
+  "tip": "الدخول لحد 17:00. القبة 10:00–17:00 حسب الطقس، وأقصى 15 شخص. ببلاش للكل 15 آذار و20 آب و23 تشرين الأول. الإغلاقات السنوية بصفحة منفصلة ما قرأناها.",
+  "officialUrl": "https://en.mng.hu",
+  "eligibility": null,
+  "interestWeights": {
+   "popular": 6,
+   "cultureLocal": 9,
+   "viewsNature": 4,
+   "beachRelax": 0,
+   "footballExperiences": 1,
+   "foodShoppingNightlife": 0
+  },
+  "priority": 7,
+  "weightReason": "main Hungarian art collection (culture); dome view",
+  "dietaryTags": null,
+  "status": "schedulable; addable by the customer (has planner metadata)"
+ },
+ {
+  "id": "hungarian-national-museum",
+  "name": "Hungarian National Museum",
+  "type": "attraction",
+  "category": null,
+  "visitType": "visit",
+  "area": "palotanegyed",
+  "address": "Múzeum krt. 14-16, 1088 Budapest",
+  "coordinates": {
+   "lat": 47.491101,
+   "lng": 19.062318
+  },
+  "coordinateSource": "OSM node/9195573290 entrance=main, Múzeum krt. 14-16",
+  "planningMinutes": 90,
+  "durationText": "ساعة ونص تقريبًا",
+  "preferredTime": "daytime",
+  "showWindow": null,
+  "outsideStopMinutes": 15,
+  "hours": {
+   "type": "fixed",
+   "schedule": {
+    "tuesday": [
+     {
+      "open": "10:00",
+      "close": "18:00"
+     }
+    ],
+    "wednesday": [
+     {
+      "open": "10:00",
+      "close": "18:00"
+     }
+    ],
+    "thursday": [
+     {
+      "open": "10:00",
+      "close": "18:00"
+     }
+    ],
+    "friday": [
+     {
+      "open": "10:00",
+      "close": "18:00"
+     }
+    ],
+    "saturday": [
+     {
+      "open": "10:00",
+      "close": "18:00"
+     }
+    ],
+    "sunday": [
+     {
+      "open": "10:00",
+      "close": "18:00"
+     }
+    ]
+   },
+   "source": "mnm.hu (official)",
+   "sourceUrl": "https://mnm.hu/en",
+   "lastVerified": "2026-11-13",
+   "lastEntry": "17:00",
+   "conflict": "mnm.hu: ticket office closes 17:00, exhibitions close from 17:30. Holiday hours page not read."
+  },
+  "priceText": "3,500 HUF (بالغ، كامل) · المخفّض لمواطني هنغاريا وEEA بس",
+  "ticketEstimateHUF": 3500,
+  "booking": "بدون حجز",
+  "tip": "الشباك لحد 17:00. في قاعات مسكّرة للترميم من 2 كانون الأول 2025، ومعطف التتويج مسكّر حاليًا (حسب موقع المتحف).",
+  "officialUrl": "https://mnm.hu/en",
+  "eligibility": null,
+  "interestWeights": {
+   "popular": 5,
+   "cultureLocal": 9,
+   "viewsNature": 0,
+   "beachRelax": 0,
+   "footballExperiences": 1,
+   "foodShoppingNightlife": 0
+  },
+  "priority": 6,
+  "weightReason": "national history museum (culture)",
+  "dietaryTags": null,
+  "status": "schedulable; addable by the customer (has planner metadata)"
+ },
+ {
+  "id": "museum-of-fine-arts",
+  "name": "Museum of Fine Arts (Szépművészeti Múzeum)",
+  "type": "attraction",
+  "category": null,
+  "visitType": "visit",
+  "area": "city-park",
+  "address": "Dózsa György út 41, 1146 Budapest",
+  "coordinates": {
+   "lat": 47.515762,
+   "lng": 19.076938
+  },
+  "coordinateSource": "OSM node/10463806599 entrance=yes (museum way/25216718)",
+  "planningMinutes": 120,
+  "durationText": "ساعتين تقريبًا",
+  "preferredTime": "daytime",
+  "showWindow": null,
+  "outsideStopMinutes": 15,
+  "hours": {
+   "type": "fixed",
+   "schedule": {
+    "tuesday": [
+     {
+      "open": "10:00",
+      "close": "18:00"
+     }
+    ],
+    "wednesday": [
+     {
+      "open": "10:00",
+      "close": "18:00"
+     }
+    ],
+    "thursday": [
+     {
+      "open": "10:00",
+      "close": "18:00"
+     }
+    ],
+    "friday": [
+     {
+      "open": "10:00",
+      "close": "18:00"
+     }
+    ],
+    "saturday": [
+     {
+      "open": "10:00",
+      "close": "18:00"
+     }
+    ],
+    "sunday": [
+     {
+      "open": "10:00",
+      "close": "18:00"
+     }
+    ]
+   },
+   "source": "mfab.hu (official)",
+   "sourceUrl": "https://www.mfab.hu/opening-hours-3/",
+   "lastVerified": "2026-11-13",
+   "lastEntry": "17:00",
+   "dateExceptions": [
+    {
+     "from": "2026-11-13",
+     "to": "2026-11-13",
+     "hours": [
+      {
+       "open": "12:00",
+       "close": "20:00"
+      }
+     ],
+     "lastEntry": "19:00",
+     "note": "Museum and Slow Friday"
+    },
+    {
+     "from": "2026-12-11",
+     "to": "2026-12-11",
+     "hours": [
+      {
+       "open": "12:00",
+       "close": "20:00"
+      }
+     ],
+     "lastEntry": "19:00",
+     "note": "Museum and Slow Friday"
+    },
+    {
+     "from": "2026-12-24",
+     "to": "2026-12-25",
+     "closed": true
+    },
+    {
+     "from": "2026-12-26",
+     "to": "2026-12-26",
+     "hours": [
+      {
+       "open": "10:00",
+       "close": "18:00"
+      }
+     ],
+     "lastEntry": "17:00"
+    },
+    {
+     "from": "2026-12-31",
+     "to": "2026-12-31",
+     "hours": [
+      {
+       "open": "10:00",
+       "close": "16:00"
+      }
+     ],
+     "lastEntry": "15:00",
+     "note": "last entry not published for 31 Dec: one hour before closing assumed"
+    },
+    {
+     "from": "2027-01-01",
+     "to": "2027-01-01",
+     "hours": [
+      {
+       "open": "12:00",
+       "close": "18:00"
+      }
+     ],
+     "lastEntry": "17:00",
+     "note": "permanent exhibitions limited"
+    }
+   ]
+  },
+  "priceText": "5,800 HUF (بالغ، كامل) · المخفّض لمواطني EEA وأوكرانيا بس",
+  "ticketEstimateHUF": 5800,
+  "booking": "بدون حجز",
+  "tip": "الدخول لحد 17:00. جمعة واحدة بالشهر (Museum and Slow) من 12:00 والدخول لحد 19:00. مسكّر 24 و25 كانون الأول (جدول 2026).",
+  "officialUrl": "https://www.mfab.hu",
+  "eligibility": null,
+  "interestWeights": {
+   "popular": 6,
+   "cultureLocal": 9,
+   "viewsNature": 0,
+   "beachRelax": 0,
+   "footballExperiences": 1,
+   "foodShoppingNightlife": 0
+  },
+  "priority": 7,
+  "weightReason": "major European art museum (culture)",
+  "dietaryTags": null,
+  "status": "schedulable; addable by the customer (has planner metadata)"
+ },
+ {
+  "id": "opera-house-tour",
+  "name": "Hungarian State Opera (OperaTour guided visit)",
+  "type": "attraction",
+  "category": null,
+  "visitType": "timed slot / tour",
+  "area": "terezvaros",
+  "address": "Andrássy út 22, 1061 Budapest",
+  "coordinates": {
+   "lat": 47.502466,
+   "lng": 19.05868
+  },
+  "coordinateSource": "OSM node/12449555202 entrance=main (Andrássy út)",
+  "planningMinutes": 60,
+  "durationText": "ساعة",
+  "preferredTime": "afternoon",
+  "showWindow": {
+   "everyMinutes": 90,
+   "minutes": 1,
+   "maxWaitMinutes": 89,
+   "missNoteAr": "الجولات بس 13:30 و15:00 و16:30: احجز الموعد اللي بيناسب خطتك."
+  },
+  "outsideStopMinutes": null,
+  "hours": {
+   "type": "fixed",
+   "schedule": {
+    "monday": [
+     {
+      "open": "13:30",
+      "close": "17:30"
+     }
+    ],
+    "tuesday": [
+     {
+      "open": "13:30",
+      "close": "17:30"
+     }
+    ],
+    "wednesday": [
+     {
+      "open": "13:30",
+      "close": "17:30"
+     }
+    ],
+    "thursday": [
+     {
+      "open": "13:30",
+      "close": "17:30"
+     }
+    ],
+    "friday": [
+     {
+      "open": "13:30",
+      "close": "17:30"
+     }
+    ],
+    "saturday": [
+     {
+      "open": "13:30",
+      "close": "17:30"
+     }
+    ],
+    "sunday": [
+     {
+      "open": "13:30",
+      "close": "17:30"
+     }
+    ]
+   },
+   "source": "opera.hu (official)",
+   "sourceUrl": "https://www.opera.hu/en/services/operatour/",
+   "lastVerified": "2026-11-13",
+   "lastEntry": "16:30",
+   "conflict": "opera.hu: tours only at 13:30, 15:00, 16:30 (60 min); no tours during performances (per date, not published here)."
+  },
+  "priceText": "12,000 HUF (للشخص، بالإنجليزي)",
+  "ticketEstimateHUF": 12000,
+  "booking": "يفضل مسبقًا",
+  "tip": "الجولات بالإنجليزي كل يوم 13:30 و15:00 و16:30، أقصى 30 شخص، وبتبدأ من مكتب المعلومات بالمدخل. التذاكر بتنزل قبل أسبوع. ما في جولات وقت العروض، والقاعة بتسكّر وقت البروفات (المسار بيتغير).",
+  "officialUrl": "https://www.opera.hu/en/services/operatour/",
+  "eligibility": null,
+  "interestWeights": {
+   "popular": 7,
+   "cultureLocal": 8,
+   "viewsNature": 0,
+   "beachRelax": 0,
+   "footballExperiences": 6,
+   "foodShoppingNightlife": 0
+  },
+  "priority": 7,
+  "weightReason": "guided interior visit with a short concert (culture, experience)",
+  "dietaryTags": null,
+  "status": "schedulable; addable by the customer (has planner metadata)"
+ },
+ {
+  "id": "citadella",
+  "name": "Citadella & Liberty Statue (Gellért Hill)",
+  "type": "attraction",
+  "category": null,
+  "visitType": "visit",
+  "area": "gellert-hill",
+  "address": "Citadella sétány 1, 1118 Budapest",
+  "coordinates": {
+   "lat": 47.487191,
+   "lng": 19.046005
+  },
+  "coordinateSource": "OSM node/1488958235 entrance=yes (fortress way/829110605)",
+  "planningMinutes": 45,
+  "durationText": "45 دقيقة",
+  "preferredTime": "afternoon",
+  "showWindow": null,
+  "outsideStopMinutes": null,
+  "hours": {
+   "type": "variable",
+   "display": "الحديقة: تشرين الثاني–آذار 8:00–22:00 · نيسان–تشرين الأول 6:00–24:00",
+   "source": "citadella.hu (official, Várkapitányság)",
+   "sourceUrl": "https://citadella.hu/hu/home",
+   "lastVerified": "2026-11-13",
+   "seasonalSchedules": [
+    {
+     "from": "11-01",
+     "to": "03-31",
+     "schedule": {
+      "monday": [
+       {
+        "open": "08:00",
+        "close": "22:00"
+       }
+      ],
+      "tuesday": [
+       {
+        "open": "08:00",
+        "close": "22:00"
+       }
+      ],
+      "wednesday": [
+       {
+        "open": "08:00",
+        "close": "22:00"
+       }
+      ],
+      "thursday": [
+       {
+        "open": "08:00",
+        "close": "22:00"
+       }
+      ],
+      "friday": [
+       {
+        "open": "08:00",
+        "close": "22:00"
+       }
+      ],
+      "saturday": [
+       {
+        "open": "08:00",
+        "close": "22:00"
+       }
+      ],
+      "sunday": [
+       {
+        "open": "08:00",
+        "close": "22:00"
+       }
+      ]
+     }
+    },
+    {
+     "from": "04-01",
+     "to": "10-31",
+     "schedule": {
+      "monday": [
+       {
+        "open": "06:00",
+        "close": "23:59"
+       }
+      ],
+      "tuesday": [
+       {
+        "open": "06:00",
+        "close": "23:59"
+       }
+      ],
+      "wednesday": [
+       {
+        "open": "06:00",
+        "close": "23:59"
+       }
+      ],
+      "thursday": [
+       {
+        "open": "06:00",
+        "close": "23:59"
+       }
+      ],
+      "friday": [
+       {
+        "open": "06:00",
+        "close": "23:59"
+       }
+      ],
+      "saturday": [
+       {
+        "open": "06:00",
+        "close": "23:59"
+       }
+      ],
+      "sunday": [
+       {
+        "open": "06:00",
+        "close": "23:59"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  "priceText": null,
+  "ticketEstimateHUF": 0,
+  "booking": "بدون حجز",
+  "tip": "الحديقة ببلاش: تشرين الثاني–آذار 8:00–22:00، نيسان–تشرين الأول 6:00–24:00. معرض «A Szabadság Bástyája» 4,900 HUF للبالغ بموعد دخول، آخر دخول 16:40 (الجمعة 18:40).",
+  "officialUrl": "https://citadella.hu",
+  "eligibility": null,
+  "interestWeights": {
+   "popular": 7,
+   "cultureLocal": 5,
+   "viewsNature": 9,
+   "beachRelax": 2,
+   "footballExperiences": 1,
+   "foodShoppingNightlife": 0
+  },
+  "priority": 7,
+  "weightReason": "panorama from Gellert Hill (views); free park (relax)",
+  "dietaryTags": null,
+  "status": "schedulable; addable by the customer (has planner metadata)"
+ },
+ {
+  "id": "heroes-square",
+  "name": "Heroes' Square (Hősök tere)",
+  "type": "attraction",
+  "category": null,
+  "visitType": "visit",
+  "area": "city-park",
+  "address": "Hősök tere, 1146 Budapest",
+  "coordinates": {
+   "lat": 47.5152112,
+   "lng": 19.0764759
+  },
+  "coordinateSource": "OSM way/25217448 Hősök tere (square point)",
+  "planningMinutes": 20,
+  "durationText": "20 دقيقة",
+  "preferredTime": "anytime",
+  "showWindow": null,
+  "outsideStopMinutes": null,
+  "hours": null,
+  "priceText": null,
+  "ticketEstimateHUF": 0,
+  "booking": "بدون حجز",
+  "tip": "",
+  "officialUrl": null,
+  "eligibility": null,
+  "interestWeights": {
+   "popular": 9,
+   "cultureLocal": 7,
+   "viewsNature": 3,
+   "beachRelax": 0,
+   "footballExperiences": 0,
+   "foodShoppingNightlife": 0
+  },
+  "priority": 8,
+  "weightReason": "landmark square (popular, culture)",
+  "dietaryTags": null,
+  "status": "schedulable; addable by the customer (has planner metadata)"
+ },
+ {
+  "id": "vajdahunyad-castle",
+  "name": "Vajdahunyad Castle (from outside)",
+  "type": "attraction",
+  "category": null,
+  "visitType": "visit",
+  "area": "city-park",
+  "address": "Vajdahunyad sétány, 1146 Budapest",
+  "coordinates": {
+   "lat": 47.5153549,
+   "lng": 19.0818753
+  },
+  "coordinateSource": "OSM node/275019091 Vajdahunyad vára (attraction point)",
+  "planningMinutes": 20,
+  "durationText": "20 دقيقة",
+  "preferredTime": "anytime",
+  "showWindow": null,
+  "outsideStopMinutes": null,
+  "hours": null,
+  "priceText": null,
+  "ticketEstimateHUF": 0,
+  "booking": "بدون حجز",
+  "tip": "",
+  "officialUrl": null,
+  "eligibility": null,
+  "interestWeights": {
+   "popular": 5,
+   "cultureLocal": 5,
+   "viewsNature": 5,
+   "beachRelax": 3,
+   "footballExperiences": 0,
+   "foodShoppingNightlife": 0
+  },
+  "priority": 5,
+  "weightReason": "castle by the City Park lake, outside (culture, park walk)",
+  "dietaryTags": null,
+  "status": "schedulable; addable by the customer (has planner metadata)"
+ },
+ {
+  "id": "budapest-zoo",
+  "name": "Budapest Zoo & Botanical Garden",
+  "type": "attraction",
+  "category": null,
+  "visitType": "visit",
+  "area": "city-park",
+  "address": "Állatkerti krt. 6-12, 1146 Budapest",
+  "coordinates": {
+   "lat": 47.517311,
+   "lng": 19.07734
+  },
+  "coordinateSource": "OSM node/9104208377 entrance=main, Állatkerti krt. 2-4",
+  "planningMinutes": 150,
+  "durationText": "ساعتين ونص تقريبًا",
+  "preferredTime": "morning",
+  "showWindow": null,
+  "outsideStopMinutes": null,
+  "hours": {
+   "type": "variable",
+   "display": "كانون الثاني–شباط 9–16 · آذار 9–17 (ويكند 17:30) · نيسان 9–17:30 (ويكند 18) · أيار–آب 9–18 (ويكند 19) · أيلول 9–17:30 (ويكند 18) · تشرين الأول 9–17 (ويكند 17:30) · 31 تشرين الأول–كانون الأول 9–16 · آخر دخول قبل ساعة",
+   "source": "zoobudapest.com (official)",
+   "sourceUrl": "https://zoobudapest.com/en/for-visitors/opening-hours/",
+   "lastVerified": "2026-11-13",
+   "seasonalSchedules": [
+    {
+     "from": "01-01",
+     "to": "02-28",
+     "schedule": {
+      "monday": [
+       {
+        "open": "09:00",
+        "close": "16:00"
+       }
+      ],
+      "tuesday": [
+       {
+        "open": "09:00",
+        "close": "16:00"
+       }
+      ],
+      "wednesday": [
+       {
+        "open": "09:00",
+        "close": "16:00"
+       }
+      ],
+      "thursday": [
+       {
+        "open": "09:00",
+        "close": "16:00"
+       }
+      ],
+      "friday": [
+       {
+        "open": "09:00",
+        "close": "16:00"
+       }
+      ],
+      "saturday": [
+       {
+        "open": "09:00",
+        "close": "16:00"
+       }
+      ],
+      "sunday": [
+       {
+        "open": "09:00",
+        "close": "16:00"
+       }
+      ]
+     },
+     "lastEntry": "15:00"
+    },
+    {
+     "from": "03-01",
+     "to": "03-31",
+     "schedule": {
+      "monday": [
+       {
+        "open": "09:00",
+        "close": "17:00"
+       }
+      ],
+      "tuesday": [
+       {
+        "open": "09:00",
+        "close": "17:00"
+       }
+      ],
+      "wednesday": [
+       {
+        "open": "09:00",
+        "close": "17:00"
+       }
+      ],
+      "thursday": [
+       {
+        "open": "09:00",
+        "close": "17:00"
+       }
+      ],
+      "friday": [
+       {
+        "open": "09:00",
+        "close": "17:00"
+       }
+      ],
+      "saturday": [
+       {
+        "open": "09:00",
+        "close": "17:30"
+       }
+      ],
+      "sunday": [
+       {
+        "open": "09:00",
+        "close": "17:30"
+       }
+      ]
+     },
+     "lastEntry": "16:00"
+    },
+    {
+     "from": "04-01",
+     "to": "04-30",
+     "schedule": {
+      "monday": [
+       {
+        "open": "09:00",
+        "close": "17:30"
+       }
+      ],
+      "tuesday": [
+       {
+        "open": "09:00",
+        "close": "17:30"
+       }
+      ],
+      "wednesday": [
+       {
+        "open": "09:00",
+        "close": "17:30"
+       }
+      ],
+      "thursday": [
+       {
+        "open": "09:00",
+        "close": "17:30"
+       }
+      ],
+      "friday": [
+       {
+        "open": "09:00",
+        "close": "17:30"
+       }
+      ],
+      "saturday": [
+       {
+        "open": "09:00",
+        "close": "18:00"
+       }
+      ],
+      "sunday": [
+       {
+        "open": "09:00",
+        "close": "18:00"
+       }
+      ]
+     },
+     "lastEntry": "16:30"
+    },
+    {
+     "from": "05-01",
+     "to": "08-31",
+     "schedule": {
+      "monday": [
+       {
+        "open": "09:00",
+        "close": "18:00"
+       }
+      ],
+      "tuesday": [
+       {
+        "open": "09:00",
+        "close": "18:00"
+       }
+      ],
+      "wednesday": [
+       {
+        "open": "09:00",
+        "close": "18:00"
+       }
+      ],
+      "thursday": [
+       {
+        "open": "09:00",
+        "close": "18:00"
+       }
+      ],
+      "friday": [
+       {
+        "open": "09:00",
+        "close": "18:00"
+       }
+      ],
+      "saturday": [
+       {
+        "open": "09:00",
+        "close": "19:00"
+       }
+      ],
+      "sunday": [
+       {
+        "open": "09:00",
+        "close": "19:00"
+       }
+      ]
+     },
+     "lastEntry": "17:00"
+    },
+    {
+     "from": "09-01",
+     "to": "09-30",
+     "schedule": {
+      "monday": [
+       {
+        "open": "09:00",
+        "close": "17:30"
+       }
+      ],
+      "tuesday": [
+       {
+        "open": "09:00",
+        "close": "17:30"
+       }
+      ],
+      "wednesday": [
+       {
+        "open": "09:00",
+        "close": "17:30"
+       }
+      ],
+      "thursday": [
+       {
+        "open": "09:00",
+        "close": "17:30"
+       }
+      ],
+      "friday": [
+       {
+        "open": "09:00",
+        "close": "17:30"
+       }
+      ],
+      "saturday": [
+       {
+        "open": "09:00",
+        "close": "18:00"
+       }
+      ],
+      "sunday": [
+       {
+        "open": "09:00",
+        "close": "18:00"
+       }
+      ]
+     },
+     "lastEntry": "16:30"
+    },
+    {
+     "from": "10-01",
+     "to": "10-30",
+     "schedule": {
+      "monday": [
+       {
+        "open": "09:00",
+        "close": "17:00"
+       }
+      ],
+      "tuesday": [
+       {
+        "open": "09:00",
+        "close": "17:00"
+       }
+      ],
+      "wednesday": [
+       {
+        "open": "09:00",
+        "close": "17:00"
+       }
+      ],
+      "thursday": [
+       {
+        "open": "09:00",
+        "close": "17:00"
+       }
+      ],
+      "friday": [
+       {
+        "open": "09:00",
+        "close": "17:00"
+       }
+      ],
+      "saturday": [
+       {
+        "open": "09:00",
+        "close": "17:30"
+       }
+      ],
+      "sunday": [
+       {
+        "open": "09:00",
+        "close": "17:30"
+       }
+      ]
+     },
+     "lastEntry": "16:00"
+    },
+    {
+     "from": "10-31",
+     "to": "12-31",
+     "schedule": {
+      "monday": [
+       {
+        "open": "09:00",
+        "close": "16:00"
+       }
+      ],
+      "tuesday": [
+       {
+        "open": "09:00",
+        "close": "16:00"
+       }
+      ],
+      "wednesday": [
+       {
+        "open": "09:00",
+        "close": "16:00"
+       }
+      ],
+      "thursday": [
+       {
+        "open": "09:00",
+        "close": "16:00"
+       }
+      ],
+      "friday": [
+       {
+        "open": "09:00",
+        "close": "16:00"
+       }
+      ],
+      "saturday": [
+       {
+        "open": "09:00",
+        "close": "16:00"
+       }
+      ],
+      "sunday": [
+       {
+        "open": "09:00",
+        "close": "16:00"
+       }
+      ]
+     },
+     "lastEntry": "15:00"
+    }
+   ],
+   "dateExceptions": [
+    {
+     "from": "2026-12-24",
+     "to": "2026-12-24",
+     "hours": [
+      {
+       "open": "09:00",
+       "close": "13:00"
+      }
+     ],
+     "lastEntry": "12:00"
+    },
+    {
+     "from": "2026-12-31",
+     "to": "2026-12-31",
+     "hours": [
+      {
+       "open": "09:00",
+       "close": "13:00"
+      }
+     ],
+     "lastEntry": "12:00"
+    }
+   ],
+   "conflict": "Weekend last entry differs from weekday in Mar/Apr/May-Aug/Sep/Oct (one hour before closing); the season records the WEEKDAY (earlier) last entry, the safe side. Public holidays use weekend hours (not modelled)."
+  },
+  "priceText": "5,900 HUF (بالغ) · طفل 2–18: 4,200",
+  "ticketEstimateHUF": 5900,
+  "booking": "بدون حجز",
+  "tip": "مفتوحة كل يوم من السنة. الساعات حسب الشهر (من 31 تشرين الأول لآخر شباط 9:00–16:00 وآخر دخول 15:00). تحت 14 سنة ما بيدخلوا بدون بالغ.",
+  "officialUrl": "https://zoobudapest.com/en",
+  "eligibility": "under 14 only with an adult (zoobudapest.com prices page)",
+  "interestWeights": {
+   "popular": 6,
+   "cultureLocal": 0,
+   "viewsNature": 7,
+   "beachRelax": 2,
+   "footballExperiences": 7,
+   "foodShoppingNightlife": 0
+  },
+  "priority": 6,
+  "weightReason": "zoo and botanical garden (nature, family experience)",
+  "dietaryTags": null,
+  "status": "schedulable; addable by the customer (has planner metadata)"
+ },
+ {
+  "id": "house-of-music",
+  "name": "House of Music Hungary: Dimensions of Sound",
+  "type": "attraction",
+  "category": null,
+  "visitType": "timed slot / tour",
+  "area": "city-park",
+  "address": "Olof Palme sétány 3, 1146 Budapest",
+  "coordinates": {
+   "lat": 47.512794,
+   "lng": 19.083528
+  },
+  "coordinateSource": "OSM node/9344029111 entrance=main",
+  "planningMinutes": 120,
+  "durationText": "ساعتين (المتحف بيقترح 2–3 ساعات)",
+  "preferredTime": "daytime",
+  "showWindow": {
+   "everyMinutes": 30,
+   "offsetMinutes": 15,
+   "minutes": 1,
+   "maxWaitMinutes": 29,
+   "missNoteAr": "الدخول بفترات كل نص ساعة (:15 و:45): احجز الفترة اللي بتناسب خطتك."
+  },
+  "outsideStopMinutes": null,
+  "hours": {
+   "type": "fixed",
+   "schedule": {
+    "tuesday": [
+     {
+      "open": "10:15",
+      "close": "17:50"
+     }
+    ],
+    "wednesday": [
+     {
+      "open": "10:15",
+      "close": "17:50"
+     }
+    ],
+    "thursday": [
+     {
+      "open": "10:15",
+      "close": "17:50"
+     }
+    ],
+    "saturday": [
+     {
+      "open": "10:15",
+      "close": "17:50"
+     }
+    ],
+    "sunday": [
+     {
+      "open": "10:15",
+      "close": "17:50"
+     }
+    ],
+    "friday": [
+     {
+      "open": "10:15",
+      "close": "19:50"
+     }
+    ]
+   },
+   "source": "zenehaza.hu (official)",
+   "sourceUrl": "https://zenehaza.hu/en/occasion/dimensions-of-sound-musical-journey-through-space-and-time",
+   "lastVerified": "2026-11-13",
+   "dateExceptions": [
+    {
+     "from": "2026-11-03",
+     "to": "2026-11-03",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2026-12-01",
+     "to": "2026-12-01",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2027-01-05",
+     "to": "2027-01-05",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2027-02-02",
+     "to": "2027-02-02",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2027-03-02",
+     "to": "2027-03-02",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2027-04-06",
+     "to": "2027-04-06",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2027-05-04",
+     "to": "2027-05-04",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2027-06-01",
+     "to": "2027-06-01",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2027-07-06",
+     "to": "2027-07-06",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2027-08-03",
+     "to": "2027-08-03",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2027-09-07",
+     "to": "2027-09-07",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2027-10-05",
+     "to": "2027-10-05",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2027-11-02",
+     "to": "2027-11-02",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2027-12-07",
+     "to": "2027-12-07",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2028-01-04",
+     "to": "2028-01-04",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2028-02-01",
+     "to": "2028-02-01",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2028-03-07",
+     "to": "2028-03-07",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2028-04-04",
+     "to": "2028-04-04",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2028-05-02",
+     "to": "2028-05-02",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2028-06-06",
+     "to": "2028-06-06",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2028-07-04",
+     "to": "2028-07-04",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2028-08-01",
+     "to": "2028-08-01",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2028-09-05",
+     "to": "2028-09-05",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2028-10-03",
+     "to": "2028-10-03",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2028-11-07",
+     "to": "2028-11-07",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2028-12-05",
+     "to": "2028-12-05",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2029-01-02",
+     "to": "2029-01-02",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2029-02-06",
+     "to": "2029-02-06",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2029-03-06",
+     "to": "2029-03-06",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2029-04-03",
+     "to": "2029-04-03",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2029-05-01",
+     "to": "2029-05-01",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2029-06-05",
+     "to": "2029-06-05",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2029-07-03",
+     "to": "2029-07-03",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2029-08-07",
+     "to": "2029-08-07",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2029-09-04",
+     "to": "2029-09-04",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2029-10-02",
+     "to": "2029-10-02",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2029-11-06",
+     "to": "2029-11-06",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2029-12-04",
+     "to": "2029-12-04",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2030-01-01",
+     "to": "2030-01-01",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2030-02-05",
+     "to": "2030-02-05",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2030-03-05",
+     "to": "2030-03-05",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2030-04-02",
+     "to": "2030-04-02",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2030-05-07",
+     "to": "2030-05-07",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2030-06-04",
+     "to": "2030-06-04",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2030-07-02",
+     "to": "2030-07-02",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2030-08-06",
+     "to": "2030-08-06",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2030-09-03",
+     "to": "2030-09-03",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2030-10-01",
+     "to": "2030-10-01",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2030-11-05",
+     "to": "2030-11-05",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2030-12-03",
+     "to": "2030-12-03",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2031-01-07",
+     "to": "2031-01-07",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2031-02-04",
+     "to": "2031-02-04",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2031-03-04",
+     "to": "2031-03-04",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2031-04-01",
+     "to": "2031-04-01",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2031-05-06",
+     "to": "2031-05-06",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2031-06-03",
+     "to": "2031-06-03",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2031-07-01",
+     "to": "2031-07-01",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2031-08-05",
+     "to": "2031-08-05",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2031-09-02",
+     "to": "2031-09-02",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2031-10-07",
+     "to": "2031-10-07",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2031-11-04",
+     "to": "2031-11-04",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2031-12-02",
+     "to": "2031-12-02",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2032-01-06",
+     "to": "2032-01-06",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2032-02-03",
+     "to": "2032-02-03",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2032-03-02",
+     "to": "2032-03-02",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2032-04-06",
+     "to": "2032-04-06",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2032-05-04",
+     "to": "2032-05-04",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2032-06-01",
+     "to": "2032-06-01",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2032-07-06",
+     "to": "2032-07-06",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2032-08-03",
+     "to": "2032-08-03",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2032-09-07",
+     "to": "2032-09-07",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2032-10-05",
+     "to": "2032-10-05",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2032-11-02",
+     "to": "2032-11-02",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2032-12-07",
+     "to": "2032-12-07",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2033-01-04",
+     "to": "2033-01-04",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2033-02-01",
+     "to": "2033-02-01",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2033-03-01",
+     "to": "2033-03-01",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2033-04-05",
+     "to": "2033-04-05",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2033-05-03",
+     "to": "2033-05-03",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2033-06-07",
+     "to": "2033-06-07",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2033-07-05",
+     "to": "2033-07-05",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2033-08-02",
+     "to": "2033-08-02",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2033-09-06",
+     "to": "2033-09-06",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2033-10-04",
+     "to": "2033-10-04",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2033-11-01",
+     "to": "2033-11-01",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2033-12-06",
+     "to": "2033-12-06",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2034-01-03",
+     "to": "2034-01-03",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2034-02-07",
+     "to": "2034-02-07",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2034-03-07",
+     "to": "2034-03-07",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2034-04-04",
+     "to": "2034-04-04",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2034-05-02",
+     "to": "2034-05-02",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2034-06-06",
+     "to": "2034-06-06",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2034-07-04",
+     "to": "2034-07-04",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2034-08-01",
+     "to": "2034-08-01",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2034-09-05",
+     "to": "2034-09-05",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2034-10-03",
+     "to": "2034-10-03",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2034-11-07",
+     "to": "2034-11-07",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2034-12-05",
+     "to": "2034-12-05",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2035-01-02",
+     "to": "2035-01-02",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2035-02-06",
+     "to": "2035-02-06",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2035-03-06",
+     "to": "2035-03-06",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2035-04-03",
+     "to": "2035-04-03",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2035-05-01",
+     "to": "2035-05-01",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2035-06-05",
+     "to": "2035-06-05",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2035-07-03",
+     "to": "2035-07-03",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2035-08-07",
+     "to": "2035-08-07",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2035-09-04",
+     "to": "2035-09-04",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2035-10-02",
+     "to": "2035-10-02",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2035-11-06",
+     "to": "2035-11-06",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2035-12-04",
+     "to": "2035-12-04",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2036-01-01",
+     "to": "2036-01-01",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2036-02-05",
+     "to": "2036-02-05",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2036-03-04",
+     "to": "2036-03-04",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2036-04-01",
+     "to": "2036-04-01",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2036-05-06",
+     "to": "2036-05-06",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2036-06-03",
+     "to": "2036-06-03",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2036-07-01",
+     "to": "2036-07-01",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2036-08-05",
+     "to": "2036-08-05",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2036-09-02",
+     "to": "2036-09-02",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2036-10-07",
+     "to": "2036-10-07",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2036-11-04",
+     "to": "2036-11-04",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2036-12-02",
+     "to": "2036-12-02",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2037-01-06",
+     "to": "2037-01-06",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2037-02-03",
+     "to": "2037-02-03",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2037-03-03",
+     "to": "2037-03-03",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2037-04-07",
+     "to": "2037-04-07",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2037-05-05",
+     "to": "2037-05-05",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2037-06-02",
+     "to": "2037-06-02",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2037-07-07",
+     "to": "2037-07-07",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2037-08-04",
+     "to": "2037-08-04",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2037-09-01",
+     "to": "2037-09-01",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2037-10-06",
+     "to": "2037-10-06",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2037-11-03",
+     "to": "2037-11-03",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2037-12-01",
+     "to": "2037-12-01",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2038-01-05",
+     "to": "2038-01-05",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2038-02-02",
+     "to": "2038-02-02",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2038-03-02",
+     "to": "2038-03-02",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2038-04-06",
+     "to": "2038-04-06",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2038-05-04",
+     "to": "2038-05-04",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2038-06-01",
+     "to": "2038-06-01",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2038-07-06",
+     "to": "2038-07-06",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2038-08-03",
+     "to": "2038-08-03",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2038-09-07",
+     "to": "2038-09-07",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2038-10-05",
+     "to": "2038-10-05",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2038-11-02",
+     "to": "2038-11-02",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2038-12-07",
+     "to": "2038-12-07",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2039-01-04",
+     "to": "2039-01-04",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2039-02-01",
+     "to": "2039-02-01",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2039-03-01",
+     "to": "2039-03-01",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2039-04-05",
+     "to": "2039-04-05",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2039-05-03",
+     "to": "2039-05-03",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2039-06-07",
+     "to": "2039-06-07",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2039-07-05",
+     "to": "2039-07-05",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2039-08-02",
+     "to": "2039-08-02",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2039-09-06",
+     "to": "2039-09-06",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2039-10-04",
+     "to": "2039-10-04",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2039-11-01",
+     "to": "2039-11-01",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2039-12-06",
+     "to": "2039-12-06",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2040-01-03",
+     "to": "2040-01-03",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2040-02-07",
+     "to": "2040-02-07",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2040-03-06",
+     "to": "2040-03-06",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2040-04-03",
+     "to": "2040-04-03",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2040-05-01",
+     "to": "2040-05-01",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2040-06-05",
+     "to": "2040-06-05",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2040-07-03",
+     "to": "2040-07-03",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2040-08-07",
+     "to": "2040-08-07",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2040-09-04",
+     "to": "2040-09-04",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2040-10-02",
+     "to": "2040-10-02",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2040-11-06",
+     "to": "2040-11-06",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    },
+    {
+     "from": "2040-12-04",
+     "to": "2040-12-04",
+     "closed": true,
+     "note": "first Tuesday of the month (zenehaza.hu location page)"
+    }
+   ],
+   "seasonalSchedules": [
+    {
+     "from": "01-01",
+     "to": "12-31",
+     "schedule": {
+      "tuesday": [
+       {
+        "open": "10:15",
+        "close": "17:50"
+       }
+      ],
+      "wednesday": [
+       {
+        "open": "10:15",
+        "close": "17:50"
+       }
+      ],
+      "thursday": [
+       {
+        "open": "10:15",
+        "close": "17:50"
+       }
+      ],
+      "saturday": [
+       {
+        "open": "10:15",
+        "close": "17:50"
+       }
+      ],
+      "sunday": [
+       {
+        "open": "10:15",
+        "close": "17:50"
+       }
+      ],
+      "friday": [
+       {
+        "open": "10:15",
+        "close": "19:50"
+       }
+      ]
+     }
+    }
+   ],
+   "lastEntry": "16:15",
+   "conflict": "zenehaza.hu occasion page: last admission 16:15 (Friday 17:45). The planner stores 16:15 for every day (Friday's later entry not used). Location page lists 10:00-18:00 and adds 'closed first Tuesday': the occasion page's 10:15 slots and the first-Tuesday closure are both kept."
+  },
+  "priceText": null,
+  "ticketEstimateHUF": null,
+  "booking": "يفضل مسبقًا",
+  "tip": "الدخول بفترات كل نص ساعة (10:15، 10:45...)؛ آخر دخول 16:15 (الجمعة 17:45). مسكّر الإثنين وأول ثلاثاء بكل شهر. تذاكر الويكند بتخلص بسرعة. خزانة الملابس إلزامية.",
+  "officialUrl": "https://zenehaza.hu/en/occasion/dimensions-of-sound-musical-journey-through-space-and-time",
+  "eligibility": "no age limit (zenehaza.hu)",
+  "interestWeights": {
+   "popular": 5,
+   "cultureLocal": 7,
+   "viewsNature": 0,
+   "beachRelax": 0,
+   "footballExperiences": 7,
+   "foodShoppingNightlife": 0
+  },
+  "priority": 6,
+  "weightReason": "interactive music exhibition (culture, experience)",
+  "dietaryTags": null,
+  "status": "schedulable; addable by the customer (has planner metadata)"
+ },
+ {
+  "id": "margaret-island",
+  "name": "Margaret Island (Margitsziget)",
+  "type": "attraction",
+  "category": null,
+  "visitType": "visit",
+  "area": "margaret-island",
+  "address": "Margitsziget, 1007 Budapest",
+  "coordinates": {
+   "lat": 47.5187875,
+   "lng": 19.0448154
+  },
+  "coordinateSource": "OSM way/180740489 Zenélő szökőkút",
+  "planningMinutes": 90,
+  "durationText": "ساعة ونص تقريبًا",
+  "preferredTime": "afternoon",
+  "showWindow": null,
+  "outsideStopMinutes": null,
+  "hours": null,
+  "priceText": null,
+  "ticketEstimateHUF": 0,
+  "booking": "بدون حجز",
+  "tip": "النقطة بالخطة عند النافورة. مواعيد النافورة الموسيقية والحديقة اليابانية ما تحققنا منها.",
+  "officialUrl": null,
+  "eligibility": null,
+  "interestWeights": {
+   "popular": 6,
+   "cultureLocal": 2,
+   "viewsNature": 9,
+   "beachRelax": 8,
+   "footballExperiences": 1,
+   "foodShoppingNightlife": 0
+  },
+  "priority": 6,
+  "weightReason": "large green island park (nature, relax)",
+  "dietaryTags": null,
+  "status": "schedulable; addable by the customer (has planner metadata)"
+ },
+ {
+  "id": "szechenyi-bath",
+  "name": "Széchenyi Thermal Bath (conditional)",
+  "type": "attraction",
+  "category": null,
+  "visitType": "visit",
+  "area": "city-park",
+  "address": "Állatkerti krt. 9-11, 1146 Budapest",
+  "coordinates": {
+   "lat": 47.519251,
+   "lng": 19.081139
+  },
+  "coordinateSource": "OSM node/2753450424 entrance=main",
+  "planningMinutes": null,
+  "durationText": "2.5–3 ساعات",
+  "preferredTime": null,
+  "showWindow": null,
+  "outsideStopMinutes": null,
+  "hours": {
+   "type": "fixed",
+   "schedule": {
+    "monday": [
+     {
+      "open": "07:00",
+      "close": "20:00"
+     }
+    ],
+    "tuesday": [
+     {
+      "open": "07:00",
+      "close": "20:00"
+     }
+    ],
+    "wednesday": [
+     {
+      "open": "07:00",
+      "close": "20:00"
+     }
+    ],
+    "thursday": [
+     {
+      "open": "07:00",
+      "close": "20:00"
+     }
+    ],
+    "friday": [
+     {
+      "open": "07:00",
+      "close": "22:00"
+     }
+    ],
+    "saturday": [
+     {
+      "open": "08:00",
+      "close": "20:00"
+     }
+    ],
+    "sunday": [
+     {
+      "open": "08:00",
+      "close": "20:00"
+     }
+    ]
+   },
+   "source": "szechenyibath.hu (official)",
+   "sourceUrl": "https://www.szechenyibath.hu/",
+   "lastVerified": "2026-11-13",
+   "conflict": "Suggestion only (age 14+). Pools vacated 20 min before closing."
+  },
+  "priceText": "13,200 HUF (الإثنين–الخميس) · 14,800 (الجمعة والويكند) · 15,800 (الأعياد)",
+  "ticketEstimateHUF": 13200,
+  "booking": "يفضل مسبقًا",
+  "tip": "⚠️ بشرط: ممنوع تحت 14 سنة من 1 آب 2025 (إلا بشهادة طبية موافق عليها مسبقًا). مختلط، بلباس سباحة مخصص بس (منه البوركيني). التذاكر الأونلاين ما بترجع ولا بتتغير.",
+  "officialUrl": "https://www.szechenyibath.hu",
+  "eligibility": "under 14 not admitted since 1 Aug 2025 (medical exception with prior approval); mixed, swimwear only (szechenyibath.hu/faq)",
+  "interestWeights": null,
+  "priority": null,
+  "weightReason": null,
+  "dietaryTags": null,
+  "status": "informational optional (conditional): no planner metadata, never scheduled, not offered by add"
+ },
+ {
+  "id": "hospital-in-the-rock",
+  "name": "Hospital in the Rock (conditional)",
+  "type": "attraction",
+  "category": null,
+  "visitType": "visit",
+  "area": "castle-hill",
+  "address": "Lovas út 4/c, 1012 Budapest",
+  "coordinates": {
+   "lat": 47.500722,
+   "lng": 19.031529
+  },
+  "coordinateSource": "OSM node/5124313362 entrance=main",
+  "planningMinutes": null,
+  "durationText": "ساعة",
+  "preferredTime": null,
+  "showWindow": null,
+  "outsideStopMinutes": null,
+  "hours": null,
+  "priceText": "30 EUR (بالغ، بالإنجليزي، بيندفع بالفورنت)",
+  "ticketEstimateHUF": null,
+  "booking": "يفضل مسبقًا",
+  "tip": "⚠️ بشرط: ممنوع تحت 6 سنين، ومش منصوح فيه تحت 12. بجولة بس، كل يوم 10:00–19:00 وآخر جولة 18:00؛ مواعيد الجولات بالضبط ما تحققنا منها، فما انحطت بالجدول. البرنامج بالإنجليزي 30 EUR للبالغ بيندفع بالفورنت.",
+  "officialUrl": "https://www.sziklakorhaz.eu/en",
+  "eligibility": "under 6 not admitted; under 12 not recommended; guided tour only (sziklakorhaz.eu/en/information)",
+  "interestWeights": null,
+  "priority": null,
+  "weightReason": null,
+  "dietaryTags": null,
+  "status": "informational optional (conditional): no planner metadata, never scheduled, not offered by add"
+ },
+ {
+  "id": "danube-legend-cruise",
+  "name": "Danube Legend evening cruise (Legenda)",
+  "type": "experience",
+  "category": "river",
+  "visitType": "timed slot / tour",
+  "area": "belvaros",
+  "address": "Jane Haining rakpart, Dock 7, 1052 Budapest",
+  "coordinates": {
+   "lat": 47.4941437,
+   "lng": 19.0488902
+  },
+  "coordinateSource": "OSM node/4816567424 \"Legenda kikötő\", Jane Haining rakpart 7",
+  "planningMinutes": 60,
+  "durationText": "ساعة",
+  "preferredTime": "evening",
+  "showWindow": {
+   "everyMinutes": 60,
+   "minutes": 1,
+   "maxWaitMinutes": 59,
+   "missNoteAr": "الرحلات كل 20 دقيقة بالمسا حسب جدول الفترة: احجز الموعد الأقرب لوقت خطتك (الموعد المنشور مش ضمان مكان)."
+  },
+  "outsideStopMinutes": null,
+  "hours": {
+   "type": "variable",
+   "display": "رحلات مسائية كل 20 دقيقة (جدول 2026 حسب الفترة): 25 تشرين الأول–22 تشرين الثاني من 16:20 لـ21:00 · 23 تشرين الثاني–31 كانون الأول من 15:40 لـ21:00 · 24 كانون الأول بدون رحلات مسائية · 2027 مش منشور",
+   "source": "legenda.hu (operator)",
+   "sourceUrl": "https://legenda.hu/en/timetable",
+   "lastVerified": "2026-11-13",
+   "seasonalSchedules": [
+    {
+     "from": "01-01",
+     "to": "02-11",
+     "schedule": {
+      "monday": [
+       {
+        "open": "17:00",
+        "close": "22:00"
+       }
+      ],
+      "tuesday": [
+       {
+        "open": "17:00",
+        "close": "22:00"
+       }
+      ],
+      "wednesday": [
+       {
+        "open": "17:00",
+        "close": "22:00"
+       }
+      ],
+      "thursday": [
+       {
+        "open": "17:00",
+        "close": "22:00"
+       }
+      ],
+      "friday": [
+       {
+        "open": "17:00",
+        "close": "22:00"
+       }
+      ],
+      "saturday": [
+       {
+        "open": "17:00",
+        "close": "22:00"
+       }
+      ],
+      "sunday": [
+       {
+        "open": "17:00",
+        "close": "22:00"
+       }
+      ]
+     },
+     "lastEntry": "21:00"
+    },
+    {
+     "from": "02-12",
+     "to": "02-24",
+     "schedule": {
+      "monday": [
+       {
+        "open": "17:00",
+        "close": "22:00"
+       }
+      ],
+      "tuesday": [
+       {
+        "open": "17:00",
+        "close": "22:00"
+       }
+      ],
+      "wednesday": [
+       {
+        "open": "17:00",
+        "close": "22:00"
+       }
+      ],
+      "thursday": [
+       {
+        "open": "17:00",
+        "close": "22:00"
+       }
+      ],
+      "friday": [
+       {
+        "open": "17:00",
+        "close": "22:00"
+       }
+      ],
+      "saturday": [
+       {
+        "open": "17:00",
+        "close": "22:00"
+       }
+      ],
+      "sunday": [
+       {
+        "open": "17:00",
+        "close": "22:00"
+       }
+      ]
+     },
+     "lastEntry": "21:00"
+    },
+    {
+     "from": "02-25",
+     "to": "03-09",
+     "schedule": {
+      "monday": [
+       {
+        "open": "17:00",
+        "close": "22:00"
+       }
+      ],
+      "tuesday": [
+       {
+        "open": "17:00",
+        "close": "22:00"
+       }
+      ],
+      "wednesday": [
+       {
+        "open": "17:00",
+        "close": "22:00"
+       }
+      ],
+      "thursday": [
+       {
+        "open": "17:00",
+        "close": "22:00"
+       }
+      ],
+      "friday": [
+       {
+        "open": "17:00",
+        "close": "22:00"
+       }
+      ],
+      "saturday": [
+       {
+        "open": "17:00",
+        "close": "22:00"
+       }
+      ],
+      "sunday": [
+       {
+        "open": "17:00",
+        "close": "22:00"
+       }
+      ]
+     },
+     "lastEntry": "21:00"
+    },
+    {
+     "from": "03-10",
+     "to": "03-28",
+     "schedule": {
+      "monday": [
+       {
+        "open": "18:00",
+        "close": "22:00"
+       }
+      ],
+      "tuesday": [
+       {
+        "open": "18:00",
+        "close": "22:00"
+       }
+      ],
+      "wednesday": [
+       {
+        "open": "18:00",
+        "close": "22:00"
+       }
+      ],
+      "thursday": [
+       {
+        "open": "18:00",
+        "close": "22:00"
+       }
+      ],
+      "friday": [
+       {
+        "open": "18:00",
+        "close": "22:00"
+       }
+      ],
+      "saturday": [
+       {
+        "open": "18:00",
+        "close": "22:00"
+       }
+      ],
+      "sunday": [
+       {
+        "open": "18:00",
+        "close": "22:00"
+       }
+      ]
+     },
+     "lastEntry": "21:00"
+    },
+    {
+     "from": "03-29",
+     "to": "04-05",
+     "schedule": {
+      "monday": [
+       {
+        "open": "19:00",
+        "close": "23:00"
+       }
+      ],
+      "tuesday": [
+       {
+        "open": "19:00",
+        "close": "23:00"
+       }
+      ],
+      "wednesday": [
+       {
+        "open": "19:00",
+        "close": "23:00"
+       }
+      ],
+      "thursday": [
+       {
+        "open": "19:00",
+        "close": "23:00"
+       }
+      ],
+      "friday": [
+       {
+        "open": "19:00",
+        "close": "23:00"
+       }
+      ],
+      "saturday": [
+       {
+        "open": "19:00",
+        "close": "23:00"
+       }
+      ],
+      "sunday": [
+       {
+        "open": "19:00",
+        "close": "23:00"
+       }
+      ]
+     },
+     "lastEntry": "22:00"
+    },
+    {
+     "from": "04-06",
+     "to": "05-21",
+     "schedule": {
+      "monday": [
+       {
+        "open": "20:00",
+        "close": "23:00"
+       }
+      ],
+      "tuesday": [
+       {
+        "open": "20:00",
+        "close": "23:00"
+       }
+      ],
+      "wednesday": [
+       {
+        "open": "20:00",
+        "close": "23:00"
+       }
+      ],
+      "thursday": [
+       {
+        "open": "20:00",
+        "close": "23:00"
+       }
+      ],
+      "friday": [
+       {
+        "open": "20:00",
+        "close": "23:00"
+       }
+      ],
+      "saturday": [
+       {
+        "open": "20:00",
+        "close": "23:00"
+       }
+      ],
+      "sunday": [
+       {
+        "open": "20:00",
+        "close": "23:00"
+       }
+      ]
+     },
+     "lastEntry": "22:00"
+    },
+    {
+     "from": "05-22",
+     "to": "07-23",
+     "schedule": {}
+    },
+    {
+     "from": "07-24",
+     "to": "09-03",
+     "schedule": {
+      "monday": [
+       {
+        "open": "20:00",
+        "close": "23:00"
+       }
+      ],
+      "tuesday": [
+       {
+        "open": "20:00",
+        "close": "23:00"
+       }
+      ],
+      "wednesday": [
+       {
+        "open": "20:00",
+        "close": "23:00"
+       }
+      ],
+      "thursday": [
+       {
+        "open": "20:00",
+        "close": "23:00"
+       }
+      ],
+      "friday": [
+       {
+        "open": "20:00",
+        "close": "23:00"
+       }
+      ],
+      "saturday": [
+       {
+        "open": "20:00",
+        "close": "23:00"
+       }
+      ],
+      "sunday": [
+       {
+        "open": "20:00",
+        "close": "23:00"
+       }
+      ]
+     },
+     "lastEntry": "22:00"
+    },
+    {
+     "from": "09-04",
+     "to": "09-13",
+     "schedule": {
+      "monday": [
+       {
+        "open": "19:00",
+        "close": "23:00"
+       }
+      ],
+      "tuesday": [
+       {
+        "open": "19:00",
+        "close": "23:00"
+       }
+      ],
+      "wednesday": [
+       {
+        "open": "19:00",
+        "close": "23:00"
+       }
+      ],
+      "thursday": [
+       {
+        "open": "19:00",
+        "close": "23:00"
+       }
+      ],
+      "friday": [
+       {
+        "open": "19:00",
+        "close": "23:00"
+       }
+      ],
+      "saturday": [
+       {
+        "open": "19:00",
+        "close": "23:00"
+       }
+      ],
+      "sunday": [
+       {
+        "open": "19:00",
+        "close": "23:00"
+       }
+      ]
+     },
+     "lastEntry": "22:00"
+    },
+    {
+     "from": "09-14",
+     "to": "09-22",
+     "schedule": {
+      "monday": [
+       {
+        "open": "19:00",
+        "close": "23:00"
+       }
+      ],
+      "tuesday": [
+       {
+        "open": "19:00",
+        "close": "23:00"
+       }
+      ],
+      "wednesday": [
+       {
+        "open": "19:00",
+        "close": "23:00"
+       }
+      ],
+      "thursday": [
+       {
+        "open": "19:00",
+        "close": "23:00"
+       }
+      ],
+      "friday": [
+       {
+        "open": "19:00",
+        "close": "23:00"
+       }
+      ],
+      "saturday": [
+       {
+        "open": "19:00",
+        "close": "23:00"
+       }
+      ],
+      "sunday": [
+       {
+        "open": "19:00",
+        "close": "23:00"
+       }
+      ]
+     },
+     "lastEntry": "22:00"
+    },
+    {
+     "from": "09-23",
+     "to": "10-02",
+     "schedule": {
+      "monday": [
+       {
+        "open": "19:00",
+        "close": "23:00"
+       }
+      ],
+      "tuesday": [
+       {
+        "open": "19:00",
+        "close": "23:00"
+       }
+      ],
+      "wednesday": [
+       {
+        "open": "19:00",
+        "close": "23:00"
+       }
+      ],
+      "thursday": [
+       {
+        "open": "19:00",
+        "close": "23:00"
+       }
+      ],
+      "friday": [
+       {
+        "open": "19:00",
+        "close": "23:00"
+       }
+      ],
+      "saturday": [
+       {
+        "open": "19:00",
+        "close": "23:00"
+       }
+      ],
+      "sunday": [
+       {
+        "open": "19:00",
+        "close": "23:00"
+       }
+      ]
+     },
+     "lastEntry": "22:00"
+    },
+    {
+     "from": "10-03",
+     "to": "10-24",
+     "schedule": {
+      "monday": [
+       {
+        "open": "18:00",
+        "close": "23:00"
+       }
+      ],
+      "tuesday": [
+       {
+        "open": "18:00",
+        "close": "23:00"
+       }
+      ],
+      "wednesday": [
+       {
+        "open": "18:00",
+        "close": "23:00"
+       }
+      ],
+      "thursday": [
+       {
+        "open": "18:00",
+        "close": "23:00"
+       }
+      ],
+      "friday": [
+       {
+        "open": "18:00",
+        "close": "23:00"
+       }
+      ],
+      "saturday": [
+       {
+        "open": "18:00",
+        "close": "23:00"
+       }
+      ],
+      "sunday": [
+       {
+        "open": "18:00",
+        "close": "23:00"
+       }
+      ]
+     },
+     "lastEntry": "22:00"
+    },
+    {
+     "from": "10-25",
+     "to": "12-31",
+     "schedule": {
+      "monday": [
+       {
+        "open": "17:00",
+        "close": "22:00"
+       }
+      ],
+      "tuesday": [
+       {
+        "open": "17:00",
+        "close": "22:00"
+       }
+      ],
+      "wednesday": [
+       {
+        "open": "17:00",
+        "close": "22:00"
+       }
+      ],
+      "thursday": [
+       {
+        "open": "17:00",
+        "close": "22:00"
+       }
+      ],
+      "friday": [
+       {
+        "open": "17:00",
+        "close": "22:00"
+       }
+      ],
+      "saturday": [
+       {
+        "open": "17:00",
+        "close": "22:00"
+       }
+      ],
+      "sunday": [
+       {
+        "open": "17:00",
+        "close": "22:00"
+       }
+      ]
+     },
+     "lastEntry": "21:00"
+    }
+   ],
+   "dateExceptions": [
+    {
+     "from": "2026-12-24",
+     "to": "2026-12-24",
+     "closed": true,
+     "note": "daytime cruises only on 24 December"
+    },
+    {
+     "from": "2026-08-20",
+     "to": "2026-08-20",
+     "closed": true,
+     "note": "timetable might change on 20 August (national holiday)"
+    },
+    {
+     "from": "2027-01-01",
+     "to": "2027-12-31",
+     "closed": true,
+     "note": "2027 timetable not published"
+    }
+   ],
+   "conflict": "A published departure is not a guaranteed seat (online booking by availability)."
+  },
+  "priceText": "25 EUR (بالغ) · تحت 10 ببلاش",
+  "ticketEstimateHUF": null,
+  "booking": null,
+  "tip": null,
+  "officialUrl": "https://legenda.hu/en/danube-legend",
+  "eligibility": "children 0-9 free; the included drink can be a soft drink or water (legenda.hu)",
+  "interestWeights": {
+   "popular": 8,
+   "cultureLocal": 3,
+   "viewsNature": 8,
+   "beachRelax": 2,
+   "footballExperiences": 9,
+   "foodShoppingNightlife": 0
+  },
+  "priority": 8,
+  "weightReason": "evening river cruise: views, experience, evening",
+  "dietaryTags": null,
+  "status": "scheduled on dated plans; informational suggestion on flexible dates"
+ },
+ {
+  "id": "great-market-hall",
+  "name": "Great Market Hall (Központi Vásárcsarnok)",
+  "type": "shopping",
+  "category": null,
+  "visitType": "visit",
+  "area": "belvaros",
+  "address": "Vámház krt. 1-3, 1093 Budapest",
+  "coordinates": {
+   "lat": 47.487212,
+   "lng": 19.058966
+  },
+  "coordinateSource": "OSM node/2508882191 entrance=main (Fővám tér side)",
+  "planningMinutes": 60,
+  "durationText": null,
+  "preferredTime": "morning",
+  "showWindow": null,
+  "outsideStopMinutes": null,
+  "hours": {
+   "type": "fixed",
+   "schedule": {
+    "monday": [
+     {
+      "open": "06:00",
+      "close": "17:00"
+     }
+    ],
+    "tuesday": [
+     {
+      "open": "06:00",
+      "close": "18:00"
+     }
+    ],
+    "wednesday": [
+     {
+      "open": "06:00",
+      "close": "18:00"
+     }
+    ],
+    "thursday": [
+     {
+      "open": "06:00",
+      "close": "18:00"
+     }
+    ],
+    "friday": [
+     {
+      "open": "06:00",
+      "close": "18:00"
+     }
+    ],
+    "saturday": [
+     {
+      "open": "06:00",
+      "close": "15:00"
+     }
+    ]
+   },
+   "source": "piaconline.hu (official, Budapest Market Halls)",
+   "sourceUrl": "https://piaconline.hu/en/opening-hours",
+   "lastVerified": "2026-11-13"
+  },
+  "priceText": null,
+  "ticketEstimateHUF": null,
+  "booking": null,
+  "tip": null,
+  "officialUrl": "https://piaconline.hu/en/",
+  "eligibility": null,
+  "interestWeights": {
+   "popular": 7,
+   "cultureLocal": 4,
+   "viewsNature": 0,
+   "beachRelax": 0,
+   "footballExperiences": 2,
+   "foodShoppingNightlife": 9
+  },
+  "priority": 7,
+  "weightReason": "food market (food), market shopping (shopping), landmark hall (popular)",
+  "dietaryTags": null,
+  "status": "schedulable; addable by the customer (has planner metadata)"
+ },
+ {
+  "id": "vaci-utca",
+  "name": "Váci utca",
+  "type": "shopping",
+  "category": null,
+  "visitType": "visit",
+  "area": "belvaros",
+  "address": "Váci utca, 1052 Budapest",
+  "coordinates": {
+   "lat": 47.4921923,
+   "lng": 19.0534903
+  },
+  "coordinateSource": "OSM way/246920614 (a point on the street)",
+  "planningMinutes": 45,
+  "durationText": null,
+  "preferredTime": "anytime",
+  "showWindow": null,
+  "outsideStopMinutes": null,
+  "hours": null,
+  "priceText": null,
+  "ticketEstimateHUF": null,
+  "booking": null,
+  "tip": null,
+  "officialUrl": null,
+  "eligibility": null,
+  "interestWeights": {
+   "popular": 6,
+   "cultureLocal": 2,
+   "viewsNature": 0,
+   "beachRelax": 0,
+   "footballExperiences": 0,
+   "foodShoppingNightlife": 8
+  },
+  "priority": 5,
+  "weightReason": "main pedestrian shopping street",
+  "dietaryTags": null,
+  "status": "schedulable; addable by the customer (has planner metadata)"
+ },
+ {
+  "id": "andrassy-avenue",
+  "name": "Andrássy út",
+  "type": "shopping",
+  "category": null,
+  "visitType": "visit",
+  "area": "terezvaros",
+  "address": "Andrássy út, 1061 Budapest",
+  "coordinates": {
+   "lat": 47.50287,
+   "lng": 19.05816
+  },
+  "coordinateSource": "the Opera end of the avenue (OSM, Andrássy út 22)",
+  "planningMinutes": 45,
+  "durationText": null,
+  "preferredTime": "anytime",
+  "showWindow": null,
+  "outsideStopMinutes": null,
+  "hours": null,
+  "priceText": null,
+  "ticketEstimateHUF": null,
+  "booking": null,
+  "tip": null,
+  "officialUrl": null,
+  "eligibility": null,
+  "interestWeights": {
+   "popular": 6,
+   "cultureLocal": 4,
+   "viewsNature": 1,
+   "beachRelax": 0,
+   "footballExperiences": 0,
+   "foodShoppingNightlife": 8
+  },
+  "priority": 5,
+  "weightReason": "avenue with brand stores (shopping)",
+  "dietaryTags": null,
+  "status": "schedulable; addable by the customer (has planner metadata)"
+ },
+ {
+  "id": "gozsdu-udvar",
+  "name": "Gozsdu Udvar",
+  "type": "shopping",
+  "category": null,
+  "visitType": "visit",
+  "area": "erzsebetvaros",
+  "address": "Király u. 13 – Dob u. 16, 1075 Budapest",
+  "coordinates": {
+   "lat": 47.4980304,
+   "lng": 19.0601215
+  },
+  "coordinateSource": "OSM way/348493867",
+  "planningMinutes": 30,
+  "durationText": null,
+  "preferredTime": "afternoon",
+  "showWindow": null,
+  "outsideStopMinutes": null,
+  "hours": null,
+  "priceText": null,
+  "ticketEstimateHUF": null,
+  "booking": null,
+  "tip": null,
+  "officialUrl": "https://www.gozsduudvar.hu",
+  "eligibility": null,
+  "interestWeights": {
+   "popular": 3,
+   "cultureLocal": 2,
+   "viewsNature": 0,
+   "beachRelax": 0,
+   "footballExperiences": 2,
+   "foodShoppingNightlife": 6
+  },
+  "priority": 4,
+  "weightReason": "passage of shops and bars (shopping, evening)",
+  "dietaryTags": null,
+  "status": "schedulable; addable by the customer (has planner metadata)"
+ },
+ {
+  "id": "arena-mall",
+  "name": "Arena Mall",
+  "type": "shopping",
+  "category": null,
+  "visitType": "visit",
+  "area": "kerepes",
+  "address": "Kerepesi út 9, 1087 Budapest",
+  "coordinates": {
+   "lat": 47.4984954,
+   "lng": 19.0918628
+  },
+  "coordinateSource": "OSM way/25268421",
+  "planningMinutes": 90,
+  "durationText": null,
+  "preferredTime": "anytime",
+  "showWindow": null,
+  "outsideStopMinutes": null,
+  "hours": {
+   "type": "fixed",
+   "schedule": {
+    "monday": [
+     {
+      "open": "10:00",
+      "close": "21:00"
+     }
+    ],
+    "tuesday": [
+     {
+      "open": "10:00",
+      "close": "21:00"
+     }
+    ],
+    "wednesday": [
+     {
+      "open": "10:00",
+      "close": "21:00"
+     }
+    ],
+    "thursday": [
+     {
+      "open": "10:00",
+      "close": "21:00"
+     }
+    ],
+    "friday": [
+     {
+      "open": "10:00",
+      "close": "21:00"
+     }
+    ],
+    "saturday": [
+     {
+      "open": "10:00",
+      "close": "21:00"
+     }
+    ],
+    "sunday": [
+     {
+      "open": "10:00",
+      "close": "19:00"
+     }
+    ]
+   },
+   "source": "arenamall.hu (official, shops)",
+   "sourceUrl": "https://www.arenamall.hu/",
+   "lastVerified": "2026-11-13"
+  },
+  "priceText": null,
+  "ticketEstimateHUF": null,
+  "booking": null,
+  "tip": null,
+  "officialUrl": "https://www.arenamall.hu",
+  "eligibility": null,
+  "interestWeights": {
+   "popular": 2,
+   "cultureLocal": 0,
+   "viewsNature": 0,
+   "beachRelax": 0,
+   "footballExperiences": 0,
+   "foodShoppingNightlife": 8
+  },
+  "priority": 3,
+  "weightReason": "large mall (shopping only)",
+  "dietaryTags": null,
+  "status": "schedulable; addable by the customer (has planner metadata)"
+ },
+ {
+  "id": "hungarikum-bisztro",
+  "name": "Hungarikum Bisztró",
+  "type": "food",
+  "category": "local",
+  "visitType": "meal",
+  "area": "Lipótváros (near Parliament)",
+  "address": "Steindl Imre u. 13, 1051 Budapest",
+  "coordinates": {
+   "lat": 47.5034621,
+   "lng": 19.0480568
+  },
+  "coordinateSource": "OSM node/3074802455",
+  "planningMinutes": null,
+  "durationText": null,
+  "preferredTime": null,
+  "showWindow": null,
+  "outsideStopMinutes": null,
+  "hours": {
+   "type": "fixed",
+   "schedule": {
+    "monday": [
+     {
+      "open": "12:00",
+      "close": "14:30"
+     },
+     {
+      "open": "18:00",
+      "close": "22:00"
+     }
+    ],
+    "tuesday": [
+     {
+      "open": "12:00",
+      "close": "14:30"
+     },
+     {
+      "open": "18:00",
+      "close": "22:00"
+     }
+    ],
+    "wednesday": [
+     {
+      "open": "12:00",
+      "close": "14:30"
+     },
+     {
+      "open": "18:00",
+      "close": "22:00"
+     }
+    ],
+    "thursday": [
+     {
+      "open": "12:00",
+      "close": "14:30"
+     },
+     {
+      "open": "18:00",
+      "close": "22:00"
+     }
+    ],
+    "friday": [
+     {
+      "open": "12:00",
+      "close": "14:30"
+     },
+     {
+      "open": "18:00",
+      "close": "22:00"
+     }
+    ],
+    "saturday": [
+     {
+      "open": "12:00",
+      "close": "14:30"
+     },
+     {
+      "open": "18:00",
+      "close": "22:00"
+     }
+    ],
+    "sunday": [
+     {
+      "open": "12:00",
+      "close": "14:30"
+     },
+     {
+      "open": "18:00",
+      "close": "22:00"
+     }
+    ]
+   },
+   "source": "hungarikumbisztro.hu (official)",
+   "sourceUrl": "https://hungarikumbisztro.hu/",
+   "lastVerified": "2026-11-13"
+  },
+  "priceText": null,
+  "ticketEstimateHUF": null,
+  "booking": null,
+  "tip": "مطبخ هنغاري بيتي قرب البرلمان، بحجز من موقعه.",
+  "officialUrl": "https://hungarikumbisztro.hu",
+  "eligibility": null,
+  "interestWeights": null,
+  "priority": null,
+  "weightReason": null,
+  "dietaryTags": [
+   "meat",
+   "pork-maybe"
+  ],
+  "status": "meal candidate"
+ },
+ {
+  "id": "menza",
+  "name": "Menza",
+  "type": "food",
+  "category": "restaurants",
+  "visitType": "meal",
+  "area": "Terézváros (Liszt Ferenc tér)",
+  "address": "Liszt Ferenc tér 2, 1061 Budapest",
+  "coordinates": {
+   "lat": 47.5039614,
+   "lng": 19.0627699
+  },
+  "coordinateSource": "OSM node/419017260",
+  "planningMinutes": null,
+  "durationText": null,
+  "preferredTime": null,
+  "showWindow": null,
+  "outsideStopMinutes": null,
+  "hours": {
+   "type": "fixed",
+   "schedule": {
+    "monday": [
+     {
+      "open": "11:30",
+      "close": "22:30"
+     }
+    ],
+    "tuesday": [
+     {
+      "open": "11:30",
+      "close": "22:30"
+     }
+    ],
+    "wednesday": [
+     {
+      "open": "11:30",
+      "close": "22:30"
+     }
+    ],
+    "thursday": [
+     {
+      "open": "11:30",
+      "close": "22:30"
+     }
+    ],
+    "friday": [
+     {
+      "open": "11:30",
+      "close": "22:30"
+     }
+    ],
+    "saturday": [
+     {
+      "open": "11:30",
+      "close": "22:30"
+     }
+    ],
+    "sunday": [
+     {
+      "open": "11:30",
+      "close": "22:30"
+     }
+    ]
+   },
+   "source": "menzaetterem.hu (official; kitchen 11:30-22:30)",
+   "sourceUrl": "https://menzaetterem.hu/",
+   "lastVerified": "2026-11-13"
+  },
+  "priceText": null,
+  "ticketEstimateHUF": null,
+  "booking": null,
+  "tip": "مطعم هنغاري وعالمي بساحة Liszt Ferenc، وقائمة غدا يومية.",
+  "officialUrl": "https://menzaetterem.hu",
+  "eligibility": null,
+  "interestWeights": null,
+  "priority": null,
+  "weightReason": null,
+  "dietaryTags": [
+   "meat",
+   "pork-maybe"
+  ],
+  "status": "meal candidate"
+ },
+ {
+  "id": "frici-papa",
+  "name": "Frici Papa",
+  "type": "food",
+  "category": "local",
+  "visitType": "meal",
+  "area": "Erzsébetváros (Király utca)",
+  "address": "Király u. 55, 1077 Budapest",
+  "coordinates": {
+   "lat": 47.5024568,
+   "lng": 19.0639715
+  },
+  "coordinateSource": "OSM address node Király u. 55",
+  "planningMinutes": null,
+  "durationText": null,
+  "preferredTime": null,
+  "showWindow": null,
+  "outsideStopMinutes": null,
+  "hours": {
+   "type": "fixed",
+   "schedule": {
+    "monday": [
+     {
+      "open": "11:00",
+      "close": "22:00"
+     }
+    ],
+    "tuesday": [
+     {
+      "open": "11:00",
+      "close": "22:00"
+     }
+    ],
+    "wednesday": [
+     {
+      "open": "11:00",
+      "close": "22:00"
+     }
+    ],
+    "thursday": [
+     {
+      "open": "11:00",
+      "close": "22:00"
+     }
+    ],
+    "friday": [
+     {
+      "open": "11:00",
+      "close": "22:00"
+     }
+    ],
+    "saturday": [
+     {
+      "open": "11:00",
+      "close": "22:00"
+     }
+    ]
+   },
+   "source": "fricipapa.hu (official; Sunday not listed)",
+   "sourceUrl": "https://www.fricipapa.hu/",
+   "lastVerified": "2026-11-13"
+  },
+  "priceText": null,
+  "ticketEstimateHUF": null,
+  "booking": null,
+  "tip": "أكل هنغاري بيتي بسيط.",
+  "officialUrl": "https://www.fricipapa.hu",
+  "eligibility": null,
+  "interestWeights": null,
+  "priority": null,
+  "weightReason": null,
+  "dietaryTags": [
+   "meat",
+   "pork-maybe"
+  ],
+  "status": "meal candidate"
+ },
+ {
+  "id": "21-restaurant",
+  "name": "21 Restaurant",
+  "type": "food",
+  "category": "local",
+  "visitType": "meal",
+  "area": "Budavár (Fortuna utca)",
+  "address": "Fortuna u. 21, 1014 Budapest",
+  "coordinates": {
+   "lat": 47.5041419,
+   "lng": 19.0312808
+  },
+  "coordinateSource": "OSM building Fortuna u. 21",
+  "planningMinutes": null,
+  "durationText": null,
+  "preferredTime": null,
+  "showWindow": null,
+  "outsideStopMinutes": null,
+  "hours": {
+   "type": "fixed",
+   "schedule": {
+    "monday": [
+     {
+      "open": "11:30",
+      "close": "23:00"
+     }
+    ],
+    "tuesday": [
+     {
+      "open": "11:30",
+      "close": "23:00"
+     }
+    ],
+    "wednesday": [
+     {
+      "open": "11:30",
+      "close": "23:00"
+     }
+    ],
+    "thursday": [
+     {
+      "open": "11:30",
+      "close": "23:00"
+     }
+    ],
+    "friday": [
+     {
+      "open": "11:30",
+      "close": "23:00"
+     }
+    ],
+    "saturday": [
+     {
+      "open": "11:30",
+      "close": "23:00"
+     }
+    ],
+    "sunday": [
+     {
+      "open": "11:30",
+      "close": "23:00"
+     }
+    ]
+   },
+   "source": "zsidai.com (official group site)",
+   "sourceUrl": "https://zsidai.com/hu/21-restaurant/",
+   "lastVerified": "2026-11-13"
+  },
+  "priceText": null,
+  "ticketEstimateHUF": null,
+  "booking": null,
+  "tip": "مطبخ هنغاري معاصر بتلة القلعة.",
+  "officialUrl": "https://zsidai.com/hu/21-restaurant/",
+  "eligibility": null,
+  "interestWeights": null,
+  "priority": null,
+  "weightReason": null,
+  "dietaryTags": [
+   "meat",
+   "pork-maybe"
+  ],
+  "status": "meal candidate"
+ },
+ {
+  "id": "pierrot",
+  "name": "Pierrot",
+  "type": "food",
+  "category": "local",
+  "visitType": "meal",
+  "area": "Budavár (Fortuna utca)",
+  "address": "Fortuna u. 14, 1014 Budapest",
+  "coordinates": {
+   "lat": 47.503897,
+   "lng": 19.0309623
+  },
+  "coordinateSource": "OSM node/2330643555 Restaurant Pierrot",
+  "planningMinutes": null,
+  "durationText": null,
+  "preferredTime": null,
+  "showWindow": null,
+  "outsideStopMinutes": null,
+  "hours": {
+   "type": "fixed",
+   "schedule": {
+    "wednesday": [
+     {
+      "open": "11:30",
+      "close": "23:00"
+     }
+    ],
+    "thursday": [
+     {
+      "open": "11:30",
+      "close": "23:00"
+     }
+    ],
+    "friday": [
+     {
+      "open": "11:30",
+      "close": "23:00"
+     }
+    ],
+    "saturday": [
+     {
+      "open": "11:30",
+      "close": "23:00"
+     }
+    ],
+    "sunday": [
+     {
+      "open": "11:30",
+      "close": "23:00"
+     }
+    ]
+   },
+   "source": "zsidai.com (official group site)",
+   "sourceUrl": "https://zsidai.com/hu/pierrot/",
+   "lastVerified": "2026-11-13"
+  },
+  "priceText": null,
+  "ticketEstimateHUF": null,
+  "booking": null,
+  "tip": "مطعم هنغاري عائلي بتلة القلعة.",
+  "officialUrl": "https://zsidai.com/hu/pierrot/",
+  "eligibility": null,
+  "interestWeights": null,
+  "priority": null,
+  "weightReason": null,
+  "dietaryTags": [
+   "meat",
+   "pork-maybe"
+  ],
+  "status": "meal candidate"
+ },
+ {
+  "id": "new-york-cafe",
+  "name": "New York Café",
+  "type": "food",
+  "category": "restaurants",
+  "visitType": "meal",
+  "area": "Erzsébetváros (Blaha Lujza tér)",
+  "address": "Erzsébet krt. 9-11, 1073 Budapest",
+  "coordinates": {
+   "lat": 47.4986468,
+   "lng": 19.0707893
+  },
+  "coordinateSource": "OSM way/1267688599 (New York Palace)",
+  "planningMinutes": null,
+  "durationText": null,
+  "preferredTime": null,
+  "showWindow": null,
+  "outsideStopMinutes": null,
+  "hours": {
+   "type": "fixed",
+   "schedule": {
+    "monday": [
+     {
+      "open": "12:00",
+      "close": "23:00"
+     }
+    ],
+    "tuesday": [
+     {
+      "open": "12:00",
+      "close": "23:00"
+     }
+    ],
+    "wednesday": [
+     {
+      "open": "12:00",
+      "close": "23:00"
+     }
+    ],
+    "thursday": [
+     {
+      "open": "12:00",
+      "close": "23:59"
+     }
+    ],
+    "friday": [
+     {
+      "open": "12:00",
+      "close": "23:59"
+     }
+    ],
+    "saturday": [
+     {
+      "open": "12:00",
+      "close": "23:59"
+     }
+    ],
+    "sunday": [
+     {
+      "open": "12:00",
+      "close": "23:59"
+     }
+    ]
+   },
+   "source": "newyorkcafe.hu (official; hot kitchen)",
+   "sourceUrl": "https://newyorkcafe.hu/",
+   "lastVerified": "2026-11-13"
+  },
+  "priceText": null,
+  "ticketEstimateHUF": null,
+  "booking": null,
+  "tip": "مقهى تاريخي فخم، وفيه مطبخ ساخن من 12:00.",
+  "officialUrl": "https://newyorkcafe.hu",
+  "eligibility": null,
+  "interestWeights": null,
+  "priority": null,
+  "weightReason": null,
+  "dietaryTags": [
+   "meat",
+   "pork-maybe",
+   "dessert"
+  ],
+  "status": "meal candidate"
+ },
+ {
+  "id": "gerbeaud",
+  "name": "Gerbeaud",
+  "type": "food",
+  "category": "cafes",
+  "visitType": "meal",
+  "area": "Belváros (Vörösmarty tér)",
+  "address": "Vörösmarty tér 7-8, 1051 Budapest",
+  "coordinates": {
+   "lat": 47.4972059,
+   "lng": 19.0505484
+  },
+  "coordinateSource": "OSM address node Vörösmarty tér 7",
+  "planningMinutes": null,
+  "durationText": null,
+  "preferredTime": null,
+  "showWindow": null,
+  "outsideStopMinutes": null,
+  "hours": {
+   "type": "fixed",
+   "schedule": {
+    "monday": [
+     {
+      "open": "09:00",
+      "close": "20:00"
+     }
+    ],
+    "tuesday": [
+     {
+      "open": "09:00",
+      "close": "20:00"
+     }
+    ],
+    "wednesday": [
+     {
+      "open": "09:00",
+      "close": "20:00"
+     }
+    ],
+    "thursday": [
+     {
+      "open": "09:00",
+      "close": "20:00"
+     }
+    ],
+    "sunday": [
+     {
+      "open": "09:00",
+      "close": "20:00"
+     }
+    ],
+    "friday": [
+     {
+      "open": "09:00",
+      "close": "21:00"
+     }
+    ],
+    "saturday": [
+     {
+      "open": "09:00",
+      "close": "21:00"
+     }
+    ]
+   },
+   "source": "gerbeaud.hu (official)",
+   "sourceUrl": "https://gerbeaud.hu/en/",
+   "lastVerified": "2026-11-13"
+  },
+  "priceText": null,
+  "ticketEstimateHUF": null,
+  "booking": null,
+  "tip": "مقهى وحلويات تاريخي من القرن 19.",
+  "officialUrl": "https://gerbeaud.hu/en/",
+  "eligibility": null,
+  "interestWeights": null,
+  "priority": null,
+  "weightReason": null,
+  "dietaryTags": [
+   "coffee",
+   "dessert"
+  ],
+  "status": "meal fallback / coffee-break candidate"
+ }
+]

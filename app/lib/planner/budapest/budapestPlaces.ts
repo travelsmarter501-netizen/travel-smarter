@@ -281,7 +281,7 @@ export const BUDAPEST_ATTRACTIONS: Attraction[] = [
     tip: "",
     mustSee: true,
     address: "Hősök tere, 1146 Budapest",
-    coordinates: { lat: 47.5152112, lng: 19.0764759 },
+    coordinates: { lat: 47.5152112, lng: 19.0764759 }, // OSM way/25217448 Hősök tere (square point)
   }),
   attraction({
     id: "vajdahunyad-castle",
@@ -297,7 +297,7 @@ export const BUDAPEST_ATTRACTIONS: Attraction[] = [
     tip: "",
     mustSee: false,
     address: "Vajdahunyad sétány, 1146 Budapest",
-    coordinates: { lat: 47.5153549, lng: 19.0818753 },
+    coordinates: { lat: 47.5153549, lng: 19.0818753 }, // OSM node/275019091 Vajdahunyad vára (attraction point)
   }),
   attraction({
     id: "budapest-zoo",
@@ -458,14 +458,31 @@ const R = (open: string, close: string): TimeRange[] => [{ open, close }];
 const season = (from: string, to: string, schedule: WeeklySchedule, lastEntry?: string): SeasonalSchedule => ({ from, to, schedule, ...(lastEntry ? { lastEntry } : {}) });
 const WEEKDAYS: Weekday[] = ["monday", "tuesday", "wednesday", "thursday", "friday"];
 const WEEKEND: Weekday[] = ["saturday", "sunday"];
-// First Tuesday of each month (House of Music closure, location page) over the horizon the prototype plans for.
-const FIRST_TUESDAYS = ["2026-12-01", "2027-01-05", "2027-02-02", "2027-03-02", "2027-04-06", "2027-05-04", "2027-06-01"];
+// House of Music: closed the first Tuesday of EVERY month (zenehaza.hu location page, read 2026-11-13). The questionnaire sets no upper limit
+// on travel dates, so the rule is generated for every month from November 2026 to December 2040 (170 dates), computed, not typed.
+export function firstTuesdays(fromYear: number, fromMonth: number, toYear: number): string[] {
+  const out: string[] = [];
+  for (let y = fromYear; y <= toYear; y++) {
+    for (let m = y === fromYear ? fromMonth : 1; m <= 12; m++) {
+      const firstWeekday = new Date(Date.UTC(y, m - 1, 1)).getUTCDay(); // 0 = Sunday
+      const day = 1 + ((2 - firstWeekday + 7) % 7);
+      out.push(`${y}-${String(m).padStart(2, "0")}-${String(day).padStart(2, "0")}`);
+    }
+  }
+  return out;
+}
+const FIRST_TUESDAYS = firstTuesdays(2026, 11, 2040);
 
 const PLANNING_HOURS: Record<string, PlanningHours> = {
   "hungarian-national-gallery": {
     lastEntry: "17:00",
-    dateExceptions: [{ from: "2026-12-24", to: "2026-12-26", closed: true, note: "NOT VERIFIED: annual opening-hours page not read; Christmas closure assumed closed" }],
-    conflict: "en.mng.hu: entry until 17:00 (also with pre-bought tickets); halls start closing 17:30. Ticket office 'Monday-Sunday 10-17' as written, museum closed Monday. Annual hours page not read: Christmas closure is NOT verified and is stored as closed (the safe side).",
+    // HOLIDAY HOURS NOT VERIFIED (not a closure claim). The official page https://en.mng.hu/opening-hours-during-holidays/ returned
+    // Cloudflare error 520 on 2026-11-13 and 2026-11-14 (several tries; mng.hu Hungarian pages too); the newest readable archive copy is
+    // from 2025-06-24 (older season). Under the owner's rule "unknown hours = not scheduled at a guessed time", the planner does not
+    // schedule the gallery on 24 Dec 2026 - 1 Jan 2027. This entry is a PLANNING EXCLUSION for unverified dates; the customer sees no
+    // "closed" text. Replace it with the official dates as soon as the page can be read.
+    dateExceptions: [{ from: "2026-12-24", to: "2027-01-01", closed: true, note: "UNVERIFIED holiday hours: not scheduled (planning exclusion, not a closure fact); official page unreadable 2026-11-13/14 (HTTP 520)" }],
+    conflict: "en.mng.hu/opening-hours/ (read 2026-11-13): Tue-Sun 10-18, entry until 17:00 (also with pre-bought tickets), halls start closing 17:30 (top floor). Holiday page unreadable (520) on 13 and 14 Nov 2026: 24 Dec 2026 - 1 Jan 2027 are excluded from planning as UNVERIFIED, not stored as closed. An independent reviewer reported (14 Nov) the page shows 24-25 Dec closed, 26 and 28 Dec open, 31 Dec short, 1 Jan from noon; not re-read by us.",
   },
   "hungarian-national-museum": { lastEntry: "17:00", conflict: "mnm.hu: ticket office closes 17:00, exhibitions close from 17:30. Holiday hours page not read." },
   "museum-of-fine-arts": {
