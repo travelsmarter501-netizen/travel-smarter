@@ -635,7 +635,13 @@ export function lunchPlacementFromTimeline(
   month: number | null,
   hasBreakfast: boolean | { placeId: string; hours?: HoursInfo },
   startMinutesOverride: number | null = null,
-  legBetween?: (fromPlaceId: string, toPlaceId: string) => PlannerRouteLeg | undefined
+  legBetween?: (fromPlaceId: string, toPlaceId: string) => PlannerRouteLeg | undefined,
+  /**
+   * Optional (cities with mealStops.lunchAfterLastStop): lunch may also come after the day's LAST visit, when that gives the best lunch
+   * time. The restaurant, the walk to it, its hours and the full meal are still checked later (meal choice and the timing guard).
+   * Default false: lunch always has a visit after it (unchanged).
+   */
+  afterLastStop = false
 ): { afterIndex: number; estimatedStart: number } | null {
   if (stops.length === 0) return null;
   if (stops.length === 1) {
@@ -652,7 +658,7 @@ export function lunchPlacementFromTimeline(
   const TYPICAL_WALK = 10;
   const earliest = MEAL_TARGET_WINDOW.lunch.earliest;
   let best: { afterIndex: number; estimatedStart: number; cost: number } | null = null;
-  for (let i = 0; i < stops.length - 1; i++) {
+  for (let i = 0; i < (afterLastStop ? stops.length : stops.length - 1); i++) {
     const ready = timeline.stops[i].endMinutes + INTER_STOP_BUFFER_MINUTES + TYPICAL_WALK;
     const start = roundUpToBoundary(Math.max(ready, earliest));
     const cost = Math.max(0, earliest - ready) + 2 * Math.max(0, start - (13 * 60 + 30)) + (start > MEAL_TARGET_WINDOW.lunch.latest ? 1000 : 0);

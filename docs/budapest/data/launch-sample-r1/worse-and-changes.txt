@@ -1,0 +1,39 @@
+[q1-launch] days 270, changed (order or lunch) 112
+idle worse by >10 min: 2
+  shopping-3d-flex idle 37->58 travel 73->67 lunch 21-restaurant->21-restaurant | fishermans-bastion>matthias-church-exterior>hungarian-national-gallery>chain-bridge>citadella => citadella>matthias-church-exterior>fishermans-bastion>hungarian-national-gallery>chain-bridge
+  shopping-4d-flex idle 37->58 travel 73->67 lunch 21-restaurant->21-restaurant | fishermans-bastion>matthias-church-exterior>hungarian-national-gallery>chain-bridge>citadella => citadella>matthias-church-exterior>fishermans-bastion>hungarian-national-gallery>chain-bridge
+travel +15 min or more: 18
+  A-1d-2027-07-17 travel 58->77 idle 302->43
+  A-2d-flex travel 55->73 idle 70->37
+  A-3d-flex travel 61->78 idle 284->42
+  A-4d-flex travel 61->78 idle 284->42
+  B-1d-2026-11-19 travel 58->77 idle 302->43
+  B-1d-2027-07-17 travel 58->77 idle 302->43
+  B-2d-2026-11-19 travel 63->78 idle 297->47
+  B-2d-2027-07-17 travel 63->78 idle 297->47
+  B-3d-2026-11-19 travel 63->78 idle 297->47
+  B-4d-2026-11-19 travel 63->78 idle 297->47
+  C-4d-flex travel 40->56 idle 192->119
+  popular-3d-2027-07-17 travel 45->63 idle 80->37
+  popular-4d-flex travel 63->78 idle 312->42
+  experiences-1d-flex travel 40->57 idle 220->78
+  experiences-2d-2027-07-17 travel 58->77 idle 302->43
+  experiences-3d-flex travel 40->57 idle 220->78
+  food-4d-2026-11-19 travel 45->60 idle 207->72
+  surprise-2d-flex travel 40->56 idle 192->119
+day ends 30+ min later: 0
+lunch changes:
+  20  gerbeaud -> break
+  6  hungarikum-bisztro -> menza
+  6  gerbeaud -> hungarikum-bisztro
+  5  21-restaurant -> hungarikum-bisztro
+  5  menza -> hungarikum-bisztro
+  3  hungarikum-bisztro -> break
+  2  menza -> break
+  2  frici-papa -> menza
+  2  new-york-cafe -> frici-papa
+  2  pierrot -> 21-restaurant
+  1  menza -> frici-papa
+  1  break -> 21-restaurant
+  1  hungarikum-bisztro -> 21-restaurant
+  1  break -> menza

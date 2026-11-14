@@ -1,0 +1,37 @@
+set,days,plans,placesPerDay,thinDays,strongMatch%,idlePerDay,lateStarts,foodMealsPerDay,status,reasons
+A,1d,3,6.0,0,100,186,1,,check,long idle
+A,2d,3,5.2,0,90,150,2,,check,long idle
+A,3d,3,4.1,0,92,86,1,,ok,
+A,4d,3,3.8,0,93,75,1,,ok,
+B,1d,3,6.0,0,67,268,2,,check,long idle
+B,2d,3,4.5,0,67,196,3,,check,long idle
+B,3d,3,4.1,0,70,126,2,,check,long idle
+B,4d,3,3.7,2,66,115,2,,not ready,thin days; long idle
+C,1d,3,6.0,0,83,116,0,2.3,check,long idle
+C,2d,3,4.7,0,93,89,0,2.0,ok,
+C,3d,3,4.9,0,80,70,0,2.0,ok,
+C,4d,3,4.5,0,78,76,0,2.0,ok,
+popular,1d,3,6.0,0,72,66,0,,ok,
+popular,2d,3,5.0,0,70,78,0,,ok,
+popular,3d,3,4.7,0,64,85,0,,ok,
+popular,4d,3,4.0,0,58,122,2,,not ready,weak interest match; long idle
+nature,1d,3,5.0,0,60,97,0,,check,long idle
+nature,2d,3,3.2,3,63,139,2,,not ready,thin days; long idle
+nature,3d,3,2.8,3,52,173,5,,not ready,few places; thin days; weak interest match; long idle
+nature,4d,3,2.8,3,47,136,5,,not ready,few places; thin days; weak interest match; long idle
+shopping,1d,3,5.0,0,80,64,0,,ok,
+shopping,2d,3,5.2,0,87,105,0,,check,long idle
+shopping,3d,3,4.7,0,79,73,0,,ok,
+shopping,4d,3,4.4,0,70,65,0,,ok,
+experiences,1d,3,6.0,0,72,116,0,,check,long idle
+experiences,2d,3,5.0,0,80,114,1,,check,long idle
+experiences,3d,3,4.8,0,70,82,0,,ok,
+experiences,4d,3,4.1,0,63,84,0,,ok,
+food,1d,3,6.0,0,72,66,0,3.0,ok,
+food,2d,3,5.2,0,65,101,0,2.3,check,long idle
+food,3d,3,4.7,0,60,77,0,2.1,ok,
+food,4d,3,4.3,0,55,81,0,1.8,ok,
+surprise,1d,3,6.0,0,89,116,0,,check,long idle
+surprise,2d,3,5.0,0,90,89,0,,ok,
+surprise,3d,3,4.2,0,87,102,0,,check,long idle
+surprise,4d,3,3.9,0,89,87,0,,ok,

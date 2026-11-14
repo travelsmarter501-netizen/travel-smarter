@@ -366,7 +366,7 @@ function buildDay(city: CityPlannerModule, baseDay: V2Day, edit: DayCustomizatio
   const hasBreakfast = !!breakfastMeal;
   // Cities with `mealLegsInTimeline`: lunch is placed from the edited day's real timeline, like a new plan.
   const lunchAfterIndex = city.mealLegsInTimeline
-    ? lunchPlacementFromTimeline(timelineStops, legs, baseDay.weekday ?? null, month, breakfastMeal ? { placeId: breakfastMeal.id, hours: breakfastMeal.hours } : false, edit.startMinutes ?? null, timelineLegBetween(city))?.afterIndex
+    ? lunchPlacementFromTimeline(timelineStops, legs, baseDay.weekday ?? null, month, breakfastMeal ? { placeId: breakfastMeal.id, hours: breakfastMeal.hours } : false, edit.startMinutes ?? null, timelineLegBetween(city), !!city.mealStops.lunchAfterLastStop)?.afterIndex
     : city.mealStops.lunchByClock
       ? lunchIndexByClock(stops.map((stop) => stop.visitDurationMinutes), hasBreakfast)
       : undefined;

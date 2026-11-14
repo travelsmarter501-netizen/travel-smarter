@@ -287,7 +287,6 @@ export const PLAN_TEXT = {
     longer: "ארוך יותר",
     saving: "שומר…",
     saveFailed: "השינוי לא נשמר. נסו שוב.",
-    // Hebrew: proposed by the developer, NOT yet reviewed by the owner (the owner approved the Arabic and English).
     addUnavailable: "אי אפשר להוסיף את המקום הזה ליום הזה. נסו מקום אחר.",
     edited: "נערך",
     freeTime: "🕒 זמן חופשי",

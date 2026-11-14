@@ -44,6 +44,11 @@ export type CityMealStopRules = {
   lunchByClock?: boolean;
   /** Optional: categories tried for a light lunch when no restaurant of `lunchCategories` fits (Prague: cafés with food). */
   lunchFallbackCategories?: readonly string[];
+  /**
+   * Optional: lunch may come after the day's last visit when that gives the best lunch time (lunchPlacementFromTimeline). The restaurant
+   * must still fit with its walk, hours and full meal; else the city's lunch break. Unset = lunch always has a visit after it.
+   */
+  lunchAfterLastStop?: boolean;
   /** Optional: categories offered as one optional coffee break per day near the day's route (Prague: cafés); unset = none. */
   coffeeBreakCategories?: readonly string[];
   /**

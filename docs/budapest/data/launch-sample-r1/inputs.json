@@ -1,0 +1,1670 @@
+[
+ {
+  "id": "A-1d-flex",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "popular",
+    "cultureHistory",
+    "natureViews",
+    "beachRelax"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "flexible",
+   "durationDays": 1
+  }
+ },
+ {
+  "id": "A-1d-2026-11-19",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "popular",
+    "cultureHistory",
+    "natureViews",
+    "beachRelax"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2026-11-19",
+   "departureDate": "2026-11-19"
+  }
+ },
+ {
+  "id": "A-1d-2027-07-17",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "popular",
+    "cultureHistory",
+    "natureViews",
+    "beachRelax"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2027-07-17",
+   "departureDate": "2027-07-17"
+  }
+ },
+ {
+  "id": "A-2d-flex",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "popular",
+    "cultureHistory",
+    "natureViews",
+    "beachRelax"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "flexible",
+   "durationDays": 2
+  }
+ },
+ {
+  "id": "A-2d-2026-11-19",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "popular",
+    "cultureHistory",
+    "natureViews",
+    "beachRelax"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2026-11-19",
+   "departureDate": "2026-11-20"
+  }
+ },
+ {
+  "id": "A-2d-2027-07-17",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "popular",
+    "cultureHistory",
+    "natureViews",
+    "beachRelax"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2027-07-17",
+   "departureDate": "2027-07-18"
+  }
+ },
+ {
+  "id": "A-3d-flex",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "popular",
+    "cultureHistory",
+    "natureViews",
+    "beachRelax"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "flexible",
+   "durationDays": 3
+  }
+ },
+ {
+  "id": "A-3d-2026-11-19",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "popular",
+    "cultureHistory",
+    "natureViews",
+    "beachRelax"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2026-11-19",
+   "departureDate": "2026-11-21"
+  }
+ },
+ {
+  "id": "A-3d-2027-07-17",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "popular",
+    "cultureHistory",
+    "natureViews",
+    "beachRelax"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2027-07-17",
+   "departureDate": "2027-07-19"
+  }
+ },
+ {
+  "id": "A-4d-flex",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "popular",
+    "cultureHistory",
+    "natureViews",
+    "beachRelax"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "flexible",
+   "durationDays": 4
+  }
+ },
+ {
+  "id": "A-4d-2026-11-19",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "popular",
+    "cultureHistory",
+    "natureViews",
+    "beachRelax"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2026-11-19",
+   "departureDate": "2026-11-22"
+  }
+ },
+ {
+  "id": "A-4d-2027-07-17",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "popular",
+    "cultureHistory",
+    "natureViews",
+    "beachRelax"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2027-07-17",
+   "departureDate": "2027-07-20"
+  }
+ },
+ {
+  "id": "B-1d-flex",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "cultureHistory"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "flexible",
+   "durationDays": 1
+  }
+ },
+ {
+  "id": "B-1d-2026-11-19",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "cultureHistory"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2026-11-19",
+   "departureDate": "2026-11-19"
+  }
+ },
+ {
+  "id": "B-1d-2027-07-17",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "cultureHistory"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2027-07-17",
+   "departureDate": "2027-07-17"
+  }
+ },
+ {
+  "id": "B-2d-flex",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "cultureHistory"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "flexible",
+   "durationDays": 2
+  }
+ },
+ {
+  "id": "B-2d-2026-11-19",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "cultureHistory"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2026-11-19",
+   "departureDate": "2026-11-20"
+  }
+ },
+ {
+  "id": "B-2d-2027-07-17",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "cultureHistory"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2027-07-17",
+   "departureDate": "2027-07-18"
+  }
+ },
+ {
+  "id": "B-3d-flex",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "cultureHistory"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "flexible",
+   "durationDays": 3
+  }
+ },
+ {
+  "id": "B-3d-2026-11-19",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "cultureHistory"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2026-11-19",
+   "departureDate": "2026-11-21"
+  }
+ },
+ {
+  "id": "B-3d-2027-07-17",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "cultureHistory"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2027-07-17",
+   "departureDate": "2027-07-19"
+  }
+ },
+ {
+  "id": "B-4d-flex",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "cultureHistory"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "flexible",
+   "durationDays": 4
+  }
+ },
+ {
+  "id": "B-4d-2026-11-19",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "cultureHistory"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2026-11-19",
+   "departureDate": "2026-11-22"
+  }
+ },
+ {
+  "id": "B-4d-2027-07-17",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "cultureHistory"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2027-07-17",
+   "departureDate": "2027-07-20"
+  }
+ },
+ {
+  "id": "C-1d-flex",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "food",
+    "shopping",
+    "footballExperiences",
+    "nightlife"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "flexible",
+   "durationDays": 1
+  }
+ },
+ {
+  "id": "C-1d-2026-11-19",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "food",
+    "shopping",
+    "footballExperiences",
+    "nightlife"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2026-11-19",
+   "departureDate": "2026-11-19"
+  }
+ },
+ {
+  "id": "C-1d-2027-07-17",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "food",
+    "shopping",
+    "footballExperiences",
+    "nightlife"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2027-07-17",
+   "departureDate": "2027-07-17"
+  }
+ },
+ {
+  "id": "C-2d-flex",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "food",
+    "shopping",
+    "footballExperiences",
+    "nightlife"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "flexible",
+   "durationDays": 2
+  }
+ },
+ {
+  "id": "C-2d-2026-11-19",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "food",
+    "shopping",
+    "footballExperiences",
+    "nightlife"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2026-11-19",
+   "departureDate": "2026-11-20"
+  }
+ },
+ {
+  "id": "C-2d-2027-07-17",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "food",
+    "shopping",
+    "footballExperiences",
+    "nightlife"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2027-07-17",
+   "departureDate": "2027-07-18"
+  }
+ },
+ {
+  "id": "C-3d-flex",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "food",
+    "shopping",
+    "footballExperiences",
+    "nightlife"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "flexible",
+   "durationDays": 3
+  }
+ },
+ {
+  "id": "C-3d-2026-11-19",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "food",
+    "shopping",
+    "footballExperiences",
+    "nightlife"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2026-11-19",
+   "departureDate": "2026-11-21"
+  }
+ },
+ {
+  "id": "C-3d-2027-07-17",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "food",
+    "shopping",
+    "footballExperiences",
+    "nightlife"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2027-07-17",
+   "departureDate": "2027-07-19"
+  }
+ },
+ {
+  "id": "C-4d-flex",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "food",
+    "shopping",
+    "footballExperiences",
+    "nightlife"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "flexible",
+   "durationDays": 4
+  }
+ },
+ {
+  "id": "C-4d-2026-11-19",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "food",
+    "shopping",
+    "footballExperiences",
+    "nightlife"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2026-11-19",
+   "departureDate": "2026-11-22"
+  }
+ },
+ {
+  "id": "C-4d-2027-07-17",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "food",
+    "shopping",
+    "footballExperiences",
+    "nightlife"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2027-07-17",
+   "departureDate": "2027-07-20"
+  }
+ },
+ {
+  "id": "popular-1d-flex",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "popular"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "flexible",
+   "durationDays": 1
+  }
+ },
+ {
+  "id": "popular-1d-2026-11-19",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "popular"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2026-11-19",
+   "departureDate": "2026-11-19"
+  }
+ },
+ {
+  "id": "popular-1d-2027-07-17",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "popular"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2027-07-17",
+   "departureDate": "2027-07-17"
+  }
+ },
+ {
+  "id": "popular-2d-flex",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "popular"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "flexible",
+   "durationDays": 2
+  }
+ },
+ {
+  "id": "popular-2d-2026-11-19",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "popular"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2026-11-19",
+   "departureDate": "2026-11-20"
+  }
+ },
+ {
+  "id": "popular-2d-2027-07-17",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "popular"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2027-07-17",
+   "departureDate": "2027-07-18"
+  }
+ },
+ {
+  "id": "popular-3d-flex",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "popular"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "flexible",
+   "durationDays": 3
+  }
+ },
+ {
+  "id": "popular-3d-2026-11-19",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "popular"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2026-11-19",
+   "departureDate": "2026-11-21"
+  }
+ },
+ {
+  "id": "popular-3d-2027-07-17",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "popular"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2027-07-17",
+   "departureDate": "2027-07-19"
+  }
+ },
+ {
+  "id": "popular-4d-flex",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "popular"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "flexible",
+   "durationDays": 4
+  }
+ },
+ {
+  "id": "popular-4d-2026-11-19",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "popular"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2026-11-19",
+   "departureDate": "2026-11-22"
+  }
+ },
+ {
+  "id": "popular-4d-2027-07-17",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "popular"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2027-07-17",
+   "departureDate": "2027-07-20"
+  }
+ },
+ {
+  "id": "nature-1d-flex",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "natureViews",
+    "beachRelax"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "flexible",
+   "durationDays": 1
+  }
+ },
+ {
+  "id": "nature-1d-2026-11-19",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "natureViews",
+    "beachRelax"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2026-11-19",
+   "departureDate": "2026-11-19"
+  }
+ },
+ {
+  "id": "nature-1d-2027-07-17",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "natureViews",
+    "beachRelax"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2027-07-17",
+   "departureDate": "2027-07-17"
+  }
+ },
+ {
+  "id": "nature-2d-flex",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "natureViews",
+    "beachRelax"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "flexible",
+   "durationDays": 2
+  }
+ },
+ {
+  "id": "nature-2d-2026-11-19",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "natureViews",
+    "beachRelax"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2026-11-19",
+   "departureDate": "2026-11-20"
+  }
+ },
+ {
+  "id": "nature-2d-2027-07-17",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "natureViews",
+    "beachRelax"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2027-07-17",
+   "departureDate": "2027-07-18"
+  }
+ },
+ {
+  "id": "nature-3d-flex",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "natureViews",
+    "beachRelax"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "flexible",
+   "durationDays": 3
+  }
+ },
+ {
+  "id": "nature-3d-2026-11-19",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "natureViews",
+    "beachRelax"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2026-11-19",
+   "departureDate": "2026-11-21"
+  }
+ },
+ {
+  "id": "nature-3d-2027-07-17",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "natureViews",
+    "beachRelax"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2027-07-17",
+   "departureDate": "2027-07-19"
+  }
+ },
+ {
+  "id": "nature-4d-flex",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "natureViews",
+    "beachRelax"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "flexible",
+   "durationDays": 4
+  }
+ },
+ {
+  "id": "nature-4d-2026-11-19",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "natureViews",
+    "beachRelax"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2026-11-19",
+   "departureDate": "2026-11-22"
+  }
+ },
+ {
+  "id": "nature-4d-2027-07-17",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "natureViews",
+    "beachRelax"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2027-07-17",
+   "departureDate": "2027-07-20"
+  }
+ },
+ {
+  "id": "shopping-1d-flex",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "shopping"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "flexible",
+   "durationDays": 1
+  }
+ },
+ {
+  "id": "shopping-1d-2026-11-19",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "shopping"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2026-11-19",
+   "departureDate": "2026-11-19"
+  }
+ },
+ {
+  "id": "shopping-1d-2027-07-17",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "shopping"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2027-07-17",
+   "departureDate": "2027-07-17"
+  }
+ },
+ {
+  "id": "shopping-2d-flex",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "shopping"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "flexible",
+   "durationDays": 2
+  }
+ },
+ {
+  "id": "shopping-2d-2026-11-19",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "shopping"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2026-11-19",
+   "departureDate": "2026-11-20"
+  }
+ },
+ {
+  "id": "shopping-2d-2027-07-17",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "shopping"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2027-07-17",
+   "departureDate": "2027-07-18"
+  }
+ },
+ {
+  "id": "shopping-3d-flex",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "shopping"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "flexible",
+   "durationDays": 3
+  }
+ },
+ {
+  "id": "shopping-3d-2026-11-19",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "shopping"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2026-11-19",
+   "departureDate": "2026-11-21"
+  }
+ },
+ {
+  "id": "shopping-3d-2027-07-17",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "shopping"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2027-07-17",
+   "departureDate": "2027-07-19"
+  }
+ },
+ {
+  "id": "shopping-4d-flex",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "shopping"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "flexible",
+   "durationDays": 4
+  }
+ },
+ {
+  "id": "shopping-4d-2026-11-19",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "shopping"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2026-11-19",
+   "departureDate": "2026-11-22"
+  }
+ },
+ {
+  "id": "shopping-4d-2027-07-17",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "shopping"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2027-07-17",
+   "departureDate": "2027-07-20"
+  }
+ },
+ {
+  "id": "experiences-1d-flex",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "footballExperiences",
+    "nightlife"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "flexible",
+   "durationDays": 1
+  }
+ },
+ {
+  "id": "experiences-1d-2026-11-19",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "footballExperiences",
+    "nightlife"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2026-11-19",
+   "departureDate": "2026-11-19"
+  }
+ },
+ {
+  "id": "experiences-1d-2027-07-17",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "footballExperiences",
+    "nightlife"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2027-07-17",
+   "departureDate": "2027-07-17"
+  }
+ },
+ {
+  "id": "experiences-2d-flex",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "footballExperiences",
+    "nightlife"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "flexible",
+   "durationDays": 2
+  }
+ },
+ {
+  "id": "experiences-2d-2026-11-19",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "footballExperiences",
+    "nightlife"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2026-11-19",
+   "departureDate": "2026-11-20"
+  }
+ },
+ {
+  "id": "experiences-2d-2027-07-17",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "footballExperiences",
+    "nightlife"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2027-07-17",
+   "departureDate": "2027-07-18"
+  }
+ },
+ {
+  "id": "experiences-3d-flex",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "footballExperiences",
+    "nightlife"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "flexible",
+   "durationDays": 3
+  }
+ },
+ {
+  "id": "experiences-3d-2026-11-19",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "footballExperiences",
+    "nightlife"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2026-11-19",
+   "departureDate": "2026-11-21"
+  }
+ },
+ {
+  "id": "experiences-3d-2027-07-17",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "footballExperiences",
+    "nightlife"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2027-07-17",
+   "departureDate": "2027-07-19"
+  }
+ },
+ {
+  "id": "experiences-4d-flex",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "footballExperiences",
+    "nightlife"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "flexible",
+   "durationDays": 4
+  }
+ },
+ {
+  "id": "experiences-4d-2026-11-19",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "footballExperiences",
+    "nightlife"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2026-11-19",
+   "departureDate": "2026-11-22"
+  }
+ },
+ {
+  "id": "experiences-4d-2027-07-17",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "footballExperiences",
+    "nightlife"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2027-07-17",
+   "departureDate": "2027-07-20"
+  }
+ },
+ {
+  "id": "food-1d-flex",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "food"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "flexible",
+   "durationDays": 1
+  }
+ },
+ {
+  "id": "food-1d-2026-11-19",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "food"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2026-11-19",
+   "departureDate": "2026-11-19"
+  }
+ },
+ {
+  "id": "food-1d-2027-07-17",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "food"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2027-07-17",
+   "departureDate": "2027-07-17"
+  }
+ },
+ {
+  "id": "food-2d-flex",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "food"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "flexible",
+   "durationDays": 2
+  }
+ },
+ {
+  "id": "food-2d-2026-11-19",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "food"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2026-11-19",
+   "departureDate": "2026-11-20"
+  }
+ },
+ {
+  "id": "food-2d-2027-07-17",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "food"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2027-07-17",
+   "departureDate": "2027-07-18"
+  }
+ },
+ {
+  "id": "food-3d-flex",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "food"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "flexible",
+   "durationDays": 3
+  }
+ },
+ {
+  "id": "food-3d-2026-11-19",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "food"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2026-11-19",
+   "departureDate": "2026-11-21"
+  }
+ },
+ {
+  "id": "food-3d-2027-07-17",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "food"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2027-07-17",
+   "departureDate": "2027-07-19"
+  }
+ },
+ {
+  "id": "food-4d-flex",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "food"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "flexible",
+   "durationDays": 4
+  }
+ },
+ {
+  "id": "food-4d-2026-11-19",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "food"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2026-11-19",
+   "departureDate": "2026-11-22"
+  }
+ },
+ {
+  "id": "food-4d-2027-07-17",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [
+    "food"
+   ],
+   "accommodation": {
+    "booked": false
+   },
+   "dateMode": "specific",
+   "arrivalDate": "2027-07-17",
+   "departureDate": "2027-07-20"
+  }
+ },
+ {
+  "id": "surprise-1d-flex",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [],
+   "accommodation": {
+    "booked": false
+   },
+   "surpriseMe": true,
+   "dateMode": "flexible",
+   "durationDays": 1
+  }
+ },
+ {
+  "id": "surprise-1d-2026-11-19",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [],
+   "accommodation": {
+    "booked": false
+   },
+   "surpriseMe": true,
+   "dateMode": "specific",
+   "arrivalDate": "2026-11-19",
+   "departureDate": "2026-11-19"
+  }
+ },
+ {
+  "id": "surprise-1d-2027-07-17",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [],
+   "accommodation": {
+    "booked": false
+   },
+   "surpriseMe": true,
+   "dateMode": "specific",
+   "arrivalDate": "2027-07-17",
+   "departureDate": "2027-07-17"
+  }
+ },
+ {
+  "id": "surprise-2d-flex",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [],
+   "accommodation": {
+    "booked": false
+   },
+   "surpriseMe": true,
+   "dateMode": "flexible",
+   "durationDays": 2
+  }
+ },
+ {
+  "id": "surprise-2d-2026-11-19",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [],
+   "accommodation": {
+    "booked": false
+   },
+   "surpriseMe": true,
+   "dateMode": "specific",
+   "arrivalDate": "2026-11-19",
+   "departureDate": "2026-11-20"
+  }
+ },
+ {
+  "id": "surprise-2d-2027-07-17",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [],
+   "accommodation": {
+    "booked": false
+   },
+   "surpriseMe": true,
+   "dateMode": "specific",
+   "arrivalDate": "2027-07-17",
+   "departureDate": "2027-07-18"
+  }
+ },
+ {
+  "id": "surprise-3d-flex",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [],
+   "accommodation": {
+    "booked": false
+   },
+   "surpriseMe": true,
+   "dateMode": "flexible",
+   "durationDays": 3
+  }
+ },
+ {
+  "id": "surprise-3d-2026-11-19",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [],
+   "accommodation": {
+    "booked": false
+   },
+   "surpriseMe": true,
+   "dateMode": "specific",
+   "arrivalDate": "2026-11-19",
+   "departureDate": "2026-11-21"
+  }
+ },
+ {
+  "id": "surprise-3d-2027-07-17",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [],
+   "accommodation": {
+    "booked": false
+   },
+   "surpriseMe": true,
+   "dateMode": "specific",
+   "arrivalDate": "2027-07-17",
+   "departureDate": "2027-07-19"
+  }
+ },
+ {
+  "id": "surprise-4d-flex",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [],
+   "accommodation": {
+    "booked": false
+   },
+   "surpriseMe": true,
+   "dateMode": "flexible",
+   "durationDays": 4
+  }
+ },
+ {
+  "id": "surprise-4d-2026-11-19",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [],
+   "accommodation": {
+    "booked": false
+   },
+   "surpriseMe": true,
+   "dateMode": "specific",
+   "arrivalDate": "2026-11-19",
+   "departureDate": "2026-11-22"
+  }
+ },
+ {
+  "id": "surprise-4d-2027-07-17",
+  "input": {
+   "destinationId": "budapest",
+   "interests": [],
+   "accommodation": {
+    "booked": false
+   },
+   "surpriseMe": true,
+   "dateMode": "specific",
+   "arrivalDate": "2027-07-17",
+   "departureDate": "2027-07-20"
+  }
+ }
+]

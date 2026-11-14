@@ -288,7 +288,8 @@ export function mealSlotHintsFromTimeline(
   stopIds: readonly string[];
 } {
   const legBetween = timelineLegBetween(city);
-  const lunch = lunchPlacementFromTimeline(timelineStops, legs, weekday, month, true, startMinutesOverride, legBetween);
+  const afterLast = !!city.mealStops.lunchAfterLastStop;
+  const lunch = lunchPlacementFromTimeline(timelineStops, legs, weekday, month, true, startMinutesOverride, legBetween, afterLast);
   const plain = buildBarcelonaDayTimeline(timelineStops, legs, [], weekday, month, startMinutesOverride, legBetween);
   const lunchExtra = lunch ? MEAL_ASSUMED_DURATION_MINUTES.lunch + 2 * 25 : 0;
   const dinnerStart = Math.max(city.mealStops.flexibleMeals?.dinnerEarliest ?? MEAL_TARGET_WINDOW.dinner.earliest, Math.ceil((plain.dayEndMinutes + lunchExtra + 25) / 15) * 15);
@@ -300,7 +301,7 @@ export function mealSlotHintsFromTimeline(
     lunchStart: lunch?.estimatedStart,
     dinnerStart,
     reuseWhenNoneLeft: true,
-    lunchFor: (breakfast) => lunchPlacementFromTimeline(timelineStops, legs, weekday, month, breakfast ?? false, startMinutesOverride, legBetween),
+    lunchFor: (breakfast) => lunchPlacementFromTimeline(timelineStops, legs, weekday, month, breakfast ?? false, startMinutesOverride, legBetween, afterLast),
     stopIds: timelineStops.map((stop) => stop.placeId),
   };
 }
