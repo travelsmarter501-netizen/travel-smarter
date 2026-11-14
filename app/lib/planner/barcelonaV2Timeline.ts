@@ -76,15 +76,23 @@ export type TimelineStopInput = {
   /** Minutes to arrive before the visit starts (a guided tour at a set time); omitted = 0, as before. */
   arrivalBufferMinutes?: number;
   /** Something to see only in the first `minutes` of every `everyMinutes`: wait for the next window when that costs at most `maxWaitMinutes`. */
-  showWindow?: { everyMinutes: number; minutes: number; maxWaitMinutes: number };
+  /** `offsetMinutes` (optional, default 0): the windows start at offset, offset + every, ... (e.g. 30-minute slots at :15 and :45). */
+  showWindow?: { everyMinutes: number; minutes: number; maxWaitMinutes: number; offsetMinutes?: number };
 };
 
 /** A lunch break with no set restaurant (cities with flexibleMeals): taken in the area of the stop before it. */
 export const LUNCH_BREAK_ID = "lunch-break";
 
 /** Whether a visit that starts at `startMinutes` begins inside the place's show window. */
-export function startsInShowWindow(startMinutes: number, showWindow: { everyMinutes: number; minutes: number }): boolean {
-  return startMinutes % showWindow.everyMinutes < showWindow.minutes;
+export function startsInShowWindow(startMinutes: number, showWindow: { everyMinutes: number; minutes: number; offsetMinutes?: number }): boolean {
+  return showWindowPhase(startMinutes, showWindow) < showWindow.minutes;
+}
+
+/** Minutes since the last window opened (0 = a window opens exactly then). Without an offset this is `start % every`, as before. */
+function showWindowPhase(startMinutes: number, showWindow: { everyMinutes: number; offsetMinutes?: number }): number {
+  const offset = showWindow.offsetMinutes ?? 0;
+  if (offset === 0) return startMinutes % showWindow.everyMinutes;
+  return (((startMinutes - offset) % showWindow.everyMinutes) + showWindow.everyMinutes) % showWindow.everyMinutes;
 }
 
 export type TimelineMealInput = {
@@ -523,7 +531,7 @@ export function buildBarcelonaDayTimeline(
     if (stop.showWindow) {
       // A short wait for the next show window (e.g. the top of the hour) when it is close; otherwise the time stays as it is.
       const rounded = roundUpToBoundary(earliestStart);
-      const wait = stop.showWindow.everyMinutes - (rounded % stop.showWindow.everyMinutes);
+      const wait = stop.showWindow.everyMinutes - showWindowPhase(rounded, stop.showWindow);
       if (!startsInShowWindow(rounded, stop.showWindow) && wait <= stop.showWindow.maxWaitMinutes) earliestStart = rounded + wait;
     }
     const window = fitWindow(earliestStart, stop.visitDurationMinutes, stop.hours, weekday);

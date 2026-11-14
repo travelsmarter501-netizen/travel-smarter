@@ -2,6 +2,7 @@ import "server-only";
 import { BARCELONA_CITY_MODULE } from "./barcelonaCityModule";
 import { PRAGUE_CITY_MODULE } from "./prague/pragueCityModule";
 import { VIENNA_CITY_MODULE } from "./vienna/viennaCityModule";
+import { BUDAPEST_CITY_MODULE } from "./budapest/budapestCityModule";
 import type { CityPlannerModule } from "./cityPlannerModule";
 import { isReleaseExcludedDestination } from "../releaseScope";
 
@@ -16,6 +17,8 @@ const CITY_PLANNER_MODULES: Record<string, CityPlannerModule> = {
   prague: PRAGUE_CITY_MODULE,
   // Engine-ready, NOT public (local preview switch only), same rule as Prague.
   vienna: VIENNA_CITY_MODULE,
+  // Local review prototype (2026-11-13), NOT public: plannerDestinations.ts keeps Budapest `available: false` (preview switch only).
+  budapest: BUDAPEST_CITY_MODULE,
 };
 
 export function getCityPlannerModule(destinationId: string): CityPlannerModule | null {
