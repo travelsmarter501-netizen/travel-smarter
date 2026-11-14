@@ -1,4 +1,3 @@
-/* eslint-disable -- review script (not shipped): loose JSON typing on generated plan files is intended. */
 import { readFileSync, writeFileSync } from "fs";
 // Usage: node bud-gen-walks.mjs <osrm table json from bud-osrm.mts> <output .ts>
 const { meters } = JSON.parse(readFileSync(process.argv[2], "utf8"));

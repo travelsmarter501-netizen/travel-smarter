@@ -1,4 +1,3 @@
-/* eslint-disable -- review script (not shipped): loose JSON typing on generated plan files is intended. */
 import { readFileSync } from "fs";
 const plans = JSON.parse(readFileSync(process.argv[2], "utf8"));
 const c = (m) => `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;

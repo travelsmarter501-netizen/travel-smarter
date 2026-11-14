@@ -1,4 +1,3 @@
-/* eslint-disable -- review script (not shipped): loose JSON typing on generated plan files is intended. */
 import { readFileSync } from "fs";
 const [, , file, ...ids] = process.argv;
 const plans = JSON.parse(readFileSync(file, "utf8"));
