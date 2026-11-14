@@ -76,6 +76,8 @@ export type DayGeographyRepairContext = {
   isPlaceEligibleForDay?: (placeId: string, dayNumber: number) => boolean;
   /** The place's hours as planned for this trip (seasonal / dated, cities with resolveHoursPerTrip), for trying a day on the clock. */
   hoursForPlace?: (placeId: string) => HoursInfo | undefined;
+  /** Cities with resolveHoursPerDay: the place's hours for THAT day's date (dated exceptions, sessions, last entry of that date only). */
+  hoursForPlaceOnDay?: (placeId: string, dayNumber: number) => HoursInfo | undefined;
   /** Dated plans: the weekday and month of a day number (null for flexible plans). */
   weekdayForDayNumber?: (dayNumber: number) => Weekday | null;
   monthForDayNumber?: (dayNumber: number) => number | null;
@@ -117,6 +119,12 @@ export type CityPlannerModule = {
    * checks opening / closing times of seasonal places too. Cities without structured seasons leave it unset (unchanged).
    */
   resolveHoursPerTrip?: boolean;
+  /**
+   * Optional, with resolveHoursPerTrip: every day of a dated trip is planned with ITS OWN date's hours (opening, last entry, dated
+   * exceptions, sessions) in selection, the day check, the timeline, the final check and the stop's details; a closure or last entry
+   * of one trip day never applies to another. Unset = trip-level hours (unchanged).
+   */
+  resolveHoursPerDay?: boolean;
   /**
    * Optional, with `resolveHoursPerTrip`: a place the customer adds to a saved plan (planCustomizations.ts) gets the hours planned for
    * that day's date, like the places the planner chose (Budapest: the cruise's published departures). Unset = the stored hours (unchanged).

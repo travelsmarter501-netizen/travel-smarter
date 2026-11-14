@@ -72,7 +72,26 @@ export async function generateCityPlanV2(baseCity: CityPlannerModule, input: Gen
     const datesOfTrip =
       input.dateMode === "specific" && typeof input.arrivalDate === "string" && typeof input.departureDate === "string" ? tripDates(input.arrivalDate, input.departureDate) : null;
     const city: CityPlannerModule = baseCity.resolveHoursPerTrip ? { ...baseCity, places: resolvePlacesForTrip(baseCity.places, datesOfTrip) } : baseCity;
-    const getHours = hoursLookupForPlaces(city.places);
+    // Opt-in (city.resolveHoursPerDay): every day of a dated trip uses ITS OWN date's hours (opening, last entry, dated exceptions,
+    // sessions), never a closure or last entry of another trip day. One resolution per date, cached. Unset: the trip-level data above.
+    const perDay = !!baseCity.resolveHoursPerDay && !!datesOfTrip;
+    const cityByDate = new Map<string, CityPlannerModule>();
+    const cityOnDate = (isoDate: string | null | undefined): CityPlannerModule => {
+      if (!perDay || !isoDate) return city;
+      let dayCity = cityByDate.get(isoDate);
+      if (!dayCity) cityByDate.set(isoDate, (dayCity = { ...city, places: resolvePlacesForTrip(baseCity.places, [isoDate]) }));
+      return dayCity;
+    };
+    const tripHoursLookup = hoursLookupForPlaces(city.places);
+    const lookupByDate = new Map<string, ReturnType<typeof hoursLookupForPlaces>>();
+    const getHours: ReturnType<typeof hoursLookupForPlaces> = perDay
+      ? (placeId, isoDate) => {
+          if (!isoDate) return tripHoursLookup(placeId);
+          let lookup = lookupByDate.get(isoDate);
+          if (!lookup) lookupByDate.set(isoDate, (lookup = hoursLookupForPlaces(cityOnDate(isoDate).places)));
+          return lookup(placeId);
+        }
+      : tripHoursLookup;
 
     if (input.dateMode !== "flexible" && input.dateMode !== "specific") {
       return { ok: false, error: "طريقة تحديد الموعد غير صالحة." };
@@ -332,6 +351,14 @@ let { plan: optimizedPlan, legsByDay: optimizedLegsByDay } = applyCrossDayOptimi
           const resolved = resolvePlannerPlace(placeId, city.places);
           return resolved && "hours" in resolved.place ? resolved.place.hours : undefined;
         },
+        ...(perDay
+          ? {
+              hoursForPlaceOnDay: (placeId: string, dayNumber: number) => {
+                const resolved = resolvePlannerPlace(placeId, cityOnDate(isoOf(dayNumber)).places);
+                return resolved && "hours" in resolved.place ? resolved.place.hours : undefined;
+              },
+            }
+          : {}),
         weekdayForDayNumber: (dayNumber) => { const iso = isoOf(dayNumber); return iso ? (weekdayOfIsoDate(iso) ?? null) : null; },
         monthForDayNumber: (dayNumber) => { const iso = isoOf(dayNumber); return iso ? Number(iso.slice(5, 7)) : null; },
         isoDateForDayNumber: (dayNumber) => isoOf(dayNumber) ?? null,
@@ -438,7 +465,8 @@ let { plan: optimizedPlan, legsByDay: optimizedLegsByDay } = applyCrossDayOptimi
         accommodationOrderedTrip,
         surpriseMe,
         accommodationResolutionFailed,
-        mealExclusionsByDay
+        mealExclusionsByDay,
+        perDay && arrivalDateForResolution ? (dayNumber: number) => cityOnDate(addDaysToIsoDate(arrivalDateForResolution!, dayNumber - 1)) : undefined
       );
     let data = build(optimizedPlan, optimizedLegsByDay);
     // Opening hours as a hard constraint on the final plan (cities that opt in; see plannerTimingGuard.ts).

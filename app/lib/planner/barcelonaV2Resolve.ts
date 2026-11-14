@@ -337,8 +337,14 @@ export function resolveV2Plan(
   surpriseMe: boolean,
   accommodationResolutionFailed = false,
   /** Timing guard only: food places not to use as a meal on a given day number (they would run past closing). */
-  mealExclusionsByDay?: Readonly<Record<number, readonly string[]>>
+  mealExclusionsByDay?: Readonly<Record<number, readonly string[]>>,
+  /**
+   * Optional (cities with resolveHoursPerDay): the city with THIS day's date's hours. Each day's stops, meals and suggestions are
+   * resolved with it, and each stop's details show its own day's hours. Omitted: the plan-level city (unchanged).
+   */
+  cityForDay?: (dayNumber: number) => CityPlannerModule
 ): V2Plan {
+  const planCity = city;
   const daysGenerated = plan.days.length;
 
   // Shared across the whole plan -- seeded with every main-stop placeId up front so
@@ -356,16 +362,20 @@ export function resolveV2Plan(
   // own doc comment.
   const usedFoodCategoryIds = new Set<string>();
 
-  const mealStopCity: MealStopCityContext = {
-    foodPlaces: city.places.foodPlaces,
-    foodCategories: city.places.foodCategories,
-    clusterCompatibility: city.destinationConfig.dayBuilderConfig.clusterCompatibility,
-    rules: city.mealStops,
-    ...((city.strictMealSelection ?? city.timingGuard) ? { strictMealHours: true } : {}),
-    ...(city.mealLegsInTimeline ? { travelMinutes: (from: string, to: string) => legMidMinutes(city, from, to) } : {}),
-  };
+  const mealStopCityFor = (forCity: CityPlannerModule): MealStopCityContext => ({
+    foodPlaces: forCity.places.foodPlaces,
+    foodCategories: forCity.places.foodCategories,
+    clusterCompatibility: forCity.destinationConfig.dayBuilderConfig.clusterCompatibility,
+    rules: forCity.mealStops,
+    ...((forCity.strictMealSelection ?? forCity.timingGuard) ? { strictMealHours: true } : {}),
+    ...(forCity.mealLegsInTimeline ? { travelMinutes: (from: string, to: string) => legMidMinutes(forCity, from, to) } : {}),
+  });
+  const planMealStopCity = mealStopCityFor(planCity);
 
   const days: V2Day[] = plan.days.map((day, index) => {
+    // Opt-in per-day hours: this day's own city (its date's hours); otherwise the plan-level city and meal context, as before.
+    const city = cityForDay?.(day.dayNumber) ?? planCity;
+    const mealStopCity = city === planCity ? planMealStopCity : mealStopCityFor(city);
     const presentation = presentedPlan.byDay[index];
     const dateForDay = arrivalDate ? addDaysToIsoDate(arrivalDate, day.dayNumber - 1) : null;
     const weekday = dateForDay ? (weekdayOfIsoDate(dateForDay) ?? undefined) : undefined;
@@ -531,6 +541,18 @@ export function resolveV2Plan(
     // final stops/mealStops/timeline to reproduce the client's own chronological adjacency).
     return { ...resolvedDay, mealLegs: buildMealAdjacentLegs(city, resolvedDay) };
   });
+
+  // Per-day hours: a stop's details are the record of ITS OWN day (that date's hours and last entry); a suggestion of the same place
+  // on another day never overwrites them. Omitted cityForDay: nothing changes.
+  if (cityForDay) {
+    for (const day of plan.days) {
+      const dayCity = cityForDay(day.dayNumber);
+      for (const stop of day.stops) {
+        const resolved = resolvePlannerPlace(stop.placeId, dayCity.places);
+        if (resolved) placeDetails[stop.placeId] = resolved;
+      }
+    }
+  }
 
   const capacityWarning = daysGenerated < daysRequested ? city.capacityWarning(daysGenerated) : null;
 

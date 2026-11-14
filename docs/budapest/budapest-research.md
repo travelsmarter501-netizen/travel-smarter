@@ -426,3 +426,90 @@ The 675 lines a customer sees are the first four rows. The transfer line shows m
 - Late first visits: the Opera tour at 13:30 as the first stop; Citadella first at 12:00.
 - Citadella visits after dark.
 - Passing the schedule tests does not prove a day is good.
+
+## 15. Hours per day and the add request (2026-11-14, approved by the owner; branch only)
+
+### 15.1 What was built (opt-in `resolveHoursPerDay`, Budapest only)
+Every day of a dated trip is planned with ITS OWN date's hours: opening, last entry, dated exceptions, monthly rule and cruise departures.
+
+**Where it applies:**
+- **Selection:** a place open on some trip days stays a candidate for exactly those days. The date eligibility now asks the hours of that day's date.
+- **Day check:** Budapest's day check uses `hoursForPlaceOnDay`.
+- **Timeline and stop records:** resolved per day (`resolveV2Plan(…, cityForDay)`).
+- **Final check:** the timing guard reads the hours stored on each stop.
+- **Stop details:** the details record of a stop is the record of its own day; a suggestion of the same place on another day does not overwrite it.
+- **Editing (start, order, length):** works from the stored per-day hours.
+- **Adding:** already resolved for the day's date; the add candidates' details now are too.
+- **Save, reopen, restore:** the stored plan carries the per-day hours.
+
+**Shared files:**
+- `barcelonaV2DateEligibility.ts`: the lookup receives the day's date as an optional second argument. Barcelona's and Prague's lookups ignore it.
+- `v2CityPipeline.ts`
+- `barcelonaV2Resolve.ts`
+- `cityPlannerModule.ts`
+- `planCustomizations.ts`
+
+Prague and Barcelona do not set the flag.
+
+### 15.2 Add request for a place the day cannot take
+- `decidePlanChange` is now the decision `customizeSavedPlan` makes **before** any write. A rejected add returns `add_unavailable`, and nothing is saved.
+- The page treats `add_unavailable` like the earlier `invalid`: it reloads, and no new text is shown. The add button only offers places that fit, so this code is reached only by a stale screen or a request that bypasses the page.
+- **Before this round** the same request was already refused (`invalid`), because `applyPlanChange` accepts only add candidates. The previous test, however, only checked the warning on a forced edit, not the request path.
+- **Showing an OLD saved plan** whose stored edits already contain such a place is a separate case: the place is shown with the "time is tight" warning, never dropped silently.
+
+### 15.3 Tests (all must pass; a regression fails the run)
+- **`bud-mixed-dates.mts`: 294 pass, 0 fail**, on 7 generated mixed trips (`bud-mixed-cases.mts`).
+  - **A.** Every visit and meal is checked independently against its own date's hours, read from the place data.
+  - **B.** Stored stop hours = details = that date's hours.
+  - **C.** Edits: every offered start, a reversed order and a first visit 30 minutes longer. Warnings appear exactly where the independent check finds a problem.
+  - **D.** The 7 cases that failed before:
+    - Wed 30 Dec and Fri 1 Jan in a trip with 31 Dec.
+    - Mon 28 Dec open and Mon 4 Jan closed in one trip.
+    - First Tuesday and an ordinary Tuesday.
+    - 24 and 31 Dec.
+    - The cruise around 22/23 Nov and around the year end.
+  - **E.** Restore, reset, save and reopen.
+  - **F.** Timeline = details on 28 Dec, 31 Dec 2026 and 1 Jan 2027.
+  - **The same test on the previous code (`3f74074`) fails 13 checks:**
+    - section B: created stops stored another day's last entry (gallery, Museum of Fine Arts, Zoo);
+    - D1 and D3: the gallery on 30 Dec.
+  - **Limit:** D4–D7 passed on the old code too, because they go through the add path, which was already per day. For created stops the proof is section B.
+- **`bud-cruise-suggest.mts`: 157 pass.** The add request is rejected (`add_unavailable`) and the stored edits are unchanged, both with no edits and with an existing edit on that day. The old-plan display is checked separately.
+- **`bud-boundary.mts`:** 86 pass.
+- **Independent check:** 0 problems on the 53-plan sample and the 12 prototypes.
+
+### 15.4 Effect on plans
+- **7 mixed trips (before = `3f74074`, after = this round):** no change in places, order, meals or times. 17 of 54 days changed only in stored data: the hours stored on stops and in details (gallery, Museum of Fine Arts, cruise, Zoo, House of Music) now carry that date's opening and last entry.
+- **53-plan sample:** no change in places, order, meals or times; 20 days changed only in stored hours.
+- **12 prototypes:** 3 days changed, notes only.
+
+### 15.5 Schedule validity vs. source correctness
+- **Schedule validity (what the tests prove):** every planned visit, meal and departure fits the hours STORED in our data for its own date.
+- **Source correctness (not proven by any test):**
+  - The gallery's holiday dates were read by the independent reviewer on 14 Nov 2026; our own access failed (HTTP 520).
+  - The House of Music rule was read by us on 13 Nov 2026. Future first Tuesdays are computed, not confirmed one by one.
+  - The cruise timetable is the operator's 2026 table, read 13–14 Nov 2026; nothing is published for 2027.
+  - The Museum of Fine Arts' 31 Dec last entry is assumed (one hour before closing).
+  - The Zoo: weekend last entry is not modelled.
+
+### 15.6 Fields read after a plan is made (for the deferred size work)
+| Reader | Hours fields it reads |
+|---|---|
+| Place card / details sheet (`OpeningHours.tsx`) | `type`, `display`, `seasons` (display, month range), `schedule` |
+| Timeline, edits, start choices (`barcelonaV2Timeline.ts`, `planCustomizations.ts`) | `type`, `schedule`, `lastEntry`, `startsAtOpening`, through `planningHoursOf`: `planningSchedule`, `planningLastEntry` |
+| Final check (`plannerTimingGuard.ts`) | same as the timeline |
+| Closed-day check (`barcelonaV2DateEligibility.ts`) | `type`, `schedule`, `closedWeekdays` |
+| Translation (`localizePlan.ts`) | every display string, by exact catalog match (`display`, `seasons[].display`) |
+| Copied into planning copies (`hours.ts`) | `source`, `sourceUrl`, `lastVerified` |
+
+- **Not read from a stored plan:** `seasonalSchedules`, `dateExceptions`, `recurringClosures`, `planningOpenFrom` and `conflict`. They are only read from the current place data, when a plan is made or a place is added.
+- **Nothing is removed in this round.**
+- **Source and version, when the size work starts:**
+  - Keep `source`, `sourceUrl` and `lastVerified` on every stored copy.
+  - Add a data version (e.g. the timetable year and read date).
+  - Record the version with an added place, because added places are resolved from the CURRENT data at every view, and their hours are not stored in the edits.
+
+### 15.7 National Gallery card text (proposal, NOT applied)
+- **Month names:** the site's plan and day headers use "ديسمبر / يناير". The Budapest data uses "كانون / تشرين" in 12 lines; aligning them is pre-launch text work.
+- **Current UI limit:** for this place type (`variable`) the card shows the written text, not a row for the visit date. The holiday dates therefore come first in the text, each with its year.
+- **Pre-launch work:** the Budapest English (and Hebrew) translations are still missing for every Budapest text. Only the texts proposed here have English.

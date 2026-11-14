@@ -54,7 +54,7 @@ export function isPlaceClosedOnWeekday(rawHours: HoursInfo | undefined, weekday:
 }
 
 /** Multi-city foundation: placeId -> real hours for one city's main stops. Every function below defaults to Barcelona's. */
-export type HoursLookup = (placeId: string) => HoursInfo | undefined;
+export type HoursLookup = (placeId: string, isoDate?: string) => HoursInfo | undefined;
 
 function getHoursForPlaceId(placeId: string): HoursInfo | undefined {
   const resolved = resolvePlannerPlace(placeId, barcelonaGuide);
@@ -89,7 +89,9 @@ export function buildDateEligibility(arrivalDateIso: string, getHours: HoursLook
     const weekday = weekdayOfIsoDate(dateForDay);
     if (!weekday) return true;
 
-    const hours = getHours(placeId);
+    // The day's own date is passed along: a city that resolves hours per day (resolveHoursPerDay) answers for that date; every other
+    // lookup ignores it (unchanged).
+    const hours = getHours(placeId, dateForDay);
     return !isPlaceClosedOnWeekday(hours, weekday);
   };
 }
@@ -119,7 +121,7 @@ export function findDatedPlanClosureViolations(
     const weekday = date ? weekdayOfIsoDate(date) : null;
     if (!date || !weekday) continue;
     for (const stop of day.stops) {
-      const hours = getHours(stop.placeId);
+      const hours = getHours(stop.placeId, date);
       if (isPlaceClosedOnWeekday(hours, weekday)) {
         violations.push({ placeId: stop.placeId, dayNumber: day.dayNumber, date, weekday });
       }
@@ -151,7 +153,7 @@ export function repairDatedPlanClosureViolations<Day extends { dayNumber: number
   const isValidAtDate = (day: Day, date: string): boolean => {
     const weekday = weekdayOfIsoDate(date);
     if (!weekday) return true;
-    return day.stops.every((stop) => !isPlaceClosedOnWeekday(getHours(stop.placeId), weekday));
+    return day.stops.every((stop) => !isPlaceClosedOnWeekday(getHours(stop.placeId, date), weekday));
   };
   const dateAtPosition = (index: number): string | null => addDaysToIsoDate(arrivalDateIso, index);
 

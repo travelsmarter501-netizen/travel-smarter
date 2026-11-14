@@ -54,14 +54,27 @@ async function checkCase(id: string, input: any, datedUnpublished: boolean) {
   } else {
     expect(`${id}: suggestion only when relevant (relevant=${relevant})`, suggested.map((s: any) => `d${s.day}`).join(",") || "none", relevant ? suggested.length === 1 : suggested.length === 0, relevant ? "one" : "none");
   }
-  // The add path: never offered, and a forced add (stored edit) is flagged on every day (no departure to start at).
+  // The add REQUEST (the decision customizeSavedPlan makes before any write): never offered, rejected with "add_unavailable", and the
+  // stored edits are untouched (same object content before and after, and the plan built from them is unchanged). Tried with no
+  // edits and with an existing edit on the day.
   for (const day of pa.days) {
     const offered = C.addCandidates(city, pa, {}, day.dayNumber).includes(CRUISE);
-    const forced = C.applyPlanCustomizations(city, pa, { [String(day.dayNumber)]: { order: [...day.stops.map((s: any) => s.id), CRUISE] } }).days.find((d: any) => d.dayNumber === day.dayNumber);
-    const stop = forced.stops.find((s: any) => s.id === CRUISE);
-    const flagged = !!stop && stop.warnings.some((w: any) => w.textAr === G.TIMING_WARNING_AR);
-    expect(`${id} d${day.dayNumber}: add path rejects the cruise`, `offered=${offered} forced=${stop ? (flagged ? "flagged" : "NOT FLAGGED") : "dropped"}`, !offered && (!stop || flagged), "offered=false, forced flagged");
+    for (const stored of [{}, { [String(day.dayNumber)]: { order: [...day.stops.map((s: any) => s.id)].reverse() } }]) {
+      const before = JSON.stringify(stored);
+      const planBefore = JSON.stringify(C.applyPlanCustomizations(city, pa, stored));
+      const decision = C.decidePlanChange(city, pa, stored, { kind: "add", dayNumber: day.dayNumber, placeId: CRUISE });
+      const untouched = JSON.stringify(stored) === before && JSON.stringify(C.applyPlanCustomizations(city, pa, stored)) === planBefore;
+      const got = `offered=${offered} decision=${decision.ok ? "ACCEPTED" : decision.code} stored=${untouched ? "unchanged" : "CHANGED"}`;
+      expect(`${id} d${day.dayNumber}: add request rejected${Object.keys(stored).length ? " (day already edited)" : ""}`, got, got === "offered=false decision=add_unavailable stored=unchanged", "offered=false decision=add_unavailable stored=unchanged");
+    }
   }
+  // Separate question (display, not acceptance): an OLD saved plan whose stored edits already contain the cruise on such a day is still
+  // shown, with the cruise flagged by the "time is tight" warning; nothing is dropped silently.
+  const day1 = pa.days[0];
+  const old = C.applyPlanCustomizations(city, pa, { [String(day1.dayNumber)]: { order: [...day1.stops.map((s: any) => s.id), CRUISE] } }).days[0];
+  const oldStop = old.stops.find((s: any) => s.id === CRUISE);
+  const oldState = oldStop ? (oldStop.warnings.some((w: any) => w.textAr === G.TIMING_WARNING_AR) ? "shown with warning" : "SHOWN WITHOUT WARNING") : "not shown";
+  expect(`${id}: old stored plan with the cruise on day 1 (display only)`, oldState, oldState === "shown with warning" || oldState === "not shown", "shown with warning, or not shown");
   return pa;
 }
 

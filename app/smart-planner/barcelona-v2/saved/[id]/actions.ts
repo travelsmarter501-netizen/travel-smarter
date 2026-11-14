@@ -3,8 +3,7 @@
 import { createClient } from "../../../../../utils/supabase/server";
 import { createServiceRoleClient } from "../../../../../utils/supabase/service-role";
 import { isValidSmartPlannerV2SavedPlanRow } from "../../../../lib/planner/smartPlannerV2SavedPlans";
-import { applyPlanChange, applyPlanCustomizations, dayValidStarts, isDayStartValid, parsePlanChange, planAddOptions, sanitizeCustomizations, type PlanAddOptions } from "../../../../lib/planner/planCustomizations";
-import { nearestValidStart } from "../../../../lib/planner/startChoices";
+import { applyPlanCustomizations, decidePlanChange, parsePlanChange, planAddOptions, sanitizeCustomizations, type PlanAddOptions } from "../../../../lib/planner/planCustomizations";
 import { cityForSavedPlan } from "../../../../lib/planner/savedPlanCity";
 import { withCurrentPlacePhotos } from "../../../../lib/planner/planPhotos";
 import type { V2Day } from "../../../../lib/planner/barcelonaV2Resolve";
@@ -12,6 +11,8 @@ import type { ResolvedPlace } from "../../../../lib/readyPlan";
 
 /** Only the changed day goes back (with the details of the places it shows): a 7-day plan is ~177 KB, one day a fraction. */
 export type CustomizeSavedPlanResult = { ok: true; dayNumber: number; day: V2Day | null; placeDetails: Record<string, ResolvedPlace>; addOptions: PlanAddOptions } | { ok: false; code: "invalid" | "not_signed_in" | "not_found" | "save_failed" }
+  /** An "add" the day cannot take (not offered: already in the trip, unknown, or no valid time that day). Nothing is saved. */
+  | { ok: false; code: "add_unavailable" }
   /** The day cannot hold that start (a visit would run past closing or out of order); suggestion is the nearest start it can hold. */
   | { ok: false; code: "start_infeasible"; suggestion: number | null };
 
@@ -41,11 +42,10 @@ export async function customizeSavedPlan(planId: unknown, rawChange: unknown): P
   const city = cityForSavedPlan(base);
   if (!city) return { ok: false, code: "not_found" };
   const current = sanitizeCustomizations((row.generated_plan_json as { customizations?: unknown }).customizations);
-  if (change.kind === "start" && !isDayStartValid(city, base, current, change.dayNumber, change.minutes)) {
-    return { ok: false, code: "start_infeasible", suggestion: nearestValidStart(dayValidStarts(city, base, current, change.dayNumber), change.minutes) };
-  }
-  const next = applyPlanChange(city, base, current, change);
-  if (!next) return { ok: false, code: "invalid" };
+  // Decided before any write: a rejected change never reaches the save below.
+  const decision = decidePlanChange(city, base, current, change);
+  if (!decision.ok) return decision;
+  const next = decision.next;
 
   const { data: saved, error } = await createServiceRoleClient().rpc("replace_owned_plan_content", {
     p_plan_id: planId,

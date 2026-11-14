@@ -174,13 +174,34 @@ export function planAddOptions(city: CityPlannerModule, base: V2Plan, customizat
   for (const day of base.days) {
     starts[String(day.dayNumber)] = dayValidStarts(city, base, customizations, day.dayNumber);
     byDay[String(day.dayNumber)] = addCandidates(city, base, customizations, day.dayNumber).flatMap((id) => {
-      const resolved = resolvePlannerPlace(id, city.places);
+      // The details of a candidate show that day's hours (cities with tripHoursForAddedPlaces); others unchanged.
+      const resolved = resolvePlannerPlace(id, cityForAddedPlaces(city, day).places);
       if (!resolved) return [];
       details[id] = resolved;
       return [summarizeResolvedPlace(resolved)];
     });
   }
   return { byDay, details, starts };
+}
+
+/**
+ * What the server does with one requested change, BEFORE anything is saved (customizeSavedPlan saves only an `ok` result):
+ * - a start the day cannot hold: "start_infeasible" with the nearest start it can hold;
+ * - an "add" of a place the day cannot take (not one of its add candidates: unknown, already in the trip, or no valid time that day,
+ *   e.g. a timetabled cruise with no published departure): "add_unavailable";
+ * - any other change that does not apply: "invalid".
+ */
+export type PlanChangeDecision =
+  | { ok: true; next: PlanCustomizations }
+  | { ok: false; code: "invalid" | "add_unavailable" }
+  | { ok: false; code: "start_infeasible"; suggestion: number | null };
+export function decidePlanChange(city: CityPlannerModule, base: V2Plan, current: PlanCustomizations, change: PlanChange): PlanChangeDecision {
+  if (change.kind === "start" && !isDayStartValid(city, base, current, change.dayNumber, change.minutes)) {
+    return { ok: false, code: "start_infeasible", suggestion: nearestValidStart(dayValidStarts(city, base, current, change.dayNumber), change.minutes) };
+  }
+  const next = applyPlanChange(city, base, current, change);
+  if (!next) return { ok: false, code: change.kind === "add" ? "add_unavailable" : "invalid" };
+  return { ok: true, next };
 }
 
 /** Applies one change to the stored edits; null when it does not apply to this plan. */

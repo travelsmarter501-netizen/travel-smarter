@@ -193,7 +193,7 @@ export function budapestDayOnClock(context: DayGeographyRepairContext): (ids: re
       return {
         placeId: id,
         visitDurationMinutes: outsideMinutes ?? meta?.visitDurationMinutes ?? 60,
-        hours: outsideMinutes ? undefined : context.hoursForPlace?.(id),
+        hours: outsideMinutes ? undefined : (context.hoursForPlaceOnDay?.(id, dayNumber) ?? context.hoursForPlace?.(id)),
         preferredTime: meta?.preferredTime ?? "anytime",
         arrivalBufferMinutes: outsideMinutes ? undefined : meta?.arrivalBufferMinutes,
         showWindow: outsideMinutes ? undefined : meta?.showWindow,
@@ -571,6 +571,7 @@ export const BUDAPEST_CITY_MODULE: CityPlannerModule = {
   secondaryCoverageGoals: shoppingCoverage,
   routeLeg: budapestLeg,
   resolveHoursPerTrip: true,
+  resolveHoursPerDay: true,
   tripHoursForAddedPlaces: true,
   datedOnlyPlaceIds: [CRUISE_ID],
   timingGuard: true,

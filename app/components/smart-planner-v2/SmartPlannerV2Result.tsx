@@ -158,8 +158,9 @@ export default function SmartPlannerV2Result({
       pendingRef.current -= 1;
       setPending(pendingRef.current);
       if (!result.ok) {
-        // "invalid" can follow a change the screen already showed (e.g. two quick moves): reload the saved plan.
-        setSaveFailed(result.code !== "invalid" && result.code !== "start_infeasible");
+        // "invalid" can follow a change the screen already showed (e.g. two quick moves): reload the saved plan. "add_unavailable" (an
+        // add the day cannot take; the button only offers places that fit) is handled the same way: nothing was saved.
+        setSaveFailed(result.code !== "invalid" && result.code !== "start_infeasible" && result.code !== "add_unavailable");
         router.refresh();
         return;
       }
