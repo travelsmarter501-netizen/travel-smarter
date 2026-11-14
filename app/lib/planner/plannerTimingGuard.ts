@@ -40,6 +40,17 @@ export function checkWindow(rawHours: HoursInfo | undefined, weekday: Weekday | 
     const days = ALL_DAYS.map((d) => JSON.stringify(hours.schedule[d] ?? []));
     if (days.some((d) => d !== days[0])) return null;
   }
+  // Opt-in timetabled departures (hours.startsAtOpening): the visit must start EXACTLY at one departure and fit inside it. A start that is
+  // not a published departure is "closed" (rejected), even if it lies inside an overlapping departure's interval.
+  if (hours.startsAtOpening) {
+    const ranges = hours.schedule[weekday ?? "monday"] ?? []; // no dates: every day is the same here (checked above)
+    const exact = ranges.find((r) => toMinutes(r.open) === start);
+    if (!exact) return "closed";
+    const close = toMinutes(exact.close) <= start ? toMinutes(exact.close) + 1440 : toMinutes(exact.close);
+    if (end - start < fullDuration || start + fullDuration > close) return "past-closing";
+    if (hours.lastEntry && start > toMinutes(hours.lastEntry)) return "after-last-entry";
+    return null;
+  }
   const covering = findCoveringInterval(hours, weekday, start);
   if (!covering) return "closed";
   if (end - start < fullDuration || start + fullDuration > covering.close) return "past-closing";

@@ -42,7 +42,22 @@ export type SeasonalPeriod = {
 export type SeasonalSchedule = { from: string; to: string; schedule: WeeklySchedule; lastEntry?: string };
 
 /** A dated exception from the official source (closure or special hours), "YYYY-MM-DD", inclusive. */
-export type HoursDateException = { from: string; to: string; closed?: true; hours?: TimeRange[]; lastEntry?: string; note?: string };
+export type HoursDateException = {
+  from: string;
+  to: string;
+  closed?: true;
+  hours?: TimeRange[];
+  lastEntry?: string;
+  note?: string;
+  /**
+   * Optional (opt-in): the special hours REPLACE the weekday's regular hours instead of narrowing them, so a day that is normally closed
+   * (e.g. a museum's Monday) can be open on that date. Applied only when every trip date on that weekday is covered by such an exception.
+   */
+  override?: true;
+};
+
+/** Optional (opt-in): a closure that repeats every month on the n-th given weekday (e.g. the first Tuesday). */
+export type RecurringMonthlyClosure = { nth: 1 | 2 | 3 | 4; weekday: Weekday; note?: string };
 
 type HoursMeta = {
   /** Internal maintenance metadata — never rendered to the customer. */
@@ -53,6 +68,13 @@ type HoursMeta = {
   conflict?: string;
   /** Planner: dated closures / special hours from the official source, applied only to trips that include those dates. */
   dateExceptions?: HoursDateException[];
+  /** Planner (opt-in): monthly closures computed for the trip's own dates (the rule as published; individual future dates are not confirmed). */
+  recurringClosures?: RecurringMonthlyClosure[];
+  /**
+   * Planner (opt-in): every opening interval is ONE departure / session; a visit starts exactly at an interval's opening (never moved by the
+   * quarter-hour rounding) and lasts the interval. Used for timetabled departures (a river cruise).
+   */
+  startsAtOpening?: true;
 };
 
 export type HoursInfo =
@@ -194,6 +216,7 @@ function resolvePlanningHours(hours: HoursInfo): HoursInfo {
       type: "fixed",
       schedule: hours.planningSchedule,
       ...(hours.planningLastEntry ? { lastEntry: hours.planningLastEntry } : {}),
+      ...(hours.startsAtOpening ? { startsAtOpening: true as const } : {}),
       source: hours.source,
       sourceUrl: hours.sourceUrl,
       lastVerified: hours.lastVerified,

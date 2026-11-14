@@ -6,6 +6,7 @@ import { lunchIndexByClock } from "./barcelonaV2MealStops";
 import type { CityPlannerModule } from "./cityPlannerModule";
 import { findTimingViolations, scheduleProblems, TIMING_WARNING_AR } from "./plannerTimingGuard";
 import { nearestValidStart } from "./startChoices";
+import { resolvePlacesForTrip } from "./tripHours";
 import type { PlannerRouteLeg } from "./plannerTransportTypes";
 import { resolvePlannerPlace, summarizeResolvedPlace, type ResolvedPlace, type ResolvedPlaceSummary } from "../readyPlan";
 
@@ -292,12 +293,28 @@ export function dayValidStarts(city: CityPlannerModule, base: V2Plan, customizat
 
 export { nearestValidStart, scheduleProblems };
 
+/**
+ * Opt-in (city.tripHoursForAddedPlaces): a place the customer ADDS gets the hours the planner itself uses for that day's date (seasons,
+ * dated exceptions, timetabled departures; tripHours.ts), not the place's stored hours, so creating, editing and adding follow the same
+ * schedule rules. Plans without dates get the planner's dateless hours. Unset: unchanged (Prague and Barcelona).
+ */
+const CITY_FOR_DAY_DATE = new WeakMap<CityPlannerModule, Map<string, CityPlannerModule>>();
+function cityForAddedPlaces(city: CityPlannerModule, baseDay: V2Day): CityPlannerModule {
+  if (!city.tripHoursForAddedPlaces) return city;
+  const key = baseDay.actualDate ?? "";
+  let byDate = CITY_FOR_DAY_DATE.get(city);
+  if (!byDate) CITY_FOR_DAY_DATE.set(city, (byDate = new Map()));
+  let resolved = byDate.get(key);
+  if (!resolved) byDate.set(key, (resolved = { ...city, places: resolvePlacesForTrip(city.places, baseDay.actualDate ? [baseDay.actualDate] : null) }));
+  return resolved;
+}
+
 function buildDay(city: CityPlannerModule, baseDay: V2Day, edit: DayCustomization, placeDetails: Record<string, ResolvedPlace>): V2Day {
   const baseStops = new Map(baseDay.stops.map((s) => [s.id, s]));
   // Stored edits are re-checked: a stop is either one of the original day's or a real main-stop place of this city.
   const order = (edit.order ?? baseDay.stops.map((s) => s.id)).filter((id) => baseStops.has(id) || (!!city.metadataById(id) && !!resolvePlannerPlace(id, city.places)));
   const stops = order.map((id) => {
-    const stop = baseStops.get(id) ?? resolveStop(city, id, 0, placeDetails, baseDay.weekday ?? null);
+    const stop = baseStops.get(id) ?? resolveStop(cityForAddedPlaces(city, baseDay), id, 0, placeDetails, baseDay.weekday ?? null);
     const minutes = edit.durations?.[id];
     return {
       ...stop,

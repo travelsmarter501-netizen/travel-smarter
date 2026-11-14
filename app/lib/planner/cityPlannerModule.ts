@@ -116,6 +116,11 @@ export type CityPlannerModule = {
    */
   resolveHoursPerTrip?: boolean;
   /**
+   * Optional, with `resolveHoursPerTrip`: a place the customer adds to a saved plan (planCustomizations.ts) gets the hours planned for
+   * that day's date, like the places the planner chose (Budapest: the cruise's published departures). Unset = the stored hours (unchanged).
+   */
+  tripHoursForAddedPlaces?: boolean;
+  /**
    * Optional: after the plan is built (meals included), re-order a day whose visits or meals would start before opening,
    * run past closing or start after the last entry (plannerTimingGuard.ts). Unset = unchanged behaviour.
    */

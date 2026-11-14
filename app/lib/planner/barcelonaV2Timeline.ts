@@ -396,6 +396,20 @@ function fitWindow(earliestStart: number, durationMinutes: number, rawHours: Hou
   // allow the day-invariant flexible-mode exception.
   const canUseHours = !!hours && hours.type === "fixed" && resolveEffectiveWeekday(hours, weekday) !== null;
 
+  // Opt-in (hours.startsAtOpening): each opening interval is one timetabled departure / session. The visit starts EXACTLY at the first
+  // departure at or after the arrival (no quarter-hour rounding, which would move it off a real :20 / :40 departure) and must fit inside
+  // that interval. No departure left today: the same capped "no real time available" result as below, so the guard flags it.
+  if (canUseHours && hours.startsAtOpening) {
+    const effective = resolveEffectiveWeekday(hours, weekday)!;
+    const departures = (hours.schedule[effective] ?? [])
+      .map((range) => ({ open: timeToMinutes(range.open), close: timeToMinutes(range.close) <= timeToMinutes(range.open) ? timeToMinutes(range.close) + 1440 : timeToMinutes(range.close) }))
+      .filter((range) => range.open >= earliestStart && range.close - range.open >= durationMinutes)
+      .sort((a, b) => a.open - b.open);
+    if (departures.length > 0) return { startMinutes: departures[0].open, endMinutes: departures[0].open + durationMinutes, approximate };
+    const lastClose = findLastClosingMinutesForWeekday(hours, weekday);
+    return lastClose !== null ? { startMinutes: Math.min(start, lastClose), endMinutes: lastClose, approximate: true } : { startMinutes: start, endMinutes: start + durationMinutes, approximate: true };
+  }
+
   if (canUseHours) {
     let covering = findCoveringInterval(hours, weekday, start);
     if (!covering) {

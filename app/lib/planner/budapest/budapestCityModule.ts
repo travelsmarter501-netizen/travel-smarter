@@ -21,7 +21,7 @@ import type { DestinationConfig } from "../destinationConfig";
 import type { PlannerOperationalWarning } from "../barcelonaPlannerOperationalWarnings";
 import type { PlannerDayPresentation, PresentedPlannerPlan } from "../plannerPresentationTypes";
 import type { FoodPlace } from "../../guideTypes";
-import type { Weekday } from "../../hours";
+import { planningHoursOf, type HoursInfo, type Weekday } from "../../hours";
 
 /**
  * Budapest as a CityPlannerModule: LOCAL REVIEW PROTOTYPE (2026-11-13), built on the Prague module's rules unchanged (day balance on the
@@ -163,6 +163,14 @@ const BALANCE_PROTECTED = new Set([...TIER_A, ...TIER_B]);
 
 // ── A day tried on the real clock (same rules as Prague) ─────────────────────────────────────────────
 const LUNCH_DETOUR_ALLOWANCE_MINUTES = 15;
+
+/** Timetabled departures (hours.startsAtOpening, the cruise): the first published departure at or after `minutes` that day, or null. */
+function nextDeparture(hours: HoursInfo | undefined, weekday: Weekday | null, minutes: number): number | null {
+  const planned = planningHoursOf(hours);
+  if (!planned || planned.type !== "fixed" || !planned.startsAtOpening) return null;
+  const starts = (planned.schedule[weekday ?? "monday"] ?? []).map((r) => Number(r.open.slice(0, 2)) * 60 + Number(r.open.slice(3, 5))).filter((m) => m >= minutes);
+  return starts.length ? Math.min(...starts) : null;
+}
 const DINNER_FROM_MINUTES = 18 * 60;
 
 export type DayOnClock = { failing: string[]; programEnd: number; windows: { placeId: string; start: number; end: number }[]; lunchAfterIndex: number | null };
@@ -202,9 +210,22 @@ export function budapestDayOnClock(context: DayGeographyRepairContext): (ids: re
       const window = timeline.stops[i];
       const shift = lunch && i > lunch.afterIndex ? LUNCH_DETOUR_ALLOWANCE_MINUTES : 0;
       const stop = stops[i];
-      windows.push({ placeId: stop.placeId, start: window.startMinutes + shift, end: window.endMinutes + shift });
-      if (checkWindow(stop.hours, weekday, window.startMinutes + shift, window.endMinutes + shift, stop.visitDurationMinutes)) failing.push(stop.placeId);
-      if (stop.preferredTime !== "evening") programEnd = Math.max(programEnd, window.endMinutes + shift);
+      let start = window.startMinutes + shift;
+      let end = window.endMinutes + shift;
+      // A timetabled departure is never shifted off the timetable: with the lunch detour the cruise takes the next published departure at
+      // or after its estimated arrival + the detour. Arrival = end of the previous stop or its meal + the leg's longest time + the shared
+      // 15-minute margin (never later than the window's own start); none left = it fails, as before.
+      let departure: number | null = null;
+      if (shift > 0 && i > 0) {
+        const previousEnd = Math.max(timeline.stops[i - 1].endMinutes, ...timeline.meals.filter((m) => m.afterStopIndex === i - 1).map((m) => m.endMinutes));
+        const legIn = legs[i - 1];
+        const travel = legIn?.options.find((o) => o.mode === legIn.recommendedMode)?.durationMinutesMax ?? 0;
+        departure = nextDeparture(stop.hours, weekday, Math.min(window.startMinutes, previousEnd + travel + 15) + shift);
+      }
+      if (departure !== null) { start = departure; end = departure + (window.endMinutes - window.startMinutes); }
+      windows.push({ placeId: stop.placeId, start, end });
+      if (checkWindow(stop.hours, weekday, start, end, stop.visitDurationMinutes)) failing.push(stop.placeId);
+      if (stop.preferredTime !== "evening") programEnd = Math.max(programEnd, end);
     }
     return { failing, programEnd, windows, lunchAfterIndex: lunch ? lunch.afterIndex : null };
   };
@@ -510,6 +531,7 @@ export const BUDAPEST_CITY_MODULE: CityPlannerModule = {
   secondaryCoverageGoals: shoppingCoverage,
   routeLeg: budapestLeg,
   resolveHoursPerTrip: true,
+  tripHoursForAddedPlaces: true,
   timingGuard: true,
   buildDayRouteLegs: (day) => day.stops.slice(0, -1).map((stop, i) => budapestLeg(stop.placeId, day.stops[i + 1].placeId)),
   operationalWarnings: warningsFor,

@@ -1,4 +1,4 @@
-import type { HoursDateException, HoursInfo, SeasonalSchedule, TimeRange, Weekday, WeeklySchedule } from "../hours";
+import type { HoursDateException, HoursInfo, RecurringMonthlyClosure, SeasonalSchedule, TimeRange, Weekday, WeeklySchedule } from "../hours";
 import { addDaysToIsoDate, inclusiveDayCount, weekdayOfIsoDate } from "./dateOnly";
 import type { CityPlaceData } from "./cityPlannerModule";
 
@@ -58,6 +58,16 @@ function intersectSchedules(schedules: readonly WeeklySchedule[], weekday: Weekd
 }
 
 /**
+ * Opt-in timetabled departures (hours.startsAtOpening): each interval is one departure, so periods are combined by keeping only the
+ * departures that EVERY relevant period publishes (same start and end), never the overlap of two different departures.
+ */
+function commonDepartures(schedules: readonly WeeklySchedule[], weekday: Weekday): TimeRange[] {
+  if (schedules.length === 0) return [];
+  const [first, ...rest] = schedules.map((schedule) => schedule[weekday] ?? []);
+  return first.filter((range) => rest.every((list) => list.some((other) => other.open === range.open && other.close === range.close)));
+}
+
+/**
  * Plans without dates cannot know the weekday, and the engine only checks a schedule that is the same every day. So the
  * planning copy becomes the narrowest window shared by all the days the place is open, on every day (customers still see
  * the real weekly table). Returns null when the schedule is already the same every day or never open.
@@ -103,10 +113,25 @@ export function tripDates(arrivalDate: string | null, departureDate: string | nu
   return dates;
 }
 
+/** Whether a date is the n-th given weekday of its month (opt-in recurring closures). */
+function isNthWeekdayOfMonth(isoDate: string, rule: RecurringMonthlyClosure): boolean {
+  return weekdayOfIsoDate(isoDate) === rule.weekday && Math.floor((Number(isoDate.slice(8, 10)) - 1) / 7) + 1 === rule.nth;
+}
+
+/** Opt-in monthly closure rules, as dated closures for the trip's own dates only. */
+function recurringAsExceptions(rules: readonly RecurringMonthlyClosure[] | undefined, dates: readonly string[]): HoursDateException[] {
+  if (!rules?.length) return [];
+  return dates.filter((date) => rules.some((rule) => isNthWeekdayOfMonth(date, rule))).map((date) => ({ from: date, to: date, closed: true as const }));
+}
+
 function applyExceptions(schedule: WeeklySchedule, lastEntry: string | undefined, exceptions: readonly HoursDateException[] | undefined, dates: readonly string[]) {
   let changed = false;
   let entry = lastEntry;
   const result: WeeklySchedule = { ...schedule };
+  // Opt-in `override` (replaces the weekday's hours): only when EVERY trip date on that weekday is covered by an override exception, so a
+  // normally closed weekday is never opened for a date the exception does not cover. Without `override` nothing below changes.
+  const overridesOn = (weekday: Weekday) =>
+    dates.filter((date) => weekdayOfIsoDate(date) === weekday).map((date) => (exceptions ?? []).find((e) => e.override && e.hours && exceptionCovers(date, e)));
   for (const date of dates) {
     const weekday = weekdayOfIsoDate(date);
     if (!weekday) continue;
@@ -114,8 +139,20 @@ function applyExceptions(schedule: WeeklySchedule, lastEntry: string | undefined
       if (!exceptionCovers(date, exception)) continue;
       changed = true;
       if (exception.closed) result[weekday] = [];
-      else if (exception.hours) result[weekday] = intersectRanges(result[weekday] ?? [], exception.hours);
+      else if (exception.override && exception.hours) {
+        const all = overridesOn(weekday);
+        result[weekday] = all.every((e) => !!e)
+          ? all.slice(1).reduce<TimeRange[]>((acc, e) => intersectRanges(acc, e!.hours), [...(all[0]!.hours ?? [])])
+          : intersectRanges(result[weekday] ?? [], exception.hours);
+      } else if (exception.hours) result[weekday] = intersectRanges(result[weekday] ?? [], exception.hours);
       if (exception.lastEntry) entry = earliest([entry, exception.lastEntry]);
+    }
+  }
+  // With overrides present, a closure on the same weekday still wins whatever the order of the dates (conservative).
+  if ((exceptions ?? []).some((e) => e.override)) {
+    for (const date of dates) {
+      const weekday = weekdayOfIsoDate(date);
+      if (weekday && (exceptions ?? []).some((e) => e.closed && exceptionCovers(date, e))) result[weekday] = [];
     }
   }
   return { schedule: result, lastEntry: entry, changed };
@@ -130,8 +167,9 @@ export function resolveHoursForTrip(hours: HoursInfo | undefined, dates: readonl
       const planningSchedule = sameEveryDay(hours.planningSchedule ?? hours.schedule);
       return planningSchedule ? { ...hours, planningSchedule } : hours;
     }
-    if (!hours.dateExceptions?.length) return hours;
-    const applied = applyExceptions(hours.schedule, hours.lastEntry, hours.dateExceptions, dates);
+    const exceptions = hours.recurringClosures?.length ? [...(hours.dateExceptions ?? []), ...recurringAsExceptions(hours.recurringClosures, dates)] : hours.dateExceptions;
+    if (!exceptions?.length) return hours;
+    const applied = applyExceptions(hours.schedule, hours.lastEntry, exceptions, dates);
     if (!applied.changed) return hours;
     return { ...hours, schedule: applied.schedule, ...(applied.lastEntry ? { lastEntry: applied.lastEntry } : {}) };
   }
@@ -154,12 +192,15 @@ export function resolveHoursForTrip(hours: HoursInfo | undefined, dates: readonl
         relevant = seasons.filter((season) => (season.schedule[weekday] ?? []).length > 0);
       }
       relevant.forEach((season) => used.add(season));
-      schedule[weekday] = intersectSchedules(relevant.map((season) => season.schedule), weekday);
+      schedule[weekday] = hours.startsAtOpening
+        ? commonDepartures(relevant.map((season) => season.schedule), weekday)
+        : intersectSchedules(relevant.map((season) => season.schedule), weekday);
     }
     let lastEntry = earliest([...used].map((season) => season.lastEntry));
     let planningSchedule = schedule;
-    if (dates && hours.dateExceptions?.length) {
-      const applied = applyExceptions(schedule, lastEntry, hours.dateExceptions, dates);
+    const exceptions = dates && hours.recurringClosures?.length ? [...(hours.dateExceptions ?? []), ...recurringAsExceptions(hours.recurringClosures, dates)] : hours.dateExceptions;
+    if (dates && exceptions?.length) {
+      const applied = applyExceptions(schedule, lastEntry, exceptions, dates);
       planningSchedule = applied.schedule;
       lastEntry = applied.lastEntry;
     }

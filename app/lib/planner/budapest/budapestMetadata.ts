@@ -41,9 +41,8 @@ export const BUDAPEST_PLANNER_METADATA: PlannerPlaceMetadata[] = [
   // Belváros (Pest centre)
   place("great-market-hall", "belvaros", [7, 4, 0, 0, 2, 9], 7, "morning", 60),
   place("vaci-utca", "belvaros", [6, 2, 0, 0, 0, 8], 5, "anytime", 45),
-  // Evening cruise: departures every 20 minutes (legenda.hu 2026). The plan only uses departures on the full hour, which every period has
-  // (the plan clock moves in quarter hours, and :20 / :40 never fall on it), so the start is held to the next full hour.
-  { ...place("danube-legend-cruise", "belvaros", [8, 3, 8, 2, 9, 0], 8, "evening", 60), showWindow: { everyMinutes: 60, minutes: 1, maxWaitMinutes: 59, missNoteAr: "الرحلات كل 20 دقيقة بالمسا حسب جدول الفترة: احجز الموعد الأقرب لوقت خطتك (الموعد المنشور مش ضمان مكان)." } },
+  // No showWindow: the published departures are the place's planning hours (budapestPlaces.ts, startsAtOpening), so the cruise starts exactly at one.
+  place("danube-legend-cruise", "belvaros", [8, 3, 8, 2, 9, 0], 8, "evening", 60),
   // Erzsébetváros / Palotanegyed / Kerepes
   place("gozsdu-udvar", "erzsebetvaros", [3, 2, 0, 0, 2, 6], 4, "afternoon", 30),
   place("hungarian-national-museum", "palotanegyed", [5, 9, 0, 0, 1, 0], 6, "daytime", 90),

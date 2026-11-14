@@ -10,7 +10,7 @@ const { planningHoursOf } = await imp("/app/lib/hours.ts");
 const { MEAL_ASSUMED_DURATION_MINUTES } = await imp("/app/lib/planner/barcelonaV2Timeline.ts");
 const mins = (t: string) => { const [h, m] = t.split(":").map(Number); return h * 60 + m; };
 const plans: any[] = JSON.parse(readFileSync(process.argv[2], "utf8"));
-let days = 0, windows = 0, checkedHours = 0, transfers = 0, transfersNoData = 0;
+let days = 0, windows = 0, checkedHours = 0, transfers = 0, transfersNoData = 0, departures = 0;
 const mid = (o: any) => Math.round((o.durationMinutesMin + o.durationMinutesMax) / 2);
 const noData: Record<string, number> = {};
 const bad: string[] = [];
@@ -51,10 +51,12 @@ for (const [pi, p] of plans.entries()) {
         const inside = intervals.some((x: any) => w.startMinutes >= x.open && w.endMinutes <= x.close);
         if (!inside) bad.push(`${tag}: outside opening hours ${JSON.stringify(intervals)}`);
         if (hours.lastEntry && w.startMinutes > mins(hours.lastEntry)) bad.push(`${tag}: after last entry ${hours.lastEntry}`);
+        // Timetabled departures (the cruise): the start must BE one of the departures, not only inside an interval.
+        if (hours.startsAtOpening) { departures++; if (!intervals.some((x: any) => x.open === w.startMinutes)) bad.push(`${tag}: not a published departure`); }
       }
     });
   }
 }
-console.log(`${process.argv[2].split(/[\/]/).pop()}: ${days} days, ${windows} visits and meals, ${checkedHours} checked against opening hours, ${transfers} transfers checked (${transfersNoData} without data), ${bad.length} problems`);
+console.log(`${process.argv[2].split(/[\/]/).pop()}: ${days} days, ${windows} visits and meals, ${checkedHours} checked against opening hours (${departures} timetabled departures checked exactly), ${transfers} transfers checked (${transfersNoData} without data), ${bad.length} problems`);
 console.log('without data:', JSON.stringify(Object.entries(noData).sort((a, b) => b[1] - a[1]).slice(0, 8)));
 console.log(bad.slice(0, 8).join("\n"));

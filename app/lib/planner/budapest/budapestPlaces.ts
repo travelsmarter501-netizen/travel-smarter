@@ -1,5 +1,5 @@
 import type { Area, Attraction, Experience, FoodCategory, FoodPlace, NightlifeVenue, ShoppingArea } from "../../guideTypes";
-import type { HoursDateException, HoursInfo, SeasonalSchedule, TimeRange, Weekday, WeeklySchedule } from "../../hours";
+import type { HoursDateException, HoursInfo, RecurringMonthlyClosure, SeasonalSchedule, TimeRange, Weekday, WeeklySchedule } from "../../hours";
 import type { CityPlaceData } from "../cityPlannerModule";
 
 /**
@@ -188,7 +188,9 @@ export const BUDAPEST_ATTRACTIONS: Attraction[] = [
     mustSee: false,
     address: "Szent György tér 2, 1014 Budapest",
     priceText: "5,800 HUF (بالغ، كامل) · مخفّض 2,900 حسب العمر",
-    hours: fixed(days(TUE_TO_SUN, ["10:00", "18:00"]), "https://en.mng.hu/opening-hours/", "en.mng.hu (official)"),
+    // `variable` (not `fixed`) so the plan can end visits at 17:30 (halls start closing) while the card shows the building's 10:00-18:00.
+    // NEW CUSTOMER TEXT (for review): the display string below replaces the weekly table a `fixed` entry shows.
+    hours: variable("الثلاثاء–الأحد 10:00–18:00 (آخر دخول 17:00، القاعات بتبلش تسكّر 17:30) · الإثنين مسكّر · 24–25 كانون الأول مسكّر · 31 كانون الأول 10:00–16:00 · 1 كانون الثاني 12:00–18:00", "https://en.mng.hu/opening-hours/", "en.mng.hu (official)", ["monday"]),
     coordinates: { lat: 47.496282, lng: 19.039849 }, // OSM node/5842060882 entrance=main ref=C
   }),
   attraction({
@@ -453,36 +455,37 @@ export const BUDAPEST_SHOPPING_AREAS: ShoppingArea[] = [
 export const BUDAPEST_NIGHTLIFE_VENUES: NightlifeVenue[] = [];
 
 // ── Planning hours: seasons, dated exceptions, last entry (official sources, 2026-11-13) ─────────────────
-type PlanningHours = { seasonalSchedules?: SeasonalSchedule[]; dateExceptions?: HoursDateException[]; lastEntry?: string; conflict?: string };
+type PlanningHours = { seasonalSchedules?: SeasonalSchedule[]; dateExceptions?: HoursDateException[]; recurringClosures?: RecurringMonthlyClosure[]; startsAtOpening?: true; lastEntry?: string; conflict?: string };
 const R = (open: string, close: string): TimeRange[] => [{ open, close }];
 const season = (from: string, to: string, schedule: WeeklySchedule, lastEntry?: string): SeasonalSchedule => ({ from, to, schedule, ...(lastEntry ? { lastEntry } : {}) });
 const WEEKDAYS: Weekday[] = ["monday", "tuesday", "wednesday", "thursday", "friday"];
 const WEEKEND: Weekday[] = ["saturday", "sunday"];
-// House of Music: closed the first Tuesday of EVERY month (zenehaza.hu location page, read 2026-11-13). The questionnaire sets no upper limit
-// on travel dates, so the rule is generated for every month from November 2026 to December 2040 (170 dates), computed, not typed.
-export function firstTuesdays(fromYear: number, fromMonth: number, toYear: number): string[] {
+/** Each departure is its own interval [departure, departure + 60 min] (startsAtOpening: the visit starts exactly at one of them). */
+const departures = (...times: string[]): WeeklySchedule => everyDay(...times.map((t): [string, string] => { const [h, m] = t.split(":").map(Number); const end = h * 60 + m + 60; return [t, `${String(Math.floor(end / 60)).padStart(2, "0")}:${String(end % 60).padStart(2, "0")}`]; }));
+/** Every 20 minutes from `first` to `last` inclusive, "HH:MM". */
+const every20 = (first: string, last: string): string[] => {
+  const toMin = (t: string) => Number(t.slice(0, 2)) * 60 + Number(t.slice(3, 5));
   const out: string[] = [];
-  for (let y = fromYear; y <= toYear; y++) {
-    for (let m = y === fromYear ? fromMonth : 1; m <= 12; m++) {
-      const firstWeekday = new Date(Date.UTC(y, m - 1, 1)).getUTCDay(); // 0 = Sunday
-      const day = 1 + ((2 - firstWeekday + 7) % 7);
-      out.push(`${y}-${String(m).padStart(2, "0")}-${String(day).padStart(2, "0")}`);
-    }
-  }
+  for (let m = toMin(first); m <= toMin(last); m += 20) out.push(`${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`);
   return out;
-}
-const FIRST_TUESDAYS = firstTuesdays(2026, 11, 2040);
+};
 
 const PLANNING_HOURS: Record<string, PlanningHours> = {
   "hungarian-national-gallery": {
-    lastEntry: "17:00",
-    // HOLIDAY HOURS NOT VERIFIED (not a closure claim). The official page https://en.mng.hu/opening-hours-during-holidays/ returned
-    // Cloudflare error 520 on 2026-11-13 and 2026-11-14 (several tries; mng.hu Hungarian pages too); the newest readable archive copy is
-    // from 2025-06-24 (older season). Under the owner's rule "unknown hours = not scheduled at a guessed time", the planner does not
-    // schedule the gallery on 24 Dec 2026 - 1 Jan 2027. This entry is a PLANNING EXCLUSION for unverified dates; the customer sees no
-    // "closed" text. Replace it with the official dates as soon as the page can be read.
-    dateExceptions: [{ from: "2026-12-24", to: "2027-01-01", closed: true, note: "UNVERIFIED holiday hours: not scheduled (planning exclusion, not a closure fact); official page unreadable 2026-11-13/14 (HTTP 520)" }],
-    conflict: "en.mng.hu/opening-hours/ (read 2026-11-13): Tue-Sun 10-18, entry until 17:00 (also with pre-bought tickets), halls start closing 17:30 (top floor). Holiday page unreadable (520) on 13 and 14 Nov 2026: 24 Dec 2026 - 1 Jan 2027 are excluded from planning as UNVERIFIED, not stored as closed. An independent reviewer reported (14 Nov) the page shows 24-25 Dec closed, 26 and 28 Dec open, 31 Dec short, 1 Jan from noon; not re-read by us.",
+    // Planning hours: the building is open 10:00-18:00, but the halls start closing at 17:30 (top floor), so a visit is planned to END by
+    // 17:30; last entry 17:00 (en.mng.hu/opening-hours/, read by us 2026-11-13). Customers see the hours text of the place.
+    seasonalSchedules: [season("01-01", "12-31", days(TUE_TO_SUN, ["10:00", "17:30"]), "17:00")],
+    // Holidays 2026/27: https://en.mng.hu/opening-hours-during-holidays/ AS READ BY THE INDEPENDENT REVIEWER on 2026-11-14 (relayed by the owner).
+    // Our own tool could not open the page (HTTP 520 on 13 and 14 Nov 2026); we did not read it ourselves. 26-30 Dec includes Monday 28 Dec
+    // (normally closed): `override` opens it. The 17:30 hall closing is applied to the published 18:00 days; for 31 Dec (building 10:00-16:00)
+    // the source gives no hall-closing time, so the plan uses 16:00.
+    dateExceptions: [
+      { from: "2026-12-24", to: "2026-12-25", closed: true, note: "official (reviewer's reading 2026-11-14)" },
+      { from: "2026-12-26", to: "2026-12-30", hours: R("10:00", "17:30"), lastEntry: "17:00", override: true, note: "official 10:00-18:00, last entry 17:00 (reviewer's reading); halls close from 17:30" },
+      { from: "2026-12-31", to: "2026-12-31", hours: R("10:00", "16:00"), lastEntry: "15:00", override: true, note: "official 10:00-16:00, last entry 15:00 (reviewer's reading)" },
+      { from: "2027-01-01", to: "2027-01-01", hours: R("12:00", "17:30"), lastEntry: "17:00", override: true, note: "official 12:00-18:00, last entry 17:00 (reviewer's reading); halls close from 17:30" },
+    ],
+    conflict: "Holiday dates 24 Dec 2026 - 1 Jan 2027 come from the reviewer's reading of the official holidays page (14 Nov 2026), relayed by the owner; our direct access failed (Cloudflare 520, 13 and 14 Nov). Regular hours and the 17:30 hall closing: en.mng.hu/opening-hours/, read by us 13 Nov.",
   },
   "hungarian-national-museum": { lastEntry: "17:00", conflict: "mnm.hu: ticket office closes 17:00, exhibitions close from 17:30. Holiday hours page not read." },
   "museum-of-fine-arts": {
@@ -498,7 +501,9 @@ const PLANNING_HOURS: Record<string, PlanningHours> = {
   },
   "opera-house-tour": { lastEntry: "16:30", conflict: "opera.hu: tours only at 13:30, 15:00, 16:30 (60 min); no tours during performances (per date, not published here)." },
   "house-of-music": {
-    dateExceptions: FIRST_TUESDAYS.map((d) => ({ from: d, to: d, closed: true as const, note: "first Tuesday of the month (zenehaza.hu location page)" })),
+    // The RULE "closed the first Tuesday of each month" was read on the location page on 2026-11-13; it is computed for the trip's own dates.
+    // Individual future first Tuesdays are not confirmed one by one by the source (only the rule is).
+    recurringClosures: [{ nth: 1, weekday: "tuesday", note: "rule read 2026-11-13 on zenehaza.hu/en/location/permanent-exhibition" }],
     seasonalSchedules: [season("01-01", "12-31", { ...days(["tuesday", "wednesday", "thursday", "saturday", "sunday"], ["10:15", "17:50"]), friday: R("10:15", "19:50") })],
     lastEntry: "16:15",
     conflict: "zenehaza.hu occasion page: last admission 16:15 (Friday 17:45). The planner stores 16:15 for every day (Friday's later entry not used). Location page lists 10:00-18:00 and adds 'closed first Tuesday': the occasion page's 10:15 slots and the first-Tuesday closure are both kept.",
@@ -523,33 +528,42 @@ const PLANNING_HOURS: Record<string, PlanningHours> = {
     seasonalSchedules: [season("11-01", "03-31", everyDay(["08:00", "22:00"])), season("04-01", "10-31", everyDay(["06:00", "23:59"]))],
   },
   "szechenyi-bath": { conflict: "Suggestion only (age 14+). Pools vacated 20 min before closing." },
-  // legenda.hu/en/timetable (2026): evening departures every 20 minutes between the period's first and last departure. The plan uses the FULL-HOUR
-  // departures only (window = first full-hour departure ..
-  // last + 60, last entry = last departure). 1-4 Jan and 23 Nov-31 Dec also have a 15:40 departure; with full hours only, the first planned departure of every period is the first full hour at or after it.
-  // 22 May-23 Jul is irregular (19:30, 20:15, 20:20, 20:30, 20:45, ...): not plannable on a 20-minute rule, so no window (empty).
-  // 24 Dec: daytime cruises only. 2027: timetable not published, so no evening cruise is planned in 2027.
+  // STAGE 2 -- legenda.hu/en/timetable, Danube Legend evening cruise, timetable for the year 2026 (read 2026-11-13/14). Every published
+  // departure is stored as it is (including :20 / :40 and the irregular summer list); each departure is one interval [departure, +60 min]
+  // and `startsAtOpening` makes the plan start the cruise EXACTLY at one of them (never moved by the quarter-hour rounding, never between).
+  // Last entry = the period's last departure. The month-day periods below are the 2026 timetable only (see the exclusions).
+  // Arrival before sailing: the operator's FAQ publishes NO check-in / arrival time (read 2026-11-14); the plan keeps only its own shared
+  // 15-minute margin before a visit (a planning margin, not an operator rule).
   "danube-legend-cruise": {
+    startsAtOpening: true,
     seasonalSchedules: [
-      season("01-01", "02-11", everyDay(["17:00", "22:00"]), "21:00"),
-      season("02-12", "02-24", everyDay(["17:00", "22:00"]), "21:00"),
-      season("02-25", "03-09", everyDay(["17:00", "22:00"]), "21:00"),
-      season("03-10", "03-28", everyDay(["18:00", "22:00"]), "21:00"),
-      season("03-29", "04-05", everyDay(["19:00", "23:00"]), "22:00"),
-      season("04-06", "05-21", everyDay(["20:00", "23:00"]), "22:00"),
-      season("05-22", "07-23", {}),
-      season("07-24", "09-03", everyDay(["20:00", "23:00"]), "22:00"),
-      season("09-04", "09-13", everyDay(["19:00", "23:00"]), "22:00"),
-      season("09-14", "09-22", everyDay(["19:00", "23:00"]), "22:00"),
-      season("09-23", "10-02", everyDay(["19:00", "23:00"]), "22:00"),
-      season("10-03", "10-24", everyDay(["18:00", "23:00"]), "22:00"),
-      season("10-25", "12-31", everyDay(["17:00", "22:00"]), "21:00"),
+      season("01-01", "01-04", departures("15:40", ...every20("16:20", "21:00")), "21:00"),
+      season("01-05", "02-11", departures(...every20("16:20", "21:00")), "21:00"),
+      season("02-12", "02-24", departures(...every20("16:40", "21:00")), "21:00"),
+      season("02-25", "03-09", departures(...every20("17:00", "21:00")), "21:00"),
+      season("03-10", "03-28", departures(...every20("17:40", "21:00")), "21:00"),
+      season("03-29", "04-05", departures(...every20("19:00", "22:00")), "22:00"),
+      season("04-06", "05-21", departures(...every20("19:20", "22:00")), "22:00"),
+      // 22 May - 23 Jul: the published list is irregular (not every 20 minutes): stored departure by departure.
+      season("05-22", "07-23", departures("19:30", "20:15", "20:20", "20:30", "20:45", "21:30", "21:40", "21:45", "22:00"), "22:00"),
+      season("07-24", "09-03", departures(...every20("19:20", "22:00")), "22:00"),
+      season("09-04", "09-13", departures(...every20("19:00", "22:00")), "22:00"),
+      season("09-14", "09-22", departures(...every20("18:40", "22:00")), "22:00"),
+      season("09-23", "10-02", departures(...every20("18:20", "22:00")), "22:00"),
+      season("10-03", "10-24", departures(...every20("17:40", "22:00")), "22:00"),
+      season("10-25", "11-22", departures(...every20("16:20", "21:00")), "21:00"),
+      season("11-23", "12-31", departures("15:40", ...every20("16:20", "21:00")), "21:00"),
     ],
     dateExceptions: [
-      { from: "2026-12-24", to: "2026-12-24", closed: true, note: "daytime cruises only on 24 December" },
-      { from: "2026-08-20", to: "2026-08-20", closed: true, note: "timetable might change on 20 August (national holiday)" },
-      { from: "2027-01-01", to: "2027-12-31", closed: true, note: "2027 timetable not published" },
+      // Published: on 24 December only daytime cruises run (11:00, 12:30, 14:00, 15:30); the evening product has no departure that day.
+      { from: "2026-12-24", to: "2026-12-24", closed: true, note: "published: daytime cruises only on 24 December" },
+      // PLANNING EXCLUSIONS, NOT CLOSURES: the operator says the 20 August timetable "might change", and has published no timetable for 2027
+      // or later. The planner does not put a departure on the clock for those dates (unknown time = not scheduled); nothing tells the
+      // customer the cruise is closed. These entries bind the 2026 periods above to the year 2026.
+      { from: "2026-08-20", to: "2026-08-20", closed: true, note: "PLANNING EXCLUSION (not a closure): timetable 'might change' on 20 August" },
+      { from: "2027-01-01", to: "2099-12-31", closed: true, note: "PLANNING EXCLUSION (not a closure): no timetable published after 2026" },
     ],
-    conflict: "A published departure is not a guaranteed seat (online booking by availability).",
+    conflict: "A published departure is not a guaranteed seat (online booking by availability; reservations 'not required' but recommended). Pier: OSM node/4816567424 is ~190 m south of Vigadó tér, while the FAQ's walking directions (from Vigadó tér, down the stairs, across at the lights, left ~50 m) point closer to the square: unresolved, the OSM point is kept.",
   },
 };
 
