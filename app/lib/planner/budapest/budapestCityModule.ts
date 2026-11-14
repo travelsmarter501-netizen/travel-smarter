@@ -372,7 +372,7 @@ function presentBudapestPlan(plan: GeneratedPlannerPlan): PresentedPlannerPlan {
       ...(day.optionalPlaceIds ?? []).map((placeId) => ({
         placeId,
         type: "experience" as const,
-        reason: getBudapestPlannerMetadataById(placeId)?.preferredTime === "evening" && !day.optionalReasons?.[placeId] ? "اختياري: رحلة مسائية، مواعيدها حسب فترة سفرك؛ احجز موعد لما تعرف تاريخك" : day.optionalReasons?.[placeId] === "closing" ? "اختياري: بيسكّر قبل ما توصله بهاليوم" : "اختياري: اليوم مليان، زوره إذا ضل عندك وقت",
+        reason: day.optionalReasons?.[placeId] === "unpublished" ? CRUISE_UNPUBLISHED_REASON_AR : getBudapestPlannerMetadataById(placeId)?.preferredTime === "evening" && !day.optionalReasons?.[placeId] ? "اختياري: رحلة مسائية، مواعيدها حسب فترة سفرك؛ احجز موعد لما تعرف تاريخك" : day.optionalReasons?.[placeId] === "closing" ? "اختياري: بيسكّر قبل ما توصله بهاليوم" : "اختياري: اليوم مليان، زوره إذا ضل عندك وقت",
       })),
       ...(day.goalSuggestionPlaceIds ?? []).map((placeId) => ({ placeId, type: "experience" as const, reason: "تسوّق قريب من مسارك إذا حابب" })),
       ...(day.freeTimePlaceIds ?? []).map((placeId) => ({ placeId, type: "experience" as const, reason: "قريب من مسارك إذا حابب" })),
@@ -481,6 +481,46 @@ function placeSelectionBonus(interests: readonly V2PlannerInterest[]): (placeId:
  * the first sample put day-time stops after the cruise (past 18:00 and after dark). The rest of the day keeps its order.
  * Flexible dates: the cruise is moved to that day's suggestions (its departures depend on the travel dates).
  */
+const CRUISE_ID = "danube-legend-cruise";
+/** Owner-approved text (2026-11-14) for the cruise on dates whose timetable the operator has not published. */
+const CRUISE_UNPUBLISHED_REASON_AR = "رحلة مسائية على الدانوب — خيار إضافي. تأكّد من المواعيد والتوفّر لتاريخ سفرك قبل الحجز.";
+const RIVER_CLUSTERS = new Set(["belvaros", "lipotvaros"]);
+
+/** The cruise's timetable is not published for this date: the "PLANNING EXCLUSION" entries of its data (budapestPlaces.ts). */
+function cruiseTimetableUnpublished(isoDate: string): boolean {
+  const hours = (resolvePlannerPlace(CRUISE_ID, BUDAPEST_PLACES)?.place as { hours?: HoursInfo } | undefined)?.hours;
+  const exceptions = hours && hours.type === "variable" ? hours.dateExceptions : undefined;
+  return !!exceptions?.some((e) => e.note?.startsWith("PLANNING EXCLUSION") && isoDate >= e.from && isoDate <= e.to);
+}
+
+/**
+ * The cruise as a suggestion only, never on the clock: in a plan without dates (it is never scheduled there: datedOnlyPlaceIds), and on
+ * dated trips whose dates have no published timetable (2027+, 20 Aug). Only when it matches this request (the same relevance rule as any
+ * place) and the plan does not already have it. Day: the one with the most minutes by the river (Belváros / Lipótváros), else the last.
+ * Dated: the reason "unpublished" (owner-approved text); without dates the existing evening-cruise text. The "add" button still rejects
+ * it on those days (no departure to start at).
+ */
+function withCruiseSuggestion(result: { plan: GeneratedPlannerPlan; legsByDay: PlannerRouteLeg[][] }, context: DayGeographyRepairContext): { plan: GeneratedPlannerPlan; legsByDay: PlannerRouteLeg[][] } {
+  const { plan } = result;
+  if (plan.days.some((day) => day.stops.some((stop) => stop.placeId === CRUISE_ID) || day.optionalPlaceIds?.includes(CRUISE_ID))) return result;
+  if (!context.config.dayBuilderConfig.isPlaceRelevant?.(CRUISE_ID)) return result;
+  const flexible = context.weekdayForDayNumber?.(1) == null;
+  const candidates = plan.days.filter((day) => {
+    if (flexible) return true;
+    const iso = context.isoDateForDayNumber?.(day.dayNumber);
+    return !!iso && cruiseTimetableUnpublished(iso);
+  });
+  if (candidates.length === 0) return result;
+  const riverMinutes = (day: PlannerDay) => day.stops.reduce((sum, stop) => { const meta = getBudapestPlannerMetadataById(stop.placeId); return sum + (meta && RIVER_CLUSTERS.has(meta.cluster) ? meta.visitDurationMinutes : 0); }, 0);
+  const target = [...candidates].sort((a, b) => riverMinutes(b) - riverMinutes(a) || b.dayNumber - a.dayNumber)[0];
+  const days = plan.days.map((day) =>
+    day !== target
+      ? day
+      : { ...day, optionalPlaceIds: [...(day.optionalPlaceIds ?? []), CRUISE_ID], ...(flexible ? {} : { optionalReasons: { ...day.optionalReasons, [CRUISE_ID]: "unpublished" as const } }) }
+  );
+  return { plan: { ...plan, days }, legsByDay: result.legsByDay };
+}
+
 function eveningLast(result: { plan: GeneratedPlannerPlan; legsByDay: PlannerRouteLeg[][] }, flexibleDates: boolean): { plan: GeneratedPlannerPlan; legsByDay: PlannerRouteLeg[][] } {
   const isEvening = (placeId: string) => getBudapestPlannerMetadataById(placeId)?.preferredTime === "evening";
   let changed = false;
@@ -532,6 +572,7 @@ export const BUDAPEST_CITY_MODULE: CityPlannerModule = {
   routeLeg: budapestLeg,
   resolveHoursPerTrip: true,
   tripHoursForAddedPlaces: true,
+  datedOnlyPlaceIds: [CRUISE_ID],
   timingGuard: true,
   buildDayRouteLegs: (day) => day.stops.slice(0, -1).map((stop, i) => budapestLeg(stop.placeId, day.stops[i + 1].placeId)),
   operationalWarnings: warningsFor,
@@ -572,7 +613,7 @@ export const BUDAPEST_CITY_MODULE: CityPlannerModule = {
       }
     );
     // Flexible dates: the cruise departure depends on the period (2026 timetable), so it is a suggestion there, never a guessed time.
-    return eveningLast(balanced, context.weekdayForDayNumber?.(1) == null);
+    return withCruiseSuggestion(eveningLast(balanced, context.weekdayForDayNumber?.(1) == null), context);
   },
   mealLegsInTimeline: true,
   ticketEstimate: { currency: "HUF", forPlace: budapestTicketEstimate },

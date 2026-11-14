@@ -563,7 +563,7 @@ const PLANNING_HOURS: Record<string, PlanningHours> = {
       { from: "2026-08-20", to: "2026-08-20", closed: true, note: "PLANNING EXCLUSION (not a closure): timetable 'might change' on 20 August" },
       { from: "2027-01-01", to: "2099-12-31", closed: true, note: "PLANNING EXCLUSION (not a closure): no timetable published after 2026" },
     ],
-    conflict: "A published departure is not a guaranteed seat (online booking by availability; reservations 'not required' but recommended). Pier: OSM node/4816567424 is ~190 m south of Vigadó tér, while the FAQ's walking directions (from Vigadó tér, down the stairs, across at the lights, left ~50 m) point closer to the square: unresolved, the OSM point is kept.",
+    conflict: "A published departure is not a guaranteed seat (online booking by availability; reservations 'not required' but recommended). Boarding point (checked 2026-11-14): the operator's address is 'Dock 7 Jane Haining rakpart' (legenda.hu/en/contact); OSM names that floating pontoon 'Vigadó 7. ponton' (name:en Vigadó Dock 7, way/375465291), and the stored point (node/4816567424 'Legenda kikötő', Jane Haining rakpart 7) is its shore end, 21-25 m from the pontoon's nodes. Walking routes end there on the riverside sidewalk (way/246187225). Open: the FAQ says ~50 m from the signal crossing below Vigadó tér; the nearest signal crossing (node/2532573591) is ~124 m away in a straight line. Which gangway on the pontoon is used is not published.",
   },
 };
 
@@ -593,7 +593,7 @@ export const BUDAPEST_PLACES: CityPlaceData = {
  */
 export const BUDAPEST_PLACE_COORDINATES: Record<string, { lat: number; lng: number }> = {
   ...Object.fromEntries(BUDAPEST_ATTRACTIONS.filter((a) => a.coordinates).map((a) => [a.id, a.coordinates!])),
-  "danube-legend-cruise": { lat: 47.4941437, lng: 19.0488902 }, // OSM node/4816567424 "Legenda kikötő", Jane Haining rakpart 7
+  "danube-legend-cruise": { lat: 47.4941437, lng: 19.0488902 }, // OSM node/4816567424 "Legenda kikötő", Jane Haining rakpart 7: shore end of Dock 7 (way/375465291 "Vigadó 7. ponton"); operator address "Dock 7"
   "hungarikum-bisztro": { lat: 47.5034621, lng: 19.0480568 }, // OSM node/3074802455
   menza: { lat: 47.5039614, lng: 19.0627699 }, // OSM node/419017260
   "frici-papa": { lat: 47.5024568, lng: 19.0639715 }, // OSM address node Király u. 55

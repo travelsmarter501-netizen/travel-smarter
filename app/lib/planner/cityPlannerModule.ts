@@ -79,6 +79,8 @@ export type DayGeographyRepairContext = {
   /** Dated plans: the weekday and month of a day number (null for flexible plans). */
   weekdayForDayNumber?: (dayNumber: number) => Weekday | null;
   monthForDayNumber?: (dayNumber: number) => number | null;
+  /** Optional: the ISO date of a day number (dated plans; null without dates). Budapest: timetables bound to a published year. */
+  isoDateForDayNumber?: (dayNumber: number) => string | null;
 };
 
 /** Context handed to a city's optional post-processing step for dated plans (Barcelona: the beach timing guard). */
@@ -120,6 +122,12 @@ export type CityPlannerModule = {
    * that day's date, like the places the planner chose (Budapest: the cruise's published departures). Unset = the stored hours (unchanged).
    */
   tripHoursForAddedPlaces?: boolean;
+  /**
+   * Optional: places that run only at timetabled departures (Budapest: the evening cruise). In a plan WITHOUT dates they are left out of
+   * this request's place list before any pass runs, so no departure time ever shapes which places are chosen or how days are balanced;
+   * the city may still show them as a suggestion. Unset = unchanged.
+   */
+  datedOnlyPlaceIds?: readonly string[];
   /**
    * Optional: after the plan is built (meals included), re-order a day whose visits or meals would start before opening,
    * run past closing or start after the last entry (plannerTimingGuard.ts). Unset = unchanged behaviour.

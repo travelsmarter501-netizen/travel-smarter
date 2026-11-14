@@ -1,0 +1,86 @@
+/* eslint-disable -- review script (not shipped): loose JSON typing on generated plan files is intended. */
+// Mixed trips: a trip that contains an exceptional day AND an ordinary day. Each day must be planned with ITS OWN date's hours
+// (opening, last entry, sessions), in creation, editing and adding. The expectations below are the CORRECT behaviour.
+// Status 2026-11-14: the hours are still resolved per TRIP and per weekday (tripHours.ts), so the cases marked KNOWN fail until the
+// per-day design (budapest-research.md section 14.1) is approved and built. This file is its acceptance test.
+// Usage: ROOT=$(pwd -W) NODE_OPTIONS=--conditions=react-server npx tsx docs/budapest/tools/bud-mixed-dates.mts
+import { pathToFileURL } from "url";
+process.env.NEXT_PUBLIC_PLANNER_PREVIEW_DESTINATIONS ??= "budapest";
+const imp = async (p: string) => { const x: any = await import(pathToFileURL(process.env.ROOT + p).href); return x.default ?? x; };
+const P = await imp("/app/lib/planner/budapest/budapestPlaces.ts");
+const T = await imp("/app/lib/planner/tripHours.ts");
+const D = await imp("/app/lib/planner/dateOnly.ts");
+const H = await imp("/app/lib/hours.ts");
+const G = await imp("/app/lib/planner/plannerTimingGuard.ts");
+const M = await imp("/app/lib/planner/budapest/budapestCityModule.ts");
+const C = await imp("/app/lib/planner/planCustomizations.ts");
+const { generateBarcelonaPlanV2 } = await imp("/app/smart-planner/barcelona-v2/actions.ts");
+
+const place = (id: string) => P.BUDAPEST_PLACES.attractions.find((a: any) => a.id === id) ?? P.BUDAPEST_PLACES.experiences.find((a: any) => a.id === id);
+const range = (a: string, b: string) => T.tripDates(a, b);
+/** What the planner uses for `date` when the trip is `trip`: ranges of that weekday + last entry. */
+function plannedOn(id: string, date: string, trip: string[]): string {
+  const h = H.planningHoursOf(T.resolveHoursForTrip(place(id).hours, trip));
+  const r = h.schedule[D.weekdayOfIsoDate(date)] ?? [];
+  return r.length ? `${r.map((x: any) => `${x.open}-${x.close}`).join(",")}${h.lastEntry ? ` last ${h.lastEntry}` : ""}` : "CLOSED";
+}
+let known = 0, failed = 0, passed = 0;
+function expect(label: string, got: string, want: string, knownDefect: boolean) {
+  const ok = got === want;
+  if (ok) passed++; else if (knownDefect) known++; else failed++;
+  console.log(`${ok ? "PASS " : knownDefect ? "KNOWN" : "FAIL "}  ${label}: ${got}${ok ? "" : `  (correct: ${want})`}`);
+}
+const MNG = "hungarian-national-gallery";
+
+// 1. National Gallery, trip Tue 29 Dec 2026 - Fri 1 Jan 2027: 31 Dec (last entry 15:00) must not change the other days.
+const t1 = range("2026-12-29", "2027-01-01");
+expect("MNG Wed 30 Dec in trip 29 Dec-1 Jan", plannedOn(MNG, "2026-12-30", t1), "10:00-17:30 last 17:00", true);
+expect("MNG Thu 31 Dec in trip 29 Dec-1 Jan", plannedOn(MNG, "2026-12-31", t1), "10:00-16:00 last 15:00", false);
+expect("MNG Fri 1 Jan in trip 29 Dec-1 Jan", plannedOn(MNG, "2027-01-01", t1), "12:00-17:30 last 17:00", true);
+const h1 = T.resolveHoursForTrip(place(MNG).hours, t1);
+expect("MNG Wed 30 Dec: a 15:15-17:15 visit is accepted by the guard", G.checkWindow(h1, "wednesday", 915, 1035, 120) ?? "accepted", "accepted", true);
+
+// 2. National Gallery, 10-day trip Sat 26 Dec 2026 - Mon 4 Jan 2027: Monday 28 Dec published open, Monday 4 Jan ordinary (closed).
+const t2 = range("2026-12-26", "2027-01-04");
+expect("MNG Mon 28 Dec in trip 26 Dec-4 Jan", plannedOn(MNG, "2026-12-28", t2), "10:00-17:30 last 17:00", true);
+expect("MNG Mon 4 Jan in trip 26 Dec-4 Jan", plannedOn(MNG, "2027-01-04", t2), "CLOSED", false);
+
+// 3. House of Music, trip Tue 1 Dec - Tue 8 Dec 2026: 1 Dec is the first Tuesday (closed), 8 Dec an ordinary Tuesday (open).
+const t3 = range("2026-12-01", "2026-12-08");
+expect("House of Music Tue 1 Dec (first Tuesday)", plannedOn("house-of-music", "2026-12-01", t3), "CLOSED", false);
+expect("House of Music Tue 8 Dec (ordinary Tuesday)", plannedOn("house-of-music", "2026-12-08", t3), "10:15-17:50 last 16:15", true);
+
+// 4. Cruise, trip Wed 30 Dec 2026 - Sat 2 Jan 2027: 2026 dates have published departures, 2027 dates none (different weekdays here).
+const t4 = range("2026-12-30", "2027-01-02");
+expect("Cruise Wed 30 Dec: first departure", plannedOn("danube-legend-cruise", "2026-12-30", t4).split(",")[0], "15:40-16:40", false);
+expect("Cruise Sat 2 Jan 2027: no published departure", plannedOn("danube-legend-cruise", "2027-01-02", t4), "CLOSED", false);
+// Same weekday in both years: trip Wed 23 Dec 2026 - Fri 1 Jan 2027 has Wednesday 23 and 30 Dec (both 2026): fine; Thursday 24 Dec (no
+// evening cruise) and Thursday 31 Dec (published) share a weekday.
+const t5 = range("2026-12-23", "2027-01-01");
+expect("Cruise Thu 31 Dec in trip 23 Dec-1 Jan (Thu 24 Dec has no evening cruise)", plannedOn("danube-legend-cruise", "2026-12-31", t5).split(",")[0], "15:40-16:40", true);
+
+// 5. Creation vs adding on the same day (generated by the real entry point): trip 26 Dec 2026 - 4 Jan 2027, culture.
+const r: any = await generateBarcelonaPlanV2({ destinationId: "budapest", dateMode: "specific", arrivalDate: "2026-12-26", departureDate: "2027-01-04", interests: ["cultureHistory"], accommodation: { booked: false } });
+if (!r.ok) expect("generate 26 Dec-4 Jan", r.error, "ok", false);
+else {
+  const plan = r.data;
+  const day28 = plan.days.find((d: any) => d.actualDate === "2026-12-28");
+  const created = plan.days.find((d: any) => d.stops.some((s: any) => s.id === MNG));
+  expect("creation: the gallery is planned on some day of the trip", created ? `${created.actualDate}` : "not planned", created ? created.actualDate : "not planned", false);
+  if (created) {
+    const stored = H.planningHoursOf(created.stops.find((s: any) => s.id === MNG).hours);
+    const own = H.planningHoursOf(T.resolveHoursForTrip(place(MNG).hours, [created.actualDate]));
+    const fmt = (h: any) => `${(h.schedule[created.weekday] ?? []).map((x: any) => `${x.open}-${x.close}`).join(",") || "CLOSED"} last ${h.lastEntry ?? "-"}`;
+    expect(`creation: hours stored for the gallery on ${created.actualDate} = that date's hours`, fmt(stored), fmt(own), true);
+  }
+  if (day28 && !day28.stops.some((s: any) => s.id === MNG)) {
+    const order = [...day28.stops.map((s: any) => s.id), MNG];
+    const added = C.applyPlanCustomizations(M.BUDAPEST_CITY_MODULE, plan, { [String(day28.dayNumber)]: { order } }).days.find((d: any) => d.dayNumber === day28.dayNumber);
+    const stop = added.stops.find((s: any) => s.id === MNG);
+    const own = H.planningHoursOf(stop.hours).schedule.monday?.length ? "open on 28 Dec" : "closed on 28 Dec";
+    expect("adding the gallery on Mon 28 Dec uses that date's hours (already per day)", own, "open on 28 Dec", false);
+  }
+}
+
+console.log(`\n${passed} pass, ${known} KNOWN (per-day hours not built yet), ${failed} other failures`);
+process.exit(failed || known ? 1 : 0);

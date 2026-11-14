@@ -109,8 +109,8 @@ const tripDeps = (date: string, dates: string[] | null) => {
 expect("Cruise trip 21-24 Nov 2026, Monday = 23 Nov only", tripDeps("2026-11-23", ["2026-11-21", "2026-11-22", "2026-11-23", "2026-11-24"]).split(" ")[0], ...is("15:40-16:40"));
 expect("Cruise trip 16-23 Nov 2026, Mondays 16 + 23 (two periods): common departures only", tripDeps("2026-11-23", ["2026-11-16", "2026-11-17", "2026-11-18", "2026-11-19", "2026-11-20", "2026-11-21", "2026-11-22", "2026-11-23"]).split(" ").map((r: string) => r.split("-")[0]).join(" "), ...is("16:20 16:40 17:00 17:20 17:40 18:00 18:20 18:40 19:00 19:20 19:40 20:00 20:20 20:40 21:00"));
 expect("Cruise trip 16-23 Nov 2026: every Monday interval is a full 60-minute departure", tripDeps("2026-11-23", ["2026-11-16", "2026-11-17", "2026-11-18", "2026-11-19", "2026-11-20", "2026-11-21", "2026-11-22", "2026-11-23"]).split(" ").filter((r: string) => { const [a, b] = r.split("-"); return Number(b.slice(0, 2)) * 60 + Number(b.slice(3)) - (Number(a.slice(0, 2)) * 60 + Number(a.slice(3))) !== 60; }).join(" ") || "all 60 min", ...is("all 60 min"));
-// No dates: only a departure every 2026 period publishes (20:20); the plan then shows the cruise as an optional suggestion (flexible dates).
-expect("Cruise without dates: departures common to every period", tripDeps("2026-11-23", null), ...is("20:20-21:20"));
+// No dates: no departure is known (a time shared by the 2026 periods says nothing about an unknown date or year): not schedulable.
+expect("Cruise without dates: no departure", tripDeps("2026-11-23", null), ...is("NOT SCHEDULABLE"));
 
 // ── 4. The departure rule on the clock: exact start, no quarter-hour rounding, rejection of a time that is not a departure.
 const cruiseHours = T.resolveHoursForTrip(place("danube-legend-cruise").hours, ["2026-11-19"]);

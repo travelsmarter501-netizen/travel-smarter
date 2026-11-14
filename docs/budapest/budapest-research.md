@@ -356,3 +356,73 @@ The 675 lines a customer sees are the first four rows. The transfer line shows m
 - **Waits before the cruise (whole sample):** 21 days → 16, total 2,249 → 1,024 min, median 113 → 73.
 - **Citadella after dark:** 4 of 36 Citadella visits start after sunset (e.g. 20:15 in November): an evening view, never to be described as a daytime visit.
 - **Paper examples:** Andrássy → Opera is a 1–2 min walk (estimate); the plan keeps ≥ 15 min before the tour, so "Andrássy until 14:45, tour 15:00" would need Andrássy to end by 14:43. National Museum → pier: 1.55 km walk, 19–24 min (estimate, to the uncertain OSM pier point); museum until 16:15 gives the 17:00 departure (16:20/16:40 are too early), about 21 min before sailing after the longest walk.
+
+## 14. Review corrections (2026-11-14, owner's second review of stage 2)
+
+### 14.1 Hours per day (NOT built: design waiting for approval)
+- **The defect:** hours are resolved once per trip and per weekday (`tripHours.ts`). Measured with `docs/budapest/tools/bud-mixed-dates.mts` (correct behaviour as expectations): 7 pass, **7 KNOWN failures**:
+  - 31 Dec in the trip makes the gallery's last entry 15:00 on every day (30 Dec, 1 Jan, and 27 Dec in a generated plan).
+  - A trip with Monday 28 Dec (published open) and Monday 4 Jan (ordinary, closed) plans every Monday closed.
+  - House of Music: a trip with the first Tuesday (closed) and an ordinary Tuesday closes both.
+  - Cruise: a trip with Thursday 24 Dec (no evening cruise) and Thursday 31 Dec (published) gets no departure on 31 Dec.
+- **Already per day:** a place the customer ADDS is resolved for that day's date (`tripHoursForAddedPlaces`). So today adding and creating can disagree: the gallery can be added on Monday 28 Dec, while creation treats Monday as closed.
+- **Smallest design (opt-in flag `resolveHoursPerDay`, Budapest only):**
+  1. `v2CityPipeline.ts`: places resolved for each day's own date (`resolvePlacesForTrip(places, [date])`, cached per date). The date eligibility uses that day's hours.
+  2. `cityPlannerModule.ts` + `v2CityPipeline.ts`: the repair context gains `hoursForPlaceOnDay(placeId, dayNumber)`; Budapest's day check uses it.
+  3. `barcelonaV2Resolve.ts` (`resolveV2Plan`): an optional `cityForDay(dayNumber)`; the stops, meals and suggestions of a day are resolved with it. The place details sheet keeps the trip-level copy.
+  4. Nothing else: the timing guard and the edit path read the hours stored on each stop, which become that day's hours.
+- **Scope:** about 40 lines in 3 shared files + the Budapest module. Prague and Barcelona unchanged (flag unset), proven by the byte comparison. Acceptance: every case in `bud-mixed-dates.mts` passes.
+
+### 14.2 Plans without dates and the cruise
+- **Before this round (where 20:20 was used):** without dates the cruise was in the request's place list.
+  - The day builder could put it on a day (counting its 60 minutes).
+  - The day balance tried that day on the clock with the 20:20 departure, and moved or dropped places.
+  - Only at the end was the cruise taken off the day and shown as a suggestion.
+  - Measured: **22 of 31 days** of the sample's plans without dates had other places or another order than the same request without the cruise.
+- **Now:**
+  - Without dates the cruise has **no departure**. A time common to every 2026 period says nothing about an unknown date or year.
+  - It is removed from the request's place list before any pass runs (`datedOnlyPlaceIds`, opt-in). On dated trips the same applies when no trip day has a published departure (e.g. 2027).
+  - It is shown only as a suggestion, when it matches the request (same relevance rule as any place), on the day with the most time by the river.
+  - The "add" button never offers it, and a forced add is flagged (no departure to start at).
+- **Test:** `docs/budapest/tools/bud-cruise-suggest.mts`. Every plan without dates (9 interest sets, 1–4 days, Surprise Me) and 4 trips in 2027 are **identical** to the same request on a test-only copy with the cruise removed from the data. 95 checks, all pass.
+
+### 14.3 Boarding point
+- **Operator:** "Dock 7 Jane Haining rakpart, Budapest" (legenda.hu/en/contact, read 14 Nov).
+- **OSM:** the floating pontoon "Vigadó 7. ponton" (name:en "Vigadó Dock 7", way/375465291). The stored point (node/4816567424 "Legenda kikötő", Jane Haining rakpart 7) is its shore end: 21–25 m from the pontoon's three nodes.
+- **Last part of the walk:** OSRM snaps the destination 0 m from the point. The last 178 m are the riverside sidewalk (way/246187225: footway, lit, sett), then 3 m to the point.
+- **Still open:**
+  - The FAQ says "walk down the stairs and cross at the traffic lights… take a left and walk another 50 meters". The nearest signal crossing (node/2532573591) is about 124 m from the point in a straight line, so the "50 m" does not match Dock 7 exactly.
+  - Which gangway on the pontoon is used is not published.
+  - The walking note does not claim door to pier.
+- **Earlier "190 m":** it was measured from the middle of Vigadó tér, not from the crossing, and did not show the point was wrong.
+
+### 14.4 Customer texts
+- **Approved and used (2026-11-14):** «رحلة مسائية على الدانوب — خيار إضافي. تأكّد من المواعيد والتوفّر لتاريخ سفرك قبل الحجز.» It is shown for the cruise on dated trips with no published timetable. Plans without dates keep the existing evening-cruise text.
+- **National Gallery card (NOT approved yet):** sent to the owner as it would appear, in Arabic and English.
+  - **English:** it would currently show the Arabic text. There are no Budapest entries in `planCatalog.ts`, and the page shows a stored text as it is when it has no reviewed translation.
+- **Issues found while preparing it:**
+  - The hours line says "Monday closed" and does not mention 26–30 Dec (with Monday 28 open).
+  - The holiday dates have no year: a 2027 traveller would read them as 2027 dates.
+  - The tip ends with "the yearly closures are on a separate page we did not read", which is out of date.
+
+### 14.5 Plan size (analysis only; nothing changed, no database change)
+- **Measured** (`docs/budapest/tools/bud-plan-size.mjs`, 53-plan sample): a plan with the cruise averages 119 KB, of which 87 KB are hours objects.
+  - The cruise's hours are 48.7 KB per copy, stored twice: on the day's stop and in the place details.
+  - Of the 3.9 MB of hours in the sample, the full season list (`seasonalSchedules`) is 3.3 MB, dated exceptions 0.1 MB, and internal maintenance notes (`conflict`) 0.1 MB.
+- **Why it is all stored:** each generated plan freezes the resolved place data with it (`generated_plan_json`).
+- **What is read back:** the plan view and its edits read only the customer text (display / weekly table), the planning schedule, last entry, `startsAtOpening` and the source fields. Nothing reads the season list, the dated exceptions, the monthly rule or the notes after the plan is made (checked in the code).
+- **Smallest design:**
+  - When a plan is made, store a compact hours copy. **Keep:** the customer text, the planning schedule for the trip's own days, last entry, `startsAtOpening`, the source fields, and a data version (source, timetable year, read date). **Drop:** what was already applied.
+  - Estimated result: 119 → about 43 KB for a plan with the cruise; the whole sample 5.96 → 2.28 MB.
+  - Edits keep working from the frozen copy.
+  - A place added later is resolved from the current data, and its version is recorded with the edit. A changed timetable is then visible, and never silently applied to an old plan.
+
+### 14.6 Corrections to the previous report
+- The culture day with the 150-minute wait is request `B-2026-11-22` (interests: culture; dates 22–24 Nov 2026), **day 2 = Monday 23 Nov 2026**, not "Monday 22 Nov".
+
+### 14.7 Kept for the next stage (not changed now)
+- Long waits: before a lunch break, around tour slots, and before the cruise.
+- Gerbeaud used as a lunch place.
+- Late first visits: the Opera tour at 13:30 as the first stop; Citadella first at 12:00.
+- Citadella visits after dark.
+- Passing the schedule tests does not prove a day is good.

@@ -64,6 +64,8 @@ export type PlannerDayStop = {
   visitMode?: "outside";
 };
 
+export type OptionalPlaceReason = "full" | "closing" | "unpublished";
+
 export type PlannerDay = {
   dayNumber: number;
   stops: PlannerDayStop[];
@@ -74,8 +76,9 @@ export type PlannerDay = {
   /**
    * Why an optional place left the day, when it was decided on the real schedule (Prague): "closing" = it cannot be visited within
    * its opening hours / last entry that day; "full" = the day's program runs too long with it. Absent = "full" (older plans).
+   * "unpublished" (Budapest only): a timetabled place whose operator has not published times for that date.
    */
-  optionalReasons?: Record<string, "full" | "closing">;
+  optionalReasons?: Record<string, OptionalPlaceReason>;
   /**
    * Cities with day balance: places of a request goal that no day's route could take (e.g. shopping on a castle day) but that are
    * close to this day's stops: shown as a nearby suggestion of this day, never scheduled.

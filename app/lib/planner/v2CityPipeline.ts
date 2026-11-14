@@ -204,7 +204,11 @@ export async function generateCityPlanV2(baseCity: CityPlannerModule, input: Gen
     // secondaryCoverageGoals is a true no-op (byte-identical to omitting it) in those cases.
     const secondaryCoverageGoals = city.secondaryCoverageGoals(v2Interests, days);
     // Cities with metadataForInterests / placeRelevance (Prague): scores and additions follow this request's interests.
-    const plannerMetadata = city.metadataForInterests ? city.metadataForInterests(v2Interests, surpriseMe) : city.destinationConfig.plannerMetadata;
+    const metadataForRequest = city.metadataForInterests ? city.metadataForInterests(v2Interests, surpriseMe) : city.destinationConfig.plannerMetadata;
+    // Opt-in (city.datedOnlyPlaceIds): a timetabled place stays in this request's list only when at least one day of the trip has a known
+    // departure (dated plans, open that day). Without dates, or with no departure on any trip day, no pass ever sees it. Unset: same list.
+    const hasKnownDeparture = (placeId: string) => !!datesOfTrip && !!eligibilityFn && Array.from({ length: days }, (_, i) => i + 1).some((dayNumber) => eligibilityFn!(placeId, dayNumber));
+    const plannerMetadata = city.datedOnlyPlaceIds?.length ? metadataForRequest.filter((meta) => !city.datedOnlyPlaceIds!.includes(meta.placeId) || hasKnownDeparture(meta.placeId)) : metadataForRequest;
     const relevance = city.placeRelevance ? city.placeRelevance(v2Interests, surpriseMe) : null;
     const relevanceThreshold = relevance && city.relevanceThresholdFor ? city.relevanceThresholdFor({ days, relevance }) : (city.relevanceThreshold ?? 5);
     const configForRequest: DestinationConfig = {
@@ -330,6 +334,7 @@ let { plan: optimizedPlan, legsByDay: optimizedLegsByDay } = applyCrossDayOptimi
         },
         weekdayForDayNumber: (dayNumber) => { const iso = isoOf(dayNumber); return iso ? (weekdayOfIsoDate(iso) ?? null) : null; },
         monthForDayNumber: (dayNumber) => { const iso = isoOf(dayNumber); return iso ? Number(iso.slice(5, 7)) : null; },
+        isoDateForDayNumber: (dayNumber) => isoOf(dayNumber) ?? null,
       });
       optimizedPlan = repaired.plan;
       optimizedLegsByDay = repaired.legsByDay;

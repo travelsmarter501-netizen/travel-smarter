@@ -175,6 +175,9 @@ export function resolveHoursForTrip(hours: HoursInfo | undefined, dates: readonl
   }
 
   if (hours.type === "variable" && hours.seasonalSchedules?.length) {
+    // Opt-in timetabled departures without a date: no departure is known (a time shared by every published period says nothing
+    // about an unknown date or year), so nothing can be planned on the clock.
+    if (!dates && hours.startsAtOpening) return { ...hours, planningSchedule: {} };
     const seasons = hours.seasonalSchedules;
     const schedule: WeeklySchedule = {};
     const used = new Set<SeasonalSchedule>();

@@ -1,5 +1,5 @@
 import type { DayGeographyRepairContext } from "./cityPlannerModule";
-import type { ClusterCompatibilityMap, GeneratedPlannerPlan, PlannerDay } from "./plannerDayBuilder";
+import type { ClusterCompatibilityMap, GeneratedPlannerPlan, OptionalPlaceReason, PlannerDay } from "./plannerDayBuilder";
 import type { PlannerPlaceMetadata } from "./plannerTypes";
 import type { PlannerRouteLeg } from "./plannerTransportTypes";
 
@@ -58,7 +58,7 @@ export type DayBalanceOptions = {
   freeTimeIdeas?: { minRelevance: number; /** Also a free, short place (walkByStop.isFreeShort) matching at least `nearFree.minRelevance` within `nearFree.maxMinutes` of a stop of the day, whatever its area. */ nearFree?: { minRelevance: number; maxMinutes: number } };
 };
 
-type WorkDay = { dayNumber: number; ids: string[]; scores: Map<string, number>; outside: Set<string>; optional: string[]; reasons?: Record<string, "full" | "closing"> };
+type WorkDay = { dayNumber: number; ids: string[]; scores: Map<string, number>; outside: Set<string>; optional: string[]; reasons?: Record<string, OptionalPlaceReason> };
 
 export function balanceCityDays(context: DayGeographyRepairContext, options: DayBalanceOptions): { plan: GeneratedPlannerPlan; legsByDay: PlannerRouteLeg[][] } {
   const { plan, legsByDay, config, isPlaceEligibleForDay } = context;
