@@ -566,3 +566,95 @@ Prague and Barcelona do not set the flag.
 - All other Budapest English / Hebrew translations: the card's description and price still show in Arabic in the English view.
 - Compact stored hours (deferred).
 - Day quality (next).
+
+## 17. Day quality, round 1 (2026-11-14, commit 79b067c on `feature/budapest`)
+
+### 17.1 What changed (Budapest only; shared code opt-in)
+1. **Lunch place:**
+   - A café is no longer lunch. Gerbeaud, the only Budapest café, is stored with coffee and cakes only; there is no evidence it serves lunch.
+   - Lunch is a restaurant that fits the route, its hours and the full meal; otherwise the lunch break in the area.
+   - Gerbeaud stays a coffee-break suggestion.
+2. **Lunch after the last visit** (`mealStops.lunchAfterLastStop`, opt-in):
+   - The lunch slot may follow the day's last visit when that gives the best lunch time.
+   - The restaurant, the walk to it, its hours and the full meal are still checked by the meal choice and the timing guard; a 12:00–13:45 end alone is not enough.
+   - The option reaches generation, Budapest's day check and the edit path.
+3. **Order on the real clock:**
+   - **Unchanged:** the same places and the same visit lengths.
+   - **Constraints:** every visit inside its hours (exact cruise departures), evening places last, at most +15 min of travel per day.
+   - **Gain rule:** an order is taken only for a gain of ≥ 30 idle-equivalent minutes that is ≥ twice the added travel. Idle-equivalent = 09:00 → first visit + waits + 2 × late lunch + daylight visits after dark + ½ travel.
+   - Idle moved into the morning counts as idle: the morning is measured from 09:00.
+   - **Bounded:** at most 6 non-evening stops, and the 120 cheapest orders by travel are tried.
+- **No automatic later start** in this round.
+- **Daylight:**
+  - Approximate monthly sunset (planning approximation, never shown).
+  - Only places seen in daylight (Margaret Island, Vajdahunyad from outside, the Zoo) count.
+  - Viewpoints, bridges and lit squares after dark are not penalised.
+
+### 17.2 Results vs ddb1b98 (53-plan review sample, 159 days; the "old" variant equals ddb1b98 byte for byte)
+| Variant | 09:00 → first visit | Waits | Sum | Travel | Restaurant / lunch break / Gerbeaud | Lunch after 13:30 | Daylight visits after dark | Median / max generation |
+|---|---|---|---|---|---|---|---|---|
+| ddb1b98 | 4,980 | 10,032 | 15,012 | 8,038 | 117 / 42 / 16 | 24 | 310 | 239 / 952 ms |
+| no café lunch | 4,980 | 10,059 | 15,039 | 7,861 | 101 / 58 / 0 | 17 | 310 | 248 / 932 ms |
+| lunch after last visit | 4,980 | 8,739 | 13,719 | 8,071 | 116 / 43 / 15 | 24 | 310 | 242 / 920 ms |
+| clock order | 1,140 | 8,412 | 9,552 | 8,483 | 121 / 38 / 13 | 9 | 0 | 249 / 998 ms |
+| **all three** | **1,140** | **8,069** | **9,209 (−39%)** | **8,278 (+3%)** | **108 / 51 / 0** | **3** | **0** | **248 / 984 ms** |
+
+- Visit minutes are identical in every variant (34,690); the average program end moves from 17:19 to 16:45.
+- **Launch sample (108 plans, 270 days):**
+  - Sum (morning + waits): 27,591 → 15,689 (−43%).
+  - Travel: 14,129 → 14,334 (+1.4%).
+  - Lunch after 13:30: 44 → 9.
+  - Daylight visits after dark: 160 → 0.
+  - Gerbeaud lunches: 26 → 0; lunch breaks: 60 → 83.
+  - Generation: median 146 → 170 ms, p90 704 → 946 ms, max 952 → 2,016 ms.
+- **Worse days:**
+  - Idle +21 min on one Tuesday "shopping" day: Citadella first. It appears in both samples (two plans each).
+  - Travel +15 to +18 min on 8 / 18 days, each with a larger idle gain.
+  - No day ends 30+ min later.
+  - Lists: `docs/budapest/data/launch-sample-r1/worse-and-changes.txt`.
+- **Fixed times:**
+  - Every Opera tour and cruise start leaves at least the 15-minute planning margin after the LONGEST transfer: tour ≥ 23 min, cruise ≥ 15 min.
+  - Neither operator publishes an arrival time: Opera tour page, "starts in the entrance hall at the information desk", read 14 Nov; Legenda FAQ. The margin is the plan's own, not doubled, and separate from the visit and the transfer.
+
+### 17.3 The examples (full timelines in the package)
+| Day | 09:00 → first | Waits | Sum | Travel | Ends | Lunch |
+|---|---|---|---|---|---|---|
+| B 22 Nov (Sun) before → after | 240 → 0 | 23 → 99 | 263 → 99 | 27 → 36 | 18:05 → 15:30 | Gerbeaud 14:45 → Hungarikum 12:30 |
+| B 23 Nov (Mon) | 0 → 0 | 185 → 108 | 185 → 108 | 55 → 67 | 17:05 → 16:00 | break → Menza 12:30 |
+| B 24 Nov (Tue) | 0 → 0 | 133 → 19 | 133 → 19 | 22 → 31 | 16:30 → 14:45 | 21 Restaurant 12:30 → 13:30 (after the gallery) |
+| A 4 days, 21 Nov (Sat, cruise day) | unchanged | 93 | 93 | 62 | 17:20 | lunch break |
+| Food 22 Nov (Sun) | 240 → 0 | 33 → 30 | 273 → 30 | 52 → 64 | 20:00 → 16:00 | Gerbeaud 14:45 → Hungarikum 13:00 |
+| Food 23 Nov (Mon, cruise day) | unchanged | 146 | 146 | 51 | 16:40 | lunch break |
+| Food 24 Nov (Tue) | unchanged order | 79 | 79 | 50 → 57 | 17:15 | Menza |
+
+- **The cruise days are unchanged.** With the same places, the gap before a 15:40–16:20 departure can only be moved into the morning.
+- The later-start experiment for the A day:
+  - Starting 09:30–10:00 keeps the sum at 93 (the wait becomes free morning).
+  - From 10:30 the sum grows.
+- So a later start is a rest choice with that effect, not a fix for missing content. Not applied.
+
+### 17.4 Moving a place to another day (measured, not built)
+- **B (22–24 Nov):** St Stephen's to Monday (it opens at 13:00 on Sundays), Citadella to Sunday.
+  - Trip idle 226 → 121 at the same travel.
+  - Sunday 99 → 15; Monday 108 → 87. Monday still waits for the 15:00 tour.
+- **Food (22–24 Nov):** St Stephen's to Monday.
+  - Trip idle 255 → 141, travel +16.
+  - Sunday 30 → 25; Monday 146 → 37.
+- **Conclusion:** worth a round 2 rule (weekday-dependent hours decide the day), judged on the whole trip, not one day.
+
+### 17.5 Launch readiness after round 1 (proposal from fixed thresholds; not a decision)
+- **Thresholds:** places/day ≥ 3; thin days ≤ 15%; strong match ≥ 60% (food: restaurant meals count); idle/day ≤ 90 min.
+- **ok:** all cells except the ones below. Before round 1, 17 of 36 cells failed the idle threshold.
+- **check:**
+  - culture 4 days: two thin days;
+  - popular 4 days: 58% strong match.
+- **not ready:** "nature" alone at 2–4 days (2.8–3.2 places/day, thin days, 47–63% match).
+- **Food interest:** 1.8–3.0 food experiences per day (restaurant lunches and dinners, the market hall).
+- **Table:** `docs/budapest/data/launch-sample-r1/table-all.csv`.
+
+### 17.6 Not changed in this round
+- Automatic later start (experiment only).
+- The cross-day move (17.4).
+- Compact stored hours.
+- The policy for hours of places added to saved plans.
+- Translations.
