@@ -803,3 +803,251 @@ Prague and Barcelona do not set the flag.
 - Choosing which area goes on which date (proposal, 18.4).
 - Compact stored hours.
 - Translations.
+
+## 19. Day quality, round 3: experiments (2026-11-15, code commit dfe4453 on `feature/budapest`)
+
+**Status:**
+- All the rules below are TEST-ONLY switches (`budapestModuleWith`). The Budapest defaults are unchanged.
+- Variant A reproduces 8e8a309 byte for byte on both samples.
+- Nothing here is adopted, and Budapest stays unavailable.
+
+### 19.1 What is a validity rule, an improvement threshold, a policy
+| Kind | Rules | Effect when missed |
+|---|---|---|
+| **Validity** (the schedule is wrong without it) | Opening hours, last entry and closures of THAT date; published departures started exactly; full visit lengths; no overlap; gap ≥ shown transfer + 15-min margin; nothing past midnight; restaurant open for the whole meal | The schedule is invalid. Measured by `scheduleProblems` and the independent check. |
+| **Improvement thresholds** (reviewable) | Gain ≥ 30; added travel ≤ half the gain; +15 travel (A); the B/C allowance (recovered / k, ≤ 45, day ≤ 90); trip travel share ≤ +2 points; no restaurant lunch lost; meal equivalence; no new 60-min wait; area candidates' own limits | A valid alternative is not taken. It stays a valid alternative. |
+| **Policies** (not changed in this round) | One restaurant per trip (variety); evening places last; the accommodation day; strong place = relevance ≥ 7 | Unchanged. |
+
+### 19.2 What was tested
+**Measure:**
+- Known travel is split into:
+  - between visits (the route around a lunch break counts here);
+  - to and from named restaurants.
+- A lunch break has no point. Its food access is **unknown**, flagged, and never counted as 0.
+- Every travel share below is on KNOWN travel; the number of unknown-food days is shown next to it.
+
+**Travel rules:**
+- **A:** +15 per day (8e8a309).
+- **B / C:**
+  - The A review runs first, unchanged. Then a second pass applies only to days that still have lost time: first visit 60+ min after 09:00, or one wait of 60+ min.
+  - In that pass, added travel is allowed up to recovered minutes / k (B: k = 4, C: k = 3), at most 45 min, with a day total of at most 90 min.
+  - **Then:** the trip's known travel share may not grow by more than 2 points. This check applies only when a day goes above +15.
+  - B and C therefore never accept less than A.
+- **Am:** A with the explicit meal check instead of the 10-point tolerance:
+  - same meal categories;
+  - no dietary tag lost, and no "may contain pork" added;
+  - not served on another day;
+  - walk at most +10 min;
+  - no new 30-min wait.
+
+**Areas by date (Ba / Ca):**
+- The same request without dates is planned ONCE, as a candidate source (no recursion).
+- The current dated plan stays a candidate.
+- Every current place is kept, including timetabled and dated ones on an open date.
+- Strong places that are missing (relevance ≥ 7) are added on an open date.
+- At most 6 assignments, ranked on the clock. The best 2 are built and get stage 1.
+- **Accepted only if:**
+  - no problem;
+  - on every date: no restaurant lunch lost, travel within 90 or not above that date's current travel, no new 60-min wait, visits within 380 min;
+  - trip share at most +2 points;
+  - trip idle at most +30.
+
+**Bounds per plan:**
+- A: 6 + 12 rebuilds.
+- B / C: the same again for the second pass.
+- Areas: 1 undated generation, 2 candidates × 7 rebuilds.
+
+### 19.3 Results
+- Each variant was run 3 times, each run in its own process. All 3 runs produced identical plans.
+- **Fixed baseline:** "unreviewed", meaning the same lunch rules with no review at all.
+- Every change below is shown against that baseline and against A.
+
+**53-plan sample (159 days)**
+| Variant | Idle (vs unreviewed) | Known travel (vs unreviewed) | Share (known) | Unknown-food days | Restaurant lunches | Places / visit min | Days changed vs A | Days > +15 vs A | Median / p90 / max ms |
+|---|---|---|---|---|---|---|---|---|---|
+| unreviewed | 13,713 | 7,912 | 18.57% | 58 | 101 | 689 / 34,690 | — | — | — |
+| A (8e8a309) | 9,374 (−31.6%) | 8,161 (+3.1%) | 19.05% | 53 | 106 | 689 / 34,690 | — | — | 335 / 1,007 / 1,284 |
+| Am | = A | = A | 19.05% | 53 | 106 | = A | 0 | 0 | 400 / 1,094 / 1,699 |
+| B | = A | = A | 19.05% | 53 | 106 | = A | 0 | 0 | 464 / 1,340 / 1,766 |
+| C | 9,291 (−32.2%) | 8,184 (+3.4%) | 19.09% | 53 | 106 | = A | 1 | 1 | 445 / 1,143 / 1,717 |
+| Ba | = A | = A | 19.05% | 53 | 106 | = A | 0 | 0 | 965 / 2,258 / 3,213 |
+| Ca | = C | = C | 19.09% | 53 | 106 | = A | 1 | 1 | 934 / 1,929 / 2,543 |
+
+**108-plan launch sample (270 days)**
+| Variant | Idle (vs unreviewed) | Known travel (vs unreviewed) | Share (known) | Unknown-food days | Restaurant lunches | Places / visit min | Days changed vs A | Days > +15 vs A | Median / p90 / max ms |
+|---|---|---|---|---|---|---|---|---|---|
+| unreviewed | 25,530 | 13,831 | 18.94% | 87 | 183 | 1,189 / 59,205 | — | — | — |
+| A (8e8a309) | 15,441 (−39.5%) | 14,332 (+3.6%) | 19.49% | 83 | 187 | 1,189 / 59,205 | — | — | 213 / 934 / 1,278 |
+| Am | = A | = A | 19.49% | 83 | 187 | = A | 0 | 0 | 250 / 1,038 / 1,550 |
+| B | 15,193 (−40.5%) | 14,370 (+3.9%) | 19.53% | 83 | 187 | = A | 3 | 2 | 247 / 1,004 / 1,321 |
+| C | 15,110 (−40.8%) | 14,393 (+4.1%) | 19.56% | 83 | 187 | = A | 4 | 3 | 248 / 1,122 / 2,187 |
+| Ba | 14,906 (−41.6%) | 14,484 (+4.7%) | 19.54% | 83 | 187 | 1,196 / 59,655 | 13 | 6 | 405 / 1,344 / 2,556 |
+| Ca | 14,823 (−41.9%) | 14,507 (+4.9%) | 19.56% | 83 | 187 | 1,196 / 59,655 | 14 | 7 | 401 / 1,265 / 2,506 |
+
+- **Generation time:** the median per plan over 3 runs. Each run's own median moves by up to ±30% (A sample: 320–443 ms). Am builds exactly the same plans as A and still shows +20% on the sample, which is the noise level.
+- **Validity:** the independent check finds 0 problems in every variant on both samples.
+- **Daylight places after the monthly sunset estimate:** 0 everywhere.
+
+**Every changed day, B and C (launch):**
+| Trip, day | Unreviewed → A → X: idle | Known travel | Note |
+|---|---|---|---|
+| nature 4 days, Monday 19 Jul 2027 | 180 → 180 → 37 | 0 → 0 → 23 | St Stephen's moved from Sunday; food access unknown on both sides |
+| nature 4 days, Sunday 18 Jul 2027 | 253 → 19 → 13 | 42 → 51 → 42 | the other day of that move |
+| experiences 4 days (no dates), day 4 | 116 → 116 → 17 | 34 → 34 → 58 | Menza on both sides |
+| shopping 4 days (no dates), day 1 (C only) | 192 → 192 → 109 | 33 → 33 → 56 | Hungarikum on both sides |
+
+The sample's single C change is shopping 3 days (no dates), day 1: idle 192 → 109, known travel 33 → 56.
+
+### 19.4 Each rejection condition on its own
+"Blocked by one condition only" = a VALID alternative (no schedule problem) that this one threshold alone kept out. File: `docs/budapest/data/quality-r3/<sample|launch>/compare.json`, `blockedByOneConditionOnly`, with what each one would have changed.
+
+| Condition (variant C) | Sample | Launch |
+|---|---|---|
+| Day gain below 30 | 52 | 73 |
+| Travel above +15 (A pass) | 18 | 21 |
+| Restaurant lunch lost | 6 | 12 |
+| Trip travel share above +2 points | 6 | 2 |
+| Travel above the B/C allowance | 4 | 2 |
+| A changed day weaker (stage 2) | 4 | 2 |
+| Meal not equivalent | 2 | 2 |
+| Travel above +15 with no lost time | 1 | 0 |
+
+**The trip share alone, alternatives worth knowing:**
+- **Food 22–24 Nov, Sunday:** see 19.5.
+- **Nature 17–19 Jul 2027 (3 days):** St Stephen's moved Sunday → Monday.
+  - Monday idle 180 → 37, known travel 0 → 23. The food access is unknown on both sides.
+  - Share 16.3% → 18.6%.
+  - The same move IS accepted on the 4-day trip (above): the share is diluted there.
+  - **The condition depends on trip length.**
+- **Shopping 3 days (no dates):** the same day-1 order that C takes on the 4-day trip. Share 20.2% → 22.4%.
+- **Experiences 22–24 Nov:** St Stephen's ↔ Parliament.
+  - Sunday idle 188 → 121, known travel 57 → 79.
+  - Monday 37 → 22, lunch 21 Restaurant → Hungarikum.
+  - Share 18.1% → 20.2%.
+
+### 19.5 Food 22–24 Nov, Sunday (valid alternative, kept out by the trip share)
+- **Current (A):**
+  - St Stephen's 13:00–14:15 (75 min) → lunch break 14:30–15:45 → Chain Bridge 16:15 (15) → Shoes 17:00 (10) → Parliament 17:30 (20) → Fisherman's 18:30 (40) → Matthias 19:30–19:45 (15) → dinner 21 Restaurant 20:15–21:45.
+  - Idle 266 (morning 240). Known travel 44.
+  - **Food access unknown.** Visits end 19:45, day ends 21:45.
+- **Alternative (B and C accept it for the day; the trip share then rejects it):**
+  - Fisherman's 09:00–09:40 (40) → Matthias 10:00–10:15 (15) → Shoes 11:00 (10) → Parliament 11:30 (20) → Chain Bridge 12:15–12:30 (15) → **Hungarikum 13:00–14:15** → St Stephen's 14:45–16:00 (75) → dinner Menza 18:00–19:30.
+  - Idle 30. Known travel 64: 32 between visits, 32 restaurants.
+  - Visits end 16:00, day ends 19:30.
+- **Order vs restaurant (same order, built again with no lunch restaurant, the planner's own build):**
+  - **The order alone:**
+    - Idle 266 → 24.
+    - Known travel 44 → 51: between visits 39 → 41, restaurants 5 → 10 (the dinner walk).
+    - Food access unknown on both sides.
+    - The trip's known travel would be 145 → 148, share 19.9% → 20.2%. **That passes every threshold.**
+  - **The named restaurant then adds 6 idle and 13 known travel:**
+    - That is the walk to and from Hungarikum, which a lunch break also has but cannot count.
+    - It also moves the dinners: Sunday Menza, Tuesday New York Café.
+    - That walk is what takes the trip share above +2.
+  - The planner always names a restaurant when one fits, so the lunch-break version is not offered.
+- **Trip:**
+  - Idle 491 → 255.
+  - Known travel 145 → 172 (+20 Sunday, +7 Tuesday dinner).
+  - Share 19.9% → 22.7%.
+- **The comparison is uneven on food:**
+  - The current trip has 2 unknown-food days, the alternative 1.
+  - Part of the share increase is restaurant walking that the current plan simply does not measure. This is not a reason to accept it, but it is not a clean comparison either.
+- **Tuesday dinner:**
+  - It changes from Hungarikum to New York Café: open Tuesday 12:00–23:00, same tags plus "dessert", category restaurant.
+  - Walk 14 → 21 min (+7).
+  - The explicit meal check accepts it (walk within +10).
+  - It changes only because restaurants are unique per trip: Hungarikum becomes Sunday's lunch, while Menza and Frici Papa are taken.
+- **Stage 2 alternative (St Stephen's to Monday):**
+  - Sunday idle 266 → 25, Monday 146 → 24 with Hungarikum instead of a lunch break (food access becomes known on both days).
+  - Monday known travel 51 → 83 (+32).
+  - B: above its allowance (30). C: within it (40). Both are then stopped by the share, 19.9% → 23.6%.
+
+### 19.6 Culture 22–24 Nov: restoring the Monday-closed museums
+- **Dropped by the date of their area:**
+  - Museum of Fine Arts and House of Music: closed Monday, open Sunday and Tuesday 10:00/10:15–18:00/17:50.
+  - Vajdahunyad: open, relevance 5, so not a "strong" place and not restored.
+- **Engine candidates (Ba / Ca):**
+  - 6 assignments: 2 invalid (a day with 7 places and a day with 1), 2 not built (search limit: 2 built), 2 built.
+  - **Both built candidates were rejected:**
+    - the City Park date loses its restaurant lunch (no restaurant fits that area's lunch: lunch break);
+    - trip idle 131 → 168.
+  - **The current plan stays.**
+- **Why 168 here and 64–70 in the earlier simulation (same three dates):**
+
+  | | Places | Order of each day | Idle |
+  |---|---|---|---|
+  | Earlier simulation (planning, not engine) | 13: Vajdahunyad included (fills 09:00–10:00 before the museums open) | every order tried on the final schedule | 64–70 |
+  | Engine candidate | 12 (strong places only) | one order per day from the clock estimate, then stage 1 (gain ≥ 30, +15). Tuesday starts with the Gallery at 10:00 (60 min morning) | 168 |
+  | Swap experiment, areas only | 12 | every order tried | 62–90 |
+
+  - The restaurants are the same in all three (the City Park day always has a lunch break).
+  - The difference is the order search, plus Vajdahunyad.
+- **Limited swap experiment** (`bud-r3-swap.mts`, script only, not in the engine):
+  - **Search:**
+    - every assignment of the undated areas to the dates that needs no move;
+    - every single swap of one place between two days;
+    - every order of the changed days on the final schedule.
+  - **Size:** 66 candidates, 6,666 builds.
+  - **Accepted: 0.** Each of the best candidates fails on ONE thing: the date that gets the City Park museums has a lunch break instead of the restaurant it has now.
+  - **Best by idle:** Citadella ↔ Heroes' Square.
+
+    | Day | Plan | Idle | Known travel | Lunch |
+    |---|---|---|---|---|
+    | Sunday | Chain Bridge, Gallery 10:00, Matthias, Fisherman's | 31 | 44 | 21 Restaurant |
+    | Monday | Heroes', St Stephen's, Shoes, Parliament, Opera 15:00 | 18 | 67 | Hungarikum |
+    | Tuesday | Citadella, House of Music 10:45, Fine Arts 14:45 | 13 | 47 | **lunch break**, food access unknown |
+
+    - Trip idle 62, share 19.3%.
+  - **The blocker is the meal, not the route or the hours.**
+  - **This does not prove that no better distribution exists.** The engine built only 2 of 6 assignments. The experiment tried single swaps only, and skipped assignments that need a closed place moved.
+
+### 19.7 Areas by date on the launch sample (Ba / Ca): 6 trips get places back, none in the 53-plan sample
+| Trip | Restored | Trip idle | Trip share | Day changes worth noting |
+|---|---|---|---|---|
+| A 2 days, 19 Nov | Opera tour (Thu), Market Hall (Fri) | 136 → 88 | 22.5 → 21.7 | Friday idle 35 → 58; lunches swap between the days |
+| A 2 days, 17 Jul 2027 | Market Hall (Sat) | 75 → 87 | 21.9 → 23.8 | Sunday idle 34 → 57 (**a weaker day**) |
+| nature 1 day, 19 Nov | Margaret Island 09:00–10:30 | 76 → 32 | 23.4 → 21.7 | Known travel 64 → 83 |
+| shopping 1 day, 19 Nov | Opera tour | 45 → 39 | 21.3 → 20.2 | Lunch Frici Papa → Menza |
+| food 2 days, 19 Nov | Opera tour (Fri) | 135 → 46 | 25.0 → 23.1 | Thursday idle 100 → 16 |
+| food 2 days, 17 Jul 2027 | Market Hall (Sat) | 221 → 109 | 22.2 → 22.5 | Saturday known travel 45 → 80 |
+
+- **Flagged by the post-hoc check:**
+  - The check applies the reorder rule (+15 without lost time; the allowance) to EVERY changed day. It flags 3 of these trips (A 2 days 19 Nov, nature 1 day 19 Nov, food 2 days 2027).
+  - Those days have more places, so their travel grows with the added visit.
+  - The areas criteria (day ≤ 90, share, trip idle) accepted them.
+  - They stay listed: `compare.txt`, "acceptance failures".
+- **Not acceptable by your rule "no day made weaker":** the two days whose idle rises by 23 min. The areas criteria checked the trip's idle, not each day's.
+
+### 19.8 Recommendation (from the tables above)
+- **Schedule validity:** every variant is valid (0 problems). The choice is about the improvement thresholds only.
+- **B and C:**
+  - **Gain:**
+    - Launch idle −1.6% (B) / −2.1% (C) against A; 3 to 4 days changed out of 270.
+    - The sample: 0 (B) / 1 (C) of 159 days.
+  - **Cost:** generation time +16% (launch) to +35% (sample).
+  - **Why so small:** the 2-point trip share decides, and it is length-dependent (the nature move is accepted on 4 days, rejected on 3). On days with a lunch break it compares a restaurant's measured walk with an unmeasured one.
+  - C is the better of the two (more gain, no acceptance failure).
+  - **Not recommended as the default in this form.**
+  - The next measurement, if wanted, is a trip limit that does not depend on trip length: added known minutes per day, shown with the unknown-food days.
+- **Am (explicit meal check):**
+  - The same plans as A on both samples, at no measurable cost.
+  - It replaces the arbitrary 10-point tolerance with the criteria you set.
+  - **Recommended as the default whenever the next change is approved.** It changes no plan today.
+- **Areas by date (Ba / Ca):**
+  - 6 of 108 launch trips get a strong place back (+450 visit minutes), 0 of 53 in the sample.
+  - The culture case stays blocked by the lunch rule.
+  - Generation time is about 2× (median).
+  - 2 trips make one day weaker.
+  - **Not recommended as the default.** It would need a per-day "not weaker" check and a cheaper construction first.
+- **Launch range:** not changed.
+
+### 19.9 Checks on dfe4453
+- **Validity and Budapest tests:**
+  - Independent check: 0 problems for A, Am, B, C, Ba and Ca on both samples (Ba/Ca launch: 1,554 visits and meals, 1,284 transfers, 0 without data).
+  - `bud-boundary` ALL PASS; `bud-cruise-suggest` ALL PASS; `bud-mixed-dates` 307 / 0; `bud-action-save` 15 / 0.
+  - Default (A) byte-identical to 8e8a309 on both samples.
+- **Build:** tsc, eslint (changed files) and `next build --webpack` (fake values, `ALLPAY_MODE=disabled`) all pass.
+- **Prague and Barcelona on dfe4453 (clean tree):** generation byte-identical to `925512d` (prg-focus 82, prg-oneday 31, bcn104, bcn378; prg-long plans identical, timings excluded); edits byte-identical (prg-focus, bcn104). `docs/budapest/data/quality-r3/tests/prague-barcelona-generation-and-edits-dfe4453.txt`.
+- **Files:**
+  - `docs/budapest/data/quality-r3/` holds the inputs, per-day metrics of every variant, summaries, timings over 3 runs, comparisons, examples and test outputs.
+  - The package adds the full plans, the review logs (every decision with its reasons) and the swap experiment's candidates.

@@ -1,0 +1,14 @@
+commit: dfe4453 Budapest day quality, round 3 experiments (test-only switches; defaults unchanged)
+tree: 0 modified files
+{"cases":82,"plans":82,"failed":[]}
+{"cases":31,"plans":31,"failed":[]}
+{"plans":20,"failed":[],"totalSeconds":23,"perDaysMedianMs":{"5d":672,"7d":1196,"10d":912},"maxMs":3891}
+barcelona requests 104 ok 104
+requests 378 ok 378
+prg-focus generation IDENTICAL to 925512d
+prg-oneday generation IDENTICAL to 925512d
+bcn104 generation IDENTICAL to 925512d
+bcn378 generation IDENTICAL to 925512d
+prg-long IDENTICAL PLANS to 925512d (timings excluded)
+prg-focus edits IDENTICAL to 925512d
+bcn104 edits IDENTICAL to 925512d

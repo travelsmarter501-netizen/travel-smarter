@@ -1,0 +1,52 @@
+
+######## A  {"idle":215,"travelKnown":180,"visits":915,"foodAccessUnknownDays":2,"restaurantLunches":2,"places":16,"travelShare":16.4}
+--- day 1 2026-11-19 thursday | idle 50 (morning 0, waits 50, longest 22) | known travel 55 = between visits 35 + restaurants 20 | visits 255 min, end 17:30, day end 17:30
+    09:00-10:30 margaret-island (90 min) | 11:15-11:35 parliament-exterior (20 min) | 12:00-12:10 shoes-on-the-danube (10 min) | 12:45-14:00 [lunch] hungarikum-bisztro | 14:30-15:45 st-stephens-basilica (75 min) | 16:30-17:30 opera-house-tour (60 min)
+--- day 2 2026-11-20 friday | idle 29 (morning 0, waits 29, longest 14) | known travel 51 = between visits 15 + restaurants 36 | visits 190 min, end 15:45, day end 15:45
+    09:00-09:40 fishermans-bastion (40 min) | 10:00-10:15 matthias-church-exterior (15 min) | 10:45-12:45 hungarian-national-gallery (120 min) | 13:30-14:45 [lunch] 21-restaurant | 15:30-15:45 chain-bridge (15 min)
+--- day 3 2026-11-21 saturday | idle 93 (morning 0, waits 93, longest 82) | known travel 62 = between visits 62 + restaurants 0 | food access UNKNOWN (lunch break) | visits 210 min, end 17:20, day end 17:20
+    09:00-10:00 great-market-hall (60 min) | 10:30-11:15 vaci-utca (45 min) | 12:00-12:45 citadella (45 min) | 13:00-14:15 [lunch] lunch break (no set place) | 16:20-17:20 danube-legend-cruise (60 min)
+--- day 4 2026-11-22 sunday | idle 43 (morning 0, waits 43, longest 23) | known travel 12 = between visits 12 + restaurants 0 | food access UNKNOWN (lunch break) | visits 260 min, end 16:15, day end 16:15
+    09:00-09:20 heroes-square (20 min) | 10:00-12:00 museum-of-fine-arts (120 min) | 12:30-13:45 [lunch] lunch break (no set place) | 14:15-16:15 house-of-music (120 min)
+
+######## B  {"idle":215,"travelKnown":180,"visits":915,"foodAccessUnknownDays":2,"restaurantLunches":2,"places":16,"travelShare":16.4}
+--- day 1 2026-11-19 thursday | idle 50 (morning 0, waits 50, longest 22) | known travel 55 = between visits 35 + restaurants 20 | visits 255 min, end 17:30, day end 17:30  vs A: idle +0, known travel +0
+    09:00-10:30 margaret-island (90 min) | 11:15-11:35 parliament-exterior (20 min) | 12:00-12:10 shoes-on-the-danube (10 min) | 12:45-14:00 [lunch] hungarikum-bisztro | 14:30-15:45 st-stephens-basilica (75 min) | 16:30-17:30 opera-house-tour (60 min)
+--- day 2 2026-11-20 friday | idle 29 (morning 0, waits 29, longest 14) | known travel 51 = between visits 15 + restaurants 36 | visits 190 min, end 15:45, day end 15:45  vs A: idle +0, known travel +0
+    09:00-09:40 fishermans-bastion (40 min) | 10:00-10:15 matthias-church-exterior (15 min) | 10:45-12:45 hungarian-national-gallery (120 min) | 13:30-14:45 [lunch] 21-restaurant | 15:30-15:45 chain-bridge (15 min)
+--- day 3 2026-11-21 saturday | idle 93 (morning 0, waits 93, longest 82) | known travel 62 = between visits 62 + restaurants 0 | food access UNKNOWN (lunch break) | visits 210 min, end 17:20, day end 17:20  vs A: idle +0, known travel +0
+    09:00-10:00 great-market-hall (60 min) | 10:30-11:15 vaci-utca (45 min) | 12:00-12:45 citadella (45 min) | 13:00-14:15 [lunch] lunch break (no set place) | 16:20-17:20 danube-legend-cruise (60 min)
+--- day 4 2026-11-22 sunday | idle 43 (morning 0, waits 43, longest 23) | known travel 12 = between visits 12 + restaurants 0 | food access UNKNOWN (lunch break) | visits 260 min, end 16:15, day end 16:15  vs A: idle +0, known travel +0
+    09:00-09:20 heroes-square (20 min) | 10:00-12:00 museum-of-fine-arts (120 min) | 12:30-13:45 [lunch] lunch break (no set place) | 14:15-16:15 house-of-music (120 min)
+
+######## C  {"idle":215,"travelKnown":180,"visits":915,"foodAccessUnknownDays":2,"restaurantLunches":2,"places":16,"travelShare":16.4}
+--- day 1 2026-11-19 thursday | idle 50 (morning 0, waits 50, longest 22) | known travel 55 = between visits 35 + restaurants 20 | visits 255 min, end 17:30, day end 17:30  vs A: idle +0, known travel +0
+    09:00-10:30 margaret-island (90 min) | 11:15-11:35 parliament-exterior (20 min) | 12:00-12:10 shoes-on-the-danube (10 min) | 12:45-14:00 [lunch] hungarikum-bisztro | 14:30-15:45 st-stephens-basilica (75 min) | 16:30-17:30 opera-house-tour (60 min)
+--- day 2 2026-11-20 friday | idle 29 (morning 0, waits 29, longest 14) | known travel 51 = between visits 15 + restaurants 36 | visits 190 min, end 15:45, day end 15:45  vs A: idle +0, known travel +0
+    09:00-09:40 fishermans-bastion (40 min) | 10:00-10:15 matthias-church-exterior (15 min) | 10:45-12:45 hungarian-national-gallery (120 min) | 13:30-14:45 [lunch] 21-restaurant | 15:30-15:45 chain-bridge (15 min)
+--- day 3 2026-11-21 saturday | idle 93 (morning 0, waits 93, longest 82) | known travel 62 = between visits 62 + restaurants 0 | food access UNKNOWN (lunch break) | visits 210 min, end 17:20, day end 17:20  vs A: idle +0, known travel +0
+    09:00-10:00 great-market-hall (60 min) | 10:30-11:15 vaci-utca (45 min) | 12:00-12:45 citadella (45 min) | 13:00-14:15 [lunch] lunch break (no set place) | 16:20-17:20 danube-legend-cruise (60 min)
+--- day 4 2026-11-22 sunday | idle 43 (morning 0, waits 43, longest 23) | known travel 12 = between visits 12 + restaurants 0 | food access UNKNOWN (lunch break) | visits 260 min, end 16:15, day end 16:15  vs A: idle +0, known travel +0
+    09:00-09:20 heroes-square (20 min) | 10:00-12:00 museum-of-fine-arts (120 min) | 12:30-13:45 [lunch] lunch break (no set place) | 14:15-16:15 house-of-music (120 min)
+
+######## Ba  {"idle":215,"travelKnown":180,"visits":915,"foodAccessUnknownDays":2,"restaurantLunches":2,"places":16,"travelShare":16.4}
+--- day 1 2026-11-19 thursday | idle 50 (morning 0, waits 50, longest 22) | known travel 55 = between visits 35 + restaurants 20 | visits 255 min, end 17:30, day end 17:30  vs A: idle +0, known travel +0
+    09:00-10:30 margaret-island (90 min) | 11:15-11:35 parliament-exterior (20 min) | 12:00-12:10 shoes-on-the-danube (10 min) | 12:45-14:00 [lunch] hungarikum-bisztro | 14:30-15:45 st-stephens-basilica (75 min) | 16:30-17:30 opera-house-tour (60 min)
+--- day 2 2026-11-20 friday | idle 29 (morning 0, waits 29, longest 14) | known travel 51 = between visits 15 + restaurants 36 | visits 190 min, end 15:45, day end 15:45  vs A: idle +0, known travel +0
+    09:00-09:40 fishermans-bastion (40 min) | 10:00-10:15 matthias-church-exterior (15 min) | 10:45-12:45 hungarian-national-gallery (120 min) | 13:30-14:45 [lunch] 21-restaurant | 15:30-15:45 chain-bridge (15 min)
+--- day 3 2026-11-21 saturday | idle 93 (morning 0, waits 93, longest 82) | known travel 62 = between visits 62 + restaurants 0 | food access UNKNOWN (lunch break) | visits 210 min, end 17:20, day end 17:20  vs A: idle +0, known travel +0
+    09:00-10:00 great-market-hall (60 min) | 10:30-11:15 vaci-utca (45 min) | 12:00-12:45 citadella (45 min) | 13:00-14:15 [lunch] lunch break (no set place) | 16:20-17:20 danube-legend-cruise (60 min)
+--- day 4 2026-11-22 sunday | idle 43 (morning 0, waits 43, longest 23) | known travel 12 = between visits 12 + restaurants 0 | food access UNKNOWN (lunch break) | visits 260 min, end 16:15, day end 16:15  vs A: idle +0, known travel +0
+    09:00-09:20 heroes-square (20 min) | 10:00-12:00 museum-of-fine-arts (120 min) | 12:30-13:45 [lunch] lunch break (no set place) | 14:15-16:15 house-of-music (120 min)
+  [areas skipped] no strong place missing from the dated plan
+
+######## Ca  {"idle":215,"travelKnown":180,"visits":915,"foodAccessUnknownDays":2,"restaurantLunches":2,"places":16,"travelShare":16.4}
+--- day 1 2026-11-19 thursday | idle 50 (morning 0, waits 50, longest 22) | known travel 55 = between visits 35 + restaurants 20 | visits 255 min, end 17:30, day end 17:30  vs A: idle +0, known travel +0
+    09:00-10:30 margaret-island (90 min) | 11:15-11:35 parliament-exterior (20 min) | 12:00-12:10 shoes-on-the-danube (10 min) | 12:45-14:00 [lunch] hungarikum-bisztro | 14:30-15:45 st-stephens-basilica (75 min) | 16:30-17:30 opera-house-tour (60 min)
+--- day 2 2026-11-20 friday | idle 29 (morning 0, waits 29, longest 14) | known travel 51 = between visits 15 + restaurants 36 | visits 190 min, end 15:45, day end 15:45  vs A: idle +0, known travel +0
+    09:00-09:40 fishermans-bastion (40 min) | 10:00-10:15 matthias-church-exterior (15 min) | 10:45-12:45 hungarian-national-gallery (120 min) | 13:30-14:45 [lunch] 21-restaurant | 15:30-15:45 chain-bridge (15 min)
+--- day 3 2026-11-21 saturday | idle 93 (morning 0, waits 93, longest 82) | known travel 62 = between visits 62 + restaurants 0 | food access UNKNOWN (lunch break) | visits 210 min, end 17:20, day end 17:20  vs A: idle +0, known travel +0
+    09:00-10:00 great-market-hall (60 min) | 10:30-11:15 vaci-utca (45 min) | 12:00-12:45 citadella (45 min) | 13:00-14:15 [lunch] lunch break (no set place) | 16:20-17:20 danube-legend-cruise (60 min)
+--- day 4 2026-11-22 sunday | idle 43 (morning 0, waits 43, longest 23) | known travel 12 = between visits 12 + restaurants 0 | food access UNKNOWN (lunch break) | visits 260 min, end 16:15, day end 16:15  vs A: idle +0, known travel +0
+    09:00-09:20 heroes-square (20 min) | 10:00-12:00 museum-of-fine-arts (120 min) | 12:30-13:45 [lunch] lunch break (no set place) | 14:15-16:15 house-of-music (120 min)
+  [areas skipped] no strong place missing from the dated plan

@@ -1,0 +1,104 @@
+
+######## A  {"idle":131,"travelKnown":124,"visits":420,"foodAccessUnknownDays":0,"restaurantLunches":3,"places":10,"travelShare":22.8}
+--- day 1 2026-11-22 sunday | idle 15 (morning 0, waits 15, longest 7) | known travel 45 = between visits 37 + restaurants 8 | visits 90 min, end 12:00, day end 13:45
+    09:00-09:45 citadella (45 min) | 10:30-10:40 shoes-on-the-danube (10 min) | 11:00-11:20 parliament-exterior (20 min) | 11:45-12:00 chain-bridge (15 min) | 12:30-13:45 [lunch] hungarikum-bisztro
+    same order, lunch break instead: idle 23, known travel 37 (between visits 37 + restaurants 0), visits end 12:00, problems 0
+--- day 2 2026-11-23 monday | idle 97 (morning 0, waits 97, longest 54) | known travel 48 = between visits 28 + restaurants 20 | visits 155 min, end 16:00, day end 16:00
+    09:00-09:20 heroes-square (20 min) | 10:15-11:30 st-stephens-basilica (75 min) | 12:30-13:45 [lunch] menza | 15:00-16:00 opera-house-tour (60 min)
+    same order, lunch break instead: idle 109, known travel 36 (between visits 36 + restaurants 0), visits end 16:00, problems 0
+--- day 3 2026-11-24 tuesday | idle 19 (morning 0, waits 19, longest 14) | known travel 31 = between visits 15 + restaurants 16 | visits 175 min, end 12:45, day end 14:45
+    09:00-09:40 fishermans-bastion (40 min) | 10:00-10:15 matthias-church-exterior (15 min) | 10:45-12:45 hungarian-national-gallery (120 min) | 13:30-14:45 [lunch] 21-restaurant
+    same order, lunch break instead: idle 5, known travel 15 (between visits 15 + restaurants 0), visits end 12:45, problems 0
+  [order rejected day 1] travel +17 (more than 15) (trial parliament-exterior>chain-bridge>shoes-on-the-danube>st-stephens-basilica: idle 99, travel 36, lunch hungarikum-bisztro)
+  [order accepted day 2] - (trial citadella>heroes-square>opera-house-tour: idle 108, travel 67, lunch menza)
+  [order accepted day 1] - (trial chain-bridge>parliament-exterior>shoes-on-the-danube>st-stephens-basilica: idle 103, travel 32, lunch hungarikum-bisztro)
+  [move rejected] day 2: restaurant lunch lost (menza) (move st-stephens-basilica 1->2)
+  [move rejected] day 1: cost +40.5; day 2: restaurant lunch lost (menza) (move st-stephens-basilica 1->2 swap opera-house-tour)
+  [move accepted] - (move st-stephens-basilica 1->2 swap citadella)
+  [move rejected] day 1: restaurant lunch lost (hungarikum-bisztro); day 2: restaurant lunch lost (menza) (move st-stephens-basilica 1->2 swap heroes-square)
+
+######## B  {"idle":131,"travelKnown":124,"visits":420,"foodAccessUnknownDays":0,"restaurantLunches":3,"places":10,"travelShare":22.8}
+--- day 1 2026-11-22 sunday | idle 15 (morning 0, waits 15, longest 7) | known travel 45 = between visits 37 + restaurants 8 | visits 90 min, end 12:00, day end 13:45  vs A: idle +0, known travel +0
+    09:00-09:45 citadella (45 min) | 10:30-10:40 shoes-on-the-danube (10 min) | 11:00-11:20 parliament-exterior (20 min) | 11:45-12:00 chain-bridge (15 min) | 12:30-13:45 [lunch] hungarikum-bisztro
+    same order, lunch break instead: idle 23, known travel 37 (between visits 37 + restaurants 0), visits end 12:00, problems 0
+--- day 2 2026-11-23 monday | idle 97 (morning 0, waits 97, longest 54) | known travel 48 = between visits 28 + restaurants 20 | visits 155 min, end 16:00, day end 16:00  vs A: idle +0, known travel +0
+    09:00-09:20 heroes-square (20 min) | 10:15-11:30 st-stephens-basilica (75 min) | 12:30-13:45 [lunch] menza | 15:00-16:00 opera-house-tour (60 min)
+    same order, lunch break instead: idle 109, known travel 36 (between visits 36 + restaurants 0), visits end 16:00, problems 0
+--- day 3 2026-11-24 tuesday | idle 19 (morning 0, waits 19, longest 14) | known travel 31 = between visits 15 + restaurants 16 | visits 175 min, end 12:45, day end 14:45  vs A: idle +0, known travel +0
+    09:00-09:40 fishermans-bastion (40 min) | 10:00-10:15 matthias-church-exterior (15 min) | 10:45-12:45 hungarian-national-gallery (120 min) | 13:30-14:45 [lunch] 21-restaurant
+    same order, lunch break instead: idle 5, known travel 15 (between visits 15 + restaurants 0), visits end 12:45, problems 0
+  [order rejected day 1] travel +17 (more than 15) (trial parliament-exterior>chain-bridge>shoes-on-the-danube>st-stephens-basilica: idle 99, travel 36, lunch hungarikum-bisztro)
+  [order accepted day 2] - (trial citadella>heroes-square>opera-house-tour: idle 108, travel 67, lunch menza)
+  [order accepted day 1] - (trial chain-bridge>parliament-exterior>shoes-on-the-danube>st-stephens-basilica: idle 103, travel 32, lunch hungarikum-bisztro)
+  [move rejected] day 2: restaurant lunch lost (menza) (move st-stephens-basilica 1->2)
+  [move rejected] day 1: cost +40.5; day 2: restaurant lunch lost (menza) (move st-stephens-basilica 1->2 swap opera-house-tour)
+  [move accepted] - (move st-stephens-basilica 1->2 swap citadella)
+  [move rejected] day 1: restaurant lunch lost (hungarikum-bisztro); day 2: restaurant lunch lost (menza) (move st-stephens-basilica 1->2 swap heroes-square)
+
+######## C  {"idle":131,"travelKnown":124,"visits":420,"foodAccessUnknownDays":0,"restaurantLunches":3,"places":10,"travelShare":22.8}
+--- day 1 2026-11-22 sunday | idle 15 (morning 0, waits 15, longest 7) | known travel 45 = between visits 37 + restaurants 8 | visits 90 min, end 12:00, day end 13:45  vs A: idle +0, known travel +0
+    09:00-09:45 citadella (45 min) | 10:30-10:40 shoes-on-the-danube (10 min) | 11:00-11:20 parliament-exterior (20 min) | 11:45-12:00 chain-bridge (15 min) | 12:30-13:45 [lunch] hungarikum-bisztro
+    same order, lunch break instead: idle 23, known travel 37 (between visits 37 + restaurants 0), visits end 12:00, problems 0
+--- day 2 2026-11-23 monday | idle 97 (morning 0, waits 97, longest 54) | known travel 48 = between visits 28 + restaurants 20 | visits 155 min, end 16:00, day end 16:00  vs A: idle +0, known travel +0
+    09:00-09:20 heroes-square (20 min) | 10:15-11:30 st-stephens-basilica (75 min) | 12:30-13:45 [lunch] menza | 15:00-16:00 opera-house-tour (60 min)
+    same order, lunch break instead: idle 109, known travel 36 (between visits 36 + restaurants 0), visits end 16:00, problems 0
+--- day 3 2026-11-24 tuesday | idle 19 (morning 0, waits 19, longest 14) | known travel 31 = between visits 15 + restaurants 16 | visits 175 min, end 12:45, day end 14:45  vs A: idle +0, known travel +0
+    09:00-09:40 fishermans-bastion (40 min) | 10:00-10:15 matthias-church-exterior (15 min) | 10:45-12:45 hungarian-national-gallery (120 min) | 13:30-14:45 [lunch] 21-restaurant
+    same order, lunch break instead: idle 5, known travel 15 (between visits 15 + restaurants 0), visits end 12:45, problems 0
+  [order rejected day 1] travel +17 (more than 15) (trial parliament-exterior>chain-bridge>shoes-on-the-danube>st-stephens-basilica: idle 99, travel 36, lunch hungarikum-bisztro)
+  [order accepted day 2] - (trial citadella>heroes-square>opera-house-tour: idle 108, travel 67, lunch menza)
+  [order accepted day 1] - (trial chain-bridge>parliament-exterior>shoes-on-the-danube>st-stephens-basilica: idle 103, travel 32, lunch hungarikum-bisztro)
+  [move rejected] day 2: restaurant lunch lost (menza) (move st-stephens-basilica 1->2)
+  [move rejected] day 1: cost +40.5; day 2: restaurant lunch lost (menza) (move st-stephens-basilica 1->2 swap opera-house-tour)
+  [move accepted] - (move st-stephens-basilica 1->2 swap citadella)
+  [move rejected] day 1: restaurant lunch lost (hungarikum-bisztro); day 2: restaurant lunch lost (menza) (move st-stephens-basilica 1->2 swap heroes-square)
+
+######## Ba  {"idle":131,"travelKnown":124,"visits":420,"foodAccessUnknownDays":0,"restaurantLunches":3,"places":10,"travelShare":22.8}
+--- day 1 2026-11-22 sunday | idle 15 (morning 0, waits 15, longest 7) | known travel 45 = between visits 37 + restaurants 8 | visits 90 min, end 12:00, day end 13:45  vs A: idle +0, known travel +0
+    09:00-09:45 citadella (45 min) | 10:30-10:40 shoes-on-the-danube (10 min) | 11:00-11:20 parliament-exterior (20 min) | 11:45-12:00 chain-bridge (15 min) | 12:30-13:45 [lunch] hungarikum-bisztro
+    same order, lunch break instead: idle 23, known travel 37 (between visits 37 + restaurants 0), visits end 12:00, problems 0
+--- day 2 2026-11-23 monday | idle 97 (morning 0, waits 97, longest 54) | known travel 48 = between visits 28 + restaurants 20 | visits 155 min, end 16:00, day end 16:00  vs A: idle +0, known travel +0
+    09:00-09:20 heroes-square (20 min) | 10:15-11:30 st-stephens-basilica (75 min) | 12:30-13:45 [lunch] menza | 15:00-16:00 opera-house-tour (60 min)
+    same order, lunch break instead: idle 109, known travel 36 (between visits 36 + restaurants 0), visits end 16:00, problems 0
+--- day 3 2026-11-24 tuesday | idle 19 (morning 0, waits 19, longest 14) | known travel 31 = between visits 15 + restaurants 16 | visits 175 min, end 12:45, day end 14:45  vs A: idle +0, known travel +0
+    09:00-09:40 fishermans-bastion (40 min) | 10:00-10:15 matthias-church-exterior (15 min) | 10:45-12:45 hungarian-national-gallery (120 min) | 13:30-14:45 [lunch] 21-restaurant
+    same order, lunch break instead: idle 5, known travel 15 (between visits 15 + restaurants 0), visits end 12:45, problems 0
+  [order rejected day 1] travel +17 (more than 15) (trial parliament-exterior>chain-bridge>shoes-on-the-danube>st-stephens-basilica: idle 99, travel 36, lunch hungarikum-bisztro)
+  [order accepted day 2] - (trial citadella>heroes-square>opera-house-tour: idle 108, travel 67, lunch menza)
+  [order accepted day 1] - (trial chain-bridge>parliament-exterior>shoes-on-the-danube>st-stephens-basilica: idle 103, travel 32, lunch hungarikum-bisztro)
+  [move rejected] day 2: restaurant lunch lost (menza) (move st-stephens-basilica 1->2)
+  [move rejected] day 1: cost +40.5; day 2: restaurant lunch lost (menza) (move st-stephens-basilica 1->2 swap opera-house-tour)
+  [move accepted] - (move st-stephens-basilica 1->2 swap citadella)
+  [move rejected] day 1: restaurant lunch lost (hungarikum-bisztro); day 2: restaurant lunch lost (menza) (move st-stephens-basilica 1->2 swap heroes-square)
+  [areas rejected] day 1: 7 places (day 1: opera-house-tour, st-stephens-basilica, shoes-on-the-danube, parliament-exterior, citadella, museum-of-fine-arts, house-of-music | day 2: heroes-square | day 3: fishermans-bastion, matthias-church-exterior, hungarian-national-gallery, chain-bridge)
+  [areas rejected] day 2: 1 places (day 1: fishermans-bastion, matthias-church-exterior, hungarian-national-gallery, chain-bridge | day 2: heroes-square | day 3: opera-house-tour, st-stephens-basilica, shoes-on-the-danube, parliament-exterior, citadella, museum-of-fine-arts, house-of-music)
+  [areas skipped] not built: 2 candidates with a better clock estimate (day 1: opera-house-tour, st-stephens-basilica, shoes-on-the-danube, parliament-exterior, citadella, hungarian-national-gallery | day 2: fishermans-bastion, matthias-church-exterior, chain-bridge | day 3: heroes-square, museum-of-fine-arts, house-of-music)
+  [areas skipped] not built: 2 candidates with a better clock estimate (day 1: heroes-square, museum-of-fine-arts, house-of-music | day 2: fishermans-bastion, matthias-church-exterior, chain-bridge | day 3: opera-house-tour, st-stephens-basilica, shoes-on-the-danube, parliament-exterior, citadella, hungarian-national-gallery)
+  [areas rejected] day 3: restaurant lunch lost (21-restaurant -> lunch break); trip idle 131 -> 168 (day 1: fishermans-bastion, matthias-church-exterior, hungarian-national-gallery, chain-bridge | day 2: opera-house-tour, st-stephens-basilica, shoes-on-the-danube, parliament-exterior, citadella | day 3: heroes-square, museum-of-fine-arts, house-of-music)
+  [areas rejected] day 1: restaurant lunch lost (hungarikum-bisztro -> lunch break); trip idle 131 -> 168 (day 1: heroes-square, museum-of-fine-arts, house-of-music | day 2: opera-house-tour, st-stephens-basilica, shoes-on-the-danube, parliament-exterior, citadella | day 3: fishermans-bastion, matthias-church-exterior, hungarian-national-gallery, chain-bridge)
+  [areas kept] the current dated plan stays
+
+######## Ca  {"idle":131,"travelKnown":124,"visits":420,"foodAccessUnknownDays":0,"restaurantLunches":3,"places":10,"travelShare":22.8}
+--- day 1 2026-11-22 sunday | idle 15 (morning 0, waits 15, longest 7) | known travel 45 = between visits 37 + restaurants 8 | visits 90 min, end 12:00, day end 13:45  vs A: idle +0, known travel +0
+    09:00-09:45 citadella (45 min) | 10:30-10:40 shoes-on-the-danube (10 min) | 11:00-11:20 parliament-exterior (20 min) | 11:45-12:00 chain-bridge (15 min) | 12:30-13:45 [lunch] hungarikum-bisztro
+    same order, lunch break instead: idle 23, known travel 37 (between visits 37 + restaurants 0), visits end 12:00, problems 0
+--- day 2 2026-11-23 monday | idle 97 (morning 0, waits 97, longest 54) | known travel 48 = between visits 28 + restaurants 20 | visits 155 min, end 16:00, day end 16:00  vs A: idle +0, known travel +0
+    09:00-09:20 heroes-square (20 min) | 10:15-11:30 st-stephens-basilica (75 min) | 12:30-13:45 [lunch] menza | 15:00-16:00 opera-house-tour (60 min)
+    same order, lunch break instead: idle 109, known travel 36 (between visits 36 + restaurants 0), visits end 16:00, problems 0
+--- day 3 2026-11-24 tuesday | idle 19 (morning 0, waits 19, longest 14) | known travel 31 = between visits 15 + restaurants 16 | visits 175 min, end 12:45, day end 14:45  vs A: idle +0, known travel +0
+    09:00-09:40 fishermans-bastion (40 min) | 10:00-10:15 matthias-church-exterior (15 min) | 10:45-12:45 hungarian-national-gallery (120 min) | 13:30-14:45 [lunch] 21-restaurant
+    same order, lunch break instead: idle 5, known travel 15 (between visits 15 + restaurants 0), visits end 12:45, problems 0
+  [order rejected day 1] travel +17 (more than 15) (trial parliament-exterior>chain-bridge>shoes-on-the-danube>st-stephens-basilica: idle 99, travel 36, lunch hungarikum-bisztro)
+  [order accepted day 2] - (trial citadella>heroes-square>opera-house-tour: idle 108, travel 67, lunch menza)
+  [order accepted day 1] - (trial chain-bridge>parliament-exterior>shoes-on-the-danube>st-stephens-basilica: idle 103, travel 32, lunch hungarikum-bisztro)
+  [move rejected] day 2: restaurant lunch lost (menza) (move st-stephens-basilica 1->2)
+  [move rejected] day 1: cost +40.5; day 2: restaurant lunch lost (menza) (move st-stephens-basilica 1->2 swap opera-house-tour)
+  [move accepted] - (move st-stephens-basilica 1->2 swap citadella)
+  [move rejected] day 1: restaurant lunch lost (hungarikum-bisztro); day 2: restaurant lunch lost (menza) (move st-stephens-basilica 1->2 swap heroes-square)
+  [areas rejected] day 1: 7 places (day 1: opera-house-tour, st-stephens-basilica, shoes-on-the-danube, parliament-exterior, citadella, museum-of-fine-arts, house-of-music | day 2: heroes-square | day 3: fishermans-bastion, matthias-church-exterior, hungarian-national-gallery, chain-bridge)
+  [areas rejected] day 2: 1 places (day 1: fishermans-bastion, matthias-church-exterior, hungarian-national-gallery, chain-bridge | day 2: heroes-square | day 3: opera-house-tour, st-stephens-basilica, shoes-on-the-danube, parliament-exterior, citadella, museum-of-fine-arts, house-of-music)
+  [areas skipped] not built: 2 candidates with a better clock estimate (day 1: opera-house-tour, st-stephens-basilica, shoes-on-the-danube, parliament-exterior, citadella, hungarian-national-gallery | day 2: fishermans-bastion, matthias-church-exterior, chain-bridge | day 3: heroes-square, museum-of-fine-arts, house-of-music)
+  [areas skipped] not built: 2 candidates with a better clock estimate (day 1: heroes-square, museum-of-fine-arts, house-of-music | day 2: fishermans-bastion, matthias-church-exterior, chain-bridge | day 3: opera-house-tour, st-stephens-basilica, shoes-on-the-danube, parliament-exterior, citadella, hungarian-national-gallery)
+  [areas rejected] day 3: restaurant lunch lost (21-restaurant -> lunch break); trip idle 131 -> 168 (day 1: fishermans-bastion, matthias-church-exterior, hungarian-national-gallery, chain-bridge | day 2: opera-house-tour, st-stephens-basilica, shoes-on-the-danube, parliament-exterior, citadella | day 3: heroes-square, museum-of-fine-arts, house-of-music)
+  [areas rejected] day 1: restaurant lunch lost (hungarikum-bisztro -> lunch break); trip idle 131 -> 168 (day 1: heroes-square, museum-of-fine-arts, house-of-music | day 2: opera-house-tour, st-stephens-basilica, shoes-on-the-danube, parliament-exterior, citadella | day 3: fishermans-bastion, matthias-church-exterior, hungarian-national-gallery, chain-bridge)
+  [areas kept] the current dated plan stays
