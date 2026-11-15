@@ -321,6 +321,22 @@ export function withShowWindowNotes(city: CityPlannerModule, stops: V2ResolvedSt
   });
 }
 
+/**
+ * Cities with a daylight policy (city.daylight): a "prefers daylight" stop that ends after the monthly sunset estimate carries the
+ * city's note (and loses it again when an edit or a new start moves it back before the estimate). Other stops are returned unchanged.
+ */
+export function withDaylightNotes(city: CityPlannerModule, stops: V2ResolvedStop[], timeline: DayTimeline, month: number | null): V2ResolvedStop[] {
+  const daylight = city.daylight;
+  if (!daylight) return stops;
+  return stops.map((stop, i) => {
+    const window = timeline.stops[i];
+    const note = month ? daylight.noteAr(month) : null;
+    const warnings = note ? stop.warnings.filter((w) => w.textAr !== note) : stop.warnings;
+    const late = !!note && !!window && daylight.lateMinutes(stop.id, window.endMinutes, month) > 0;
+    return late ? { ...stop, warnings: [...warnings, { textAr: note! }] } : warnings === stop.warnings ? stop : { ...stop, warnings };
+  });
+}
+
 export function buildMealAdjacentLegs(city: CityPlannerModule, day: V2Day): Record<string, PlannerRouteLeg> {
   const entries = buildUnifiedTimelineEntries(day);
   const idOf = (entry: UnifiedTimelineEntry): string | null => (entry.kind === "place" ? entry.place.id : entry.kind === "meal" ? entry.meal.id : null);
@@ -539,7 +555,7 @@ export function resolveV2Plan(
     }));
     const timeline = buildBarcelonaDayTimeline(timelineStops, legs, timelineMeals, weekday ?? null, month, null, timelineLegBetween(city));
 
-    const notedStops = withShowWindowNotes(city, resolvedStops, timeline);
+    const notedStops = withDaylightNotes(city, withShowWindowNotes(city, resolvedStops, timeline), timeline, month);
     const resolvedDay: V2Day = {
       dayNumber: day.dayNumber,
       actualDate: dateForDay ?? undefined,

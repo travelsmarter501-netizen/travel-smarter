@@ -1,7 +1,7 @@
 import "server-only";
 import { buildBarcelonaDayTimeline, lunchPlacementFromTimeline, type TimelineMealInput, type TimelineStopInput } from "./barcelonaV2Timeline";
 import { timelineLegBetween } from "./timelineLegs";
-import { buildMealAdjacentLegs, hoursOfPlaceIn, resolveStop, withDayHours, withShowWindowNotes, type V2Day, type V2Plan } from "./barcelonaV2Resolve";
+import { buildMealAdjacentLegs, hoursOfPlaceIn, resolveStop, withDayHours, withDaylightNotes, withShowWindowNotes, type V2Day, type V2Plan } from "./barcelonaV2Resolve";
 import { lunchIndexByClock } from "./barcelonaV2MealStops";
 import type { CityPlannerModule } from "./cityPlannerModule";
 import { findTimingViolations, scheduleProblems, TIMING_WARNING_AR } from "./plannerTimingGuard";
@@ -258,6 +258,9 @@ export function applyPlanChange(city: CityPlannerModule, base: V2Plan, current: 
     case "add": {
       if (!addCandidates(city, base, current, change.dayNumber).includes(change.placeId)) return null;
       day.order = [...order, change.placeId];
+      // Cities with a daylight policy: a "prefers daylight" place goes where it ends before the monthly sunset estimate, when the day
+      // can hold it there (no schedule problem); otherwise it stays last, with the note. Never a ban.
+      if (city.daylight) day.order = daylightAddOrder(city, baseDay, day, base, order, change.placeId);
       break;
     }
   }
@@ -271,6 +274,36 @@ export function applyPlanChange(city: CityPlannerModule, base: V2Plan, current: 
     else next[key] = rest;
   }
   return next;
+}
+
+/** Daylight policy: an added place may not make any visit already in the day start more than this much later. */
+const DAYLIGHT_ADD_SHIFT_AT_MOST = 30;
+/**
+ * Daylight policy (city.daylight): the position for an added place. Only a place with a daylight preference is moved. Eligible positions:
+ * the day has no schedule problem, and no visit already in the day starts more than DAYLIGHT_ADD_SHIFT_AT_MOST minutes later than before
+ * the add (a fixed-time tour is never pushed to a later slot for daylight). Of those, the fewest minutes after the sunset estimate, then
+ * the latest (closest to "added at the end"). Otherwise the end of the day, where the note says the place is better before sunset.
+ */
+function daylightAddOrder(city: CityPlannerModule, baseDay: V2Day, day: DayCustomization, base: V2Plan, order: string[], placeId: string): string[] {
+  const daylight = city.daylight!;
+  const month = baseDay.actualDate ? Number(baseDay.actualDate.slice(5, 7)) : null;
+  const atEnd = [...order, placeId];
+  if (daylight.lateMinutes(placeId, 24 * 60, month) === 0) return atEnd;
+  const placeDetails = { ...(base.placeDetails ?? {}) };
+  const before = buildDay(city, baseDay, { ...day, order }, placeDetails);
+  const startBefore = new Map(order.map((id, i) => [id, before.timeline?.stops[i]?.startMinutes ?? 0]));
+  let best: { order: string[]; late: number } | null = null;
+  for (let index = order.length; index >= 0; index--) {
+    const trial = [...order.slice(0, index), placeId, ...order.slice(index)];
+    const built = buildDay(city, baseDay, { ...day, order: trial }, placeDetails);
+    if (scheduleProblems(built).size > 0) continue;
+    const shifted = trial.some((id, i) => id !== placeId && (built.timeline?.stops[i]?.startMinutes ?? 0) - (startBefore.get(id) ?? 0) > DAYLIGHT_ADD_SHIFT_AT_MOST);
+    if (shifted && index !== order.length) continue;
+    const window = built.timeline?.stops[trial.indexOf(placeId)];
+    const late = window ? daylight.lateMinutes(placeId, window.endMinutes, month) : Infinity;
+    if (!best || late < best.late) best = { order: trial, late };
+  }
+  return best ? best.order : atEnd;
 }
 
 function placeMeals(baseDay: V2Day, stopCount: number, lunchAfterIndex?: number) {
@@ -376,7 +409,7 @@ function buildDay(city: CityPlannerModule, baseDay: V2Day, edit: DayCustomizatio
 
   let day: V2Day = {
     ...baseDay,
-    stops: withShowWindowNotes(city, stops, timeline),
+    stops: withDaylightNotes(city, withShowWindowNotes(city, stops, timeline), timeline, month),
     legs,
     mealStops,
     timeline,

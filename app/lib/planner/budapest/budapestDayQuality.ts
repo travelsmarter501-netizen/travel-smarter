@@ -1,4 +1,6 @@
 import type { V2Day } from "../barcelonaV2Resolve";
+import { BUDAPEST_DAYLIGHT, SUNSET_ESTIMATE_BY_MONTH } from "./budapestDaylight";
+export { SUNSET_ESTIMATE_BY_MONTH };
 
 /**
  * How a FINAL Budapest day reads on the clock (the resolved day: restaurants, meal lengths, every transfer). One definition, used to
@@ -12,16 +14,17 @@ import type { V2Day } from "../barcelonaV2Resolve";
  *   food is: foodAccessUnknown marks it, and that day's travel is a lower bound (no distance is invented).
  * - longestWait: the longest single wait (same definition as waits).
  * - lateLunchMinutes: how far lunch starts after 13:30.
- * - afterDarkEstimate: minutes that the LISTED daylight places (an open park, a castle seen from outside) run after an ESTIMATED sunset:
+ * - afterDarkEstimate: minutes that the daylight places (budapestDaylight.ts: "needs" and "prefers") run after an ESTIMATED sunset:
  *   a monthly table (mid-month local time, rounded), not a calculation for the date and coordinates. The project has no such calculation.
  * - visitsEnd / lunchEnd / dinnerStart: the end of the last visit, the end of lunch, and the optional dinner, kept apart.
  * - cost: morningGap + waits + 2 x lateLunchMinutes + afterDarkEstimate + travel / 2 (a comparison score, not shown).
  */
 export const DAY_REFERENCE_START = 9 * 60;
-/** Estimated Budapest sunset by month (local time, mid-month, rounded; about ±20 min across a month). Index 1 = January. */
-export const SUNSET_ESTIMATE_BY_MONTH = [0, 16 * 60 + 20, 17 * 60 + 5, 17 * 60 + 45, 19 * 60 + 50, 20 * 60 + 25, 20 * 60 + 45, 20 * 60 + 40, 20 * 60, 19 * 60, 18 * 60, 16 * 60 + 15, 15 * 60 + 55];
-/** Places whose point is seen in daylight. Viewpoints, bridges and lit squares are fine after dark; museums follow their hours. */
-export const DAYLIGHT_PLACES: ReadonlySet<string> = new Set(["margaret-island", "vajdahunyad-castle", "budapest-zoo"]);
+/**
+ * The places measured after the estimated sunset: every place classed "needs" or "prefers" daylight (budapestDaylight.ts). Since
+ * 2026-11-15 this adds Citadella (best before sunset) to the earlier list (Margaret Island, Vajdahunyad, the Zoo); nothing was removed.
+ */
+export const DAYLIGHT_PLACES: ReadonlySet<string> = new Set(Object.entries(BUDAPEST_DAYLIGHT).filter(([, v]) => v.class !== "evening").map(([id]) => id));
 
 export type FinalDayQuality = {
   morningGap: number;

@@ -10,6 +10,7 @@ import { balanceCityDays, type DayFit } from "../cityDayBalance";
 import { buildBarcelonaDayTimeline, lunchPlacementFromTimeline, LUNCH_BREAK_ID, type TimelineMealInput, type TimelineStopInput } from "../barcelonaV2Timeline";
 import { checkWindow, scheduleProblems } from "../plannerTimingGuard";
 import { DAY_REFERENCE_START, DAYLIGHT_PLACES, finalDayQuality, SUNSET_ESTIMATE_BY_MONTH, type FinalDayQuality } from "./budapestDayQuality";
+import { budapestDaylightLateMinutes, budapestDaylightNoteAr } from "./budapestDaylight";
 import type { V2Day, V2Plan } from "../barcelonaV2Resolve";
 import type { DayGeographyRepairContext } from "../cityPlannerModule";
 import { ENABLE_MUST_SEE_PRIORITY, FLAGSHIP_MUST_SEE_BOOST, FLAGSHIP_TIER_B_BOOST, FLAGSHIP_TIER_B_SURPRISE_ME_BOOST } from "../barcelonaMustSeePolicy";
@@ -1287,6 +1288,7 @@ export const BUDAPEST_CITY_MODULE: CityPlannerModule = {
   ticketEstimate: { currency: "HUF", forPlace: budapestTicketEstimate },
   metadataForInterests: budapestPlannerMetadataForInterests,
   placeRelevance: budapestPlaceRelevance,
+  daylight: { lateMinutes: budapestDaylightLateMinutes, noteAr: budapestDaylightNoteAr },
   relevanceThreshold: 5,
   relevanceThresholdFor: ({ days, relevance }) => {
     const minutesAt = (level: number) => BUDAPEST_PLANNER_METADATA.filter((m) => m.placeId !== "danube-legend-cruise" && relevance(m.placeId) >= level).reduce((sum, m) => sum + m.visitDurationMinutes, 0);

@@ -222,6 +222,13 @@ export type CityPlannerModule = {
    * same request without dates ONCE (that inner run never does this again) and passes its plan as `undatedPlan`. Unset = never.
    */
   undatedCandidates?: boolean;
+  /**
+   * Optional daylight policy (Budapest): minutes a "prefers daylight" visit ending at endMinutes runs after the city's monthly sunset
+   * ESTIMATE (0 when the place has no such preference or the day has no date), and the note shown on such a stop. Applied alike when a
+   * plan is created and when it is edited (the note; adding such a place picks the position that keeps it before the estimate). Never a
+   * closure: places that truly need daylight are held by their own hours. Unset: no daylight rule.
+   */
+  daylight?: { lateMinutes: (placeId: string, endMinutes: number, month: number | null) => number; noteAr: (month: number) => string };
   /** Shown when the content cannot fill every requested day (keeps the existing Barcelona wording for Barcelona). */
   capacityWarning: (daysGenerated: number) => string;
   /** Optional: the short "outside only" visit of a paid place (minutes, and the outside access hours when the outside closes). */
