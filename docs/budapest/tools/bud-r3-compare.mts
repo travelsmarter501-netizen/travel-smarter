@@ -18,7 +18,7 @@ const PL = await imp("/app/lib/planner/budapest/budapestPlaces.ts");
 const [, , dir, list, outFile] = process.argv;
 const load = (name: string) => JSON.parse(readFileSync(`${dir}/${name}.json`, "utf8"));
 const FOOD = new Map<string, any>(PL.BUDAPEST_PLACES.foodPlaces.map((p: any) => [p.id, p]));
-const RULE: Record<string, { k: number }> = { B: { k: 4 }, C: { k: 3 }, Ba: { k: 4 }, Ca: { k: 3 }, B1: { k: 4 }, Am: { k: Infinity }, A: { k: Infinity } };
+const RULE: Record<string, { k: number }> = { B: { k: 4 }, C: { k: 3 }, Ba: { k: 4 }, Ca: { k: 3 }, B1: { k: 4 }, B1a: { k: 4 }, Am: { k: Infinity }, A: { k: Infinity } };
 const mid = (leg: any) => { const o = leg && leg.sourceStatus !== "unresolved" ? leg.options.find((x: any) => x.mode === leg.recommendedMode) : null; return o ? Math.round((o.durationMinutesMin + o.durationMinutesMax) / 2) : 0; };
 const mealWalk = (day: any, id: string) => Object.entries(day.mealLegs ?? {}).reduce((s, [k, leg]) => s + (k.startsWith(id + "::") || k.endsWith("::" + id) ? mid(leg) : 0), 0);
 const dayRow = (d: any) => ({ d, q: Q.finalDayQuality(d), problems: G.scheduleProblems(d).size });
@@ -85,7 +85,7 @@ for (const name of list.split(",")) {
       const f = (r: any) => ({ order: r.q.order, idle: r.q.idle, morning: r.q.morningGap, waits: r.q.waits, longestWait: r.q.longestWait, travel: r.q.travel, stopTravel: r.q.stopTravel, mealTravel: r.q.mealTravel, foodAccessUnknown: r.q.foodAccessUnknown, lunch: r.q.lunch, visits: r.q.visits, visitsEnd: r.q.visitsEnd });
       days.push({ day: i + 1, date: rx.d.actualDate ?? null, weekday: rx.d.weekday ?? null, unreviewed: f(rl), A: f(ra), X: f(rx), absolute: { idle: rx.q.idle - ra.q.idle, travel: inc }, cumulative: { idle: rx.q.idle - rl.q.idle, travel: rx.q.travel - rl.q.travel } });
     });
-    if (tx.share - ta.share > 2 && name !== "B1") fails.push(`trip travel share ${ta.share.toFixed(1)}% -> ${tx.share.toFixed(1)}%`);
+    if (tx.share - ta.share > 2 && name !== "B1" && name !== "B1a") fails.push(`trip travel share ${ta.share.toFixed(1)}% -> ${tx.share.toFixed(1)}%`);
     if (tx.visits < ta.visits) fails.push(`visit minutes ${ta.visits} -> ${tx.visits}`);
     const aIds = new Set(a.plan.days.flatMap((d: any) => d.stops.map((s: any) => s.id)));
     const xIds = new Set(x.plan.days.flatMap((d: any) => d.stops.map((s: any) => s.id)));
