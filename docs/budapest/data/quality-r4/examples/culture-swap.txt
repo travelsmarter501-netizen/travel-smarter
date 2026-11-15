@@ -1,0 +1,74 @@
+current final: idle 131, share 22.8%, restored candidates: museum-of-fine-arts, house-of-music; candidates judged 66, builds 6666
+accepted: 15
+
+ACCEPTED swap citadella <-> heroes-square: idle 76, share 19.4% 
+  day 1 sunday: idle 31, known travel 44, lunch 21-restaurant
+     09:00-09:15 chain-bridge (15 min) | 10:00-12:00 hungarian-national-gallery (120 min) | 12:30-12:45 matthias-church-exterior (15 min) | 13:15-14:30 [lunch] 21-restaurant | 15:00-15:40 fishermans-bastion (40 min)
+  day 2 monday: idle 18, known travel 67, lunch hungarikum-bisztro
+     09:00-09:20 heroes-square (20 min) | 10:15-11:30 st-stephens-basilica (75 min) | 12:00-12:10 shoes-on-the-danube (10 min) | 12:30-12:50 parliament-exterior (20 min) | 13:15-14:30 [lunch] hungarikum-bisztro | 15:00-16:00 opera-house-tour (60 min)
+  day 3 tuesday: idle 27, known travel 48, lunch varosliget-cafe
+     09:00-09:45 citadella (45 min) | 10:45-12:45 house-of-music (120 min) | 13:15-14:30 [lunch] varosliget-cafe | 15:00-17:00 museum-of-fine-arts (120 min)
+
+ACCEPTED swap heroes-square <-> citadella: idle 76, share 19.4% 
+  day 1 sunday: idle 27, known travel 48, lunch varosliget-cafe
+     09:00-09:45 citadella (45 min) | 10:45-12:45 house-of-music (120 min) | 13:15-14:30 [lunch] varosliget-cafe | 15:00-17:00 museum-of-fine-arts (120 min)
+  day 2 monday: idle 18, known travel 67, lunch hungarikum-bisztro
+     09:00-09:20 heroes-square (20 min) | 10:15-11:30 st-stephens-basilica (75 min) | 12:00-12:10 shoes-on-the-danube (10 min) | 12:30-12:50 parliament-exterior (20 min) | 13:15-14:30 [lunch] hungarikum-bisztro | 15:00-16:00 opera-house-tour (60 min)
+  day 3 tuesday: idle 31, known travel 44, lunch 21-restaurant
+     09:00-09:15 chain-bridge (15 min) | 10:00-12:00 hungarian-national-gallery (120 min) | 12:30-12:45 matthias-church-exterior (15 min) | 13:15-14:30 [lunch] 21-restaurant | 15:00-15:40 fishermans-bastion (40 min)
+
+ACCEPTED swap citadella <-> chain-bridge: idle 89, share 17.1% 
+  day 1 sunday: idle 42, known travel 13, lunch varosliget-cafe
+     09:00-09:20 heroes-square (20 min) | 10:00-12:00 museum-of-fine-arts (120 min) | 12:30-13:45 [lunch] varosliget-cafe | 14:15-16:15 house-of-music (120 min)
+  day 2 monday: idle 26, known travel 64, lunch hungarikum-bisztro
+     09:00-09:15 chain-bridge (15 min) | 09:45-10:05 parliament-exterior (20 min) | 10:45-12:00 st-stephens-basilica (75 min) | 12:30-12:40 shoes-on-the-danube (10 min) | 13:15-14:30 [lunch] hungarikum-bisztro | 15:00-16:00 opera-house-tour (60 min)
+  day 3 tuesday: idle 21, known travel 59, lunch 21-restaurant
+     09:00-09:40 fishermans-bastion (40 min) | 10:15-12:15 hungarian-national-gallery (120 min) | 12:45-13:00 matthias-church-exterior (15 min) | 13:30-14:45 [lunch] 21-restaurant | 15:30-16:15 citadella (45 min)
+
+REJECTED swap fishermans-bastion <-> st-stephens-basilica: idle 86, share 17.4% | day 1: restaurant lunch lost (hungarikum-bisztro -> lunch break)
+  day 1 sunday: idle 33, known travel 42 (food access unknown), lunch break
+     09:00-09:15 matthias-church-exterior (15 min) | 10:00-12:00 hungarian-national-gallery (120 min) | 12:45-13:00 chain-bridge (15 min) | 13:15-14:30 [lunch] lunch-break | 15:00-16:15 st-stephens-basilica (75 min)
+  day 2 monday: idle 11, known travel 84, lunch hungarikum-bisztro
+     09:00-09:45 citadella (45 min) | 10:30-10:40 shoes-on-the-danube (10 min) | 11:15-11:55 fishermans-bastion (40 min) | 12:30-12:50 parliament-exterior (20 min) | 13:15-14:30 [lunch] hungarikum-bisztro | 15:00-16:00 opera-house-tour (60 min)
+  day 3 tuesday: idle 42, known travel 13, lunch varosliget-cafe
+     09:00-09:20 heroes-square (20 min) | 10:00-12:00 museum-of-fine-arts (120 min) | 12:30-13:45 [lunch] varosliget-cafe | 14:15-16:15 house-of-music (120 min)
+
+REJECTED swap st-stephens-basilica <-> fishermans-bastion: idle 86, share 17.4% | day 3: restaurant lunch lost (21-restaurant -> lunch break)
+  day 1 sunday: idle 42, known travel 13, lunch varosliget-cafe
+     09:00-09:20 heroes-square (20 min) | 10:00-12:00 museum-of-fine-arts (120 min) | 12:30-13:45 [lunch] varosliget-cafe | 14:15-16:15 house-of-music (120 min)
+  day 2 monday: idle 11, known travel 84, lunch hungarikum-bisztro
+     09:00-09:45 citadella (45 min) | 10:30-10:40 shoes-on-the-danube (10 min) | 11:15-11:55 fishermans-bastion (40 min) | 12:30-12:50 parliament-exterior (20 min) | 13:15-14:30 [lunch] hungarikum-bisztro | 15:00-16:00 opera-house-tour (60 min)
+  day 3 tuesday: idle 33, known travel 42 (food access unknown), lunch break
+     09:00-09:15 matthias-church-exterior (15 min) | 10:00-12:00 hungarian-national-gallery (120 min) | 12:45-13:00 chain-bridge (15 min) | 13:15-14:30 [lunch] lunch-break | 15:00-16:15 st-stephens-basilica (75 min)
+
+REJECTED swap shoes-on-the-danube <-> heroes-square: idle 70, share 21.9% | day 2: travel 100
+  day 1 sunday: idle 31, known travel 44, lunch 21-restaurant
+     09:00-09:15 chain-bridge (15 min) | 10:00-12:00 hungarian-national-gallery (120 min) | 12:30-12:45 matthias-church-exterior (15 min) | 13:15-14:30 [lunch] 21-restaurant | 15:00-15:40 fishermans-bastion (40 min)
+  day 2 monday: idle 15, known travel 100, lunch hungarikum-bisztro
+     09:00-10:15 st-stephens-basilica (75 min) | 11:00-11:45 citadella (45 min) | 12:30-12:50 parliament-exterior (20 min) | 13:15-14:30 [lunch] hungarikum-bisztro | 15:00-16:00 opera-house-tour (60 min) | 16:45-17:05 heroes-square (20 min)
+  day 3 tuesday: idle 24, known travel 41, lunch varosliget-cafe
+     09:00-09:10 shoes-on-the-danube (10 min) | 10:00-12:00 museum-of-fine-arts (120 min) | 12:30-13:45 [lunch] varosliget-cafe | 14:15-16:15 house-of-music (120 min)
+
+REJECTED swap heroes-square <-> shoes-on-the-danube: idle 70, share 21.9% | day 2: travel 100
+  day 1 sunday: idle 24, known travel 41, lunch varosliget-cafe
+     09:00-09:10 shoes-on-the-danube (10 min) | 10:00-12:00 museum-of-fine-arts (120 min) | 12:30-13:45 [lunch] varosliget-cafe | 14:15-16:15 house-of-music (120 min)
+  day 2 monday: idle 15, known travel 100, lunch hungarikum-bisztro
+     09:00-10:15 st-stephens-basilica (75 min) | 11:00-11:45 citadella (45 min) | 12:30-12:50 parliament-exterior (20 min) | 13:15-14:30 [lunch] hungarikum-bisztro | 15:00-16:00 opera-house-tour (60 min) | 16:45-17:05 heroes-square (20 min)
+  day 3 tuesday: idle 31, known travel 44, lunch 21-restaurant
+     09:00-09:15 chain-bridge (15 min) | 10:00-12:00 hungarian-national-gallery (120 min) | 12:30-12:45 matthias-church-exterior (15 min) | 13:15-14:30 [lunch] 21-restaurant | 15:00-15:40 fishermans-bastion (40 min)
+
+REJECTED swap chain-bridge <-> opera-house-tour: idle 91, share 17.9% | day 2: restaurant lunch lost (menza -> lunch break)
+  day 1 sunday: idle 37, known travel 73, lunch hungarikum-bisztro
+     09:00-09:40 fishermans-bastion (40 min) | 10:15-12:15 hungarian-national-gallery (120 min) | 13:00-14:15 [lunch] hungarikum-bisztro | 15:00-16:00 opera-house-tour (60 min) | 16:45-17:00 matthias-church-exterior (15 min)
+  day 2 monday: idle 12, known travel 58 (food access unknown), lunch break
+     09:00-09:45 citadella (45 min) | 10:30-10:50 parliament-exterior (20 min) | 11:15-11:30 chain-bridge (15 min) | 12:00-13:15 st-stephens-basilica (75 min) | 13:30-14:45 [lunch] lunch-break | 15:15-15:25 shoes-on-the-danube (10 min)
+  day 3 tuesday: idle 42, known travel 13, lunch varosliget-cafe
+     09:00-09:20 heroes-square (20 min) | 10:00-12:00 museum-of-fine-arts (120 min) | 12:30-13:45 [lunch] varosliget-cafe | 14:15-16:15 house-of-music (120 min)
+
+REJECTED swap citadella <-> matthias-church-exterior: idle 86, share 18.9% | day 3: restaurant lunch lost (21-restaurant -> lunch break)
+  day 1 sunday: idle 42, known travel 13, lunch varosliget-cafe
+     09:00-09:20 heroes-square (20 min) | 10:00-12:00 museum-of-fine-arts (120 min) | 12:30-13:45 [lunch] varosliget-cafe | 14:15-16:15 house-of-music (120 min)
+  day 2 monday: idle 16, known travel 74, lunch hungarikum-bisztro
+     09:00-10:15 st-stephens-basilica (75 min) | 10:45-10:55 shoes-on-the-danube (10 min) | 11:30-11:45 matthias-church-exterior (15 min) | 12:30-12:50 parliament-exterior (20 min) | 13:15-14:30 [lunch] hungarikum-bisztro | 15:00-16:00 opera-house-tour (60 min)
+  day 3 tuesday: idle 28, known travel 67 (food access unknown), lunch break
+     09:00-09:15 chain-bridge (15 min) | 10:00-10:40 fishermans-bastion (40 min) | 11:30-12:15 citadella (45 min) | 12:30-13:45 [lunch] lunch-break | 14:30-16:30 hungarian-national-gallery (120 min)

@@ -1,0 +1,3493 @@
+{
+ "B1": {
+  "totals": {
+   "trips": 108,
+   "changedTrips": 3,
+   "changedDays": 5,
+   "idleA": 15472,
+   "idleX": 15075,
+   "idleL": 25466,
+   "travelA": 14366,
+   "travelX": 14418,
+   "travelL": 13865,
+   "visitsA": 59205,
+   "visitsX": 59205,
+   "unknownFoodA": 47,
+   "unknownFoodX": 47,
+   "restaurantA": 223,
+   "restaurantX": 223,
+   "placesA": 1189,
+   "placesX": 1189,
+   "daysOver15VsA": 3,
+   "daysOver30VsA": 0,
+   "maxDayTravelX": 119
+  },
+  "failures": [],
+  "changes": [
+   {
+    "id": "nature-3d-2027-07-17",
+    "trip": {
+     "A": {
+      "idle": 218,
+      "travel": 82,
+      "share": 16.3,
+      "unknownFood": 1,
+      "restaurantLunches": 2,
+      "places": 8,
+      "visits": 420
+     },
+     "X": {
+      "idle": 69,
+      "travel": 96,
+      "share": 18.6,
+      "unknownFood": 1,
+      "restaurantLunches": 2,
+      "places": 8,
+      "visits": 420
+     },
+     "unreviewed": {
+      "idle": 452,
+      "travel": 73
+     }
+    },
+    "days": [
+     {
+      "day": 2,
+      "date": "2027-07-18",
+      "weekday": "sunday",
+      "unreviewed": {
+       "order": "st-stephens-basilica>chain-bridge>parliament-exterior>margaret-island",
+       "idle": 253,
+       "morning": 240,
+       "waits": 13,
+       "longestWait": 6,
+       "travel": 42,
+       "stopTravel": 42,
+       "mealTravel": 0,
+       "foodAccessUnknown": true,
+       "lunch": "break",
+       "visits": 200,
+       "visitsEnd": 1170
+      },
+      "A": {
+       "order": "margaret-island>parliament-exterior>chain-bridge>st-stephens-basilica",
+       "idle": 19,
+       "morning": 0,
+       "waits": 19,
+       "longestWait": 7,
+       "travel": 51,
+       "stopTravel": 33,
+       "mealTravel": 18,
+       "foodAccessUnknown": false,
+       "lunch": "hungarikum-bisztro",
+       "visits": 200,
+       "visitsEnd": 945
+      },
+      "X": {
+       "order": "margaret-island>chain-bridge>parliament-exterior",
+       "idle": 13,
+       "morning": 0,
+       "waits": 13,
+       "longestWait": 6,
+       "travel": 42,
+       "stopTravel": 35,
+       "mealTravel": 7,
+       "foodAccessUnknown": false,
+       "lunch": "hungarikum-bisztro",
+       "visits": 125,
+       "visitsEnd": 740
+      },
+      "absolute": {
+       "idle": -6,
+       "travel": -9
+      },
+      "cumulative": {
+       "idle": -240,
+       "travel": 0
+      }
+     },
+     {
+      "day": 3,
+      "date": "2027-07-19",
+      "weekday": "monday",
+      "unreviewed": {
+       "order": "citadella",
+       "idle": 180,
+       "morning": 180,
+       "waits": 0,
+       "longestWait": 0,
+       "travel": 0,
+       "stopTravel": 0,
+       "mealTravel": 0,
+       "foodAccessUnknown": true,
+       "lunch": "break",
+       "visits": 45,
+       "visitsEnd": 765
+      },
+      "A": {
+       "order": "citadella",
+       "idle": 180,
+       "morning": 180,
+       "waits": 0,
+       "longestWait": 0,
+       "travel": 0,
+       "stopTravel": 0,
+       "mealTravel": 0,
+       "foodAccessUnknown": true,
+       "lunch": "break",
+       "visits": 45,
+       "visitsEnd": 765
+      },
+      "X": {
+       "order": "st-stephens-basilica>citadella",
+       "idle": 37,
+       "morning": 0,
+       "waits": 37,
+       "longestWait": 30,
+       "travel": 23,
+       "stopTravel": 23,
+       "mealTravel": 0,
+       "foodAccessUnknown": true,
+       "lunch": "break",
+       "visits": 120,
+       "visitsEnd": 705
+      },
+      "absolute": {
+       "idle": -143,
+       "travel": 23
+      },
+      "cumulative": {
+       "idle": -143,
+       "travel": 23
+      }
+     }
+    ]
+   },
+   {
+    "id": "nature-4d-2027-07-17",
+    "trip": {
+     "A": {
+      "idle": 240,
+      "travel": 100,
+      "share": 14.1,
+      "unknownFood": 1,
+      "restaurantLunches": 3,
+      "places": 11,
+      "visits": 610
+     },
+     "X": {
+      "idle": 91,
+      "travel": 114,
+      "share": 15.7,
+      "unknownFood": 1,
+      "restaurantLunches": 3,
+      "places": 11,
+      "visits": 610
+     },
+     "unreviewed": {
+      "idle": 474,
+      "travel": 91
+     }
+    },
+    "days": [
+     {
+      "day": 2,
+      "date": "2027-07-18",
+      "weekday": "sunday",
+      "unreviewed": {
+       "order": "st-stephens-basilica>chain-bridge>parliament-exterior>margaret-island",
+       "idle": 253,
+       "morning": 240,
+       "waits": 13,
+       "longestWait": 6,
+       "travel": 42,
+       "stopTravel": 42,
+       "mealTravel": 0,
+       "foodAccessUnknown": true,
+       "lunch": "break",
+       "visits": 200,
+       "visitsEnd": 1170
+      },
+      "A": {
+       "order": "margaret-island>parliament-exterior>chain-bridge>st-stephens-basilica",
+       "idle": 19,
+       "morning": 0,
+       "waits": 19,
+       "longestWait": 7,
+       "travel": 51,
+       "stopTravel": 33,
+       "mealTravel": 18,
+       "foodAccessUnknown": false,
+       "lunch": "hungarikum-bisztro",
+       "visits": 200,
+       "visitsEnd": 945
+      },
+      "X": {
+       "order": "margaret-island>chain-bridge>parliament-exterior",
+       "idle": 13,
+       "morning": 0,
+       "waits": 13,
+       "longestWait": 6,
+       "travel": 42,
+       "stopTravel": 35,
+       "mealTravel": 7,
+       "foodAccessUnknown": false,
+       "lunch": "hungarikum-bisztro",
+       "visits": 125,
+       "visitsEnd": 740
+      },
+      "absolute": {
+       "idle": -6,
+       "travel": -9
+      },
+      "cumulative": {
+       "idle": -240,
+       "travel": 0
+      }
+     },
+     {
+      "day": 3,
+      "date": "2027-07-19",
+      "weekday": "monday",
+      "unreviewed": {
+       "order": "citadella",
+       "idle": 180,
+       "morning": 180,
+       "waits": 0,
+       "longestWait": 0,
+       "travel": 0,
+       "stopTravel": 0,
+       "mealTravel": 0,
+       "foodAccessUnknown": true,
+       "lunch": "break",
+       "visits": 45,
+       "visitsEnd": 765
+      },
+      "A": {
+       "order": "citadella",
+       "idle": 180,
+       "morning": 180,
+       "waits": 0,
+       "longestWait": 0,
+       "travel": 0,
+       "stopTravel": 0,
+       "mealTravel": 0,
+       "foodAccessUnknown": true,
+       "lunch": "break",
+       "visits": 45,
+       "visitsEnd": 765
+      },
+      "X": {
+       "order": "st-stephens-basilica>citadella",
+       "idle": 37,
+       "morning": 0,
+       "waits": 37,
+       "longestWait": 30,
+       "travel": 23,
+       "stopTravel": 23,
+       "mealTravel": 0,
+       "foodAccessUnknown": true,
+       "lunch": "break",
+       "visits": 120,
+       "visitsEnd": 705
+      },
+      "absolute": {
+       "idle": -143,
+       "travel": 23
+      },
+      "cumulative": {
+       "idle": -143,
+       "travel": 23
+      }
+     }
+    ]
+   },
+   {
+    "id": "experiences-4d-flex",
+    "trip": {
+     "A": {
+      "idle": 196,
+      "travel": 189,
+      "share": 15.6,
+      "unknownFood": 0,
+      "restaurantLunches": 4,
+      "places": 17,
+      "visits": 1025
+     },
+     "X": {
+      "idle": 97,
+      "travel": 213,
+      "share": 17.2,
+      "unknownFood": 0,
+      "restaurantLunches": 4,
+      "places": 17,
+      "visits": 1025
+     },
+     "unreviewed": {
+      "idle": 196,
+      "travel": 189
+     }
+    },
+    "days": [
+     {
+      "day": 4,
+      "date": null,
+      "weekday": null,
+      "unreviewed": {
+       "order": "museum-of-fine-arts>opera-house-tour>andrassy-avenue",
+       "idle": 118,
+       "morning": 60,
+       "waits": 58,
+       "longestWait": 34,
+       "travel": 32,
+       "stopTravel": 2,
+       "mealTravel": 30,
+       "foodAccessUnknown": false,
+       "lunch": "gundel",
+       "visits": 225,
+       "visitsEnd": 1035
+      },
+      "A": {
+       "order": "museum-of-fine-arts>opera-house-tour>andrassy-avenue",
+       "idle": 118,
+       "morning": 60,
+       "waits": 58,
+       "longestWait": 34,
+       "travel": 32,
+       "stopTravel": 2,
+       "mealTravel": 30,
+       "foodAccessUnknown": false,
+       "lunch": "gundel",
+       "visits": 225,
+       "visitsEnd": 1035
+      },
+      "X": {
+       "order": "andrassy-avenue>museum-of-fine-arts>opera-house-tour",
+       "idle": 19,
+       "morning": 0,
+       "waits": 19,
+       "longestWait": 11,
+       "travel": 56,
+       "stopTravel": 26,
+       "mealTravel": 30,
+       "foodAccessUnknown": false,
+       "lunch": "gundel",
+       "visits": 225,
+       "visitsEnd": 960
+      },
+      "absolute": {
+       "idle": -99,
+       "travel": 24
+      },
+      "cumulative": {
+       "idle": -99,
+       "travel": 24
+      }
+     }
+    ]
+   }
+  ],
+  "rejectionsJudged": 282,
+  "searchLimit": {
+   "areasNotBuilt": 0,
+   "areasCandidates": 0
+  },
+  "rejectionsByCondition": {
+   "order / A pass: day gain below 30": 97,
+   "order / extension pass: travel above the B/C allowance": 61,
+   "move / A pass: a changed day weaker": 46,
+   "order / extension pass: day gain below 30": 38,
+   "move / A pass: trip gain below 30": 38,
+   "move / A pass: travel above +15 (rule A)": 37,
+   "move / extension pass: a changed day weaker": 34,
+   "move / extension pass: trip gain below 30": 30,
+   "order / extension pass: added travel above half the gain": 25,
+   "order / A pass: travel above +15 (rule A)": 20,
+   "order / A pass: restaurant lunch lost": 16,
+   "move / A pass: restaurant lunch lost": 13,
+   "move / extension pass: restaurant lunch lost": 13,
+   "move / extension pass: travel above +15 without lost time": 9,
+   "move / extension pass: travel above the B/C allowance": 3,
+   "order / extension pass: restaurant lunch lost": 2,
+   "order / A pass: unchanged day: idle more than +10": 2,
+   "order / extension pass: unchanged day: idle more than +10": 2,
+   "order / extension pass: day travel above 90": 1
+  },
+  "blockedByOneConditionOnly": {
+   "travel above +15 (rule A)": [
+    {
+     "id": "A-1d-2027-07-17",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "travel +19 (more than 15)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 302,
+       "travel": 58,
+       "lunch": "menza",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "shoes-on-the-danube>chain-bridge>parliament-exterior>st-stephens-basilica>opera-house-tour>fishermans-bastion",
+       "idle": 43,
+       "travel": 77,
+       "lunch": "menza",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "A-3d-flex",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "travel +17 (more than 15)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 284,
+       "travel": 61,
+       "lunch": "menza",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "parliament-exterior>shoes-on-the-danube>margaret-island>opera-house-tour>st-stephens-basilica",
+       "idle": 42,
+       "travel": 78,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "A-3d-flex",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "travel +17 (more than 15)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 284,
+       "travel": 61,
+       "lunch": "menza",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "shoes-on-the-danube>parliament-exterior>margaret-island>opera-house-tour>st-stephens-basilica",
+       "idle": 42,
+       "travel": 78,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "A-4d-flex",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "travel +17 (more than 15)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 284,
+       "travel": 61,
+       "lunch": "menza",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "parliament-exterior>shoes-on-the-danube>margaret-island>opera-house-tour>st-stephens-basilica",
+       "idle": 42,
+       "travel": 78,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "A-4d-flex",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "travel +17 (more than 15)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 284,
+       "travel": 61,
+       "lunch": "menza",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "shoes-on-the-danube>parliament-exterior>margaret-island>opera-house-tour>st-stephens-basilica",
+       "idle": 42,
+       "travel": 78,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "B-1d-2026-11-19",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "travel +19 (more than 15)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 302,
+       "travel": 58,
+       "lunch": "menza",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "shoes-on-the-danube>chain-bridge>parliament-exterior>st-stephens-basilica>opera-house-tour>fishermans-bastion",
+       "idle": 43,
+       "travel": 77,
+       "lunch": "menza",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "B-1d-2027-07-17",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "travel +19 (more than 15)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 302,
+       "travel": 58,
+       "lunch": "menza",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "shoes-on-the-danube>chain-bridge>parliament-exterior>st-stephens-basilica>opera-house-tour>fishermans-bastion",
+       "idle": 43,
+       "travel": 77,
+       "lunch": "menza",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "C-4d-flex",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "travel +16 (more than 15)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 192,
+       "travel": 40,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "parliament-exterior>shoes-on-the-danube>andrassy-avenue>opera-house-tour>st-stephens-basilica",
+       "idle": 119,
+       "travel": 56,
+       "lunch": "menza",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "popular-2d-2027-07-17",
+     "stage": "move",
+     "pass": "A pass",
+     "reason": "day 1: travel +17 (more than 15)",
+     "what": {
+      "move": "st-stephens-basilica 2->1",
+      "days": {
+       "1": {
+        "idle": "33->21",
+        "travel": "57->74",
+        "lunch": "break->break",
+        "foodAccessUnknown": "true->true"
+       },
+       "2": {
+        "idle": "102->38",
+        "travel": "53->42",
+        "lunch": "21-restaurant->21-restaurant",
+        "foodAccessUnknown": "false->false"
+       }
+      }
+     }
+    },
+    {
+     "id": "popular-3d-2027-07-17",
+     "stage": "move",
+     "pass": "A pass",
+     "reason": "day 1: travel +17 (more than 15)",
+     "what": {
+      "move": "st-stephens-basilica 2->1",
+      "days": {
+       "1": {
+        "idle": "33->21",
+        "travel": "57->74",
+        "lunch": "break->break",
+        "foodAccessUnknown": "true->true"
+       },
+       "2": {
+        "idle": "102->38",
+        "travel": "53->42",
+        "lunch": "21-restaurant->21-restaurant",
+        "foodAccessUnknown": "false->false"
+       },
+       "3": {
+        "idle": "41->41",
+        "travel": "59->59",
+        "lunch": "gundel->gundel",
+        "foodAccessUnknown": "false->false"
+       }
+      }
+     }
+    },
+    {
+     "id": "nature-3d-2027-07-17",
+     "stage": "move",
+     "pass": "A pass",
+     "reason": "day 3: travel +23 (more than 15)",
+     "what": {
+      "move": "st-stephens-basilica 2->3",
+      "days": {
+       "1": {
+        "idle": "19->19",
+        "travel": "31->31",
+        "lunch": "21-restaurant->21-restaurant",
+        "foodAccessUnknown": "false->false"
+       },
+       "2": {
+        "idle": "19->13",
+        "travel": "51->42",
+        "lunch": "hungarikum-bisztro->hungarikum-bisztro",
+        "foodAccessUnknown": "false->false"
+       },
+       "3": {
+        "idle": "180->37",
+        "travel": "0->23",
+        "lunch": "break->break",
+        "foodAccessUnknown": "true->true"
+       }
+      }
+     }
+    },
+    {
+     "id": "nature-4d-2027-07-17",
+     "stage": "move",
+     "pass": "A pass",
+     "reason": "day 3: travel +23 (more than 15)",
+     "what": {
+      "move": "st-stephens-basilica 2->3",
+      "days": {
+       "1": {
+        "idle": "19->19",
+        "travel": "31->31",
+        "lunch": "21-restaurant->21-restaurant",
+        "foodAccessUnknown": "false->false"
+       },
+       "2": {
+        "idle": "19->13",
+        "travel": "51->42",
+        "lunch": "hungarikum-bisztro->hungarikum-bisztro",
+        "foodAccessUnknown": "false->false"
+       },
+       "3": {
+        "idle": "180->37",
+        "travel": "0->23",
+        "lunch": "break->break",
+        "foodAccessUnknown": "true->true"
+       },
+       "4": {
+        "idle": "22->22",
+        "travel": "18->18",
+        "lunch": "varosliget-cafe->varosliget-cafe",
+        "foodAccessUnknown": "false->false"
+       }
+      }
+     }
+    },
+    {
+     "id": "experiences-1d-flex",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "travel +17 (more than 15)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 220,
+       "travel": 40,
+       "lunch": "menza",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "shoes-on-the-danube>chain-bridge>parliament-exterior>andrassy-avenue>opera-house-tour>st-stephens-basilica",
+       "idle": 78,
+       "travel": 57,
+       "lunch": "menza",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "experiences-2d-2027-07-17",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "travel +19 (more than 15)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 302,
+       "travel": 58,
+       "lunch": "menza",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "shoes-on-the-danube>chain-bridge>parliament-exterior>st-stephens-basilica>opera-house-tour>fishermans-bastion",
+       "idle": 43,
+       "travel": 77,
+       "lunch": "menza",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "experiences-3d-flex",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "travel +17 (more than 15)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 220,
+       "travel": 40,
+       "lunch": "menza",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "shoes-on-the-danube>chain-bridge>parliament-exterior>andrassy-avenue>opera-house-tour>st-stephens-basilica",
+       "idle": 78,
+       "travel": 57,
+       "lunch": "menza",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "experiences-4d-2026-11-19",
+     "stage": "move",
+     "pass": "A pass",
+     "reason": "day 1: travel +42 (more than 15)",
+     "what": {
+      "move": "st-stephens-basilica 4->1",
+      "days": {
+       "1": {
+        "idle": "196->64",
+        "travel": "19->61",
+        "lunch": "break->hungarikum-bisztro",
+        "foodAccessUnknown": "true->false"
+       },
+       "2": {
+        "idle": "25->25",
+        "travel": "25->25",
+        "lunch": "varosliget-cafe->varosliget-cafe",
+        "foodAccessUnknown": "false->false"
+       },
+       "3": {
+        "idle": "94->29",
+        "travel": "46->51",
+        "lunch": "21-restaurant->21-restaurant",
+        "foodAccessUnknown": "false->false"
+       },
+       "4": {
+        "idle": "119->114",
+        "travel": "46->36",
+        "lunch": "menza->menza",
+        "foodAccessUnknown": "false->false"
+       }
+      }
+     }
+    },
+    {
+     "id": "experiences-4d-2026-11-19",
+     "stage": "move",
+     "pass": "A pass",
+     "reason": "day 1: travel +22 (more than 15); day 4: travel +16 (more than 15)",
+     "what": {
+      "move": "st-stephens-basilica 4->1 swap vaci-utca",
+      "days": {
+       "1": {
+        "idle": "196->144",
+        "travel": "19->41",
+        "lunch": "break->break",
+        "foodAccessUnknown": "true->true"
+       },
+       "2": {
+        "idle": "25->25",
+        "travel": "25->25",
+        "lunch": "varosliget-cafe->varosliget-cafe",
+        "foodAccessUnknown": "false->false"
+       },
+       "3": {
+        "idle": "94->94",
+        "travel": "46->46",
+        "lunch": "21-restaurant->21-restaurant",
+        "foodAccessUnknown": "false->false"
+       },
+       "4": {
+        "idle": "119->28",
+        "travel": "46->62",
+        "lunch": "menza->menza",
+        "foodAccessUnknown": "false->false"
+       }
+      }
+     }
+    },
+    {
+     "id": "experiences-4d-2026-11-19",
+     "stage": "move",
+     "pass": "A pass",
+     "reason": "day 4: travel +22 (more than 15)",
+     "what": {
+      "move": "st-stephens-basilica 4->3 swap fishermans-bastion",
+      "days": {
+       "1": {
+        "idle": "196->196",
+        "travel": "19->19",
+        "lunch": "break->break",
+        "foodAccessUnknown": "true->true"
+       },
+       "2": {
+        "idle": "25->25",
+        "travel": "25->25",
+        "lunch": "varosliget-cafe->varosliget-cafe",
+        "foodAccessUnknown": "false->false"
+       },
+       "3": {
+        "idle": "94->38",
+        "travel": "46->52",
+        "lunch": "21-restaurant->21-restaurant",
+        "foodAccessUnknown": "false->false"
+       },
+       "4": {
+        "idle": "119->27",
+        "travel": "46->68",
+        "lunch": "menza->hungarikum-bisztro",
+        "foodAccessUnknown": "false->false"
+       }
+      }
+     }
+    },
+    {
+     "id": "experiences-4d-2026-11-19",
+     "stage": "move",
+     "pass": "A pass",
+     "reason": "day 4: travel +27 (more than 15)",
+     "what": {
+      "move": "st-stephens-basilica 4->3 swap matthias-church-exterior",
+      "days": {
+       "1": {
+        "idle": "196->196",
+        "travel": "19->19",
+        "lunch": "break->break",
+        "foodAccessUnknown": "true->true"
+       },
+       "2": {
+        "idle": "25->25",
+        "travel": "25->25",
+        "lunch": "varosliget-cafe->varosliget-cafe",
+        "foodAccessUnknown": "false->false"
+       },
+       "3": {
+        "idle": "94->42",
+        "travel": "46->53",
+        "lunch": "21-restaurant->21-restaurant",
+        "foodAccessUnknown": "false->false"
+       },
+       "4": {
+        "idle": "119->47",
+        "travel": "46->73",
+        "lunch": "menza->pierrot",
+        "foodAccessUnknown": "false->false"
+       }
+      }
+     }
+    },
+    {
+     "id": "surprise-2d-flex",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "travel +16 (more than 15)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 192,
+       "travel": 40,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "parliament-exterior>shoes-on-the-danube>andrassy-avenue>opera-house-tour>st-stephens-basilica",
+       "idle": 119,
+       "travel": 56,
+       "lunch": "menza",
+       "foodAccessUnknown": false
+      }
+     }
+    }
+   ],
+   "day gain below 30": [
+    {
+     "id": "A-3d-2027-07-17",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain -17 (less than 30)",
+     "what": {
+      "day": 2,
+      "base": {
+       "idle": 45,
+       "travel": 50,
+       "lunch": "21-restaurant",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "hungarian-national-gallery>matthias-church-exterior>fishermans-bastion>chain-bridge",
+       "idle": 94,
+       "travel": 46,
+       "lunch": "21-restaurant",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "A-4d-2027-07-17",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain -17 (less than 30)",
+     "what": {
+      "day": 2,
+      "base": {
+       "idle": 45,
+       "travel": 50,
+       "lunch": "21-restaurant",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "hungarian-national-gallery>matthias-church-exterior>fishermans-bastion>chain-bridge",
+       "idle": 94,
+       "travel": 46,
+       "lunch": "21-restaurant",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "B-3d-flex",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 17.5 (less than 30)",
+     "what": {
+      "day": 3,
+      "base": {
+       "idle": 51,
+       "travel": 29,
+       "lunch": "varosliget-cafe",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "vajdahunyad-castle>heroes-square>house-of-music>museum-of-fine-arts",
+       "idle": 31,
+       "travel": 34,
+       "lunch": "varosliget-cafe",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "B-3d-flex",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 16 (less than 30)",
+     "what": {
+      "day": 3,
+      "base": {
+       "idle": 51,
+       "travel": 29,
+       "lunch": "varosliget-cafe",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "heroes-square>vajdahunyad-castle>house-of-music>museum-of-fine-arts",
+       "idle": 34,
+       "travel": 31,
+       "lunch": "varosliget-cafe",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "B-3d-flex",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 12.5 (less than 30)",
+     "what": {
+      "day": 3,
+      "base": {
+       "idle": 51,
+       "travel": 29,
+       "lunch": "varosliget-cafe",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "vajdahunyad-castle>museum-of-fine-arts>house-of-music>heroes-square",
+       "idle": 36,
+       "travel": 34,
+       "lunch": "varosliget-cafe",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "B-3d-2026-11-19",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 17.5 (less than 30)",
+     "what": {
+      "day": 3,
+      "base": {
+       "idle": 51,
+       "travel": 29,
+       "lunch": "varosliget-cafe",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "vajdahunyad-castle>heroes-square>house-of-music>museum-of-fine-arts",
+       "idle": 31,
+       "travel": 34,
+       "lunch": "varosliget-cafe",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "B-3d-2026-11-19",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 16 (less than 30)",
+     "what": {
+      "day": 3,
+      "base": {
+       "idle": 51,
+       "travel": 29,
+       "lunch": "varosliget-cafe",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "heroes-square>vajdahunyad-castle>house-of-music>museum-of-fine-arts",
+       "idle": 34,
+       "travel": 31,
+       "lunch": "varosliget-cafe",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "B-3d-2026-11-19",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 12.5 (less than 30)",
+     "what": {
+      "day": 3,
+      "base": {
+       "idle": 51,
+       "travel": 29,
+       "lunch": "varosliget-cafe",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "vajdahunyad-castle>museum-of-fine-arts>house-of-music>heroes-square",
+       "idle": 36,
+       "travel": 34,
+       "lunch": "varosliget-cafe",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "B-3d-2027-07-17",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 17 (less than 30)",
+     "what": {
+      "day": 3,
+      "base": {
+       "idle": 36,
+       "travel": 54,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "chain-bridge>st-stephens-basilica>shoes-on-the-danube>parliament-exterior>citadella",
+       "idle": 17,
+       "travel": 58,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "B-3d-2027-07-17",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 17.5 (less than 30)",
+     "what": {
+      "day": 3,
+      "base": {
+       "idle": 36,
+       "travel": 54,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "st-stephens-basilica>shoes-on-the-danube>parliament-exterior>chain-bridge>citadella",
+       "idle": 16,
+       "travel": 59,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "B-3d-2027-07-17",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 15.5 (less than 30)",
+     "what": {
+      "day": 3,
+      "base": {
+       "idle": 36,
+       "travel": 54,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "citadella>shoes-on-the-danube>parliament-exterior>chain-bridge>st-stephens-basilica",
+       "idle": 20,
+       "travel": 55,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "B-4d-flex",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 17.5 (less than 30)",
+     "what": {
+      "day": 3,
+      "base": {
+       "idle": 51,
+       "travel": 29,
+       "lunch": "varosliget-cafe",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "vajdahunyad-castle>heroes-square>house-of-music>museum-of-fine-arts",
+       "idle": 31,
+       "travel": 34,
+       "lunch": "varosliget-cafe",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "B-4d-flex",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 16 (less than 30)",
+     "what": {
+      "day": 3,
+      "base": {
+       "idle": 51,
+       "travel": 29,
+       "lunch": "varosliget-cafe",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "heroes-square>vajdahunyad-castle>house-of-music>museum-of-fine-arts",
+       "idle": 34,
+       "travel": 31,
+       "lunch": "varosliget-cafe",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "B-4d-flex",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 12.5 (less than 30)",
+     "what": {
+      "day": 3,
+      "base": {
+       "idle": 51,
+       "travel": 29,
+       "lunch": "varosliget-cafe",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "vajdahunyad-castle>museum-of-fine-arts>house-of-music>heroes-square",
+       "idle": 36,
+       "travel": 34,
+       "lunch": "varosliget-cafe",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "B-4d-2026-11-19",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 17.5 (less than 30)",
+     "what": {
+      "day": 3,
+      "base": {
+       "idle": 51,
+       "travel": 29,
+       "lunch": "varosliget-cafe",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "vajdahunyad-castle>heroes-square>house-of-music>museum-of-fine-arts",
+       "idle": 31,
+       "travel": 34,
+       "lunch": "varosliget-cafe",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "B-4d-2026-11-19",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 16 (less than 30)",
+     "what": {
+      "day": 3,
+      "base": {
+       "idle": 51,
+       "travel": 29,
+       "lunch": "varosliget-cafe",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "heroes-square>vajdahunyad-castle>house-of-music>museum-of-fine-arts",
+       "idle": 34,
+       "travel": 31,
+       "lunch": "varosliget-cafe",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "B-4d-2026-11-19",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 12.5 (less than 30)",
+     "what": {
+      "day": 3,
+      "base": {
+       "idle": 51,
+       "travel": 29,
+       "lunch": "varosliget-cafe",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "vajdahunyad-castle>museum-of-fine-arts>house-of-music>heroes-square",
+       "idle": 36,
+       "travel": 34,
+       "lunch": "varosliget-cafe",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "B-4d-2027-07-17",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 17 (less than 30)",
+     "what": {
+      "day": 3,
+      "base": {
+       "idle": 113,
+       "travel": 37,
+       "lunch": "menza",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "st-stephens-basilica>shoes-on-the-danube>parliament-exterior>opera-house-tour>andrassy-avenue",
+       "idle": 94,
+       "travel": 41,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "B-4d-2027-07-17",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 17.5 (less than 30)",
+     "what": {
+      "day": 4,
+      "base": {
+       "idle": 51,
+       "travel": 29,
+       "lunch": "varosliget-cafe",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "vajdahunyad-castle>heroes-square>house-of-music>museum-of-fine-arts",
+       "idle": 31,
+       "travel": 34,
+       "lunch": "varosliget-cafe",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "B-4d-2027-07-17",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 17 (less than 30)",
+     "what": {
+      "day": 3,
+      "base": {
+       "idle": 113,
+       "travel": 37,
+       "lunch": "menza",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "shoes-on-the-danube>parliament-exterior>st-stephens-basilica>opera-house-tour>andrassy-avenue",
+       "idle": 94,
+       "travel": 41,
+       "lunch": "menza",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "B-4d-2027-07-17",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 16 (less than 30)",
+     "what": {
+      "day": 4,
+      "base": {
+       "idle": 51,
+       "travel": 29,
+       "lunch": "varosliget-cafe",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "heroes-square>vajdahunyad-castle>house-of-music>museum-of-fine-arts",
+       "idle": 34,
+       "travel": 31,
+       "lunch": "varosliget-cafe",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "B-4d-2027-07-17",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 16 (less than 30)",
+     "what": {
+      "day": 3,
+      "base": {
+       "idle": 113,
+       "travel": 37,
+       "lunch": "menza",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "parliament-exterior>shoes-on-the-danube>st-stephens-basilica>opera-house-tour>andrassy-avenue",
+       "idle": 96,
+       "travel": 39,
+       "lunch": "menza",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "B-4d-2027-07-17",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 12.5 (less than 30)",
+     "what": {
+      "day": 4,
+      "base": {
+       "idle": 51,
+       "travel": 29,
+       "lunch": "varosliget-cafe",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "vajdahunyad-castle>museum-of-fine-arts>house-of-music>heroes-square",
+       "idle": 36,
+       "travel": 34,
+       "lunch": "varosliget-cafe",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "C-1d-2027-07-17",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 14.5 (less than 30)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 70,
+       "travel": 56,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "chain-bridge>st-stephens-basilica>shoes-on-the-danube>parliament-exterior>opera-house-tour>andrassy-avenue",
+       "idle": 55,
+       "travel": 57,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "C-1d-2027-07-17",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 16 (less than 30)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 70,
+       "travel": 56,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "shoes-on-the-danube>parliament-exterior>st-stephens-basilica>chain-bridge>opera-house-tour>andrassy-avenue",
+       "idle": 52,
+       "travel": 60,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "C-1d-2027-07-17",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 13.5 (less than 30)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 70,
+       "travel": 56,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "st-stephens-basilica>chain-bridge>parliament-exterior>shoes-on-the-danube>opera-house-tour>andrassy-avenue",
+       "idle": 57,
+       "travel": 55,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "C-1d-2027-07-17",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 15 (less than 30)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 70,
+       "travel": 56,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "parliament-exterior>shoes-on-the-danube>st-stephens-basilica>chain-bridge>opera-house-tour>andrassy-avenue",
+       "idle": 54,
+       "travel": 58,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "C-2d-2026-11-19",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 22 (less than 30)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 63,
+       "travel": 99,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "vaci-utca>fishermans-bastion>parliament-exterior>st-stephens-basilica>chain-bridge>danube-legend-cruise",
+       "idle": 39,
+       "travel": 103,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "C-3d-2026-11-19",
+     "stage": "order",
+     "pass": "extension pass",
+     "reason": "gain -3.5 (less than 30)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 100,
+       "travel": 77,
+       "lunch": "break",
+       "foodAccessUnknown": true
+      },
+      "trial": {
+       "order": "parliament-exterior>shoes-on-the-danube>great-market-hall>vaci-utca>danube-legend-cruise",
+       "idle": 107,
+       "travel": 70,
+       "lunch": "break",
+       "foodAccessUnknown": true
+      }
+     }
+    },
+    {
+     "id": "C-4d-flex",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 0 (less than 30)",
+     "what": {
+      "day": 3,
+      "base": {
+       "idle": 24,
+       "travel": 119,
+       "lunch": "frici-papa",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "citadella>great-market-hall>vaci-utca>gozsdu-udvar>arena-mall",
+       "idle": 24,
+       "travel": 119,
+       "lunch": "frici-papa",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "C-4d-flex",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 1 (less than 30)",
+     "what": {
+      "day": 3,
+      "base": {
+       "idle": 24,
+       "travel": 119,
+       "lunch": "frici-papa",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "great-market-hall>vaci-utca>gozsdu-udvar>citadella>arena-mall",
+       "idle": 22,
+       "travel": 121,
+       "lunch": "frici-papa",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "C-4d-2026-11-19",
+     "stage": "order",
+     "pass": "extension pass",
+     "reason": "gain -3.5 (less than 30)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 100,
+       "travel": 77,
+       "lunch": "break",
+       "foodAccessUnknown": true
+      },
+      "trial": {
+       "order": "parliament-exterior>shoes-on-the-danube>great-market-hall>vaci-utca>danube-legend-cruise",
+       "idle": 107,
+       "travel": 70,
+       "lunch": "break",
+       "foodAccessUnknown": true
+      }
+     }
+    },
+    {
+     "id": "C-4d-2027-07-17",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 0 (less than 30)",
+     "what": {
+      "day": 3,
+      "base": {
+       "idle": 24,
+       "travel": 119,
+       "lunch": "frici-papa",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "citadella>great-market-hall>vaci-utca>gozsdu-udvar>arena-mall",
+       "idle": 24,
+       "travel": 119,
+       "lunch": "frici-papa",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "C-4d-2027-07-17",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 1 (less than 30)",
+     "what": {
+      "day": 3,
+      "base": {
+       "idle": 24,
+       "travel": 119,
+       "lunch": "frici-papa",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "great-market-hall>vaci-utca>gozsdu-udvar>citadella>arena-mall",
+       "idle": 22,
+       "travel": 121,
+       "lunch": "frici-papa",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "popular-1d-2027-07-17",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 20.5 (less than 30)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 52,
+       "travel": 53,
+       "lunch": "break",
+       "foodAccessUnknown": true
+      },
+      "trial": {
+       "order": "vaci-utca>great-market-hall>shoes-on-the-danube>parliament-exterior>chain-bridge>st-stephens-basilica",
+       "idle": 26,
+       "travel": 64,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "popular-1d-2027-07-17",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 19 (less than 30)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 52,
+       "travel": 53,
+       "lunch": "break",
+       "foodAccessUnknown": true
+      },
+      "trial": {
+       "order": "great-market-hall>vaci-utca>shoes-on-the-danube>parliament-exterior>chain-bridge>st-stephens-basilica",
+       "idle": 29,
+       "travel": 61,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "popular-1d-2027-07-17",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 14.5 (less than 30)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 52,
+       "travel": 53,
+       "lunch": "break",
+       "foodAccessUnknown": true
+      },
+      "trial": {
+       "order": "great-market-hall>vaci-utca>chain-bridge>st-stephens-basilica>shoes-on-the-danube>parliament-exterior",
+       "idle": 33,
+       "travel": 62,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "popular-2d-flex",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 7.5 (less than 30)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 33,
+       "travel": 57,
+       "lunch": "break",
+       "foodAccessUnknown": true
+      },
+      "trial": {
+       "order": "vaci-utca>great-market-hall>shoes-on-the-danube>parliament-exterior>citadella",
+       "idle": 18,
+       "travel": 72,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "popular-2d-2026-11-19",
+     "stage": "order",
+     "pass": "extension pass",
+     "reason": "gain -98 (less than 30)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 100,
+       "travel": 55,
+       "lunch": "break",
+       "foodAccessUnknown": true
+      },
+      "trial": {
+       "order": "great-market-hall>vaci-utca>danube-legend-cruise>shoes-on-the-danube>parliament-exterior",
+       "idle": 206,
+       "travel": 39,
+       "lunch": "break",
+       "foodAccessUnknown": true
+      }
+     }
+    },
+    {
+     "id": "popular-2d-2027-07-17",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 7.5 (less than 30)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 33,
+       "travel": 57,
+       "lunch": "break",
+       "foodAccessUnknown": true
+      },
+      "trial": {
+       "order": "vaci-utca>great-market-hall>shoes-on-the-danube>parliament-exterior>citadella",
+       "idle": 18,
+       "travel": 72,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "popular-3d-flex",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 7.5 (less than 30)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 33,
+       "travel": 57,
+       "lunch": "break",
+       "foodAccessUnknown": true
+      },
+      "trial": {
+       "order": "vaci-utca>great-market-hall>shoes-on-the-danube>parliament-exterior>citadella",
+       "idle": 18,
+       "travel": 72,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "popular-3d-2026-11-19",
+     "stage": "order",
+     "pass": "extension pass",
+     "reason": "gain -98 (less than 30)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 100,
+       "travel": 55,
+       "lunch": "break",
+       "foodAccessUnknown": true
+      },
+      "trial": {
+       "order": "great-market-hall>vaci-utca>danube-legend-cruise>shoes-on-the-danube>parliament-exterior",
+       "idle": 206,
+       "travel": 39,
+       "lunch": "break",
+       "foodAccessUnknown": true
+      }
+     }
+    },
+    {
+     "id": "popular-3d-2027-07-17",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 7.5 (less than 30)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 33,
+       "travel": 57,
+       "lunch": "break",
+       "foodAccessUnknown": true
+      },
+      "trial": {
+       "order": "vaci-utca>great-market-hall>shoes-on-the-danube>parliament-exterior>citadella",
+       "idle": 18,
+       "travel": 72,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "nature-1d-2027-07-17",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 25 (less than 30)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 41,
+       "travel": 79,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "margaret-island>fishermans-bastion>parliament-exterior>chain-bridge>st-stephens-basilica",
+       "idle": 21,
+       "travel": 69,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "nature-1d-2027-07-17",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 29 (less than 30)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 41,
+       "travel": 79,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "fishermans-bastion>parliament-exterior>chain-bridge>st-stephens-basilica>margaret-island",
+       "idle": 13,
+       "travel": 77,
+       "lunch": "menza",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "nature-2d-2027-07-17",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 25 (less than 30)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 41,
+       "travel": 79,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "margaret-island>fishermans-bastion>parliament-exterior>chain-bridge>st-stephens-basilica",
+       "idle": 21,
+       "travel": 69,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "nature-2d-2027-07-17",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 29 (less than 30)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 41,
+       "travel": 79,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "fishermans-bastion>parliament-exterior>chain-bridge>st-stephens-basilica>margaret-island",
+       "idle": 13,
+       "travel": 77,
+       "lunch": "menza",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "shopping-2d-2027-07-17",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 19.5 (less than 30)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 69,
+       "travel": 56,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "chain-bridge>fishermans-bastion>st-stephens-basilica>opera-house-tour>andrassy-avenue",
+       "idle": 45,
+       "travel": 65,
+       "lunch": "menza",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "shopping-2d-2027-07-17",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 0 (less than 30)",
+     "what": {
+      "day": 2,
+      "base": {
+       "idle": 74,
+       "travel": 81,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "citadella>vaci-utca>hungarian-national-gallery>shoes-on-the-danube>parliament-exterior",
+       "idle": 74,
+       "travel": 81,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "shopping-2d-2027-07-17",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 15 (less than 30)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 69,
+       "travel": 56,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "fishermans-bastion>st-stephens-basilica>chain-bridge>opera-house-tour>andrassy-avenue",
+       "idle": 54,
+       "travel": 56,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "shopping-2d-2027-07-17",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 13 (less than 30)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 69,
+       "travel": 56,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "fishermans-bastion>chain-bridge>st-stephens-basilica>opera-house-tour>andrassy-avenue",
+       "idle": 58,
+       "travel": 52,
+       "lunch": "menza",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "shopping-3d-2026-11-19",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 17 (less than 30)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 113,
+       "travel": 37,
+       "lunch": "menza",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "st-stephens-basilica>shoes-on-the-danube>parliament-exterior>opera-house-tour>andrassy-avenue",
+       "idle": 94,
+       "travel": 41,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "shopping-3d-2026-11-19",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 17 (less than 30)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 113,
+       "travel": 37,
+       "lunch": "menza",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "shoes-on-the-danube>parliament-exterior>st-stephens-basilica>opera-house-tour>andrassy-avenue",
+       "idle": 94,
+       "travel": 41,
+       "lunch": "menza",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "shopping-3d-2026-11-19",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 16 (less than 30)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 113,
+       "travel": 37,
+       "lunch": "menza",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "parliament-exterior>shoes-on-the-danube>st-stephens-basilica>opera-house-tour>andrassy-avenue",
+       "idle": 96,
+       "travel": 39,
+       "lunch": "menza",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "shopping-4d-2026-11-19",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 17 (less than 30)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 113,
+       "travel": 37,
+       "lunch": "menza",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "st-stephens-basilica>shoes-on-the-danube>parliament-exterior>opera-house-tour>andrassy-avenue",
+       "idle": 94,
+       "travel": 41,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "shopping-4d-2026-11-19",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 17 (less than 30)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 113,
+       "travel": 37,
+       "lunch": "menza",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "shoes-on-the-danube>parliament-exterior>st-stephens-basilica>opera-house-tour>andrassy-avenue",
+       "idle": 94,
+       "travel": 41,
+       "lunch": "menza",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "shopping-4d-2026-11-19",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 16 (less than 30)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 113,
+       "travel": 37,
+       "lunch": "menza",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "parliament-exterior>shoes-on-the-danube>st-stephens-basilica>opera-house-tour>andrassy-avenue",
+       "idle": 96,
+       "travel": 39,
+       "lunch": "menza",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "experiences-1d-2027-07-17",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 15 (less than 30)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 70,
+       "travel": 50,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "chain-bridge>st-stephens-basilica>shoes-on-the-danube>parliament-exterior>opera-house-tour>andrassy-avenue",
+       "idle": 55,
+       "travel": 50,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "experiences-1d-2027-07-17",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 16.5 (less than 30)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 70,
+       "travel": 50,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "shoes-on-the-danube>parliament-exterior>st-stephens-basilica>chain-bridge>opera-house-tour>andrassy-avenue",
+       "idle": 52,
+       "travel": 53,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "experiences-1d-2027-07-17",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 14 (less than 30)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 70,
+       "travel": 50,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "st-stephens-basilica>chain-bridge>parliament-exterior>shoes-on-the-danube>opera-house-tour>andrassy-avenue",
+       "idle": 57,
+       "travel": 48,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "experiences-1d-2027-07-17",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 15.5 (less than 30)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 70,
+       "travel": 50,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "parliament-exterior>shoes-on-the-danube>st-stephens-basilica>chain-bridge>opera-house-tour>andrassy-avenue",
+       "idle": 54,
+       "travel": 51,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "experiences-3d-2026-11-19",
+     "stage": "order",
+     "pass": "extension pass",
+     "reason": "gain -98 (less than 30)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 100,
+       "travel": 55,
+       "lunch": "break",
+       "foodAccessUnknown": true
+      },
+      "trial": {
+       "order": "great-market-hall>vaci-utca>danube-legend-cruise>shoes-on-the-danube>parliament-exterior",
+       "idle": 206,
+       "travel": 39,
+       "lunch": "break",
+       "foodAccessUnknown": true
+      }
+     }
+    },
+    {
+     "id": "experiences-3d-2027-07-17",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 17 (less than 30)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 113,
+       "travel": 37,
+       "lunch": "menza",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "st-stephens-basilica>shoes-on-the-danube>parliament-exterior>opera-house-tour>andrassy-avenue",
+       "idle": 94,
+       "travel": 41,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "experiences-3d-2027-07-17",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 17 (less than 30)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 113,
+       "travel": 37,
+       "lunch": "menza",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "shoes-on-the-danube>parliament-exterior>st-stephens-basilica>opera-house-tour>andrassy-avenue",
+       "idle": 94,
+       "travel": 41,
+       "lunch": "menza",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "experiences-3d-2027-07-17",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 16 (less than 30)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 113,
+       "travel": 37,
+       "lunch": "menza",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "parliament-exterior>shoes-on-the-danube>st-stephens-basilica>opera-house-tour>andrassy-avenue",
+       "idle": 96,
+       "travel": 39,
+       "lunch": "menza",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "experiences-4d-flex",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 0 (less than 30)",
+     "what": {
+      "day": 4,
+      "base": {
+       "idle": 118,
+       "travel": 32,
+       "lunch": "gundel",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "museum-of-fine-arts>opera-house-tour>andrassy-avenue",
+       "idle": 118,
+       "travel": 32,
+       "lunch": "gundel",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "experiences-4d-2027-07-17",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 29.5 (less than 30)",
+     "what": {
+      "day": 3,
+      "base": {
+       "idle": 47,
+       "travel": 58,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "vaci-utca>great-market-hall>shoes-on-the-danube>parliament-exterior>st-stephens-basilica",
+       "idle": 18,
+       "travel": 57,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "experiences-4d-2027-07-17",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 28 (less than 30)",
+     "what": {
+      "day": 3,
+      "base": {
+       "idle": 47,
+       "travel": 58,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "great-market-hall>vaci-utca>shoes-on-the-danube>parliament-exterior>st-stephens-basilica",
+       "idle": 21,
+       "travel": 54,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "food-1d-2027-07-17",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 16 (less than 30)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 52,
+       "travel": 61,
+       "lunch": "break",
+       "foodAccessUnknown": true
+      },
+      "trial": {
+       "order": "great-market-hall>vaci-utca>shoes-on-the-danube>parliament-exterior>chain-bridge>st-stephens-basilica",
+       "idle": 29,
+       "travel": 75,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "food-2d-2026-11-19",
+     "stage": "order",
+     "pass": "extension pass",
+     "reason": "gain -3.5 (less than 30)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 100,
+       "travel": 77,
+       "lunch": "break",
+       "foodAccessUnknown": true
+      },
+      "trial": {
+       "order": "parliament-exterior>shoes-on-the-danube>great-market-hall>vaci-utca>danube-legend-cruise",
+       "idle": 107,
+       "travel": 70,
+       "lunch": "break",
+       "foodAccessUnknown": true
+      }
+     }
+    },
+    {
+     "id": "food-2d-2027-07-17",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 17.5 (less than 30)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 113,
+       "travel": 45,
+       "lunch": "menza",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "st-stephens-basilica>shoes-on-the-danube>parliament-exterior>opera-house-tour>andrassy-avenue",
+       "idle": 94,
+       "travel": 48,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "food-2d-2027-07-17",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 16.5 (less than 30)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 113,
+       "travel": 45,
+       "lunch": "menza",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "shoes-on-the-danube>parliament-exterior>st-stephens-basilica>opera-house-tour>andrassy-avenue",
+       "idle": 94,
+       "travel": 50,
+       "lunch": "menza",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "food-2d-2027-07-17",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 15.5 (less than 30)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 113,
+       "travel": 45,
+       "lunch": "menza",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "parliament-exterior>shoes-on-the-danube>st-stephens-basilica>opera-house-tour>andrassy-avenue",
+       "idle": 96,
+       "travel": 48,
+       "lunch": "menza",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "food-3d-2026-11-19",
+     "stage": "order",
+     "pass": "extension pass",
+     "reason": "gain -3.5 (less than 30)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 100,
+       "travel": 77,
+       "lunch": "break",
+       "foodAccessUnknown": true
+      },
+      "trial": {
+       "order": "parliament-exterior>shoes-on-the-danube>great-market-hall>vaci-utca>danube-legend-cruise",
+       "idle": 107,
+       "travel": 70,
+       "lunch": "break",
+       "foodAccessUnknown": true
+      }
+     }
+    },
+    {
+     "id": "food-3d-2027-07-17",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 14.5 (less than 30)",
+     "what": {
+      "day": 3,
+      "base": {
+       "idle": 32,
+       "travel": 53,
+       "lunch": "break",
+       "foodAccessUnknown": true
+      },
+      "trial": {
+       "order": "st-stephens-basilica>shoes-on-the-danube>parliament-exterior>chain-bridge>margaret-island",
+       "idle": 13,
+       "travel": 62,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "food-3d-2027-07-17",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 14 (less than 30)",
+     "what": {
+      "day": 3,
+      "base": {
+       "idle": 32,
+       "travel": 53,
+       "lunch": "break",
+       "foodAccessUnknown": true
+      },
+      "trial": {
+       "order": "chain-bridge>st-stephens-basilica>shoes-on-the-danube>parliament-exterior>margaret-island",
+       "idle": 14,
+       "travel": 61,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "food-3d-2027-07-17",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 13 (less than 30)",
+     "what": {
+      "day": 3,
+      "base": {
+       "idle": 32,
+       "travel": 53,
+       "lunch": "break",
+       "foodAccessUnknown": true
+      },
+      "trial": {
+       "order": "shoes-on-the-danube>parliament-exterior>chain-bridge>st-stephens-basilica>margaret-island",
+       "idle": 16,
+       "travel": 59,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "food-4d-flex",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 3.5 (less than 30)",
+     "what": {
+      "day": 4,
+      "base": {
+       "idle": 32,
+       "travel": 53,
+       "lunch": "break",
+       "foodAccessUnknown": true
+      },
+      "trial": {
+       "order": "margaret-island>shoes-on-the-danube>parliament-exterior>chain-bridge>st-stephens-basilica",
+       "idle": 21,
+       "travel": 68,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "food-4d-2027-07-17",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 14.5 (less than 30)",
+     "what": {
+      "day": 3,
+      "base": {
+       "idle": 32,
+       "travel": 53,
+       "lunch": "break",
+       "foodAccessUnknown": true
+      },
+      "trial": {
+       "order": "st-stephens-basilica>shoes-on-the-danube>parliament-exterior>chain-bridge>margaret-island",
+       "idle": 13,
+       "travel": 62,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "food-4d-2027-07-17",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 14 (less than 30)",
+     "what": {
+      "day": 3,
+      "base": {
+       "idle": 32,
+       "travel": 53,
+       "lunch": "break",
+       "foodAccessUnknown": true
+      },
+      "trial": {
+       "order": "chain-bridge>st-stephens-basilica>shoes-on-the-danube>parliament-exterior>margaret-island",
+       "idle": 14,
+       "travel": 61,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "food-4d-2027-07-17",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 13 (less than 30)",
+     "what": {
+      "day": 3,
+      "base": {
+       "idle": 32,
+       "travel": 53,
+       "lunch": "break",
+       "foodAccessUnknown": true
+      },
+      "trial": {
+       "order": "shoes-on-the-danube>parliament-exterior>chain-bridge>st-stephens-basilica>margaret-island",
+       "idle": 16,
+       "travel": 59,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "surprise-1d-2027-07-17",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 14.5 (less than 30)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 70,
+       "travel": 56,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "chain-bridge>st-stephens-basilica>shoes-on-the-danube>parliament-exterior>opera-house-tour>andrassy-avenue",
+       "idle": 55,
+       "travel": 57,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "surprise-1d-2027-07-17",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 16 (less than 30)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 70,
+       "travel": 56,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "shoes-on-the-danube>parliament-exterior>st-stephens-basilica>chain-bridge>opera-house-tour>andrassy-avenue",
+       "idle": 52,
+       "travel": 60,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "surprise-1d-2027-07-17",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 13.5 (less than 30)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 70,
+       "travel": 56,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "st-stephens-basilica>chain-bridge>parliament-exterior>shoes-on-the-danube>opera-house-tour>andrassy-avenue",
+       "idle": 57,
+       "travel": 55,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "surprise-1d-2027-07-17",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 15 (less than 30)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 70,
+       "travel": 56,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "parliament-exterior>shoes-on-the-danube>st-stephens-basilica>chain-bridge>opera-house-tour>andrassy-avenue",
+       "idle": 54,
+       "travel": 58,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "surprise-2d-2027-07-17",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 17.5 (less than 30)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 113,
+       "travel": 45,
+       "lunch": "menza",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "st-stephens-basilica>shoes-on-the-danube>parliament-exterior>opera-house-tour>andrassy-avenue",
+       "idle": 94,
+       "travel": 48,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "surprise-2d-2027-07-17",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 16.5 (less than 30)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 113,
+       "travel": 45,
+       "lunch": "menza",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "shoes-on-the-danube>parliament-exterior>st-stephens-basilica>opera-house-tour>andrassy-avenue",
+       "idle": 94,
+       "travel": 50,
+       "lunch": "menza",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "surprise-2d-2027-07-17",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "gain 15.5 (less than 30)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 113,
+       "travel": 45,
+       "lunch": "menza",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "parliament-exterior>shoes-on-the-danube>st-stephens-basilica>opera-house-tour>andrassy-avenue",
+       "idle": 96,
+       "travel": 48,
+       "lunch": "menza",
+       "foodAccessUnknown": false
+      }
+     }
+    }
+   ],
+   "restaurant lunch lost": [
+    {
+     "id": "B-2d-flex",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "restaurant lunch lost (menza)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 297,
+       "travel": 63,
+       "lunch": "menza",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "shoes-on-the-danube>parliament-exterior>citadella>opera-house-tour>st-stephens-basilica",
+       "idle": 102,
+       "travel": 63,
+       "lunch": "break",
+       "foodAccessUnknown": true
+      }
+     }
+    },
+    {
+     "id": "B-2d-flex",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "restaurant lunch lost (menza)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 297,
+       "travel": 63,
+       "lunch": "menza",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "parliament-exterior>shoes-on-the-danube>citadella>opera-house-tour>st-stephens-basilica",
+       "idle": 103,
+       "travel": 62,
+       "lunch": "break",
+       "foodAccessUnknown": true
+      }
+     }
+    },
+    {
+     "id": "B-3d-flex",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "restaurant lunch lost (menza)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 297,
+       "travel": 63,
+       "lunch": "menza",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "shoes-on-the-danube>parliament-exterior>citadella>opera-house-tour>st-stephens-basilica",
+       "idle": 102,
+       "travel": 63,
+       "lunch": "break",
+       "foodAccessUnknown": true
+      }
+     }
+    },
+    {
+     "id": "B-3d-flex",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "restaurant lunch lost (menza)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 297,
+       "travel": 63,
+       "lunch": "menza",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "parliament-exterior>shoes-on-the-danube>citadella>opera-house-tour>st-stephens-basilica",
+       "idle": 103,
+       "travel": 62,
+       "lunch": "break",
+       "foodAccessUnknown": true
+      }
+     }
+    },
+    {
+     "id": "C-2d-2026-11-19",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "restaurant lunch lost (hungarikum-bisztro)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 63,
+       "travel": 99,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "fishermans-bastion>parliament-exterior>chain-bridge>st-stephens-basilica>vaci-utca>danube-legend-cruise",
+       "idle": 39,
+       "travel": 83,
+       "lunch": "break",
+       "foodAccessUnknown": true
+      }
+     }
+    },
+    {
+     "id": "nature-1d-2027-07-17",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "restaurant lunch lost (hungarikum-bisztro)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 41,
+       "travel": 79,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "st-stephens-basilica>margaret-island>fishermans-bastion>parliament-exterior>chain-bridge",
+       "idle": 10,
+       "travel": 80,
+       "lunch": "break",
+       "foodAccessUnknown": true
+      }
+     }
+    },
+    {
+     "id": "nature-2d-2027-07-17",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "restaurant lunch lost (hungarikum-bisztro)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 41,
+       "travel": 79,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "st-stephens-basilica>margaret-island>fishermans-bastion>parliament-exterior>chain-bridge",
+       "idle": 10,
+       "travel": 80,
+       "lunch": "break",
+       "foodAccessUnknown": true
+      }
+     }
+    },
+    {
+     "id": "shopping-4d-2027-07-17",
+     "stage": "move",
+     "pass": "A pass",
+     "reason": "day 2: restaurant lunch lost (hungarikum-bisztro)",
+     "what": {
+      "move": "st-stephens-basilica 2->1",
+      "days": {
+       "1": {
+        "idle": "136->32",
+        "travel": "39->53",
+        "lunch": "menza->menza",
+        "foodAccessUnknown": "false->false"
+       },
+       "2": {
+        "idle": "21->7",
+        "travel": "54->38",
+        "lunch": "hungarikum-bisztro->break",
+        "foodAccessUnknown": "false->true"
+       },
+       "3": {
+        "idle": "13->13",
+        "travel": "62->62",
+        "lunch": "frici-papa->frici-papa",
+        "foodAccessUnknown": "false->false"
+       },
+       "4": {
+        "idle": "22->22",
+        "travel": "58->58",
+        "lunch": "21-restaurant->21-restaurant",
+        "foodAccessUnknown": "false->false"
+       }
+      }
+     }
+    },
+    {
+     "id": "shopping-4d-2027-07-17",
+     "stage": "move",
+     "pass": "A pass",
+     "reason": "day 2: restaurant lunch lost (hungarikum-bisztro)",
+     "what": {
+      "move": "st-stephens-basilica 2->1 swap heroes-square",
+      "days": {
+       "1": {
+        "idle": "136->93",
+        "travel": "39->27",
+        "lunch": "menza->menza",
+        "foodAccessUnknown": "false->false"
+       },
+       "2": {
+        "idle": "21->9",
+        "travel": "54->66",
+        "lunch": "hungarikum-bisztro->break",
+        "foodAccessUnknown": "false->true"
+       },
+       "3": {
+        "idle": "13->13",
+        "travel": "62->62",
+        "lunch": "frici-papa->frici-papa",
+        "foodAccessUnknown": "false->false"
+       },
+       "4": {
+        "idle": "22->22",
+        "travel": "58->58",
+        "lunch": "21-restaurant->21-restaurant",
+        "foodAccessUnknown": "false->false"
+       }
+      }
+     }
+    },
+    {
+     "id": "shopping-4d-2027-07-17",
+     "stage": "move",
+     "pass": "extension pass",
+     "reason": "day 2: restaurant lunch lost (hungarikum-bisztro)",
+     "what": {
+      "move": "st-stephens-basilica 2->1",
+      "days": {
+       "1": {
+        "idle": "136->32",
+        "travel": "39->53",
+        "lunch": "menza->menza",
+        "foodAccessUnknown": "false->false"
+       },
+       "2": {
+        "idle": "21->7",
+        "travel": "54->38",
+        "lunch": "hungarikum-bisztro->break",
+        "foodAccessUnknown": "false->true"
+       },
+       "3": {
+        "idle": "13->13",
+        "travel": "62->62",
+        "lunch": "frici-papa->frici-papa",
+        "foodAccessUnknown": "false->false"
+       },
+       "4": {
+        "idle": "22->22",
+        "travel": "58->58",
+        "lunch": "21-restaurant->21-restaurant",
+        "foodAccessUnknown": "false->false"
+       }
+      }
+     }
+    },
+    {
+     "id": "shopping-4d-2027-07-17",
+     "stage": "move",
+     "pass": "extension pass",
+     "reason": "day 2: restaurant lunch lost (hungarikum-bisztro)",
+     "what": {
+      "move": "st-stephens-basilica 2->1 swap heroes-square",
+      "days": {
+       "1": {
+        "idle": "136->93",
+        "travel": "39->27",
+        "lunch": "menza->menza",
+        "foodAccessUnknown": "false->false"
+       },
+       "2": {
+        "idle": "21->9",
+        "travel": "54->66",
+        "lunch": "hungarikum-bisztro->break",
+        "foodAccessUnknown": "false->true"
+       },
+       "3": {
+        "idle": "13->13",
+        "travel": "62->62",
+        "lunch": "frici-papa->frici-papa",
+        "foodAccessUnknown": "false->false"
+       },
+       "4": {
+        "idle": "22->22",
+        "travel": "58->58",
+        "lunch": "21-restaurant->21-restaurant",
+        "foodAccessUnknown": "false->false"
+       }
+      }
+     }
+    },
+    {
+     "id": "experiences-4d-2027-07-17",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "restaurant lunch lost (hungarikum-bisztro)",
+     "what": {
+      "day": 3,
+      "base": {
+       "idle": 47,
+       "travel": 58,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "st-stephens-basilica>shoes-on-the-danube>parliament-exterior>vaci-utca>great-market-hall",
+       "idle": 7,
+       "travel": 53,
+       "lunch": "break",
+       "foodAccessUnknown": true
+      }
+     }
+    }
+   ],
+   "unchanged day: idle more than +10": [
+    {
+     "id": "shopping-3d-flex",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "day 3: idle +21 on a day whose places did not change"
+    },
+    {
+     "id": "shopping-3d-flex",
+     "stage": "order",
+     "pass": "extension pass",
+     "reason": "day 3: idle +21 on a day whose places did not change"
+    },
+    {
+     "id": "shopping-4d-flex",
+     "stage": "order",
+     "pass": "A pass",
+     "reason": "day 3: idle +21 on a day whose places did not change"
+    },
+    {
+     "id": "shopping-4d-flex",
+     "stage": "order",
+     "pass": "extension pass",
+     "reason": "day 3: idle +21 on a day whose places did not change"
+    }
+   ],
+   "travel above the B/C allowance": [
+    {
+     "id": "shopping-3d-flex",
+     "stage": "order",
+     "pass": "extension pass",
+     "reason": "travel +39 since the baseline (allowed 24: recovered 99 / 4, at most 45)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 192,
+       "travel": 33,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "shoes-on-the-danube>andrassy-avenue>parliament-exterior>opera-house-tour>st-stephens-basilica",
+       "idle": 93,
+       "travel": 72,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "shopping-3d-flex",
+     "stage": "order",
+     "pass": "extension pass",
+     "reason": "travel +23 since the baseline (allowed 20: recovered 83 / 4, at most 45)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 192,
+       "travel": 33,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "andrassy-avenue>parliament-exterior>shoes-on-the-danube>opera-house-tour>st-stephens-basilica",
+       "idle": 109,
+       "travel": 56,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "shopping-3d-flex",
+     "stage": "order",
+     "pass": "extension pass",
+     "reason": "travel +22 since the baseline (allowed 20: recovered 82 / 4, at most 45)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 192,
+       "travel": 33,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "andrassy-avenue>shoes-on-the-danube>parliament-exterior>opera-house-tour>st-stephens-basilica",
+       "idle": 110,
+       "travel": 55,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "shopping-4d-flex",
+     "stage": "order",
+     "pass": "extension pass",
+     "reason": "travel +39 since the baseline (allowed 24: recovered 99 / 4, at most 45)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 192,
+       "travel": 33,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "shoes-on-the-danube>andrassy-avenue>parliament-exterior>opera-house-tour>st-stephens-basilica",
+       "idle": 93,
+       "travel": 72,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "shopping-4d-flex",
+     "stage": "order",
+     "pass": "extension pass",
+     "reason": "travel +23 since the baseline (allowed 20: recovered 83 / 4, at most 45)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 192,
+       "travel": 33,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "andrassy-avenue>parliament-exterior>shoes-on-the-danube>opera-house-tour>st-stephens-basilica",
+       "idle": 109,
+       "travel": 56,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      }
+     }
+    },
+    {
+     "id": "shopping-4d-flex",
+     "stage": "order",
+     "pass": "extension pass",
+     "reason": "travel +22 since the baseline (allowed 20: recovered 82 / 4, at most 45)",
+     "what": {
+      "day": 1,
+      "base": {
+       "idle": 192,
+       "travel": 33,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      },
+      "trial": {
+       "order": "andrassy-avenue>shoes-on-the-danube>parliament-exterior>opera-house-tour>st-stephens-basilica",
+       "idle": 110,
+       "travel": 55,
+       "lunch": "hungarikum-bisztro",
+       "foodAccessUnknown": false
+      }
+     }
+    }
+   ],
+   "a changed day weaker": [
+    {
+     "id": "shopping-4d-2027-07-17",
+     "stage": "move",
+     "pass": "A pass",
+     "reason": "day 2: cost +1",
+     "what": {
+      "move": "st-stephens-basilica 2->1 swap andrassy-avenue",
+      "days": {
+       "1": {
+        "idle": "136->97",
+        "travel": "39->48",
+        "lunch": "menza->menza",
+        "foodAccessUnknown": "false->false"
+       },
+       "2": {
+        "idle": "21->18",
+        "travel": "54->62",
+        "lunch": "hungarikum-bisztro->hungarikum-bisztro",
+        "foodAccessUnknown": "false->false"
+       },
+       "3": {
+        "idle": "13->13",
+        "travel": "62->62",
+        "lunch": "frici-papa->frici-papa",
+        "foodAccessUnknown": "false->false"
+       },
+       "4": {
+        "idle": "22->22",
+        "travel": "58->58",
+        "lunch": "21-restaurant->21-restaurant",
+        "foodAccessUnknown": "false->false"
+       }
+      }
+     }
+    },
+    {
+     "id": "shopping-4d-2027-07-17",
+     "stage": "move",
+     "pass": "extension pass",
+     "reason": "day 2: cost +1",
+     "what": {
+      "move": "st-stephens-basilica 2->1 swap andrassy-avenue",
+      "days": {
+       "1": {
+        "idle": "136->97",
+        "travel": "39->48",
+        "lunch": "menza->menza",
+        "foodAccessUnknown": "false->false"
+       },
+       "2": {
+        "idle": "21->18",
+        "travel": "54->62",
+        "lunch": "hungarikum-bisztro->hungarikum-bisztro",
+        "foodAccessUnknown": "false->false"
+       },
+       "3": {
+        "idle": "13->13",
+        "travel": "62->62",
+        "lunch": "frici-papa->frici-papa",
+        "foodAccessUnknown": "false->false"
+       },
+       "4": {
+        "idle": "22->22",
+        "travel": "58->58",
+        "lunch": "21-restaurant->21-restaurant",
+        "foodAccessUnknown": "false->false"
+       }
+      }
+     }
+    },
+    {
+     "id": "surprise-3d-2027-07-17",
+     "stage": "move",
+     "pass": "extension pass",
+     "reason": "day 1: cost +6",
+     "what": {
+      "move": "st-stephens-basilica 2->1 swap chain-bridge",
+      "days": {
+       "1": {
+        "idle": "39->47",
+        "travel": "72->68",
+        "lunch": "21-restaurant->hungarikum-bisztro",
+        "foodAccessUnknown": "false->false"
+       },
+       "2": {
+        "idle": "73->21",
+        "travel": "57->74",
+        "lunch": "menza->menza",
+        "foodAccessUnknown": "false->false"
+       },
+       "3": {
+        "idle": "16->16",
+        "travel": "54->54",
+        "lunch": "break->break",
+        "foodAccessUnknown": "true->true"
+       }
+      }
+     }
+    },
+    {
+     "id": "surprise-4d-2027-07-17",
+     "stage": "move",
+     "pass": "extension pass",
+     "reason": "day 1: cost +6",
+     "what": {
+      "move": "st-stephens-basilica 2->1 swap chain-bridge",
+      "days": {
+       "1": {
+        "idle": "39->47",
+        "travel": "72->68",
+        "lunch": "21-restaurant->hungarikum-bisztro",
+        "foodAccessUnknown": "false->false"
+       },
+       "2": {
+        "idle": "73->21",
+        "travel": "57->74",
+        "lunch": "menza->menza",
+        "foodAccessUnknown": "false->false"
+       },
+       "3": {
+        "idle": "16->16",
+        "travel": "54->54",
+        "lunch": "break->break",
+        "foodAccessUnknown": "true->true"
+       },
+       "4": {
+        "idle": "42->42",
+        "travel": "31->31",
+        "lunch": "varosliget-cafe->varosliget-cafe",
+        "foodAccessUnknown": "false->false"
+       }
+      }
+     }
+    }
+   ]
+  }
+ }
+}

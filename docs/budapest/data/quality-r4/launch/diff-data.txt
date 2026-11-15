@@ -1,0 +1,43 @@
+WORSE A-4d-flex d4 flex : idle 43->42, travel 12->13, lunch break 12:30-13:45 -> varosliget-cafe 12:30-13:45, visits end 16:15->16:15  [travel +1]
+WORSE A-4d-2026-11-19 d4 2026-11-22 sunday: idle 43->42, travel 12->13, lunch break 12:30-13:45 -> varosliget-cafe 12:30-13:45, visits end 16:15->16:15  [travel +1]
+WORSE A-4d-2027-07-17 d4 2027-07-20 tuesday: idle 43->42, travel 12->13, lunch break 12:30-13:45 -> varosliget-cafe 12:30-13:45, visits end 16:15->16:15  [travel +1]
+WORSE B-3d-flex d3 flex : idle 17->51, travel 33->29, lunch break 13:00-14:15 -> varosliget-cafe 13:15-14:30, visits end 16:45->17:15  [idle +34; cost +32]
+WORSE B-3d-2026-11-19 d3 2026-11-21 saturday: idle 17->51, travel 33->29, lunch break 13:00-14:15 -> varosliget-cafe 13:15-14:30, visits end 16:45->17:15  [idle +34; cost +32]
+WORSE B-3d-2027-07-17 d1 2027-07-17 saturday: idle 66->68, travel 34->32, lunch menza 12:45-14:00 -> gundel 12:30-13:45, visits end 16:00->16:00  [idle +2; cost +1]
+WORSE B-4d-flex d3 flex : idle 17->51, travel 33->29, lunch break 13:00-14:15 -> varosliget-cafe 13:15-14:30, visits end 16:45->17:15  [idle +34; cost +32]
+WORSE B-4d-2026-11-19 d3 2026-11-21 saturday: idle 17->51, travel 33->29, lunch break 13:00-14:15 -> varosliget-cafe 13:15-14:30, visits end 16:45->17:15  [idle +34; cost +32]
+WORSE B-4d-2027-07-17 d4 2027-07-20 tuesday: idle 17->51, travel 33->29, lunch break 13:00-14:15 -> varosliget-cafe 13:15-14:30, visits end 16:45->17:15  [idle +34; cost +32]
+WORSE C-2d-flex d2 flex : idle 79->71, travel 45->53, lunch menza 13:00-14:15 -> varosliget-cafe 12:45-14:00, visits end 17:15->17:15  [travel +8]
+WORSE C-2d-2027-07-17 d2 2027-07-18 sunday: idle 79->71, travel 57->65, lunch menza 13:00-14:15 -> varosliget-cafe 12:45-14:00, visits end 17:15->17:15  [travel +8]
+      C-3d-flex d2 flex : idle 26->25, travel 42->37, lunch break 12:45-14:00 -> varosliget-cafe 12:45-14:00, visits end 17:15->17:15
+WORSE C-3d-2027-07-17 d2 2027-07-18 sunday: idle 26->25, travel 42->43, lunch break 12:45-14:00 -> varosliget-cafe 12:45-14:00, visits end 17:15->17:15  [travel +1]
+      C-4d-flex d2 flex : idle 26->25, travel 42->37, lunch break 12:45-14:00 -> varosliget-cafe 12:45-14:00, visits end 17:15->17:15
+WORSE C-4d-2026-11-19 d4 2026-11-22 sunday: idle 25->18, travel 43->50, lunch break 13:30-14:45 -> varosliget-cafe 13:30-14:45, visits end 17:15->17:15  [travel +7]
+WORSE C-4d-2027-07-17 d2 2027-07-18 sunday: idle 26->25, travel 42->43, lunch break 12:45-14:00 -> varosliget-cafe 12:45-14:00, visits end 17:15->17:15  [travel +1]
+WORSE popular-3d-2027-07-17 d3 2027-07-19 monday: idle 80->41, travel 45->59, lunch break 12:45-14:00 -> gundel 12:45-14:00, visits end 17:30->17:05  [travel +14]
+WORSE popular-4d-flex d3 flex : idle 26->25, travel 24->25, lunch break 12:45-14:00 -> varosliget-cafe 12:45-14:00, visits end 17:15->17:15  [travel +1]
+WORSE popular-4d-2026-11-19 d3 2026-11-21 saturday: idle 26->25, travel 24->25, lunch break 12:45-14:00 -> varosliget-cafe 12:45-14:00, visits end 17:15->17:15  [travel +1]
+WORSE popular-4d-2027-07-17 d3 2027-07-19 monday: idle 23->22, travel 17->18, lunch break 12:45-14:00 -> varosliget-cafe 12:45-14:00, visits end 14:50->14:50  [travel +1]
+WORSE nature-4d-flex d4 flex : idle 23->22, travel 17->18, lunch break 12:45-14:00 -> varosliget-cafe 12:45-14:00, visits end 14:50->14:50  [travel +1]
+WORSE nature-4d-2026-11-19 d4 2026-11-22 sunday: idle 23->22, travel 17->18, lunch break 12:45-14:00 -> varosliget-cafe 12:45-14:00, visits end 14:50->14:50  [travel +1]
+WORSE nature-4d-2027-07-17 d4 2027-07-20 tuesday: idle 23->22, travel 17->18, lunch break 12:45-14:00 -> varosliget-cafe 12:45-14:00, visits end 14:50->14:50  [travel +1]
+WORSE shopping-4d-flex d4 flex : idle 26->25, travel 24->25, lunch break 12:45-14:00 -> varosliget-cafe 12:45-14:00, visits end 17:15->17:15  [travel +1]
+WORSE shopping-4d-2026-11-19 d4 2026-11-22 sunday: idle 26->25, travel 24->25, lunch break 12:45-14:00 -> varosliget-cafe 12:45-14:00, visits end 17:15->17:15  [travel +1]
+WORSE experiences-2d-flex d2 flex : idle 26->25, travel 24->25, lunch break 12:45-14:00 -> varosliget-cafe 12:45-14:00, visits end 17:15->17:15  [travel +1]
+WORSE experiences-2d-2027-07-17 d2 2027-07-18 sunday: idle 26->25, travel 24->25, lunch break 12:45-14:00 -> varosliget-cafe 12:45-14:00, visits end 17:15->17:15  [travel +1]
+WORSE experiences-3d-flex d2 flex : idle 26->25, travel 24->25, lunch break 12:45-14:00 -> varosliget-cafe 12:45-14:00, visits end 17:15->17:15  [travel +1]
+WORSE experiences-3d-2027-07-17 d2 2027-07-18 sunday: idle 26->25, travel 24->25, lunch break 12:45-14:00 -> varosliget-cafe 12:45-14:00, visits end 17:15->17:15  [travel +1]
+WORSE experiences-4d-flex d2 flex : idle 26->25, travel 24->25, lunch break 12:45-14:00 -> varosliget-cafe 12:45-14:00, visits end 17:15->17:15  [travel +1]
+WORSE experiences-4d-flex d4 flex : idle 116->118, travel 34->32, lunch menza 12:45-14:00 -> gundel 12:30-13:45, visits end 17:15->17:15  [idle +2; cost +1]
+WORSE experiences-4d-2026-11-19 d2 2026-11-20 friday: idle 26->25, travel 24->25, lunch break 12:45-14:00 -> varosliget-cafe 12:45-14:00, visits end 17:15->17:15  [travel +1]
+      experiences-4d-2026-11-19 d3 2026-11-21 saturday: idle 42->36, travel 53->44, lunch 21-restaurant 13:30-14:45 -> 21-restaurant 12:45-14:00, visits end 17:30->16:45
+WORSE experiences-4d-2026-11-19 d4 2026-11-22 sunday: idle 114->59, travel 36->61, lunch menza 12:30-13:45 -> hungarikum-bisztro 12:45-14:00, visits end 16:00->16:00  [travel +25]
+WORSE experiences-4d-2027-07-17 d2 2027-07-18 sunday: idle 17->31, travel 8->9, lunch break 12:30-13:45 -> gundel 12:45-14:00, visits end 16:15->16:30  [idle +14; travel +1; cost +15]
+      food-3d-flex d3 flex : idle 26->25, travel 42->37, lunch break 12:45-14:00 -> varosliget-cafe 12:45-14:00, visits end 17:15->17:15
+      food-4d-flex d3 flex : idle 26->25, travel 42->37, lunch break 12:45-14:00 -> varosliget-cafe 12:45-14:00, visits end 17:15->17:15
+WORSE food-4d-2026-11-19 d3 2026-11-21 saturday: idle 25->18, travel 43->50, lunch break 13:30-14:45 -> varosliget-cafe 13:30-14:45, visits end 17:15->17:15  [travel +7]
+WORSE food-4d-2027-07-17 d4 2027-07-20 tuesday: idle 26->25, travel 42->43, lunch break 12:45-14:00 -> varosliget-cafe 12:45-14:00, visits end 17:15->17:15  [travel +1]
+      surprise-4d-flex d4 flex : idle 43->42, travel 30->25, lunch break 12:30-13:45 -> varosliget-cafe 12:30-13:45, visits end 16:15->16:15
+WORSE surprise-4d-2026-11-19 d4 2026-11-22 sunday: idle 43->42, travel 30->31, lunch break 12:30-13:45 -> varosliget-cafe 12:30-13:45, visits end 16:15->16:15  [travel +1]
+WORSE surprise-4d-2027-07-17 d4 2027-07-20 tuesday: idle 43->42, travel 30->31, lunch break 12:30-13:45 -> varosliget-cafe 12:30-13:45, visits end 16:15->16:15  [travel +1]
+{"changedDays":42,"worseDays":36,"travelOver15":1,"maxTravelIncrease":25}

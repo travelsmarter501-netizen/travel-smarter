@@ -1,0 +1,14 @@
+commit: c73ae93 Budapest round 4: City Park lunch restaurants, travel candidate B1 (test-only), meal check without dietary claims
+tree: 0 modified files
+{"cases":82,"plans":82,"failed":[]}
+{"cases":31,"plans":31,"failed":[]}
+{"plans":20,"failed":[],"totalSeconds":28,"perDaysMedianMs":{"5d":780,"7d":1417,"10d":1179},"maxMs":5114}
+barcelona requests 104 ok 104
+requests 378 ok 378
+prg-focus generation IDENTICAL to 925512d
+prg-oneday generation IDENTICAL to 925512d
+bcn104 generation IDENTICAL to 925512d
+bcn378 generation IDENTICAL to 925512d
+prg-long IDENTICAL PLANS to 925512d (timings excluded)
+prg-focus edits IDENTICAL to 925512d
+bcn104 edits IDENTICAL to 925512d

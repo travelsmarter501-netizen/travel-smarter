@@ -1051,3 +1051,171 @@ The sample's single C change is shopping 3 days (no dates), day 1: idle 192 → 
 - **Files:**
   - `docs/budapest/data/quality-r3/` holds the inputs, per-day metrics of every variant, summaries, timings over 3 runs, comparisons, examples and test outputs.
   - The package adds the full plans, the review logs (every decision with its reasons) and the swap experiment's candidates.
+
+## 20. Day quality, round 4: City Park lunch, travel candidate B1 (2026-11-15, code commit c73ae93 on `feature/budapest`)
+
+**Status:**
+- B1 is a TEST-ONLY switch. The Budapest default stays rule A.
+- The new restaurants are product data on the branch, so they change rule A's plans too (20.3).
+- Budapest stays unavailable.
+
+### 20.1 City Park lunch (data)
+**Added**, both read on the official sites on 2026-11-15, with OSM points:
+
+| Restaurant | Evidence of lunch and hours (official) | Planned hours | Address / OSM | Walk to Fine Arts / House of Music / Heroes' Sq. |
+|---|---|---|---|---|
+| Gundel | gundel.hu/en: "Lunch menu every day: 11:30-18:00", dinner every day 18:00-22:00, "Kitchen closing time every day: 21:00" | Every day 11:30–21:00 (meals end by the kitchen's close) | Gundel Károly út 4, 1146; OSM way/25227262 | 0.25 / 0.82 / 0.29 km |
+| Városliget Café | varosligetcafe.hu: "Hétfőtől vasárnapig: 12:00 - 22:00"; menu (autumn / winter 2026) with soups and main courses | Every day 12:00–22:00 | Olof Palme sétány 5, 1146 (official; OSM node/3409063948 gives no. 6) | 0.36 / 0.39 / 0.40 km |
+
+- **Not added: Robinson** (official site: lunch 12:00–16:00, dinner 18:00–23:00). The page names no days, and the booking page shows none either, so its days are not assumed.
+- **Classification:** Városliget Café is a "restaurant" because of its published menu of main courses, not its name. A cafe category alone is never taken as a meal.
+- **Dietary tags:** "meat" and "pork-maybe", the project's existing cautious tags (the menu has pork). They make no suitability claim.
+- **Walks:** 126 new pairs from the same router (FOSSGIS OSRM foot). None of the 930 existing pairs would change; they keep their 2026-11-13 values.
+- **New customer text:** the two Arabic "why" sentences are proposals awaiting the owner's review.
+
+### 20.2 What changed in the review (test-only unless stated)
+**Travel candidate B1:**
+- The A review first, unchanged.
+- **Then, only on days with lost time:** first visit 60+ min after 09:00, or one wait of 60+ min.
+- **Allowance:** recovered minutes / 4, at most +45, day total at most 90.
+- **Counted cumulatively against the day's fixed baseline** (the day as it entered the review), not against the last stage. Once a day is more than 15 above its baseline, the whole increase must fit.
+- **The trip travel share:** no longer a reason to reject. It is reported, on known travel, next to the number of days whose food access is unknown.
+
+**Explicit meal check (used by B1; not the default):**
+- **What is checked:** category, no restaurant served twice, walk at most +10 min, no new 30-min wait, a restaurant lunch never turned into a lunch break.
+- **No dietary judgement:** the request has no dietary preference, the previous restaurant's tags are not the customer's preference, and a missing warning tag proves nothing.
+- **Added after the first run:** a day whose places did not change may gain at most 10 min of idle (20.4).
+
+**Areas by date:** documented that permutations come in lexicographic order. For a 4-day trip the first 6 all keep the undated plan's first group on day 1, so the search is bounded and a rejection proves nothing. Not the default.
+
+### 20.3 Results (3 runs each, one process per variant and run; plans identical across runs)
+- **Fixed baseline:** "unreviewed", meaning the same lunch rules with no review, on the new data.
+- **"A, old data"** = 8e8a309.
+- **Share** = known travel / (visits + known travel).
+- **Food unknown** = days whose lunch is a lunch break (no point, so the walk to food is unknown).
+
+| 53-plan sample | Idle (vs unreviewed) | Known travel (vs unreviewed) | Share | Food unknown | Restaurant lunches | Median / p90 / max ms |
+|---|---|---|---|---|---|---|
+| Unreviewed (new data) | 13,676 | 7,937 | 18.62% | 36 | 123 | — |
+| A, old data (8e8a309) | 9,374 | 8,161 | 19.05% | 53 | 106 | — |
+| A, new data | 9,422 (−31.1%) | 8,166 (+2.9%) | 19.05% | 31 | 128 | 235 / 719 / 917 |
+| **B1, new data** | **8,814 (−35.6%)** | **8,265 (+4.1%)** | **19.24%** | **30** | **129** | **245 / 736 / 953** |
+
+| 108-plan launch sample | Idle (vs unreviewed) | Known travel (vs unreviewed) | Share | Food unknown | Restaurant lunches | Median / p90 / max ms |
+|---|---|---|---|---|---|---|
+| Unreviewed (new data) | 25,466 | 13,865 | 18.98% | 51 | 219 | — |
+| A, old data (8e8a309) | 15,441 | 14,332 | 19.49% | 83 | 187 | — |
+| A, new data | 15,472 (−39.2%) | 14,366 (+3.6%) | 19.53% | 47 | 223 | 148 / 675 / 914 |
+| **B1, new data** | **15,075 (−40.8%)** | **14,418 (+4.0%)** | **19.58%** | **47** | **223** | **159 / 712 / 959** |
+
+- **Generation time (B1 against A):** median +4% (sample) and +7% (launch), measured in the same session. Earlier rounds ran on a busier machine; compare times within one table only.
+- **Validity:**
+  - The independent check finds 0 problems for A and B1 on both samples.
+  - Daylight places after the monthly sunset estimate: 0.
+  - Visit minutes are the same in every variant.
+
+### 20.4 Every case that got worse
+**The new data (A old data → A new data):**
+- 24 / 42 days changed. Most turn a lunch break into Városliget Café or Gundel.
+- Known travel +1 on most of them: the walk is now counted, where the lunch break counted none.
+- **Worse in substance:**
+  - Culture (3 / 4 days and no dates), day 3:
+    - Lunch break 13:00 → Városliget Café 13:15–14:30.
+    - Idle 17 → 51 (+34), visits end 16:45 → 17:15.
+    - Same on B-3d-2026-11-19, B-2027-01-11 and B-4d-2027-07-17.
+  - Popular 3 days 2027-07-17, Monday: Gundel lunch, idle 80 → 41, known travel +14.
+  - Experiences 4 days from 19 Nov, Sunday: idle 114 → 59, known travel +25 (Menza → Hungarikum after restaurants moved).
+- Lists: `docs/budapest/data/quality-r4/<sample|launch>/diff-data.txt`.
+
+**The rule (A → B1, same new data):**
+- 8 days in 4 trips (sample), 5 days in 3 trips (launch). 0 acceptance failures.
+
+| Day | Idle | Known travel (cumulative vs baseline) | Note |
+|---|---|---|---|
+| Food 22 Nov, Sunday | 266 → 30 | 44 → 64 (+20) | Lunch break → Hungarikum (food access now known) |
+| Food 24 Nov, Tuesday (places unchanged) | 79 → 71 | 50 → 65 (+15) | Lunch Menza → Városliget Café, dinner Hungarikum → New York Café; each walk within +10 |
+| Shopping 22 Nov, Sunday | 192 → 59 | 33 → 61 (+28) | Allowed: recovered 133 / 4 = 33 |
+| Shopping 24 Nov, Tuesday | 37 → 37 | 73 → 73 | Visits end 17:15 → 18:15 (lunch 13:30 → 12:45) |
+| Experiences 22 Nov, Sunday | 188 → 121 (baseline 301) | 44 → 79 (+35 cumulative) | Allowed: recovered 180 / 4 = 45 |
+| Experiences 23 Nov, Monday | 37 → 22 | 73 → 73 | Lunch 21 Restaurant → Hungarikum |
+| Nature 17–19 Jul 2027 (3 / 4 days), Monday | 180 → 37 | 0 → 23 | St Stephen's moved from Sunday; food access unknown on both sides |
+| Experiences 4 days (no dates), day 4 | 118 → 19 | 32 → 56 (+24) | Gundel on both sides |
+
+- **First run (kept in `first-run/`):**
+  - Shopping 3 days (no dates), day 3: idle 37 → 58 (+21), the same in the 3- and 4-day trips.
+  - Day 1's new order moved restaurants, and the timing guard rebuilt day 3, whose places did not change, with Citadella first.
+  - The explicit meal check had no idle limit for such a day.
+  - Fixed by the 10-min idle limit, then the run was repeated. That day no longer changes.
+- **The "+23 idle" day of round 3 (Ba / Ca):**
+  - It is ONE day, the same in Ba and Ca: A 2 days 17 Jul 2027, Sunday, 34 → 57.
+  - The second day reported in round 3 (19 Nov, Friday, 35 → 58) was a reading error: the log's last candidate, not the chosen one. That day ends at 35 → 30.
+
+### 20.5 The food plan, 22–24 Nov: before (8e8a309) and after (B1)
+- **Before (A; the same on the new data):**
+
+  | Day | Idle | Known travel | Plan |
+  |---|---|---|---|
+  | Sunday | 266 | 44, food access unknown | St Stephen's 13:00–14:15 (75 min) → lunch break 14:30 → Chain Bridge 16:15 (15) → Shoes 17:00 (10) → Parliament 17:30 (20) → Fisherman's 18:30 (40) → Matthias 19:30–19:45 (15) → dinner 21 Restaurant 20:15–21:45 |
+  | Monday | 146 | 51, food access unknown | Váci 09:00 (45) → Market Hall 10:15 (60) → lunch break 12:30 → cruise 15:40–16:40 → dinner Frici Papa 18:00 |
+  | Tuesday | 79 | 50 | Heroes' 09:00 (20) → House of Music 10:15–12:15 (120) → Menza 13:00 → Opera tour 15:00 (60) → Andrássy 16:30 (45) → dinner Hungarikum 18:00 |
+
+  - Trip: idle 491, known travel 145, share 19.9% (2 unknown-food days).
+- **After (B1):**
+
+  | Day | Idle | Known travel | Plan |
+  |---|---|---|---|
+  | Sunday | 30 | 64 = 32 between visits + 32 restaurants | Fisherman's 09:00–09:40 → Matthias 10:00 → Shoes 11:00 → Parliament 11:30 → Chain Bridge 12:15 → Hungarikum 13:00–14:15 → St Stephen's 14:45–16:00 → dinner Menza 18:00. Visits end 16:00, day 19:30 |
+  | Monday | 146 | 51 | Unchanged; the wait before the 15:40 cruise stays, because the places are the same |
+  | Tuesday | 71 | 65 | Heroes' 09:00 → House of Music 10:15–12:15 → Városliget Café 12:45–14:00 → Opera tour 15:00 → Andrássy 16:30 → dinner New York Café 18:00 |
+
+  - Trip: idle 247 (−244), known travel 180 (+35), share 23.5% (1 unknown-food day).
+- **Order vs restaurant on Sunday (same order rebuilt with no lunch restaurant):** idle 24, known travel 51. The named restaurant adds 6 idle and 13 known travel, the walk to and from Hungarikum.
+
+### 20.6 The culture plan, 22–24 Nov
+- **Current plan, unchanged by A and B1 on either data set:**
+
+  | Day | Plan | Idle |
+  |---|---|---|
+  | Sunday | Citadella 09:00 → Shoes → Parliament → Chain Bridge 11:45–12:00 → Hungarikum 12:30–13:45 | 15 |
+  | Monday | Heroes' 09:00 → St Stephen's 10:15–11:30 → Menza 12:30 → Opera tour 15:00–16:00 | 97 |
+  | Tuesday | Fisherman's 09:00 → Matthias 10:00 → National Gallery 10:45–12:45 → 21 Restaurant 13:30–14:45 | 19 |
+
+  - Trip: 10 places, 420 visit min, idle 131, known travel 124, share 22.8%.
+- **Engine, areas by date (Ba), with the new restaurants:**
+  - The City Park date now gets a restaurant.
+  - Both built candidates are still rejected: trip idle 131 → 167.
+  - **The cause is the order:** one clock-estimate order per day, then stage 1.
+  - Search: 6 assignments; 2 invalid (a day with 7 places, a day with 1); 2 not built (limit); 2 built.
+- **Limited swap experiment (script only, `bud-r3-swap.mts`), every order tried, 66 candidates, 6,666 builds: 15 accepted.**
+- **Best by idle (Citadella ↔ Heroes' Square), NOT adopted:**
+
+  | Day | Plan | Idle | Known travel |
+  |---|---|---|---|
+  | Sunday | Chain Bridge 09:00 → National Gallery 10:00–12:00 → Matthias 12:30 → 21 Restaurant 13:15–14:30 → Fisherman's 15:00–15:40 | 31 | 44 |
+  | Monday | Heroes' 09:00 → St Stephen's 10:15–11:30 → Shoes 12:00 → Parliament 12:30 → Hungarikum 13:15–14:30 → Opera tour 15:00–16:00 | 18 | 67 |
+  | Tuesday | Citadella 09:00–09:45 → House of Music 10:45–12:45 → Városliget Café 13:15–14:30 → Museum of Fine Arts 15:00–17:00 | 27 | 48 |
+
+  - Trip: 12 places (+ Fine Arts, + House of Music), 660 visit min, idle 76, share 19.4%, a restaurant lunch every day.
+  - **Per date:**
+    - Sunday idle 15 → 31 and Tuesday 19 → 27, each with more visits (90 → 190, 175 → 285 min).
+    - Monday 97 → 18.
+  - By your rule ("no day weaker") this would need a decision: those two dates have more idle AND more content.
+- **The restoration is not extended in this round.** It is not the default. The rejections prove nothing about better distributions.
+
+### 20.7 Recommendation (from the tables above)
+- **Schedule validity:** A and B1 are both valid (0 problems). The choice is about improvement thresholds only.
+- **B1:**
+  - **Gain:** idle −6.5% (sample) and −2.6% (launch) against A; known travel +1.2% / +0.4%; time +4–7%.
+  - **No silent accumulation:** every day above +15 is within its allowance against the fixed baseline.
+  - **Clearest case:** the food Sunday (266 → 30).
+  - **Recommended as the next default candidate**, together with the explicit meal check including the 10-min idle limit for days whose places did not change. Switching the default is the owner's decision; nothing is switched here.
+- **Data (Gundel, Városliget Café):** valid, with the evidence above. Before publishing, the owner reviews the two Arabic texts and the culture day-3 trade-off: a known restaurant lunch at +34 idle on that day.
+- **Areas by date:** not recommended in this round. The engine's construction loses to ordering; the script finds valid plans, but each makes two dates longer.
+- **Launch range:** not changed.
+
+### 20.8 Checks on c73ae93
+- **Validity and Budapest tests:**
+  - Independent check: 0 problems for A and B1 on both samples (launch: 534 visits and meals checked against hours, 1,277 transfers, 0 without data).
+  - `bud-boundary` ALL PASS; `bud-cruise-suggest` ALL PASS; `bud-mixed-dates` 307 / 0; `bud-action-save` 15 / 0.
+- **Build:** tsc, eslint (changed files) and `next build --webpack` all pass.
+- **Prague and Barcelona on c73ae93 (clean tree):** generation byte-identical to `925512d` (prg-focus 82, prg-oneday 31, bcn104, bcn378; prg-long plans identical, timings excluded); edits byte-identical (prg-focus, bcn104). `docs/budapest/data/quality-r4/tests/prague-barcelona-generation-and-edits-c73ae93.txt`.

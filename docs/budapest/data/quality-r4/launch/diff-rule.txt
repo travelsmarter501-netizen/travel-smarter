@@ -1,0 +1,6 @@
+      nature-3d-2027-07-17 d2 2027-07-18 sunday: idle 19->13, travel 51->42, lunch hungarikum-bisztro 12:45-14:00 -> hungarikum-bisztro 12:45-14:00, visits end 15:45->12:20
+WORSE nature-3d-2027-07-17 d3 2027-07-19 monday: idle 180->37, travel 0->23, lunch break 13:00-14:15 -> break 12:30-13:45, visits end 12:45->11:45  [travel +23]
+      nature-4d-2027-07-17 d2 2027-07-18 sunday: idle 19->13, travel 51->42, lunch hungarikum-bisztro 12:45-14:00 -> hungarikum-bisztro 12:45-14:00, visits end 15:45->12:20
+WORSE nature-4d-2027-07-17 d3 2027-07-19 monday: idle 180->37, travel 0->23, lunch break 13:00-14:15 -> break 12:30-13:45, visits end 12:45->11:45  [travel +23]
+WORSE experiences-4d-flex d4 flex : idle 118->19, travel 32->56, lunch gundel 12:30-13:45 -> gundel 13:00-14:15, visits end 17:15->16:00  [travel +24]
+{"changedDays":5,"worseDays":3,"travelOver15":3,"maxTravelIncrease":24}
