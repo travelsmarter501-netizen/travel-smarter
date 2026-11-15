@@ -1,0 +1,160 @@
+PASS  A-flex1: scheduled days identical to the same request without any cruise data: identical
+PASS  A-flex1: cruise never on the clock: not scheduled
+PASS  A-flex1: suggestion only when relevant (relevant=true): d1
+PASS  A-flex1 d1: add request rejected: offered=false decision=add_unavailable stored=unchanged
+PASS  A-flex1 d1: add request rejected (day already edited): offered=false decision=add_unavailable stored=unchanged
+PASS  A-flex1: old stored plan with the cruise on day 1 (display only): shown with warning
+PASS  A-flex2: scheduled days identical to the same request without any cruise data: identical
+PASS  A-flex2: cruise never on the clock: not scheduled
+PASS  A-flex2: suggestion only when relevant (relevant=true): d1
+PASS  A-flex2 d1: add request rejected: offered=false decision=add_unavailable stored=unchanged
+PASS  A-flex2 d1: add request rejected (day already edited): offered=false decision=add_unavailable stored=unchanged
+PASS  A-flex2 d2: add request rejected: offered=false decision=add_unavailable stored=unchanged
+PASS  A-flex2 d2: add request rejected (day already edited): offered=false decision=add_unavailable stored=unchanged
+PASS  A-flex2: old stored plan with the cruise on day 1 (display only): shown with warning
+PASS  A-flex3: scheduled days identical to the same request without any cruise data: identical
+PASS  A-flex3: cruise never on the clock: not scheduled
+PASS  A-flex3: suggestion only when relevant (relevant=true): d3
+PASS  A-flex3 d1: add request rejected: offered=false decision=add_unavailable stored=unchanged
+PASS  A-flex3 d1: add request rejected (day already edited): offered=false decision=add_unavailable stored=unchanged
+PASS  A-flex3 d2: add request rejected: offered=false decision=add_unavailable stored=unchanged
+PASS  A-flex3 d2: add request rejected (day already edited): offered=false decision=add_unavailable stored=unchanged
+PASS  A-flex3 d3: add request rejected: offered=false decision=add_unavailable stored=unchanged
+PASS  A-flex3 d3: add request rejected (day already edited): offered=false decision=add_unavailable stored=unchanged
+PASS  A-flex3: old stored plan with the cruise on day 1 (display only): shown with warning
+PASS  A-flex4: scheduled days identical to the same request without any cruise data: identical
+PASS  A-flex4: cruise never on the clock: not scheduled
+PASS  A-flex4: suggestion only when relevant (relevant=true): d3
+PASS  A-flex4 d1: add request rejected: offered=false decision=add_unavailable stored=unchanged
+PASS  A-flex4 d1: add request rejected (day already edited): offered=false decision=add_unavailable stored=unchanged
+PASS  A-flex4 d2: add request rejected: offered=false decision=add_unavailable stored=unchanged
+PASS  A-flex4 d2: add request rejected (day already edited): offered=false decision=add_unavailable stored=unchanged
+PASS  A-flex4 d3: add request rejected: offered=false decision=add_unavailable stored=unchanged
+PASS  A-flex4 d3: add request rejected (day already edited): offered=false decision=add_unavailable stored=unchanged
+PASS  A-flex4 d4: add request rejected: offered=false decision=add_unavailable stored=unchanged
+PASS  A-flex4 d4: add request rejected (day already edited): offered=false decision=add_unavailable stored=unchanged
+PASS  A-flex4: old stored plan with the cruise on day 1 (display only): shown with warning
+PASS  B-flex3: scheduled days identical to the same request without any cruise data: identical
+PASS  B-flex3: cruise never on the clock: not scheduled
+PASS  B-flex3: suggestion only when relevant (relevant=false): none
+PASS  B-flex3 d1: add request rejected: offered=false decision=add_unavailable stored=unchanged
+PASS  B-flex3 d1: add request rejected (day already edited): offered=false decision=add_unavailable stored=unchanged
+PASS  B-flex3 d2: add request rejected: offered=false decision=add_unavailable stored=unchanged
+PASS  B-flex3 d2: add request rejected (day already edited): offered=false decision=add_unavailable stored=unchanged
+PASS  B-flex3 d3: add request rejected: offered=false decision=add_unavailable stored=unchanged
+PASS  B-flex3 d3: add request rejected (day already edited): offered=false decision=add_unavailable stored=unchanged
+PASS  B-flex3: old stored plan with the cruise on day 1 (display only): shown with warning
+PASS  C-flex3: scheduled days identical to the same request without any cruise data: identical
+PASS  C-flex3: cruise never on the clock: not scheduled
+PASS  C-flex3: suggestion only when relevant (relevant=true): d3
+PASS  C-flex3 d1: add request rejected: offered=false decision=add_unavailable stored=unchanged
+PASS  C-flex3 d1: add request rejected (day already edited): offered=false decision=add_unavailable stored=unchanged
+PASS  C-flex3 d2: add request rejected: offered=false decision=add_unavailable stored=unchanged
+PASS  C-flex3 d2: add request rejected (day already edited): offered=false decision=add_unavailable stored=unchanged
+PASS  C-flex3 d3: add request rejected: offered=false decision=add_unavailable stored=unchanged
+PASS  C-flex3 d3: add request rejected (day already edited): offered=false decision=add_unavailable stored=unchanged
+PASS  C-flex3: old stored plan with the cruise on day 1 (display only): shown with warning
+PASS  popular-flex3: scheduled days identical to the same request without any cruise data: identical
+PASS  popular-flex3: cruise never on the clock: not scheduled
+PASS  popular-flex3: suggestion only when relevant (relevant=true): d1
+PASS  popular-flex3 d1: add request rejected: offered=false decision=add_unavailable stored=unchanged
+PASS  popular-flex3 d1: add request rejected (day already edited): offered=false decision=add_unavailable stored=unchanged
+PASS  popular-flex3 d2: add request rejected: offered=false decision=add_unavailable stored=unchanged
+PASS  popular-flex3 d2: add request rejected (day already edited): offered=false decision=add_unavailable stored=unchanged
+PASS  popular-flex3 d3: add request rejected: offered=false decision=add_unavailable stored=unchanged
+PASS  popular-flex3 d3: add request rejected (day already edited): offered=false decision=add_unavailable stored=unchanged
+PASS  popular-flex3: old stored plan with the cruise on day 1 (display only): shown with warning
+PASS  nature-flex3: scheduled days identical to the same request without any cruise data: identical
+PASS  nature-flex3: cruise never on the clock: not scheduled
+PASS  nature-flex3: suggestion only when relevant (relevant=true): d2
+PASS  nature-flex3 d1: add request rejected: offered=false decision=add_unavailable stored=unchanged
+PASS  nature-flex3 d1: add request rejected (day already edited): offered=false decision=add_unavailable stored=unchanged
+PASS  nature-flex3 d2: add request rejected: offered=false decision=add_unavailable stored=unchanged
+PASS  nature-flex3 d2: add request rejected (day already edited): offered=false decision=add_unavailable stored=unchanged
+PASS  nature-flex3 d3: add request rejected: offered=false decision=add_unavailable stored=unchanged
+PASS  nature-flex3 d3: add request rejected (day already edited): offered=false decision=add_unavailable stored=unchanged
+PASS  nature-flex3: old stored plan with the cruise on day 1 (display only): shown with warning
+PASS  shopping-flex3: scheduled days identical to the same request without any cruise data: identical
+PASS  shopping-flex3: cruise never on the clock: not scheduled
+PASS  shopping-flex3: suggestion only when relevant (relevant=true): d2
+PASS  shopping-flex3 d1: add request rejected: offered=false decision=add_unavailable stored=unchanged
+PASS  shopping-flex3 d1: add request rejected (day already edited): offered=false decision=add_unavailable stored=unchanged
+PASS  shopping-flex3 d2: add request rejected: offered=false decision=add_unavailable stored=unchanged
+PASS  shopping-flex3 d2: add request rejected (day already edited): offered=false decision=add_unavailable stored=unchanged
+PASS  shopping-flex3 d3: add request rejected: offered=false decision=add_unavailable stored=unchanged
+PASS  shopping-flex3 d3: add request rejected (day already edited): offered=false decision=add_unavailable stored=unchanged
+PASS  shopping-flex3: old stored plan with the cruise on day 1 (display only): shown with warning
+PASS  experiences-flex3: scheduled days identical to the same request without any cruise data: identical
+PASS  experiences-flex3: cruise never on the clock: not scheduled
+PASS  experiences-flex3: suggestion only when relevant (relevant=true): d1
+PASS  experiences-flex3 d1: add request rejected: offered=false decision=add_unavailable stored=unchanged
+PASS  experiences-flex3 d1: add request rejected (day already edited): offered=false decision=add_unavailable stored=unchanged
+PASS  experiences-flex3 d2: add request rejected: offered=false decision=add_unavailable stored=unchanged
+PASS  experiences-flex3 d2: add request rejected (day already edited): offered=false decision=add_unavailable stored=unchanged
+PASS  experiences-flex3 d3: add request rejected: offered=false decision=add_unavailable stored=unchanged
+PASS  experiences-flex3 d3: add request rejected (day already edited): offered=false decision=add_unavailable stored=unchanged
+PASS  experiences-flex3: old stored plan with the cruise on day 1 (display only): shown with warning
+PASS  food-flex3: scheduled days identical to the same request without any cruise data: identical
+PASS  food-flex3: cruise never on the clock: not scheduled
+PASS  food-flex3: suggestion only when relevant (relevant=true): d1
+PASS  food-flex3 d1: add request rejected: offered=false decision=add_unavailable stored=unchanged
+PASS  food-flex3 d1: add request rejected (day already edited): offered=false decision=add_unavailable stored=unchanged
+PASS  food-flex3 d2: add request rejected: offered=false decision=add_unavailable stored=unchanged
+PASS  food-flex3 d2: add request rejected (day already edited): offered=false decision=add_unavailable stored=unchanged
+PASS  food-flex3 d3: add request rejected: offered=false decision=add_unavailable stored=unchanged
+PASS  food-flex3 d3: add request rejected (day already edited): offered=false decision=add_unavailable stored=unchanged
+PASS  food-flex3: old stored plan with the cruise on day 1 (display only): shown with warning
+PASS  surprise-flex3: scheduled days identical to the same request without any cruise data: identical
+PASS  surprise-flex3: cruise never on the clock: not scheduled
+PASS  surprise-flex3: suggestion only when relevant (relevant=true): d3
+PASS  surprise-flex3 d1: add request rejected: offered=false decision=add_unavailable stored=unchanged
+PASS  surprise-flex3 d1: add request rejected (day already edited): offered=false decision=add_unavailable stored=unchanged
+PASS  surprise-flex3 d2: add request rejected: offered=false decision=add_unavailable stored=unchanged
+PASS  surprise-flex3 d2: add request rejected (day already edited): offered=false decision=add_unavailable stored=unchanged
+PASS  surprise-flex3 d3: add request rejected: offered=false decision=add_unavailable stored=unchanged
+PASS  surprise-flex3 d3: add request rejected (day already edited): offered=false decision=add_unavailable stored=unchanged
+PASS  surprise-flex3: old stored plan with the cruise on day 1 (display only): shown with warning
+PASS  cruise hours without dates: no departure: {}
+PASS  A-2027-01-11: scheduled days identical to the same request without any cruise data: identical
+PASS  A-2027-01-11: cruise never on the clock: not scheduled
+PASS  A-2027-01-11: suggestion with the approved text (relevant=true): d3 رحلة مسائية على الدانوب — خيار إضافي. تأكّد من المواعيد والتوفّر لتاريخ سفرك قبل الحجز.
+PASS  A-2027-01-11 d1: add request rejected: offered=false decision=add_unavailable stored=unchanged
+PASS  A-2027-01-11 d1: add request rejected (day already edited): offered=false decision=add_unavailable stored=unchanged
+PASS  A-2027-01-11 d2: add request rejected: offered=false decision=add_unavailable stored=unchanged
+PASS  A-2027-01-11 d2: add request rejected (day already edited): offered=false decision=add_unavailable stored=unchanged
+PASS  A-2027-01-11 d3: add request rejected: offered=false decision=add_unavailable stored=unchanged
+PASS  A-2027-01-11 d3: add request rejected (day already edited): offered=false decision=add_unavailable stored=unchanged
+PASS  A-2027-01-11: old stored plan with the cruise on day 1 (display only): shown with warning
+PASS  C-2027-07-17: scheduled days identical to the same request without any cruise data: identical
+PASS  C-2027-07-17: cruise never on the clock: not scheduled
+PASS  C-2027-07-17: suggestion with the approved text (relevant=true): d3 رحلة مسائية على الدانوب — خيار إضافي. تأكّد من المواعيد والتوفّر لتاريخ سفرك قبل الحجز.
+PASS  C-2027-07-17 d1: add request rejected: offered=false decision=add_unavailable stored=unchanged
+PASS  C-2027-07-17 d1: add request rejected (day already edited): offered=false decision=add_unavailable stored=unchanged
+PASS  C-2027-07-17 d2: add request rejected: offered=false decision=add_unavailable stored=unchanged
+PASS  C-2027-07-17 d2: add request rejected (day already edited): offered=false decision=add_unavailable stored=unchanged
+PASS  C-2027-07-17 d3: add request rejected: offered=false decision=add_unavailable stored=unchanged
+PASS  C-2027-07-17 d3: add request rejected (day already edited): offered=false decision=add_unavailable stored=unchanged
+PASS  C-2027-07-17: old stored plan with the cruise on day 1 (display only): shown with warning
+PASS  popular-2027-05-03: scheduled days identical to the same request without any cruise data: identical
+PASS  popular-2027-05-03: cruise never on the clock: not scheduled
+PASS  popular-2027-05-03: suggestion with the approved text (relevant=true): d1 رحلة مسائية على الدانوب — خيار إضافي. تأكّد من المواعيد والتوفّر لتاريخ سفرك قبل الحجز.
+PASS  popular-2027-05-03 d1: add request rejected: offered=false decision=add_unavailable stored=unchanged
+PASS  popular-2027-05-03 d1: add request rejected (day already edited): offered=false decision=add_unavailable stored=unchanged
+PASS  popular-2027-05-03 d2: add request rejected: offered=false decision=add_unavailable stored=unchanged
+PASS  popular-2027-05-03 d2: add request rejected (day already edited): offered=false decision=add_unavailable stored=unchanged
+PASS  popular-2027-05-03 d3: add request rejected: offered=false decision=add_unavailable stored=unchanged
+PASS  popular-2027-05-03 d3: add request rejected (day already edited): offered=false decision=add_unavailable stored=unchanged
+PASS  popular-2027-05-03: old stored plan with the cruise on day 1 (display only): shown with warning
+PASS  B-2027-01-11: scheduled days identical to the same request without any cruise data: identical
+PASS  B-2027-01-11: cruise never on the clock: not scheduled
+PASS  B-2027-01-11: suggestion with the approved text (relevant=false): none
+PASS  B-2027-01-11 d1: add request rejected: offered=false decision=add_unavailable stored=unchanged
+PASS  B-2027-01-11 d1: add request rejected (day already edited): offered=false decision=add_unavailable stored=unchanged
+PASS  B-2027-01-11 d2: add request rejected: offered=false decision=add_unavailable stored=unchanged
+PASS  B-2027-01-11 d2: add request rejected (day already edited): offered=false decision=add_unavailable stored=unchanged
+PASS  B-2027-01-11 d3: add request rejected: offered=false decision=add_unavailable stored=unchanged
+PASS  B-2027-01-11 d3: add request rejected (day already edited): offered=false decision=add_unavailable stored=unchanged
+PASS  B-2027-01-11: old stored plan with the cruise on day 1 (display only): shown with warning
+
+ALL PASS
+exit 0

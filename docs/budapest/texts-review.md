@@ -159,3 +159,10 @@ time and number identical), still not reviewed by a native reader.
 | shoppingAreas/gozsdu-udvar/bestFor | ممر محلات ومقاهي | A passage of shops and cafés | מעבר של חנויות ובתי קפה |
 | shoppingAreas/gozsdu-udvar/description | ممر بين Király utca وDob utca بالحي اليهودي. | A passage between Király utca and Dob utca in the Jewish Quarter. | מעבר בין Király utca ל־Dob utca ברובע היהודי. |
 | shoppingAreas/arena-mall/description | مركز تسوق كبير جنب محطة Keleti. | A large shopping centre next to Keleti station. | מרכז קניות גדול ליד תחנת Keleti. |
+
+## 5. Display issues seen in the UI check (not changed)
+
+| Text | Issue |
+|---|---|
+| «⚠️ مشروطة بالحجز: الجولات بس 13:30 و15:00 و16:30 …», «الجولات بس 13:30 و15:00 و16:30: …» | «و» glued to a time renders out of order in RTL («15:00و»). A space after «و» (as in titles) would fix the display; it changes the Arabic source, so the English / Hebrew entries would move with it. |
+| «⚠️ الدخول بفترة محجوزة كل نص ساعة (:15 و:45) …», «الدخول بفترات كل نص ساعة (:15 و:45): …» | A time written as «:15» renders «15:» in RTL. |

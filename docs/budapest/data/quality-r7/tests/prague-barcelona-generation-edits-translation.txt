@@ -1,0 +1,23 @@
+commit: 512e19f Budapest photo tools: plain header comment (no unused eslint-disable)
+tree: 0 modified files
+{"cases":82,"plans":82,"failed":[]}
+{"cases":31,"plans":31,"failed":[]}
+{"plans":20,"failed":[],"totalSeconds":60,"perDaysMedianMs":{"5d":1722,"7d":2902,"10d":2480},"maxMs":10134}
+barcelona requests 104 ok 104
+requests 378 ok 378
+prg-focus generation IDENTICAL to 925512d
+prg-oneday generation IDENTICAL to 925512d
+bcn104 generation IDENTICAL to 925512d
+bcn378 generation IDENTICAL to 925512d
+prg-long IDENTICAL PLANS to 925512d (timings excluded)
+{"plans":82,"withAdd":82,"withRemove":82}
+{"plans":104,"withAdd":104,"withRemove":104}
+prg-focus edits IDENTICAL to 925512d
+bcn104 edits IDENTICAL to 925512d
+plans 82, missing 0
+plans 104, missing 0
+plans 82, missing 0
+plans 104, missing 0
+prg-focus translation (en, he) IDENTICAL to 925512d
+bcn104 translation (en, he) IDENTICAL to 925512d
+ALLDONE

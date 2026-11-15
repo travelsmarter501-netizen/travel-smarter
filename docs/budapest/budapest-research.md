@@ -1515,3 +1515,143 @@ Before = B1 with the transport fix (round 5 sample, run 1); after = 943b6df. Sam
 - **Not an overall improvement:** it trades idle time for daylight at one viewpoint.
 - No new search for orders was run.
 - Section 22.2 said "Sunday idle 59 → 119" and "this trip changed 3 days". Both are right, but the Monday lunch change and the trip totals were missing; they are added here.
+
+### 23.4 Day title and summary describe the places the day has now (0bf0c5b)
+**Before:**
+- The title and summary were written once, when the plan was made.
+- An edited day kept them, so a removed place stayed named (seen: «حديقة المدينة وAndrássy والأوبرا» after removing Andrássy).
+- Two more findings:
+  - **Generated titles also named absent places:** an area label is built from places («البرلمان والكاتدرائية», «Andrássy والأوبرا»), but the day only had to visit the area. A day with only the Chain Bridge and the Shoes was titled «… والبرلمان والكاتدرائية».
+  - **«و» glued to a Latin name** rendered against its last letter in RTL («Andrássyو»).
+
+**Now:**
+- **One function** (`budapestDayText`) builds the title and summary for the places a day has. Creation uses it, and so does every day whose places or order the customer changed, through the opt-in hook `editedDayText`.
+- **Recomputed from the stored edits on every open**, so save and reopen give the same text.
+- **A repeated title** still gets the first stop, as at creation.
+- **Place-named area labels** name only what the day has. New labels are flagged for the owner's review in `texts-review.md`:
+  - «البرلمان», «الكاتدرائية», or «ضفة الدانوب» when neither;
+  - «الأوبرا», «شارع Andrássy».
+- **«و» before a Latin name** gets a space: «حديقة المدينة و Andrássy والأوبرا», «… و Gozsdu Udvar.».
+- **User-written titles:** the product has no such feature (no title field in the stored edits), so there was nothing to preserve.
+- **Prague and Barcelona** do not set the hook: unchanged.
+
+**Effect:**
+- **Generation:** 75 of 159 sample titles and 158 summaries change (the summaries only by the space); schedules identical.
+
+**Test** (`bud-day-text.mts`):
+- Every day of the samples: removing each stop, adding the first candidate, and a save and reopen through JSON.
+- New code: 0 failures on 159 days, 688 removals and 139 adds.
+- 7341d67: 2,111 failures.
+
+### 23.5 Translations (57387a5)
+- **Coverage:** every Budapest text a plan can show is now in English and Hebrew:
+  - 102 place texts (descriptions, reasons, tips, durations, prices, hours, booking labels, shopping, food);
+  - 14 planner phrases (transfer notes, warnings, suggestion reasons, tour-slot notes);
+  - templates for the day titles, the daylight note, the checked-transit note (weekday, date, time) and the capacity message.
+  - File: `app/lib/i18n/budapestCatalog.ts`.
+- **Review status:**
+  - **Not reviewed by a person:** all English and Hebrew were written by Claude. Every row is listed in `docs/budapest/texts-review.md` (Arabic, English, Hebrew) for a native review. Nothing is described as reviewed.
+  - **National Gallery:** the owner approved its Arabic hours and tip (2026-11-14). Their English and Hebrew were checked against it: every date, time and number is the same. They moved from `planCatalog.ts` to the Budapest file unchanged, and still need a native reader.
+- **No other city can change:**
+  - Budapest entries are added only where the Arabic is not already a catalog source.
+  - The Budapest templates run after all other templates.
+  - Summaries accept «و » with a space.
+  - Prague / Barcelona translation in en and he is identical to 925512d (23.8).
+- **Month names:** the Budapest data used «كانون / تشرين / شباط …». They are now the site's «يناير … ديسمبر» (32 words on 10 lines). A line-by-line check shows no number or time changed.
+- **Facts:** no fact, time or price differs between the languages. The test also checks that the translated plan has the same data (structure, ids, numbers, times, links).
+- **Test** (`bud-i18n.mts`):
+  - All 156 Arabic data texts.
+  - The 53 + 108 sample plans and their edited versions: remove, drag, every add candidate, new start. 2,221 plans, en and he.
+  - New code: 0 untranslated, 0 data differences.
+  - 0bf0c5b: 382 failures (174 texts).
+- **Limit:** a saved plan whose stored Arabic differs from today's (an older wording) is shown as stored and logged, never guessed. That is the rule of every city. Budapest has no customer plans.
+
+### 23.6 Photos and their rights (cdcc399)
+- **The rule (same as Prague):**
+  - Wikimedia Commons files whose file page gives a free license allowing commercial use (public domain, "Attribution", CC BY, CC BY-SA) and a named author.
+  - A photo on an official site is never taken as permission.
+  - No similar landmark, no generated image.
+- **Coverage:** 28 of the 33 places a plan can show (the 9 area entries have no photo in any city).
+  - Each was matched through the place's Wikidata item near its own point, or a Commons file named after the place and its address, and looked at.
+  - Rejected after looking:
+    - the Wikidata photo of Andrássy (1896);
+    - a far view of the Arena with its old name;
+    - the pre-redevelopment Citadella photo (the 2026 photo is used);
+    - the only Menza file (a coffee cup);
+    - the only Frici Papa file (the menu cover).
+- **Missing, recorded instead of a substitute:**
+  - the Legenda cruise and Hungarikum: no Commons file found;
+  - Menza and Frici Papa: no file showing the place;
+  - Városliget Café: the building could not be confirmed.
+- **Record:** `docs/budapest/photo-rights.md` — source link, author as credited, license and its link, terms, and how it was matched, per photo. Special credits:
+  - Heroes' Square: the credit its file page asks for;
+  - Parliament: a derivative, both names;
+  - Váci utca: the uploader's own work, empty Artist field.
+- **Credits on the site:**
+  - The plan cards show no credit next to the photo. The credits are on `/photo-credits`, linked from the footer (the same arrangement as Prague).
+  - Budapest is listed there only while the city can be chosen (public, or the local / Preview switch), so an unreleased city is not shown.
+  - Plans saved before the photos get them for display, as Prague's do (`planPhotos.ts`).
+- **Files:** `public/images-budapest`, 6.4 MB (Commons' own 960px thumbnails, not edited).
+- **Test:** `bud-photos.mts`.
+
+### 23.7 Saved plans: current behaviour (documented, not changed; to decide before the Preview)
+- **Stored:** the generated plan (`base`, with every place's details and hours as of the day it was made) plus the customer's edits per day (order, durations, start). Nothing else.
+- **On every open:**
+  - **Unedited days:** shown as stored (stored timeline, notes, title, summary).
+  - **Edited days:** rebuilt from the stored places with their stored hours; the schedule and its notes (including the timing warning) are computed again.
+  - **A place the customer added:** its details and hours come from the CURRENT data for that day's date (`tripHoursForAddedPlaces`), not stored with the edit. If the data changes, an added place's hours can change on the next open. **Policy not decided.**
+  - **The title and summary of an edited day** are recomputed from its places (23.4); unedited days keep the stored ones.
+  - **Notes on an edited day** come from today's rules (daylight, tour slots, timing); unedited days keep the notes they were saved with. A Budapest plan saved before 23.2 keeps the proposed «⏳ …» sunset text on unedited days, and that text has no translation.
+  - **Photos:** filled in for display when the stored place has none (nothing written back).
+  - **Translation:** exact match of the stored Arabic only.
+- **Compact stored hours:** deferred (plan size); not a launch blocker by itself (owner, 2026-11-15).
+
+### 23.8 Checks on the final commit
+Run on 512e19f (clean tree); 46793fc after it changes comments and documents only. Outputs: `quality-r7/tests/`.
+- **Schedule validity:**
+  - Independent check, 0 problems: 159 days and 728 transfers (53 sample); 270 days and 1,277 transfers (108 sample).
+  - Cumulative-allowance proof: 0 violations on both samples.
+- **Budapest tests:**
+  - `bud-boundary` ALL PASS; `bud-cruise-suggest` ALL PASS; `bud-mixed-dates` 307 / 0; `bud-action-save` 15 / 0.
+  - `bud-daylight` 0 failures (including the fixed-session cases).
+  - `bud-transport-links` 2,304 legs / 0.
+  - `bud-day-text`: 429 days, 1,871 removals, 365 adds / 0.
+  - `bud-i18n`: 156 data texts, 2,221 plans en / he / 0.
+  - `bud-photos` 0.
+- **Build:** `tsc`, `npm run lint`, `next build --webpack` pass.
+- **Prague / Barcelona against 925512d:** generation of 5 sets (82 + 31 + 20 long Prague plans, 104 + 378 Barcelona requests), edits of 82 Prague and 104 Barcelona plans, and their English and Hebrew translation: all byte-identical (`quality-r7/tests/prague-barcelona-generation-edits-translation.txt`; generation times were not compared, the run shared the machine with the UI check).
+- **UI on a phone viewport** (`quality-r7/ui-check.md`; emulated, not a real phone):
+  - create → edit (remove, add) → save → reopen in Arabic;
+  - the same plan in English and Hebrew (Hebrew switched on in the working copy for the check only);
+  - place cards; the photo-credits page.
+
+### 23.9 What still blocks a launch / a Preview
+**Done in this round (no longer blockers):**
+- titles naming removed places and the «Andrássyو» rendering;
+- missing English / Hebrew content and the month names;
+- the sunset note text (approved);
+- photos for 28 places with their rights.
+
+**Before a Vercel Preview (decisions and checks):**
+1. **Saved plans, added places:** keep recomputing their hours from current data on every open, or store them with the edit (23.7). The owner's decision.
+2. **Text review:**
+   - a native English and Hebrew reading of `texts-review.md` (all AI-written);
+   - the owner's review of the new Arabic title labels and the «و » convention.
+3. **Hebrew on the site** is switched off (`releaseScope.ts`); deciding whether the Preview offers it.
+4. **A test Supabase for the Preview** (separate from production) and the preview switch set for the Preview environment only. Owner's setup; nothing was created.
+
+**Before a launch (still open):**
+1. **Photos:**
+   - 5 places without one (Legenda cruise, Hungarikum, Menza, Frici Papa, Városliget Café);
+   - plan cards show no credit next to a photo (credits page only, as for Prague): an owner decision whether that is enough.
+2. **Display:** «و» glued to times in two warning texts, and «:15» in RTL (`texts-review.md` section 5).
+3. **Daylight:**
+   - Vajdahunyad's class rests on caution;
+   - the sunset is a monthly estimate;
+   - the Zoo closes 5 min after the December estimate.
+4. **Transport:** most transit times are distance estimates.
+5. **Range per interest:** an owner decision (21.7); the questionnaire is unchanged.
+6. **Not yet run:** a Vercel Preview with a test Supabase (real auth, saves, RLS); real phones and Safari.
+7. **Compact stored hours:** deferred; not a blocker by itself.
+
+**Budapest stays `available: false`.**
