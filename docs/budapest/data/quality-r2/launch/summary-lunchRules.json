@@ -1,0 +1,34 @@
+{
+ "lunchRules": {
+  "plans": 108,
+  "failed": [],
+  "days": 270,
+  "morningGap": 8325,
+  "waits": 17205,
+  "idle": 25530,
+  "visits": 59205,
+  "travel": 13831,
+  "avgVisitsEnd": 1029,
+  "avgLunchEnd": 864,
+  "dinners": 84,
+  "lunchRestaurant": 183,
+  "lunchBreak": 87,
+  "gerbeaudLunch": 0,
+  "lateLunch": 32,
+  "afterDarkEstimate": 160,
+  "lunchBreaksBySet": {
+   "A": "10/30",
+   "B": "7/30",
+   "C": "8/30",
+   "popular": "14/30",
+   "nature": "16/30",
+   "shopping": "2/30",
+   "experiences": "10/30",
+   "food": "11/30",
+   "surprise": "9/30"
+  },
+  "msMedian": 299,
+  "msP90": 1333,
+  "msMax": 2234
+ }
+}

@@ -658,3 +658,148 @@ Prague and Barcelona do not set the flag.
 - Compact stored hours.
 - The policy for hours of places added to saved plans.
 - Translations.
+
+## 18. Day quality, round 2 (2026-11-15, code commit 8e8a309 on `feature/budapest`)
+
+### 18.1 What changed
+- **One measure, before and after:** `app/lib/planner/budapest/budapestDayQuality.ts` (`finalDayQuality`) reads a FINAL day: the chosen restaurant, the meal length and every transfer, meal legs included. The planner accepts changes with it and the review tools report with it (`bud-quality-metrics.mts` is a wrapper).
+- **Stage 1, order accepted on the final schedule:**
+  - The clock still proposes up to 4 orders per day (same places, same lengths).
+  - Each proposal is REBUILT and judged on the schedule the customer gets: resolved and passed through the timing guard.
+  - Accepted only if all hold:
+    - no new schedule problem;
+    - no restaurant lunch turned into a lunch break;
+    - final travel at most +15 min for the day (cap unchanged);
+    - gain ≥ 30 idle-equivalent minutes and ≥ twice the added travel.
+  - Days not reordered may change only through a shared restaurant: cost +10 at most, travel +15 at most.
+  - Bounded: 6 rebuilds per plan.
+- **Stage 2, moving a place to another day:**
+  - Candidates: a place that opens 2 h or more later on its day than on another trip day (St Stephen's on a Sunday opens at 13:00).
+  - It moves alone or is swapped with one of the 3 nearest places of that day; each of the two days is ordered on the clock.
+  - Judged on the WHOLE trip: total gain ≥ 30, no day weaker at all (tolerance 0), no restaurant lunch lost, +15 travel at most on any day, at least 2 places per day.
+  - The trip keeps the same places and lengths. Dated plans only; 12 rebuilds at most; the accommodation-anchored day 1 is not touched.
+- **No automatic later start.**
+- **Bug found by the independent check and fixed:**
+  - In the first round-2 build, the review compared against the plan BEFORE the timing guard repaired it.
+  - Where the guard later reordered the unchanged plan, the accepted order looked +19 min worse than what the customer would otherwise get (4 launch days).
+  - Now every version the review compares is the guarded schedule, and the pipeline returns the reviewed data as is (opt-in `reviewResolvedPlan`; Prague and Barcelona do not set it).
+
+### 18.2 Results (each variant in its own process, one after another, nothing else running)
+- **Variants:**
+  - "ddb1b98": equals that commit byte for byte; the sample file is identical to `bud-s10.json`.
+  - "lunch rules": no café lunch + lunch after the last visit.
+  - "order": + stage 1.
+  - "all": + stage 2.
+- Visits are identical in every variant.
+
+**53-plan sample (159 days)**
+
+| Variant | 09:00 → first | Waits | Sum | Travel | Restaurant / break / Gerbeaud | Lunch after 13:30 | Daylight after dark* | Avg visits end / lunch end | Dinners | Median / p90 / max ms |
+|---|---|---|---|---|---|---|---|---|---|---|
+| ddb1b98 | 4,980 | 10,032 | 15,012 | 8,038 | 117 / 42 / 16 | 24 | 310 | 17:18 / 14:22 | 39 | 527 / 1,384 / 2,054 |
+| lunch rules | 4,980 | 8,733 | 13,713 | 7,912 | 101 / 58 / 0 | 17 | 310 | 16:59 / 14:24 | 39 | 450 / 1,346 / 1,834 |
+| order | 1,320 | 8,231 | 9,551 | 8,154 | 106 / 53 / 0 | 3 | 0 | 16:35 / 14:14 | 39 | 464 / 1,429 / 1,869 |
+| **all** | **1,260** | **8,114** | **9,374 (−38%)** | **8,161 (+1.5%)** | **106 / 53 / 0** | **3** | **0** | **16:33 / 14:14** | **39** | **482 / 1,415 / 1,822** |
+
+**108-plan launch sample (270 days)**
+
+| Variant | 09:00 → first | Waits | Sum | Travel | Restaurant / break / Gerbeaud | Lunch after 13:30 | Daylight after dark* | Avg visits end / lunch end | Dinners | Median / p90 / max ms |
+|---|---|---|---|---|---|---|---|---|---|---|
+| ddb1b98 | 8,325 | 19,266 | 27,591 | 14,129 | 210 / 60 / 26 | 44 | 160 | 17:27 / 14:22 | 84 | 334 / 1,449 / 2,909 |
+| lunch rules | 8,325 | 17,205 | 25,530 | 13,831 | 183 / 87 / 0 | 32 | 160 | 17:09 / 14:24 | 84 | 299 / 1,333 / 2,234 |
+| order | 2,520 | 13,134 | 15,654 | 14,309 | 187 / 83 / 0 | 2 | 0 | 16:34 / 14:14 | 88 | 281 / 1,324 / 1,753 |
+| **all** | **2,340** | **13,101** | **15,441 (−44%)** | **14,332 (+1.4%)** | **187 / 83 / 0** | **2** | **0** | **16:34 / 14:14** | **88** | **302 / 1,294 / 1,846** |
+
+\* Daylight places (Margaret Island, Vajdahunyad from outside, the Zoo) after dark, **by the monthly sunset estimate for the listed places**. The project has no sunset calculation by date, coordinates and time zone: Barcelona uses coarse monthly buckets on purpose, and no library is installed. None is proposed in this round.
+
+- **Generation time:** the review adds no measurable cost; the spread between variants is run-to-run noise. Bounded by 6 + 12 rebuilds per plan.
+- **Lunch breaks (no named restaurant) per interest, final version:**
+  - Sample: A 11/29, culture 3/18, C 8/18, popular 8/18, nature 7/18, shopping 0/18, experiences 7/18, **food 7/18**, surprise 2/4.
+  - Launch: A 10/30, culture 7/30, C 8/30, popular 14/30, nature 12/30, shopping 2/30, experiences 10/30, **food 11/30**, surprise 9/30.
+  - The rise from ddb1b98 (launch 60 → 83) comes entirely from removing Gerbeaud as lunch (round 1); stages 1 and 2 lower it (87 → 83).
+
+### 18.3 Each stage apart and the worse cases (`docs/budapest/data/quality-r2/<sample|launch>/diff-*.txt`)
+"Worse" = any of these on that day:
+- idle up;
+- travel up;
+- restaurant lunch lost;
+- later lunch;
+- daylight after dark (estimate);
+- cost up;
+- visits ending 60+ min later.
+
+**Lunch rules alone (lunchRules vs ddb1b98):**
+- 29 / 46 days changed. Every restaurant lunch lost is a Gerbeaud lunch (13 / 23), by design.
+- The same days are the idle increases: +8 to +9 min on a Thursday or Friday whose Gerbeaud lunch became a lunch break (7 days in the sample, 12 in the launch sample).
+- Travel +9 at most.
+
+**Stage 1 (order vs lunch rules, same lunch rules):**
+- 33 / 89 days changed. No day travels more than +15 (max +15); no restaurant lunch lost; no visit ends later.
+- Worse beyond the accepted travel:
+  - `experiences-2026-11-22` Monday (not reordered): idle 32 → 37, travel +10, because Sunday's new order takes Hungarikum and Monday gets 21 Restaurant. It is within the +10 tolerance for unchanged days; Sunday gains 113 idle.
+  - `C-4d-2026-11-19` Saturday (not reordered): travel +9, cost +5, same restaurant change.
+- All other "worse" days are travel increases with a larger idle gain on the same day.
+
+**Stage 2 (all vs order):**
+- 4 / 6 days changed (2 / 3 trips): `B-2026-11-22`, `popular-2027-07-17` (sample) and `popular-2d/3d-2027-07-17`, `experiences-4d-2026-11-19` (launch).
+- Worse: travel +7 to +14 on one day of each trip, with a larger gain on the trip; nothing else.
+
+**Against ddb1b98 (all stages):**
+- One day above +15 travel: B Sunday 22 Nov, 27 → 45 (+18), in two steps each within the cap (stage 1 +13 against the lunch-rules day, stage 2 +13 in exchange for Monday −19). Idle on that day: 263 → 15.
+
+**The two shopping cases (idle 37 → 58 in round 1):**
+- `shopping-flex3` and `shopping-2026-11-22`, day 3.
+- **Rejected now.** On the final schedule the clock's proposal (Citadella first) has idle 58 and cost 91.5 against 73.5, so it is worse; they stay at 37.
+- The mirror case (`shopping-2026-11-19 / -12-24 / -2027-01-11`, day 3, idle 58) has the better order available (idle 37, +6 travel) but its gain, 18, is under the 30 threshold, so it is not taken. The rule is kept as agreed.
+
+### 18.4 The Sunday / Monday cases and the culture day
+**Culture `B-2026-11-22` (moved by stage 2):**
+- **Sunday:**
+  - Before: St Stephen's at 13:00 first (morning gap 240, lunch break 14:30), visits end 17:50.
+  - After: Citadella 09:00 → Shoes → Parliament → Chain Bridge, visits end 12:00, Hungarikum 12:30–13:45.
+  - Idle 256 → 15, travel 19 → 45.
+- **Monday:**
+  - Before: Citadella → Opera 15:00 → Heroes', lunch break.
+  - After: Heroes' 09:00 → St Stephen's 10:15–11:30 (open from 09:00 on Mondays) → Menza 12:30 → Opera tour 15:00–16:00.
+  - Idle 185 → 97, travel 55 → 48.
+  - The wait before the 15:00 tour stays: the 13:30 tour does not fit after lunch, and no Monday-open culture place is left to fill it (below).
+- **Tuesday, unchanged:** Fisherman's Bastion 09:00 → Matthias 10:00 → National Gallery 10:45–12:45 → 21 Restaurant 13:30–14:45; idle 19.
+  - The day ends at 14:45 because the trip has few places, not because of the order.
+  - Cause: this culture trip gets 10 places, where the same trip on Thursday–Saturday gets 13. The City Park day falls on Monday, when the Museum of Fine Arts and the House of Music are closed, so both are left out; the National Museum is also not chosen.
+  - Fixing this means choosing which area goes on which date BEFORE places are picked (Sunday = museums, Monday = churches, squares and the tour). That changes the trip's places, so it is outside this round (same places only) and is listed as a proposal. No padding was added.
+
+**Food `food-2026-11-22` Sunday (not changed, rejected by the cap):**
+- Today: St Stephen's 13:00 first, lunch break 14:30, visits end 19:45, idle 266.
+- Stage 1's four orders reach idle 29–31 and a Hungarikum lunch, but final travel is 63–83 against 44: walking to a named restaurant replaces the lunch break, which has no transfer. Over +15, so rejected.
+- Stage 2's best move (St Stephen's to Monday) would take the trip from cost 683 to 218: Sunday idle 266 → 25, Monday 146 → 24 with a restaurant instead of the lunch break. It is rejected because Monday's travel rises +32 (restaurant legs again) and Tuesday's dinner restaurant changes (+3.5 cost, tolerance 0).
+- The cap is kept as agreed. **Owner decision:** whether walking to a named restaurant that replaces an undetermined lunch break should count inside the +15 cap.
+
+**Cruise days unchanged:**
+- `A-4d-2026-11-19` Saturday: Market Hall 09:00 → Váci 10:30 → Citadella 12:00 → lunch break 13:00 → cruise 16:20; idle 93.
+- Food Monday: Váci → Market Hall → lunch break 12:30 → cruise 15:40; idle 146.
+- Same places: the wait before a fixed departure can only move into the morning.
+
+### 18.5 Sample table (fixed thresholds; a measurement, not a launch or sales decision)
+- `docs/budapest/data/quality-r2/launch/table-all.csv` (and `table-old.csv` for ddb1b98).
+- Columns now include lunch breaks per cell, the average end of the visits, the end of lunch and the optional dinners apart, and the daylight estimate. "meets all" only says the thresholds are met.
+- After round 2:
+  - Every cell meets the idle threshold except "nature" 2 days.
+  - Still missing thresholds:
+    - culture 4 days: thin days;
+    - popular 4 days: 58% strong match;
+    - nature alone 2–4 days: few places, thin days, weak match.
+- **The launch range stays open.**
+
+### 18.6 Checks on 8e8a309
+- **Budapest tests:**
+  - Independent check: 159 + 270 days, 0 problems; 728 + 1,277 transfers, none without data.
+  - `bud-boundary` ALL PASS; `bud-cruise-suggest` ALL PASS; `bud-mixed-dates` 307 pass, 0 fail; `bud-action-save` 15 pass, 0 fail.
+- **Build:** tsc, eslint (changed files) and `next build --webpack` with fake values and `ALLPAY_MODE=disabled`.
+- **Prague and Barcelona on 8e8a309 (clean tree):** generation byte-identical to `925512d` (prg-focus 82, prg-oneday 31, bcn104, bcn378; prg-long plans identical, timings excluded); edits (add options, remove, add, start change, refused add) byte-identical for prg-focus and bcn104. Package: `tests/prague-barcelona-generation-and-edits-8e8a309.txt`.
+
+### 18.7 Not changed
+- Automatic later start.
+- The +15 cap and the gain threshold.
+- Choosing which area goes on which date (proposal, 18.4).
+- Compact stored hours.
+- Translations.

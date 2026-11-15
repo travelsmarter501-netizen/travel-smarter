@@ -1,0 +1,47 @@
+      A-3d-flex d3 flex : idle 74->16, travel 31->29, lunch break 12:30-13:45 -> break 13:00-14:15, visits end 15:15->12:45
+WORSE A-3d-2027-07-17 d1 2027-07-17 saturday: idle 54->14, travel 51->31, lunch gerbeaud 12:30-13:45 -> break 13:00-14:15, visits end 15:15->12:45  [restaurant lunch lost (gerbeaud)]
+      A-4d-flex d3 flex : idle 74->16, travel 31->29, lunch break 12:30-13:45 -> break 13:00-14:15, visits end 15:15->12:45
+WORSE A-4d-2027-07-17 d1 2027-07-17 saturday: idle 54->14, travel 51->31, lunch gerbeaud 12:30-13:45 -> break 13:00-14:15, visits end 15:15->12:45  [restaurant lunch lost (gerbeaud)]
+WORSE B-3d-2027-07-17 d2 2027-07-18 sunday: idle 133->19, travel 22->31, lunch 21-restaurant 12:30-13:45 -> 21-restaurant 13:30-14:45, visits end 16:30->12:45  [travel +9]
+WORSE B-4d-flex d2 flex : idle 132->35, travel 23->30, lunch 21-restaurant 12:30-13:45 -> 21-restaurant 13:45-15:00, visits end 16:30->13:00  [travel +7; late lunch +15]
+WORSE C-3d-2026-11-19 d1 2026-11-19 thursday: idle 92->100, travel 85->77, lunch gerbeaud 13:45-15:00 -> break 13:15-14:30, visits end 17:20->17:20  [idle +8; restaurant lunch lost (gerbeaud)]
+WORSE C-4d-2026-11-19 d1 2026-11-19 thursday: idle 92->100, travel 85->77, lunch gerbeaud 13:45-15:00 -> break 13:15-14:30, visits end 17:20->17:20  [idle +8; restaurant lunch lost (gerbeaud)]
+WORSE popular-1d-2027-07-17 d1 2027-07-17 saturday: idle 58->52, travel 62->53, lunch gerbeaud 13:45-15:00 -> break 13:30-14:45, visits end 17:30->17:15  [restaurant lunch lost (gerbeaud)]
+WORSE popular-2d-flex d1 flex : idle 43->33, travel 77->57, lunch gerbeaud 13:45-15:00 -> break 13:15-14:30, visits end 16:30->16:00  [restaurant lunch lost (gerbeaud)]
+WORSE popular-2d-2026-11-19 d1 2026-11-19 thursday: idle 92->100, travel 63->55, lunch gerbeaud 13:45-15:00 -> break 13:15-14:30, visits end 17:20->17:20  [idle +8; restaurant lunch lost (gerbeaud)]
+WORSE popular-2d-2027-07-17 d1 2027-07-17 saturday: idle 43->33, travel 77->57, lunch gerbeaud 13:45-15:00 -> break 13:15-14:30, visits end 16:30->16:00  [restaurant lunch lost (gerbeaud)]
+WORSE popular-3d-flex d1 flex : idle 43->33, travel 77->57, lunch gerbeaud 13:45-15:00 -> break 13:15-14:30, visits end 16:30->16:00  [restaurant lunch lost (gerbeaud)]
+WORSE popular-3d-2026-11-19 d1 2026-11-19 thursday: idle 92->100, travel 63->55, lunch gerbeaud 13:45-15:00 -> break 13:15-14:30, visits end 17:20->17:20  [idle +8; restaurant lunch lost (gerbeaud)]
+WORSE popular-3d-2027-07-17 d1 2027-07-17 saturday: idle 43->33, travel 77->57, lunch gerbeaud 13:45-15:00 -> break 13:15-14:30, visits end 16:30->16:00  [restaurant lunch lost (gerbeaud)]
+WORSE popular-4d-flex d1 flex : idle 54->16, travel 51->29, lunch gerbeaud 12:30-13:45 -> break 13:00-14:15, visits end 15:15->12:45  [restaurant lunch lost (gerbeaud)]
+WORSE popular-4d-2027-07-17 d1 2027-07-17 saturday: idle 54->16, travel 51->29, lunch gerbeaud 12:30-13:45 -> break 13:00-14:15, visits end 15:15->12:45  [restaurant lunch lost (gerbeaud)]
+WORSE nature-2d-2026-11-19 d1 2026-11-19 thursday: idle 112->4, travel 38->26, lunch hungarikum-bisztro 12:30-13:45 -> break 12:45-14:00, visits end 16:00->12:30  [restaurant lunch lost (hungarikum-bisztro)]
+WORSE nature-3d-flex d1 flex : idle 133->19, travel 22->31, lunch 21-restaurant 12:30-13:45 -> 21-restaurant 13:30-14:45, visits end 16:30->12:45  [travel +9]
+WORSE nature-3d-flex d2 flex : idle 260->253, travel 50->42, lunch gerbeaud 14:45-16:00 -> break 14:30-15:45, visits end 19:45->19:30  [restaurant lunch lost (gerbeaud)]
+WORSE nature-3d-2026-11-19 d1 2026-11-19 thursday: idle 253->262, travel 37->28, lunch gerbeaud 13:30-14:45 -> break 13:00-14:15, visits end 17:20->17:20  [idle +9; restaurant lunch lost (gerbeaud); cost +5]
+WORSE nature-3d-2026-11-19 d3 2026-11-21 saturday: idle 133->19, travel 22->31, lunch 21-restaurant 12:30-13:45 -> 21-restaurant 13:30-14:45, visits end 16:30->12:45  [travel +9]
+WORSE nature-3d-2027-07-17 d1 2027-07-17 saturday: idle 133->19, travel 22->31, lunch 21-restaurant 12:30-13:45 -> 21-restaurant 13:30-14:45, visits end 16:30->12:45  [travel +9]
+WORSE nature-3d-2027-07-17 d2 2027-07-18 sunday: idle 260->253, travel 50->42, lunch gerbeaud 14:45-16:00 -> break 14:30-15:45, visits end 19:45->19:30  [restaurant lunch lost (gerbeaud)]
+WORSE nature-4d-flex d1 flex : idle 133->19, travel 22->31, lunch 21-restaurant 12:30-13:45 -> 21-restaurant 13:30-14:45, visits end 16:30->12:45  [travel +9]
+WORSE nature-4d-flex d2 flex : idle 260->253, travel 50->42, lunch gerbeaud 14:45-16:00 -> break 14:30-15:45, visits end 19:45->19:30  [restaurant lunch lost (gerbeaud)]
+WORSE nature-4d-2026-11-19 d1 2026-11-19 thursday: idle 253->262, travel 37->28, lunch gerbeaud 13:30-14:45 -> break 13:00-14:15, visits end 17:20->17:20  [idle +9; restaurant lunch lost (gerbeaud); cost +5]
+WORSE nature-4d-2026-11-19 d3 2026-11-21 saturday: idle 133->19, travel 22->31, lunch 21-restaurant 12:30-13:45 -> 21-restaurant 13:30-14:45, visits end 16:30->12:45  [travel +9]
+WORSE nature-4d-2027-07-17 d1 2027-07-17 saturday: idle 133->19, travel 22->31, lunch 21-restaurant 12:30-13:45 -> 21-restaurant 13:30-14:45, visits end 16:30->12:45  [travel +9]
+WORSE nature-4d-2027-07-17 d2 2027-07-18 sunday: idle 260->253, travel 50->42, lunch gerbeaud 14:45-16:00 -> break 14:30-15:45, visits end 19:45->19:30  [restaurant lunch lost (gerbeaud)]
+WORSE experiences-3d-2026-11-19 d1 2026-11-19 thursday: idle 92->100, travel 63->55, lunch gerbeaud 13:45-15:00 -> break 13:15-14:30, visits end 17:20->17:20  [idle +8; restaurant lunch lost (gerbeaud)]
+WORSE experiences-4d-2026-11-19 d1 2026-11-19 thursday: idle 188->196, travel 27->19, lunch gerbeaud 12:30-13:45 -> break 12:30-13:45, visits end 17:20->17:20  [idle +8; restaurant lunch lost (gerbeaud); cost +4]
+WORSE food-1d-2027-07-17 d1 2027-07-17 saturday: idle 58->52, travel 70->61, lunch gerbeaud 13:45-15:00 -> break 13:30-14:45, visits end 17:30->17:15  [restaurant lunch lost (gerbeaud)]
+WORSE food-2d-2026-11-19 d1 2026-11-19 thursday: idle 92->100, travel 85->77, lunch gerbeaud 13:45-15:00 -> break 13:15-14:30, visits end 17:20->17:20  [idle +8; restaurant lunch lost (gerbeaud)]
+WORSE food-3d-2026-11-19 d1 2026-11-19 thursday: idle 92->100, travel 85->77, lunch gerbeaud 13:45-15:00 -> break 13:15-14:30, visits end 17:20->17:20  [idle +8; restaurant lunch lost (gerbeaud)]
+      food-3d-2027-07-17 d2 2027-07-18 sunday: idle 133->19, travel 38->32, lunch 21-restaurant 12:30-13:45 -> 21-restaurant 13:30-14:45, visits end 16:30->12:45
+      food-4d-flex d2 flex : idle 133->19, travel 38->32, lunch 21-restaurant 12:30-13:45 -> 21-restaurant 13:30-14:45, visits end 16:30->12:45
+      food-4d-2027-07-17 d2 2027-07-18 sunday: idle 133->19, travel 38->32, lunch 21-restaurant 12:30-13:45 -> 21-restaurant 13:30-14:45, visits end 16:30->12:45
+      surprise-3d-flex d3 flex : idle 74->16, travel 58->54, lunch break 12:30-13:45 -> break 13:00-14:15, visits end 15:15->12:45
+      surprise-3d-2026-11-19 d1 2026-11-19 thursday: idle 133->19, travel 38->32, lunch 21-restaurant 12:30-13:45 -> 21-restaurant 13:30-14:45, visits end 16:30->12:45
+WORSE surprise-3d-2026-11-19 d2 2026-11-20 friday: idle 84->93, travel 93->84, lunch gerbeaud 13:30-14:45 -> break 13:00-14:15, visits end 17:20->17:20  [idle +9; restaurant lunch lost (gerbeaud); cost +5]
+      surprise-3d-2027-07-17 d3 2027-07-19 monday: idle 76->16, travel 54->54, lunch break 12:30-13:45 -> break 13:00-14:15, visits end 15:15->12:45
+      surprise-4d-flex d3 flex : idle 74->16, travel 58->54, lunch break 12:30-13:45 -> break 13:00-14:15, visits end 15:15->12:45
+      surprise-4d-2026-11-19 d1 2026-11-19 thursday: idle 133->19, travel 38->32, lunch 21-restaurant 12:30-13:45 -> 21-restaurant 13:30-14:45, visits end 16:30->12:45
+WORSE surprise-4d-2026-11-19 d2 2026-11-20 friday: idle 84->93, travel 93->84, lunch gerbeaud 13:30-14:45 -> break 13:00-14:15, visits end 17:20->17:20  [idle +9; restaurant lunch lost (gerbeaud); cost +5]
+      surprise-4d-2027-07-17 d3 2027-07-19 monday: idle 76->16, travel 54->54, lunch break 12:30-13:45 -> break 13:00-14:15, visits end 15:15->12:45
+{"changedDays":46,"worseDays":35,"travelOver15":0,"maxTravelIncrease":9}

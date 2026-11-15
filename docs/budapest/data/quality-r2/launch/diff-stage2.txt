@@ -1,0 +1,7 @@
+WORSE popular-2d-2027-07-17 d1 2027-07-17 saturday: idle 33->19, travel 57->71, lunch break 13:15-14:30 -> break 13:00-14:15, visits end 16:00->16:55  [travel +14]
+      popular-2d-2027-07-17 d2 2027-07-18 sunday: idle 102->38, travel 53->52, lunch 21-restaurant 12:45-14:00 -> 21-restaurant 12:30-13:45, visits end 18:30->16:30
+WORSE popular-3d-2027-07-17 d1 2027-07-17 saturday: idle 33->19, travel 57->71, lunch break 13:15-14:30 -> break 13:00-14:15, visits end 16:00->16:55  [travel +14]
+      popular-3d-2027-07-17 d2 2027-07-18 sunday: idle 102->38, travel 53->52, lunch 21-restaurant 12:45-14:00 -> 21-restaurant 12:30-13:45, visits end 18:30->16:30
+WORSE experiences-4d-2026-11-19 d3 2026-11-21 saturday: idle 94->42, travel 46->53, lunch 21-restaurant 13:15-14:30 -> 21-restaurant 13:30-14:45, visits end 16:45->17:30  [travel +7]
+      experiences-4d-2026-11-19 d4 2026-11-22 sunday: idle 119->114, travel 46->36, lunch menza 12:30-13:45 -> menza 12:30-13:45, visits end 17:45->16:00
+{"changedDays":6,"worseDays":3,"travelOver15":0,"maxTravelIncrease":14}
