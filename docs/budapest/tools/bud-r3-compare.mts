@@ -5,8 +5,8 @@
 //   access (no point): counted apart, never as 0 proof.
 // - Acceptance failures (per trip, X against A): schedule problem; current place lost; restaurant lunch lost on a date; a day above
 //   +15 travel that is not allowed by the rule (lost time in the unreviewed day, recovered / k, at most 45, day total 90); trip travel
-//   share more than +2 points; a changed meal on a day with the same places that is not equivalent (category, dietary tags, served
-//   twice, walk more than +10); a new wait of 60+ min; fewer visit minutes.
+//   share more than +2 points (B / C only; for B1 the share is reported, not a failure); a changed meal on a day with the same places
+//   that is not equivalent (category, served twice, walk more than +10; no dietary judgement); a new wait of 60+ min; fewer visit minutes.
 // - Review log: rejections by reason and pass; the rejections whose ONLY reason was the trip travel share (with the share change).
 // Usage: ROOT=$(pwd -W) NODE_OPTIONS=--conditions=react-server npx tsx docs/budapest/tools/bud-r3-compare.mts <dir> B,C,Am,Ba,Ca [out.json]
 import { existsSync, readFileSync, writeFileSync } from "fs";
@@ -18,7 +18,7 @@ const PL = await imp("/app/lib/planner/budapest/budapestPlaces.ts");
 const [, , dir, list, outFile] = process.argv;
 const load = (name: string) => JSON.parse(readFileSync(`${dir}/${name}.json`, "utf8"));
 const FOOD = new Map<string, any>(PL.BUDAPEST_PLACES.foodPlaces.map((p: any) => [p.id, p]));
-const RULE: Record<string, { k: number }> = { B: { k: 4 }, C: { k: 3 }, Ba: { k: 4 }, Ca: { k: 3 }, Am: { k: Infinity }, A: { k: Infinity } };
+const RULE: Record<string, { k: number }> = { B: { k: 4 }, C: { k: 3 }, Ba: { k: 4 }, Ca: { k: 3 }, B1: { k: 4 }, Am: { k: Infinity }, A: { k: Infinity } };
 const mid = (leg: any) => { const o = leg && leg.sourceStatus !== "unresolved" ? leg.options.find((x: any) => x.mode === leg.recommendedMode) : null; return o ? Math.round((o.durationMinutesMin + o.durationMinutesMax) / 2) : 0; };
 const mealWalk = (day: any, id: string) => Object.entries(day.mealLegs ?? {}).reduce((s, [k, leg]) => s + (k.startsWith(id + "::") || k.endsWith("::" + id) ? mid(leg) : 0), 0);
 const dayRow = (d: any) => ({ d, q: Q.finalDayQuality(d), problems: G.scheduleProblems(d).size });
@@ -75,10 +75,9 @@ for (const name of list.split(",")) {
         const ma = ra.d.timeline.meals.find((m: any) => m.mealType === type), mx = rx.d.timeline.meals.find((m: any) => m.mealType === type);
         if (!ma || ma.placeId === mx?.placeId || ma.placeId === "lunch-break" || !mx || mx.placeId === "lunch-break") continue;
         const fa = FOOD.get(ma.placeId), fx = FOOD.get(mx.placeId);
-        const lost = (fa?.dietaryTags ?? []).filter((t: string) => t !== "pork-maybe" && !(fx?.dietaryTags ?? []).includes(t));
+        // No dietary judgement (no dietary preference in the request; tags are data, not proof). Category, repetition and walk only.
+        void fa;
         if (!["local", "restaurants"].includes(fx?.categoryId)) fails.push(`day ${i + 1}: ${type} ${mx.placeId} category ${fx?.categoryId}`);
-        if (lost.length) fails.push(`day ${i + 1}: ${type} ${mx.placeId} dietary tags lost ${lost.join(",")}`);
-        if ((fx?.dietaryTags ?? []).includes("pork-maybe") && !(fa?.dietaryTags ?? []).includes("pork-maybe")) fails.push(`day ${i + 1}: ${type} ${mx.placeId} may contain pork`);
         if (x.plan.days.some((d: any, j: number) => j !== i && d.timeline.meals.some((m: any) => m.placeId === mx.placeId))) fails.push(`day ${i + 1}: ${type} ${mx.placeId} served twice`);
         const walk = mealWalk(rx.d, mx.placeId) - mealWalk(ra.d, ma.placeId);
         if (walk > 10) fails.push(`day ${i + 1}: ${type} ${ma.placeId} -> ${mx.placeId} walk +${walk}`);
@@ -86,7 +85,7 @@ for (const name of list.split(",")) {
       const f = (r: any) => ({ order: r.q.order, idle: r.q.idle, morning: r.q.morningGap, waits: r.q.waits, longestWait: r.q.longestWait, travel: r.q.travel, stopTravel: r.q.stopTravel, mealTravel: r.q.mealTravel, foodAccessUnknown: r.q.foodAccessUnknown, lunch: r.q.lunch, visits: r.q.visits, visitsEnd: r.q.visitsEnd });
       days.push({ day: i + 1, date: rx.d.actualDate ?? null, weekday: rx.d.weekday ?? null, unreviewed: f(rl), A: f(ra), X: f(rx), absolute: { idle: rx.q.idle - ra.q.idle, travel: inc }, cumulative: { idle: rx.q.idle - rl.q.idle, travel: rx.q.travel - rl.q.travel } });
     });
-    if (tx.share - ta.share > 2) fails.push(`trip travel share ${ta.share.toFixed(1)}% -> ${tx.share.toFixed(1)}%`);
+    if (tx.share - ta.share > 2 && name !== "B1") fails.push(`trip travel share ${ta.share.toFixed(1)}% -> ${tx.share.toFixed(1)}%`);
     if (tx.visits < ta.visits) fails.push(`visit minutes ${ta.visits} -> ${tx.visits}`);
     const aIds = new Set(a.plan.days.flatMap((d: any) => d.stops.map((s: any) => s.id)));
     const xIds = new Set(x.plan.days.flatMap((d: any) => d.stops.map((s: any) => s.id)));
@@ -118,6 +117,7 @@ for (const name of list.split(",")) {
     if (t.includes("dietary") || t.includes("pork") || t.includes("served on another") || t.includes("category")) return "meal not equivalent";
     if (t.includes("new wait")) return "new wait";
     if (t.includes("schedule problem")) return "schedule problem (validity)";
+    if (t.includes("places did not change")) return "unchanged day: idle more than +10";
     if (t.includes("places")) return "day size";
     if (t.includes("no order fits") || t.includes("open on no date")) return "hours (validity)";
     if (t.startsWith("trip idle")) return "trip idle more than +30";

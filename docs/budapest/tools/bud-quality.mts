@@ -8,7 +8,7 @@
 // Variants: "old" (as ddb1b98: must equal it byte for byte), "lunchRules" (no cafe lunch + lunch after the last visit), "order" (the same
 // lunch rules + each day's order accepted on the final schedule), "all" (+ moves between days). Optional 3rd argument: variants to run.
 // Round 3 (test-only rules, 8e8a309 = "A"): "A" (= all), "Am" (A + explicit meal checks), "B" / "C" (travel rule B / C + explicit meals),
-// "Ba" / "Ca" (+ areas by date). Each variant also writes <name>-times.json (ms per plan) and <name>-review-log.json (every review
+// "Ba" / "Ca" (+ areas by date). Round 4 candidate: "B1" (B's allowance counted against the fixed baseline, no trip-share rejection). Each variant also writes <name>-times.json (ms per plan) and <name>-review-log.json (every review
 // decision with its reasons). Repeat runs for timings: one process per variant and run.
 // Usage: ROOT=$(pwd -W) NODE_OPTIONS=--conditions=react-server npx tsx docs/budapest/tools/bud-quality.mts <sample|launch> <outDir>
 //   sample = the 53-plan review sample (bud-sample.mts inputs); launch = 9 interest sets x 1-4 days x 3 date cases (108 plans).
@@ -54,8 +54,9 @@ const VARIANTS: Record<string, any> = {
   C: { ...M.BUDAPEST_QUALITY_DEFAULTS, travelRule: "C", mealCheck: "explicit" },
   Ba: { ...M.BUDAPEST_QUALITY_DEFAULTS, travelRule: "B", mealCheck: "explicit", datedAreas: true },
   Ca: { ...M.BUDAPEST_QUALITY_DEFAULTS, travelRule: "C", mealCheck: "explicit", datedAreas: true },
+  B1: { ...M.BUDAPEST_QUALITY_DEFAULTS, travelRule: "B1", mealCheck: "explicit" },
 };
-const ROUND3 = new Set(["A", "Am", "B", "C", "Ba", "Ca"]);
+const ROUND3 = new Set(["A", "Am", "B", "C", "Ba", "Ca", "B1"]);
 const only = process.argv[4] ? new Set(process.argv[4].split(",")) : null;
 const summary: any = {};
 for (const [name, options] of Object.entries(VARIANTS)) {

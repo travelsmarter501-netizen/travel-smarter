@@ -44,6 +44,8 @@ const FOOD_PLACE_CLUSTER: Record<string, string> = {
   pierrot: "castle-hill",
   "new-york-cafe": "erzsebetvaros",
   gerbeaud: "belvaros",
+  gundel: "city-park",
+  "varosliget-cafe": "city-park",
 };
 
 /** On top of Castle Hill there is no useful public transport between two places: walking only. */
@@ -673,35 +675,46 @@ function judgeAll(data: V2Plan): Map<number, Judged> {
  *   day's total travel 90 at most; and then the trip's travel share (travel / (visits + travel)) may not grow by more than 2 points.
  *   Restaurant transfers always count in full; a lunch break has no point, so its food access is unknown (never counted as 0 proof).
  * - meals "tolerance": a day NOT reordered may get worse by 10 cost points (round 2). "explicit": instead, each changed meal is checked:
- *   same meal categories, no dietary tag lost and no "may contain pork" added, not served on another day of the trip, its walk at most
- *   10 min longer, and no new wait of 30+ min that day. A restaurant lunch that becomes a lunch break is a loss in every mode.
+ *   same meal categories, not served on another day of the trip, its walk at most 10 min longer, and no new wait of 30+ min that day.
+ *   No dietary claim either way (the request has no dietary preference; tags are data, not proof of suitability). The day itself may
+ *   not get more than 10 min of extra idle (round 4: found when the timing guard rebuilt such a day in a worse order). A restaurant lunch that becomes a lunch break is a loss in every mode.
  * - areas (datedAreas): see reviewDatedAreas.
  * Policies that are NOT changed here: one restaurant per trip (variety), evening places last, the accommodation day.
  */
-export type TravelRuleName = "A" | "B" | "C";
-const TRAVEL_RULES: Record<TravelRuleName, { k: number; maxIncrease: number; dayCeiling: number; tripSharePoints: number }> = {
+export type TravelRuleName = "A" | "B" | "C" | "B1";
+/**
+ * B1 (round 4 candidate): B's allowance (recovered / 4, at most 45, day total at most 90) with NO trip-share rejection (the share is
+ * reported only), and the allowance counted CUMULATIVELY against the fixed baseline (the day as it came into the review), so a day
+ * cannot collect +15 per stage silently: once a day is more than 15 above its baseline, the whole increase must fit the allowance.
+ */
+const TRAVEL_RULES: Record<TravelRuleName, { k: number; maxIncrease: number; dayCeiling: number; tripSharePoints: number; cumulative?: boolean }> = {
   A: { k: Infinity, maxIncrease: ORDER_MAX_TRAVEL_INCREASE, dayCeiling: Infinity, tripSharePoints: Infinity },
   B: { k: 4, maxIncrease: 45, dayCeiling: 90, tripSharePoints: 2 },
   C: { k: 3, maxIncrease: 45, dayCeiling: 90, tripSharePoints: 2 },
+  B1: { k: 4, maxIncrease: 45, dayCeiling: 90, tripSharePoints: Infinity, cumulative: true },
 };
 const LOST_TIME_MINUTES = 60;
 const MEAL_WALK_MORE_AT_MOST = 10;
 const NEW_WAIT_AT_MOST = 30;
+const UNCHANGED_DAY_IDLE_MORE_AT_MOST = 10;
 export type ReviewReportEntry = { stage: "order" | "move" | "areas"; decision: "accepted" | "rejected" | "kept" | "skipped"; day?: number; reasons: string[]; detail?: Record<string, unknown> };
-type ReviewRules = { travel: TravelRuleName; meals: "tolerance" | "explicit"; report?: (entry: ReviewReportEntry) => void };
+type ReviewRules = { travel: TravelRuleName; meals: "tolerance" | "explicit"; report?: (entry: ReviewReportEntry) => void; baseline?: ReadonlyMap<number, Judged> };
 const DEFAULT_RULES: ReviewRules = { travel: "A", meals: "tolerance" };
 
 const hadLostTime = (q: FinalDayQuality) => q.morningGap >= LOST_TIME_MINUTES || q.longestWait >= LOST_TIME_MINUTES;
 /** Why a day's travel increase is not allowed (null = allowed). */
-function travelRefusal(rules: ReviewRules, base: FinalDayQuality, trial: FinalDayQuality): string | null {
+function travelRefusal(rules: ReviewRules, stageBase: FinalDayQuality, trial: FinalDayQuality, dayNumber?: number): string | null {
+  const r = TRAVEL_RULES[rules.travel];
+  // Cumulative rules: the allowance is judged against the day's fixed baseline, never only against the last stage.
+  const origin = r.cumulative && dayNumber !== undefined ? rules.baseline?.get(dayNumber)?.q : undefined;
+  const base = origin ?? stageBase;
   const increase = trial.travel - base.travel;
   if (increase <= ORDER_MAX_TRAVEL_INCREASE) return null;
   if (rules.travel === "A") return `travel +${increase} (more than 15)`;
-  const r = TRAVEL_RULES[rules.travel];
   if (!hadLostTime(base)) return `travel +${increase} (more than 15, no lost morning or long wait)`;
   const recovered = base.morningGap + base.waits - (trial.morningGap + trial.waits);
   const allowed = Math.min(recovered / r.k, r.maxIncrease);
-  if (increase > allowed) return `travel +${increase} (allowed ${Math.floor(allowed)}: recovered ${recovered} / ${r.k}, at most ${r.maxIncrease})`;
+  if (increase > allowed) return `travel +${increase}${origin ? " since the baseline" : ""} (allowed ${Math.floor(allowed)}: recovered ${recovered} / ${r.k}, at most ${r.maxIncrease})`;
   if (trial.travel > r.dayCeiling) return `day travel ${trial.travel} (above ${r.dayCeiling})`;
   return null;
 }
@@ -730,7 +743,7 @@ function gainRefusals(rules: ReviewRules, base: Judged, trial: Judged): string[]
   const reasons: string[] = [];
   if (trial.problems > base.problems) reasons.push("new schedule problem");
   if (losesRestaurant(base, trial)) reasons.push(`restaurant lunch lost (${base.q.lunch})`);
-  const travel = travelRefusal(rules, base.q, trial.q);
+  const travel = travelRefusal(rules, base.q, trial.q, trial.day.dayNumber);
   if (travel) reasons.push(travel);
   const gain = base.q.cost - trial.q.cost;
   if (gain < ORDER_MIN_GAIN) reasons.push(`gain ${gain} (less than ${ORDER_MIN_GAIN})`);
@@ -764,11 +777,9 @@ function mealRefusals(base: Judged, trial: Judged, servedElsewhere: (placeId: st
     if (!b) { reasons.push(`${type} ${after.placeId}: unknown place`); continue; }
     const allowed = type === "lunch" ? ["local", "restaurants"] : ["local", "restaurants"];
     if (!allowed.includes(b.categoryId)) reasons.push(`${type} ${b.id}: category ${b.categoryId}`);
-    const tagsBefore = new Set(a?.dietaryTags ?? []);
-    const tagsAfter = new Set(b.dietaryTags ?? []);
-    const lost = [...tagsBefore].filter((t) => t !== "pork-maybe" && !tagsAfter.has(t));
-    if (lost.length) reasons.push(`${type} ${b.id}: dietary tags lost (${lost.join(", ")})`);
-    if (tagsAfter.has("pork-maybe") && !tagsBefore.has("pork-maybe")) reasons.push(`${type} ${b.id}: may contain pork (the previous one did not)`);
+    // No dietary judgement here: the planner request carries no dietary preference, the previous restaurant's tags are not the
+    // customer's preference, and a missing warning tag proves nothing. Dietary information stays as the project's data shows it.
+    void a;
     if (servedElsewhere(b.id, trial.day.dayNumber)) reasons.push(`${type} ${b.id}: served on another day too`);
     const walk = mealWalk(trial.day, after.placeId) - mealWalk(base.day, before.placeId);
     if (walk > MEAL_WALK_MORE_AT_MOST) reasons.push(`${type} ${before.placeId} -> ${b.id}: walk +${walk} min (more than ${MEAL_WALK_MORE_AT_MOST})`);
@@ -787,7 +798,12 @@ function unchangedDayRefusals(rules: ReviewRules, base: Judged, trial: Judged, j
   if (trial.q.travel > base.q.travel + ORDER_MAX_TRAVEL_INCREASE) reasons.push(`travel +${trial.q.travel - base.q.travel} (more than 15)`);
   if (rules.meals === "tolerance") {
     if (trial.q.cost > base.q.cost + tolerance) reasons.push(`cost +${trial.q.cost - base.q.cost} (tolerance ${tolerance})`);
-  } else reasons.push(...mealRefusals(base, trial, servedElsewhereIn(judged)));
+  } else {
+    // Explicit mode: the meals are judged one by one, and the day as a whole may not lose more than 10 min to idle (a day with the
+    // same places can still be rebuilt in another order by the timing guard when restaurants move between days).
+    if (trial.q.idle > base.q.idle + UNCHANGED_DAY_IDLE_MORE_AT_MOST) reasons.push(`idle +${trial.q.idle - base.q.idle} on a day whose places did not change`);
+    reasons.push(...mealRefusals(base, trial, servedElsewhereIn(judged)));
+  }
   return reasons;
 }
 /** Why a day whose places DID change (stage 2) is weaker: it may not get worse at all; its travel follows the travel rule. */
@@ -796,7 +812,7 @@ function changedDayRefusals(rules: ReviewRules, base: Judged, trial: Judged): st
   if (trial.problems > base.problems) reasons.push("new schedule problem");
   if (losesRestaurant(base, trial)) reasons.push(`restaurant lunch lost (${base.q.lunch})`);
   if (trial.q.cost > base.q.cost) reasons.push(`cost +${trial.q.cost - base.q.cost}`);
-  const travel = travelRefusal(rules, base.q, trial.q);
+  const travel = travelRefusal(rules, base.q, trial.q, trial.day.dayNumber);
   if (travel) reasons.push(travel);
   return reasons;
 }
@@ -990,6 +1006,9 @@ function reviewDatedAreas(currentFinal: Reviewed, input: ReviewInput, rules: Rev
   const wanted = new Set([...currentStops.keys(), ...restored]);
   type Candidate = { days: Map<number, string[]>; moved: string[]; dropped: string[]; clock: number; label: string };
   const candidates: Candidate[] = [];
+  // LIMIT (documented, round 4): permutations come in lexicographic order, so for a 4-day trip the first 6 all keep the undated plan's
+  // FIRST day group on day 1 (only days 2-4 are permuted). The search is bounded, not exhaustive: a rejection proves nothing about
+  // better distributions.
   for (const assignment of permutations(undatedPlan.days.map((_, i) => i)).slice(0, AREA_MAX_ASSIGNMENTS)) {
     const days = new Map<number, string[]>(dayNumbers.map((n, i) => [n, undatedPlan.days[assignment[i]].stops.map((s) => s.placeId).filter((id) => wanted.has(id))]));
     const moved: string[] = [];
@@ -1084,7 +1103,7 @@ export function budapestReviewResolvedPlan(input: ReviewInput, options: Budapest
   // Pass 1 is always rule A (+15). B / C only EXTEND it: a second pass on the days that still have lost time, with the larger allowance
   // (and the trip travel share), so they can never accept less than A. Bounded: pass 1 at most 6 + 12 rebuilds, pass 2 the same again.
   const rulesA: ReviewRules = { travel: "A", meals, report: options.report };
-  const rulesX: ReviewRules = { travel, meals, report: options.report && ((e) => options.report!({ ...e, reasons: e.reasons, detail: { ...e.detail, pass: `extension ${travel}` } })) };
+  const rulesX: ReviewRules = { travel, meals, report: options.report && ((e) => options.report!({ ...e, reasons: e.reasons, detail: { ...e.detail, pass: `extension ${travel}` } })), baseline: judgeAll(input.data) };
   const locked = new Set<number>(input.accommodationAnchored ? [1] : []);
   let reviewed: Reviewed = { plan: input.plan, legsByDay: input.legsByDay, data: input.data };
   if (options.clockOrder) reviewed = reviewDayOrders(reviewed, input.context, input.build, options.lunchAfterLastStop, locked, rulesA);

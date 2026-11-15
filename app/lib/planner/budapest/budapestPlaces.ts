@@ -428,10 +428,10 @@ export const BUDAPEST_FOOD_CATEGORIES: FoodCategory[] = [
   { id: "restaurants", icon: "🍴", label: "مطاعم" },
 ];
 
-type FoodInput = Omit<FoodPlace, "mapsUrl" | "appleMapsUrl" | "lastVerified" | "hours"> & { hoursSchedule: WeeklySchedule; sourceUrl: string; hoursSource: string };
+type FoodInput = Omit<FoodPlace, "mapsUrl" | "appleMapsUrl" | "lastVerified" | "hours"> & { hoursSchedule: WeeklySchedule; sourceUrl: string; hoursSource: string; verified?: string };
 function food(input: FoodInput): FoodPlace {
-  const { hoursSchedule, sourceUrl, hoursSource, ...rest } = input;
-  return { ...maps(input.name), lastVerified: VERIFIED, hours: { type: "fixed", schedule: hoursSchedule, source: hoursSource, sourceUrl, lastVerified: VERIFIED }, ...rest };
+  const { hoursSchedule, sourceUrl, hoursSource, verified = VERIFIED, ...rest } = input;
+  return { ...maps(input.name), lastVerified: verified, hours: { type: "fixed", schedule: hoursSchedule, source: hoursSource, sourceUrl, lastVerified: verified }, ...rest };
 }
 
 export const BUDAPEST_FOOD_PLACES: FoodPlace[] = [
@@ -441,6 +441,11 @@ export const BUDAPEST_FOOD_PLACES: FoodPlace[] = [
   food({ id: "21-restaurant", name: "21 Restaurant", categoryId: "local", area: "Budavár (Fortuna utca)", address: "Fortuna u. 21, 1014 Budapest", why: "مطبخ هنغاري معاصر بتلة القلعة.", officialUrl: "https://zsidai.com/hu/21-restaurant/", dietaryTags: ["meat", "pork-maybe"], hoursSchedule: everyDay(["11:30", "23:00"]), sourceUrl: "https://zsidai.com/hu/21-restaurant/", hoursSource: "zsidai.com (official group site)" }),
   food({ id: "pierrot", name: "Pierrot", categoryId: "local", area: "Budavár (Fortuna utca)", address: "Fortuna u. 14, 1014 Budapest", why: "مطعم هنغاري عائلي بتلة القلعة.", officialUrl: "https://zsidai.com/hu/pierrot/", dietaryTags: ["meat", "pork-maybe"], hoursSchedule: days(["wednesday", "thursday", "friday", "saturday", "sunday"], ["11:30", "23:00"]), sourceUrl: "https://zsidai.com/hu/pierrot/", hoursSource: "zsidai.com (official group site)" }),
   food({ id: "new-york-cafe", name: "New York Café", categoryId: "restaurants", area: "Erzsébetváros (Blaha Lujza tér)", address: "Erzsébet krt. 9-11, 1073 Budapest", why: "مقهى تاريخي فخم، وفيه مطبخ ساخن من 12:00.", officialUrl: "https://newyorkcafe.hu", dietaryTags: ["meat", "pork-maybe", "dessert"], hoursSchedule: { ...days(["monday", "tuesday", "wednesday"], ["12:00", "23:00"]), ...days(["thursday", "friday", "saturday", "sunday"], ["12:00", "23:59"]) }, sourceUrl: "https://newyorkcafe.hu/", hoursSource: "newyorkcafe.hu (official; hot kitchen)" }),
+  // City Park (Városliget), added 2026-11-15 for the museum days there (Museum of Fine Arts, House of Music, Heroes' Square).
+  // Evidence of LUNCH service from the official sites, read 2026-11-15. The Arabic "why" texts are proposals awaiting the owner's review.
+  // Robinson (official site: lunch 12:00-16:00, dinner 18:00-23:00) is NOT added: its page publishes no days, and days are not assumed.
+  food({ id: "gundel", name: "Gundel", categoryId: "local", area: "Városliget (City Park, next to the Zoo)", address: "Gundel Károly út 4, 1146 Budapest", why: "مطعم هنغاري تاريخي جنب حديقة الحيوانات بحديقة المدينة، وقائمة غدا كل يوم.", officialUrl: "https://gundel.hu/en/", dietaryTags: ["meat", "pork-maybe"], hoursSchedule: everyDay(["11:30", "21:00"]), sourceUrl: "https://gundel.hu/en/", hoursSource: "gundel.hu (official): lunch menu every day 11:30-18:00, dinner menu every day 18:00-22:00, kitchen closes 21:00 (meals planned to end by 21:00)", verified: "2026-11-15" }),
+  food({ id: "varosliget-cafe", name: "Városliget Café", categoryId: "restaurants", area: "Városliget (City Park, by the lake)", address: "Olof Palme sétány 5, 1146 Budapest", why: "مطعم بحديقة المدينة جنب البحيرة وقلعة Vajdahunyad، وقائمته فيها أطباق رئيسية.", officialUrl: "https://varosligetcafe.hu/", dietaryTags: ["meat", "pork-maybe"], hoursSchedule: everyDay(["12:00", "22:00"]), sourceUrl: "https://varosligetcafe.hu/etlap/", hoursSource: "varosligetcafe.hu (official): Monday to Sunday 12:00-22:00; menu autumn / winter 2026 with soups and main courses (a meal, not only a cafe)", verified: "2026-11-15" }),
   food({ id: "gerbeaud", name: "Gerbeaud", categoryId: "cafes", area: "Belváros (Vörösmarty tér)", address: "Vörösmarty tér 7-8, 1051 Budapest", why: "مقهى وحلويات تاريخي من القرن 19.", officialUrl: "https://gerbeaud.hu/en/", dietaryTags: ["coffee", "dessert"], hoursSchedule: { ...days(["monday", "tuesday", "wednesday", "thursday", "sunday"], ["09:00", "20:00"]), ...days(["friday", "saturday"], ["09:00", "21:00"]) }, sourceUrl: "https://gerbeaud.hu/en/", hoursSource: "gerbeaud.hu (official)" }),
 ];
 
@@ -602,6 +607,8 @@ export const BUDAPEST_PLACE_COORDINATES: Record<string, { lat: number; lng: numb
   pierrot: { lat: 47.503897, lng: 19.0309623 }, // OSM node/2330643555 Restaurant Pierrot
   "new-york-cafe": { lat: 47.4986468, lng: 19.0707893 }, // OSM way/1267688599 (New York Palace)
   gerbeaud: { lat: 47.4972059, lng: 19.0505484 }, // OSM address node Vörösmarty tér 7
+  gundel: { lat: 47.5174498, lng: 19.0770866 }, // OSM way/25227262 "Gundel Restaurant" (Nominatim 2026-11-15)
+  "varosliget-cafe": { lat: 47.5144894, lng: 19.0801818 }, // OSM node/3409063948 "Városliget Cafe & Restaurant" (Nominatim 2026-11-15; OSM address no. 6, official site no. 5)
   "great-market-hall": { lat: 47.487212, lng: 19.058966 }, // OSM node/2508882191 entrance=main (Fővám tér side)
   "vaci-utca": { lat: 47.4921923, lng: 19.0534903 }, // OSM way/246920614 (a point on the street)
   "andrassy-avenue": { lat: 47.50287, lng: 19.05816 }, // the Opera end of the avenue (OSM, Andrássy út 22)
