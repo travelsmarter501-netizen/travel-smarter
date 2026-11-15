@@ -1,4 +1,5 @@
 import { PLACE_TEXT, PLAN_PHRASES } from "./planCatalog";
+import { BUDAPEST_PHRASES, BUDAPEST_PLACE_TEXT, budapestTemplate } from "./budapestCatalog";
 import type { PlanLanguage } from "./planText";
 import { hebrewPrefixed } from "./hebrew";
 import type { V2Plan } from "../planner/barcelonaV2Resolve";
@@ -18,6 +19,9 @@ import type { V2Plan } from "../planner/barcelonaV2Resolve";
 type Pair = { en: string; he: string };
 const EXACT = new Map<string, Pair>();
 for (const entry of [...PLACE_TEXT, ...PLAN_PHRASES]) EXACT.set(entry.ar, { en: entry.en, he: entry.he });
+// Budapest (budapestCatalog.ts, not reviewed by a person yet): added only where the Arabic is not already a catalog source, so no
+// existing translation can change.
+for (const entry of [...BUDAPEST_PLACE_TEXT, ...BUDAPEST_PHRASES]) if (!EXACT.has(entry.ar)) EXACT.set(entry.ar, { en: entry.en, he: entry.he });
 
 const ARABIC = /[؀-ۿ]/;
 const missing = new Set<string>();
@@ -98,7 +102,8 @@ function template(text: string, lang: "en" | "he"): string | null {
     const cut = body.lastIndexOf(" و");
     if (cut < 0) return null;
     const head = body.slice(0, cut).split("، ");
-    const names = [...head, body.slice(cut + 2)].map((name) => label(name, lang));
+    // Budapest writes "و " (with a space) before a Latin name; trimStart() leaves the other cities' summaries unchanged.
+    const names = [...head, body.slice(cut + 2).trimStart()].map((name) => label(name, lang));
     if (names.some((name) => name === null)) return null;
     const list = names as string[];
     const last = list[list.length - 1];
@@ -106,8 +111,9 @@ function template(text: string, lang: "en" | "he"): string | null {
     return lang === "en" ? `Today's stops: ${rest} and ${last}.` : `התחנות של היום: ${rest} ${heAnd(last)}.`;
   }
 
-  // Prague day titles: "A وB", "يوم A", optionally followed by ": <first stop>"
-  return pragueTitle(text, lang);
+  // Prague day titles: "A وB", "يوم A", optionally followed by ": <first stop>"; then Budapest's texts with a value (tried last, so
+  // no other city's result changes).
+  return pragueTitle(text, lang) ?? budapestTemplate(text, lang);
 }
 
 /** Area labels used in day titles by the cities with the simple presenter (Prague, Vienna). */

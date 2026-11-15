@@ -1,0 +1,42 @@
+data texts 156; plans checked 822 (generated + edited), untranslated texts 174, failures 382
+FAIL data budapest/areas/lipotvaros.description (en): no translation for «حي البرلمان والكاتدرائية على ضفة Pest.»
+FAIL data budapest/areas/lipotvaros.description (he): no translation for «حي البرلمان والكاتدرائية على ضفة Pest.»
+FAIL data budapest/areas/belvaros.description (en): no translation for «وسط Pest القديم: Váci utca والسوق المركزي.»
+FAIL data budapest/areas/belvaros.description (he): no translation for «وسط Pest القديم: Váci utca والسوق المركزي.»
+FAIL data budapest/areas/castle-hill.description (en): no translation for «تلة القلعة على ضفة Buda.»
+FAIL data budapest/areas/castle-hill.description (he): no translation for «تلة القلعة على ضفة Buda.»
+FAIL data budapest/areas/gellert-hill.description (en): no translation for «تلة Gellért وCitadella فوق النهر.»
+FAIL data budapest/areas/gellert-hill.description (he): no translation for «تلة Gellért وCitadella فوق النهر.»
+FAIL data budapest/areas/terezvaros.description (en): no translation for «شارع Andrássy ودار الأوبرا.»
+FAIL data budapest/areas/terezvaros.description (he): no translation for «شارع Andrássy ودار الأوبرا.»
+FAIL data budapest/areas/erzsebetvaros.description (en): no translation for «الحي اليهودي التاريخي.»
+FAIL data budapest/areas/erzsebetvaros.description (he): no translation for «الحي اليهودي التاريخي.»
+FAIL data budapest/areas/palotanegyed.description (en): no translation for «حي المتحف الوطني.»
+FAIL data budapest/areas/palotanegyed.description (he): no translation for «حي المتحف الوطني.»
+FAIL data budapest/areas/city-park.description (en): no translation for «حديقة المدينة وساحة الأبطال.»
+FAIL data budapest/areas/city-park.description (he): no translation for «حديقة المدينة وساحة الأبطال.»
+FAIL data budapest/areas/margaret-island.description (en): no translation for «الجزيرة الخضرا بنص الدانوب.»
+FAIL data budapest/areas/margaret-island.description (he): no translation for «الجزيرة الخضرا بنص الدانوب.»
+FAIL data budapest/attractions/st-stephens-basilica.description (en): no translation for «أكبر كنيسة ببودابست. الزيارة بالخطة: الكنيسة مع التراس البانورامي فوق القبة (تذكرة مشتركة).»
+FAIL data budapest/attractions/st-stephens-basilica.description (he): no translation for «أكبر كنيسة ببودابست. الزيارة بالخطة: الكنيسة مع التراس البانورامي فوق القبة (تذكرة مشتركة).»
+FAIL data budapest/attractions/st-stephens-basilica.whyRecommend (en): no translation for «من أعلى الإطلالات على Pest، وجنب البرلمان مشيًا.»
+FAIL data budapest/attractions/st-stephens-basilica.whyRecommend (he): no translation for «من أعلى الإطلالات على Pest، وجنب البرلمان مشيًا.»
+FAIL data budapest/attractions/st-stephens-basilica.tip (en): no translation for «الكنيسة الإثنين–السبت 9:00–18:00 والأحد من 13:00 بس؛ التراس والخزنة كل يوم 9:00–19:00. التذكرة المشتركة 6,800 HUF للبالغ (الكنيسة لحالها 2,600). آخر دخول مش منشور.»
+FAIL data budapest/attractions/st-stephens-basilica.tip (he): no translation for «الكنيسة الإثنين–السبت 9:00–18:00 والأحد من 13:00 بس؛ التراس والخزنة كل يوم 9:00–19:00. التذكرة المشتركة 6,800 HUF للبالغ (الكنيسة لحالها 2,600). آخر دخول مش منشور.»
+FAIL data budapest/attractions/st-stephens-basilica.priceText (en): no translation for «6,800 HUF (بالغ، الكنيسة والتراس) · الكنيسة لحالها 2,600 HUF»
+FAIL data budapest/attractions/st-stephens-basilica.priceText (he): no translation for «6,800 HUF (بالغ، الكنيسة والتراس) · الكنيسة لحالها 2,600 HUF»
+FAIL data budapest/attractions/parliament-exterior.description (en): no translation for «مبنى البرلمان من الخارج، من ساحة Kossuth وضفة الدانوب. الزيارة الداخلية بجولة وحجز، ومش ضمن الخطة.»
+FAIL data budapest/attractions/parliament-exterior.description (he): no translation for «مبنى البرلمان من الخارج، من ساحة Kossuth وضفة الدانوب. الزيارة الداخلية بجولة وحجز، ومش ضمن الخطة.»
+FAIL data budapest/attractions/parliament-exterior.whyRecommend (en): no translation for «أشهر مبنى ببودابست.»
+FAIL data budapest/attractions/parliament-exterior.whyRecommend (he): no translation for «أشهر مبنى ببودابست.»
+FAIL data budapest/attractions/parliament-exterior.tip (en): no translation for «الجولة الداخلية بحجز مسبق من مركز الزوار؛ سعرها ومواعيدها ما قدرنا نتحقق منهم من المصدر الرسمي، فهي خيار إضافي إلك.»
+FAIL data budapest/attractions/parliament-exterior.tip (he): no translation for «الجولة الداخلية بحجز مسبق من مركز الزوار؛ سعرها ومواعيدها ما قدرنا نتحقق منهم من المصدر الرسمي، فهي خيار إضافي إلك.»
+FAIL data budapest/attractions/shoes-on-the-danube.description (en): no translation for «نصب تذكاري لضحايا 1944–1945 على ضفة الدانوب، جنب البرلمان.»
+FAIL data budapest/attractions/shoes-on-the-danube.description (he): no translation for «نصب تذكاري لضحايا 1944–1945 على ضفة الدانوب، جنب البرلمان.»
+FAIL data budapest/attractions/shoes-on-the-danube.whyRecommend (en): no translation for «محطة قصيرة ومؤثرة على طريق البرلمان.»
+FAIL data budapest/attractions/shoes-on-the-danube.whyRecommend (he): no translation for «محطة قصيرة ومؤثرة على طريق البرلمان.»
+FAIL data budapest/attractions/shoes-on-the-danube.duration (en): no translation for «10 دقائق»
+FAIL data budapest/attractions/shoes-on-the-danube.duration (he): no translation for «10 دقائق»
+FAIL data budapest/attractions/shoes-on-the-danube.tip (en): no translation for «على الرصيف النهري، بين البرلمان وجسر السلاسل.»
+FAIL data budapest/attractions/shoes-on-the-danube.tip (he): no translation for «على الرصيف النهري، بين البرلمان وجسر السلاسل.»
+... 342 more
