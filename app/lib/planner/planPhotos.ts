@@ -1,5 +1,6 @@
 import "server-only";
 import { PRAGUE_PHOTOS, type PlacePhoto } from "./prague/praguePhotos";
+import { BUDAPEST_PHOTOS } from "./budapest/budapestPhotos";
 import type { V2Plan } from "./barcelonaV2Resolve";
 
 /**
@@ -8,7 +9,7 @@ import type { V2Plan } from "./barcelonaV2Resolve";
  * details-sheet data) without an image and with a documented photo gets that photo and its credit. Nothing else changes
  * and nothing is written back: the stored plan stays as it was saved.
  */
-const PHOTOS_BY_CITY: Record<string, Record<string, PlacePhoto>> = { prague: PRAGUE_PHOTOS };
+const PHOTOS_BY_CITY: Record<string, Record<string, PlacePhoto>> = { prague: PRAGUE_PHOTOS, budapest: BUDAPEST_PHOTOS };
 
 function fill(value: unknown, photos: Record<string, PlacePhoto>): unknown {
   if (Array.isArray(value)) return value.map((item) => fill(item, photos));

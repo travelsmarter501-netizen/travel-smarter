@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getCityPlannerModule } from "../lib/planner/cityPlannerRegistry";
 import type { ImageCredit } from "../lib/guideTypes";
+import { isAvailablePlannerDestinationId } from "../lib/planner/plannerDestinations";
 
 /**
  * Photo credits for the place photos shown in the plans (Wikimedia Commons, free licences). CC BY, CC BY-SA and the Free Art
@@ -14,9 +15,11 @@ export const metadata: Metadata = {
 
 type Credited = ImageCredit & { id: string; name: string; image: string };
 
-const CITIES: { id: string; titleAr: string; titleEn: string }[] = [
+/** `onlyWhenSelectable`: listed only while the city can be chosen (public, or the local / Preview switch), so an unreleased city is not shown. */
+const CITIES: { id: string; titleAr: string; titleEn: string; onlyWhenSelectable?: boolean }[] = [
   { id: "prague", titleAr: "براغ", titleEn: "Prague" },
   { id: "barcelona", titleAr: "برشلونة", titleEn: "Barcelona" },
+  { id: "budapest", titleAr: "بودابست", titleEn: "Budapest", onlyWhenSelectable: true },
 ];
 
 function creditedPlaces(cityId: string): Credited[] {
@@ -39,6 +42,7 @@ export default function PhotoCreditsPage() {
       <p dir="ltr" className="mt-1 text-sm text-slate-500">Photo credits</p>
       <p className="mt-3 text-sm leading-6 text-slate-600">صور الأماكن بالخطط من Wikimedia Commons، كل صورة برخصتها واسم مصوّرها.</p>
       {CITIES.map((c) => {
+        if (c.onlyWhenSelectable && !isAvailablePlannerDestinationId(c.id)) return null;
         const places = creditedPlaces(c.id);
         if (places.length === 0) return null;
         return (

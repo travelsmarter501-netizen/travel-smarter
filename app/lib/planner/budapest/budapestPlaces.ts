@@ -1,6 +1,7 @@
 import type { Area, Attraction, Experience, FoodCategory, FoodPlace, NightlifeVenue, ShoppingArea } from "../../guideTypes";
 import type { HoursDateException, HoursInfo, RecurringMonthlyClosure, SeasonalSchedule, TimeRange, Weekday, WeeklySchedule } from "../../hours";
 import type { CityPlaceData } from "../cityPlannerModule";
+import { withBudapestPhoto } from "./budapestPhotos";
 
 /**
  * Budapest -- PLANNER place data (local review prototype, 2026-11-13). NOT public: plannerDestinations.ts keeps Budapest
@@ -14,7 +15,8 @@ import type { CityPlaceData } from "../cityPlannerModule";
  * single-gender sessions: Széchenyi, Rudas, Hospital in the Rock), activities without verified times for the trip's dates (Hospital
  * in the Rock tour slots, Matthias Church interior, Parliament interior, Dohány Synagogue on flexible dates). They are suggestions
  * with their information and official link (no planner metadata, so they are never scheduled or offered by the "add" button).
- * No photos yet (rights not checked): every card handles `image: ""`.
+ * Photos: only Wikimedia Commons files whose free license and author were checked (budapestPhotos.ts, credit shown with the photo and on
+ *   the photo-credits page). A place without such a photo keeps `image: ""` (every card handles that).
  */
 
 const VERIFIED = "2026-11-13";
@@ -589,6 +591,16 @@ function withPlanningHours<T extends { id: string; hours?: HoursInfo }>(items: T
 }
 withPlanningHours(BUDAPEST_ATTRACTIONS);
 withPlanningHours(BUDAPEST_EXPERIENCES);
+
+function addPhotos<T extends { id: string; image?: string }>(items: T[]): void {
+  items.forEach((item, i) => {
+    items[i] = withBudapestPhoto(item);
+  });
+}
+addPhotos(BUDAPEST_ATTRACTIONS);
+addPhotos(BUDAPEST_EXPERIENCES);
+addPhotos(BUDAPEST_FOOD_PLACES);
+addPhotos(BUDAPEST_SHOPPING_AREAS);
 
 export const BUDAPEST_PLACES: CityPlaceData = {
   attractions: BUDAPEST_ATTRACTIONS,
