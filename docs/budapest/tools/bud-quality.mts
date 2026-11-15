@@ -48,9 +48,10 @@ const VARIANTS: Record<string, any> = {
   lunchRules: { cafeLunch: false, lunchAfterLastStop: true, clockOrder: false, crossDay: false },
   order: { cafeLunch: false, lunchAfterLastStop: true, clockOrder: true, crossDay: false },
   all: M.BUDAPEST_QUALITY_DEFAULTS,
-  A: M.BUDAPEST_QUALITY_DEFAULTS,
-  Am: { ...M.BUDAPEST_QUALITY_DEFAULTS, mealCheck: "explicit" },
+  A: { ...M.BUDAPEST_QUALITY_DEFAULTS, travelRule: "A", mealCheck: "tolerance" },
+  Am: { ...M.BUDAPEST_QUALITY_DEFAULTS, travelRule: "A", mealCheck: "explicit" },
   B: { ...M.BUDAPEST_QUALITY_DEFAULTS, travelRule: "B", mealCheck: "explicit" },
+  // (since 2026-11-15 the defaults ARE B1 + explicit meals; "A" above is the 8e8a309 behaviour)
   C: { ...M.BUDAPEST_QUALITY_DEFAULTS, travelRule: "C", mealCheck: "explicit" },
   Ba: { ...M.BUDAPEST_QUALITY_DEFAULTS, travelRule: "B", mealCheck: "explicit", datedAreas: true },
   Ca: { ...M.BUDAPEST_QUALITY_DEFAULTS, travelRule: "C", mealCheck: "explicit", datedAreas: true },

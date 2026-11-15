@@ -209,7 +209,8 @@ export type BudapestQualityOptions = {
   datedAreas?: boolean;
   report?: (entry: ReviewReportEntry) => void;
 };
-export const BUDAPEST_QUALITY_DEFAULTS: BudapestQualityOptions = { cafeLunch: false, lunchAfterLastStop: true, clockOrder: true, crossDay: true };
+/** Defaults (owner decision 2026-11-15): travel rule B1 with the explicit meal check. Rule A + tolerance = the 8e8a309 behaviour. */
+export const BUDAPEST_QUALITY_DEFAULTS: BudapestQualityOptions = { cafeLunch: false, lunchAfterLastStop: true, clockOrder: true, crossDay: true, travelRule: "B1", mealCheck: "explicit" };
 
 export function budapestDayOnClock(context: DayGeographyRepairContext, lunchAfterLastStop = BUDAPEST_QUALITY_DEFAULTS.lunchAfterLastStop): (ids: readonly string[], dayNumber: number, outside: ReadonlySet<string>) => DayOnClock {
   const legCache = new Map<string, PlannerRouteLeg>();
@@ -681,7 +682,7 @@ function judgeAll(data: V2Plan): Map<number, Judged> {
  * - areas (datedAreas): see reviewDatedAreas.
  * Policies that are NOT changed here: one restaurant per trip (variety), evening places last, the accommodation day.
  */
-export type TravelRuleName = "A" | "B" | "C" | "B1";
+export type TravelRuleName = "A" | "B" | "C" | "B1" | "A1";
 /**
  * B1 (round 4 candidate): B's allowance (recovered / 4, at most 45, day total at most 90) with NO trip-share rejection (the share is
  * reported only), and the allowance counted CUMULATIVELY against the fixed baseline (the day as it came into the review), so a day
@@ -692,6 +693,8 @@ const TRAVEL_RULES: Record<TravelRuleName, { k: number; maxIncrease: number; day
   B: { k: 4, maxIncrease: 45, dayCeiling: 90, tripSharePoints: 2 },
   C: { k: 3, maxIncrease: 45, dayCeiling: 90, tripSharePoints: 2 },
   B1: { k: 4, maxIncrease: 45, dayCeiling: 90, tripSharePoints: Infinity, cumulative: true },
+  /** Pass 1 under B1: rule A (+15) counted against the same fixed baseline, so two stages cannot add +15 each. */
+  A1: { k: Infinity, maxIncrease: ORDER_MAX_TRAVEL_INCREASE, dayCeiling: Infinity, tripSharePoints: Infinity, cumulative: true },
 };
 const LOST_TIME_MINUTES = 60;
 const MEAL_WALK_MORE_AT_MOST = 10;
@@ -711,6 +714,7 @@ function travelRefusal(rules: ReviewRules, stageBase: FinalDayQuality, trial: Fi
   const increase = trial.travel - base.travel;
   if (increase <= ORDER_MAX_TRAVEL_INCREASE) return null;
   if (rules.travel === "A") return `travel +${increase} (more than 15)`;
+  if (rules.travel === "A1") return `travel +${increase} since the baseline (more than 15)`;
   if (!hadLostTime(base)) return `travel +${increase} (more than 15, no lost morning or long wait)`;
   const recovered = base.morningGap + base.waits - (trial.morningGap + trial.waits);
   const allowed = Math.min(recovered / r.k, r.maxIncrease);
@@ -795,7 +799,9 @@ function unchangedDayRefusals(rules: ReviewRules, base: Judged, trial: Judged, j
   const reasons: string[] = [];
   if (trial.problems > base.problems) reasons.push("new schedule problem");
   if (losesRestaurant(base, trial)) reasons.push(`restaurant lunch lost (${base.q.lunch})`);
-  if (trial.q.travel > base.q.travel + ORDER_MAX_TRAVEL_INCREASE) reasons.push(`travel +${trial.q.travel - base.q.travel} (more than 15)`);
+  // Cumulative rules: against the day's fixed baseline (a day whose places did not change never uses the larger allowance).
+  const ref = TRAVEL_RULES[rules.travel].cumulative ? (rules.baseline?.get(trial.day.dayNumber)?.q ?? base.q) : base.q;
+  if (trial.q.travel > ref.travel + ORDER_MAX_TRAVEL_INCREASE) reasons.push(`travel +${trial.q.travel - ref.travel}${ref === base.q ? "" : " since the baseline"} (more than 15)`);
   if (rules.meals === "tolerance") {
     if (trial.q.cost > base.q.cost + tolerance) reasons.push(`cost +${trial.q.cost - base.q.cost} (tolerance ${tolerance})`);
   } else {
@@ -1102,8 +1108,10 @@ export function budapestReviewResolvedPlan(input: ReviewInput, options: Budapest
   const meals = options.mealCheck ?? "tolerance";
   // Pass 1 is always rule A (+15). B / C only EXTEND it: a second pass on the days that still have lost time, with the larger allowance
   // (and the trip travel share), so they can never accept less than A. Bounded: pass 1 at most 6 + 12 rebuilds, pass 2 the same again.
-  const rulesA: ReviewRules = { travel: "A", meals, report: options.report };
-  const rulesX: ReviewRules = { travel, meals, report: options.report && ((e) => options.report!({ ...e, reasons: e.reasons, detail: { ...e.detail, pass: `extension ${travel}` } })), baseline: judgeAll(input.data) };
+  // Under a cumulative rule (B1), pass 1 is A counted against the same fixed baseline (A1).
+  const baseline = judgeAll(input.data);
+  const rulesA: ReviewRules = TRAVEL_RULES[travel].cumulative ? { travel: "A1", meals, report: options.report, baseline } : { travel: "A", meals, report: options.report };
+  const rulesX: ReviewRules = { travel, meals, report: options.report && ((e) => options.report!({ ...e, reasons: e.reasons, detail: { ...e.detail, pass: `extension ${travel}` } })), baseline };
   const locked = new Set<number>(input.accommodationAnchored ? [1] : []);
   let reviewed: Reviewed = { plan: input.plan, legsByDay: input.legsByDay, data: input.data };
   if (options.clockOrder) reviewed = reviewDayOrders(reviewed, input.context, input.build, options.lunchAfterLastStop, locked, rulesA);

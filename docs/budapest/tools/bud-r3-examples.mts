@@ -21,8 +21,8 @@ const split = args.includes("--split");
 const outFile = args.slice(2).find((a) => a.endsWith(".json"));
 const D = M.BUDAPEST_QUALITY_DEFAULTS;
 const VARIANTS: Record<string, any> = {
-  A: D,
-  Am: { ...D, mealCheck: "explicit" },
+  A: { ...D, travelRule: "A", mealCheck: "tolerance" },
+  Am: { ...D, travelRule: "A", mealCheck: "explicit" },
   B: { ...D, travelRule: "B", mealCheck: "explicit" },
   C: { ...D, travelRule: "C", mealCheck: "explicit" },
   Ba: { ...D, travelRule: "B", mealCheck: "explicit", datedAreas: true },

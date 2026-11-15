@@ -428,10 +428,15 @@ export const BUDAPEST_FOOD_CATEGORIES: FoodCategory[] = [
   { id: "restaurants", icon: "🍴", label: "مطاعم" },
 ];
 
-type FoodInput = Omit<FoodPlace, "mapsUrl" | "appleMapsUrl" | "lastVerified" | "hours"> & { hoursSchedule: WeeklySchedule; sourceUrl: string; hoursSource: string; verified?: string };
+/**
+ * hoursSchedule: the restaurant's own opening hours (what the customer sees). planningSchedule (optional): a narrower window the
+ * planner keeps meals inside (e.g. the kitchen closes before the doors), never shown as the restaurant's hours (same pattern as
+ * Prague's mlynec; tripHours.ts keeps it).
+ */
+type FoodInput = Omit<FoodPlace, "mapsUrl" | "appleMapsUrl" | "lastVerified" | "hours"> & { hoursSchedule: WeeklySchedule; planningSchedule?: WeeklySchedule; sourceUrl: string; hoursSource: string; verified?: string };
 function food(input: FoodInput): FoodPlace {
-  const { hoursSchedule, sourceUrl, hoursSource, verified = VERIFIED, ...rest } = input;
-  return { ...maps(input.name), lastVerified: verified, hours: { type: "fixed", schedule: hoursSchedule, source: hoursSource, sourceUrl, lastVerified: verified }, ...rest };
+  const { hoursSchedule, planningSchedule, sourceUrl, hoursSource, verified = VERIFIED, ...rest } = input;
+  return { ...maps(input.name), lastVerified: verified, hours: { type: "fixed", schedule: hoursSchedule, ...(planningSchedule ? { planningSchedule } : {}), source: hoursSource, sourceUrl, lastVerified: verified }, ...rest };
 }
 
 export const BUDAPEST_FOOD_PLACES: FoodPlace[] = [
@@ -442,10 +447,12 @@ export const BUDAPEST_FOOD_PLACES: FoodPlace[] = [
   food({ id: "pierrot", name: "Pierrot", categoryId: "local", area: "Budavár (Fortuna utca)", address: "Fortuna u. 14, 1014 Budapest", why: "مطعم هنغاري عائلي بتلة القلعة.", officialUrl: "https://zsidai.com/hu/pierrot/", dietaryTags: ["meat", "pork-maybe"], hoursSchedule: days(["wednesday", "thursday", "friday", "saturday", "sunday"], ["11:30", "23:00"]), sourceUrl: "https://zsidai.com/hu/pierrot/", hoursSource: "zsidai.com (official group site)" }),
   food({ id: "new-york-cafe", name: "New York Café", categoryId: "restaurants", area: "Erzsébetváros (Blaha Lujza tér)", address: "Erzsébet krt. 9-11, 1073 Budapest", why: "مقهى تاريخي فخم، وفيه مطبخ ساخن من 12:00.", officialUrl: "https://newyorkcafe.hu", dietaryTags: ["meat", "pork-maybe", "dessert"], hoursSchedule: { ...days(["monday", "tuesday", "wednesday"], ["12:00", "23:00"]), ...days(["thursday", "friday", "saturday", "sunday"], ["12:00", "23:59"]) }, sourceUrl: "https://newyorkcafe.hu/", hoursSource: "newyorkcafe.hu (official; hot kitchen)" }),
   // City Park (Városliget), added 2026-11-15 for the museum days there (Museum of Fine Arts, House of Music, Heroes' Square).
-  // Evidence of LUNCH service from the official sites, read 2026-11-15. The Arabic "why" texts are proposals awaiting the owner's review.
+  // Evidence of LUNCH service from the official sites, read 2026-11-15. Arabic "why" texts approved by the owner (2026-11-15).
+  // Gundel: shown hours = the restaurant's (every day 11:30-22:00); the kitchen closes at 21:00, so meals are PLANNED to end by 21:00
+  // (planningSchedule), which is never shown as the closing time.
   // Robinson (official site: lunch 12:00-16:00, dinner 18:00-23:00) is NOT added: its page publishes no days, and days are not assumed.
-  food({ id: "gundel", name: "Gundel", categoryId: "local", area: "Városliget (City Park, next to the Zoo)", address: "Gundel Károly út 4, 1146 Budapest", why: "مطعم هنغاري تاريخي جنب حديقة الحيوانات بحديقة المدينة، وقائمة غدا كل يوم.", officialUrl: "https://gundel.hu/en/", dietaryTags: ["meat", "pork-maybe"], hoursSchedule: everyDay(["11:30", "21:00"]), sourceUrl: "https://gundel.hu/en/", hoursSource: "gundel.hu (official): lunch menu every day 11:30-18:00, dinner menu every day 18:00-22:00, kitchen closes 21:00 (meals planned to end by 21:00)", verified: "2026-11-15" }),
-  food({ id: "varosliget-cafe", name: "Városliget Café", categoryId: "restaurants", area: "Városliget (City Park, by the lake)", address: "Olof Palme sétány 5, 1146 Budapest", why: "مطعم بحديقة المدينة جنب البحيرة وقلعة Vajdahunyad، وقائمته فيها أطباق رئيسية.", officialUrl: "https://varosligetcafe.hu/", dietaryTags: ["meat", "pork-maybe"], hoursSchedule: everyDay(["12:00", "22:00"]), sourceUrl: "https://varosligetcafe.hu/etlap/", hoursSource: "varosligetcafe.hu (official): Monday to Sunday 12:00-22:00; menu autumn / winter 2026 with soups and main courses (a meal, not only a cafe)", verified: "2026-11-15" }),
+  food({ id: "gundel", name: "Gundel", categoryId: "local", area: "Városliget (City Park, next to the Zoo)", address: "Gundel Károly út 4, 1146 Budapest", why: "مطعم للمأكولات الهنغارية قرب حديقة الحيوانات في حديقة المدينة، يقدّم قائمة غداء يومية.", officialUrl: "https://gundel.hu/en/", dietaryTags: ["meat", "pork-maybe"], hoursSchedule: everyDay(["11:30", "22:00"]), planningSchedule: everyDay(["11:30", "21:00"]), sourceUrl: "https://gundel.hu/en/", hoursSource: "gundel.hu (official): open every day 11:30-22:00; lunch menu 11:30-18:00, dinner menu 18:00-22:00; kitchen closes 21:00", verified: "2026-11-15" }),
+  food({ id: "varosliget-cafe", name: "Városliget Café", categoryId: "restaurants", area: "Városliget (City Park, by the lake)", address: "Olof Palme sétány 5, 1146 Budapest", why: "مطعم ومقهى قرب البحيرة وقلعة فاجداهونياد في حديقة المدينة، يقدّم شوربات وأطباقًا رئيسية.", officialUrl: "https://varosligetcafe.hu/", dietaryTags: ["meat", "pork-maybe"], hoursSchedule: everyDay(["12:00", "22:00"]), sourceUrl: "https://varosligetcafe.hu/etlap/", hoursSource: "varosligetcafe.hu (official): Monday to Sunday 12:00-22:00; menu autumn / winter 2026 with soups and main courses (a meal, not only a cafe)", verified: "2026-11-15" }),
   food({ id: "gerbeaud", name: "Gerbeaud", categoryId: "cafes", area: "Belváros (Vörösmarty tér)", address: "Vörösmarty tér 7-8, 1051 Budapest", why: "مقهى وحلويات تاريخي من القرن 19.", officialUrl: "https://gerbeaud.hu/en/", dietaryTags: ["coffee", "dessert"], hoursSchedule: { ...days(["monday", "tuesday", "wednesday", "thursday", "sunday"], ["09:00", "20:00"]), ...days(["friday", "saturday"], ["09:00", "21:00"]) }, sourceUrl: "https://gerbeaud.hu/en/", hoursSource: "gerbeaud.hu (official)" }),
 ];
 
