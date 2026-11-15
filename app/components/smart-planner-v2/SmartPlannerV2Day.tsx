@@ -293,7 +293,10 @@ export default function SmartPlannerV2Day({
                     return day.mealLegs?.[`${fromId}::${toId}`] ?? fallbackLeg(fromId, toId);
                   })()
               : null;
-          const fromSummary = entry.kind === "place" ? entry.place : entry.kind === "meal" ? entry.meal : null;
+          // A flexible meal (the lunch break) has no point: its outgoing leg is computed from the place before it
+          // (barcelonaV2Resolve.ts buildMealAdjacentLegs), so the directions links start there too, never at a name-only fallback.
+          const previousPlace = entry.kind === "meal" && entry.meal.flexible ? entries.slice(0, i).reverse().find((e) => e.kind === "place") : undefined;
+          const fromSummary = entry.kind === "place" ? entry.place : entry.kind === "meal" ? (previousPlace && previousPlace.kind === "place" ? previousPlace.place : entry.meal) : null;
           const toSummary = next && next.kind === "place" ? next.place : next && next.kind === "meal" ? next.meal : null;
           const key = entry.kind === "freeTime" ? `free-${entry.block.startMinutes}` : `${entry.kind}-${idOf(entry)}-${entry.number}`;
 

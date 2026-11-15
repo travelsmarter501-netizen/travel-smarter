@@ -38,6 +38,9 @@ export default function SmartPlannerTransportSheet({
 }) {
   const ui = PLAN_TEXT[lang];
   const availableModes = PLANNER_TRANSPORT_MODE_ORDER.filter((mode) => leg.options.some((option) => option.mode === mode));
+  // Directions links go between the points the leg was computed with, when the city records them (same decision as the schedule).
+  const fromPoint = leg.fromPoint ? { ...from, coordinates: leg.fromPoint } : from;
+  const toPoint = leg.toPoint ? { ...to, coordinates: leg.toPoint } : to;
 
   return (
     <BottomSheet open={open} onClose={onClose} title={ui.transportTitle} closeLabel={PLACE_CARD_TEXT[lang].close}>
@@ -81,20 +84,21 @@ export default function SmartPlannerTransportSheet({
 
       <div className="mt-4 flex flex-col gap-2">
         <ExternalLink
-          href={buildDirectionsUrl(from, to, selectedMode ?? "walking")}
+          href={buildDirectionsUrl(fromPoint, toPoint, selectedMode ?? "walking")}
           className="flex w-full items-center justify-center gap-1.5 rounded-full bg-teal-700 px-4 py-2.5 pointer-coarse:py-3 text-sm font-semibold text-white transition-colors hover:bg-teal-800"
         >
           {ui.openGoogle}
           <IconExternalLink className="h-3.5 w-3.5 opacity-80" />
         </ExternalLink>
         <ExternalLink
-          href={buildAppleMapsDirectionsUrl(from, to, selectedMode ?? "walking")}
+          href={buildAppleMapsDirectionsUrl(fromPoint, toPoint, selectedMode ?? "walking")}
           className="flex w-full items-center justify-center gap-1.5 rounded-full border border-slate-200 bg-white px-4 py-2.5 pointer-coarse:py-3 text-sm font-semibold text-slate-700 transition-colors hover:border-teal-300"
         >
           {ui.openApple}
           <IconExternalLink className="h-3.5 w-3.5 opacity-60" />
         </ExternalLink>
-        {leg.routeUrl && (
+        {/* routeUrl is the walking route the distance was measured on: shown with the walking option only, never as transit directions. */}
+        {leg.routeUrl && selectedMode === "walking" && (
           <ExternalLink href={leg.routeUrl} className="flex items-center justify-center gap-1 py-1 text-xs font-semibold text-teal-700 underline decoration-dotted underline-offset-2">
             {ui.openRouteSource}
             <IconExternalLink className="h-3 w-3 opacity-70" />

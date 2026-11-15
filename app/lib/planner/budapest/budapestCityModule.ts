@@ -71,7 +71,11 @@ function withTransitCheck(leg: PlannerRouteLeg): PlannerRouteLeg {
 }
 
 export function budapestLeg(fromPlaceId: string, toPlaceId: string): PlannerRouteLeg {
-  return withTransitCheck(budapestLegBase(fromPlaceId, toPlaceId));
+  const leg = withTransitCheck(budapestLegBase(fromPlaceId, toPlaceId));
+  // The points the leg was computed between: the directions links (Google / Apple Maps, any mode) use them, not a text address.
+  const from = BUDAPEST_PLACE_COORDINATES[fromPlaceId];
+  const to = BUDAPEST_PLACE_COORDINATES[toPlaceId];
+  return from && to ? { ...leg, fromPoint: from, toPoint: to } : leg;
 }
 
 function budapestLegBase(fromPlaceId: string, toPlaceId: string): PlannerRouteLeg {

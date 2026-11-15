@@ -41,6 +41,15 @@ export default function SmartPlannerTransportConnector({
   const ui = PLAN_TEXT[lang];
   const [selectedMode, setSelectedMode] = useState<TransportMode | null>(leg.recommendedMode);
   const [sheetOpen, setSheetOpen] = useState(false);
+  // The connector is reused at the same position when a day is edited (a place removed / added before the next one). A different
+  // leg starts again from ITS recommended mode, the one the schedule was computed with; a mode picked for the previous leg is not
+  // carried over (it showed "walk 39 min" for a leg the schedule plans as transit).
+  const legKey = `${leg.fromPlaceId}>${leg.toPlaceId}>${leg.recommendedMode ?? ""}`;
+  const [shownLegKey, setShownLegKey] = useState(legKey);
+  if (shownLegKey !== legKey) {
+    setShownLegKey(legKey);
+    setSelectedMode(leg.recommendedMode);
+  }
 
   const option = selectedMode ? leg.options.find((item) => item.mode === selectedMode) : undefined;
 

@@ -38,8 +38,14 @@ export type PlannerRouteLeg = {
   recommendedMode: TransportMode | null;
   options: TransportOption[];
   sourceStatus: RouteLegSourceStatus;
-  /** Optional: a link to the real route this leg's distance was taken from (e.g. an OpenStreetMap directions URL). */
+  /**
+   * Optional: a link to the real route this leg's distance was taken from (e.g. an OpenStreetMap directions URL). It is the WALKING
+   * route the distance was measured on, so it is only offered with the walking option, never as transit directions.
+   */
   routeUrl?: string;
+  /** Optional (cities that set them): the exact points this leg was computed between; directions links start and end there. */
+  fromPoint?: { lat: number; lng: number };
+  toPoint?: { lat: number; lng: number };
 };
 
 /**
