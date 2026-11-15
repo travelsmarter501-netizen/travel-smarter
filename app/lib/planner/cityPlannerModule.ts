@@ -5,6 +5,7 @@ import type { PlannerRouteLeg } from "./plannerTransportTypes";
 import type { PlannerOperationalWarning } from "./barcelonaPlannerOperationalWarnings";
 import type { V2PlannerInterest } from "./v2PlannerTypes";
 import type { GeoPoint } from "./geoDistance";
+import type { V2Plan } from "./barcelonaV2Resolve";
 import type { HoursInfo, Weekday } from "../hours";
 import type { Area, Attraction, Beach, Experience, FoodCategory, FoodPlace, NightlifeVenue, ShoppingArea } from "../guideTypes";
 
@@ -198,6 +199,20 @@ export type CityPlannerModule = {
    * date safety net. It may reorder stops and swap stops between days but must keep the trip's set of places (Barcelona omits it).
    */
   repairDayGeography?: (context: DayGeographyRepairContext) => { plan: GeneratedPlannerPlan; legsByDay: PlannerRouteLeg[][] };
+  /**
+   * Optional, with repairDayGeography: after the plan is resolved, the city may change day orders or move places between days. `data`
+   * and every `build` result are the schedule the customer gets: resolved (restaurants, meals, every transfer) AND passed through the
+   * timing guard; the returned `data` is used as is. It must keep the trip's places and their lengths. `accommodationAnchored`: day 1's
+   * order follows the accommodation (keep it). Unset = unchanged.
+   */
+  reviewResolvedPlan?: (input: {
+    context: DayGeographyRepairContext;
+    plan: GeneratedPlannerPlan;
+    legsByDay: PlannerRouteLeg[][];
+    data: V2Plan;
+    build: (plan: GeneratedPlannerPlan, legsByDay: PlannerRouteLeg[][]) => V2Plan;
+    accommodationAnchored: boolean;
+  }) => { plan: GeneratedPlannerPlan; legsByDay: PlannerRouteLeg[][]; data: V2Plan };
   /** Shown when the content cannot fill every requested day (keeps the existing Barcelona wording for Barcelona). */
   capacityWarning: (daysGenerated: number) => string;
   /** Optional: the short "outside only" visit of a paid place (minutes, and the outside access hours when the outside closes). */

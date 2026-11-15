@@ -10,7 +10,7 @@ import type { V2PlannerInterest } from "./v2PlannerTypes";
 import type { PlannerPreferences } from "./plannerTypes";
 import { resolveV2Plan, type V2Plan } from "./barcelonaV2Resolve";
 import type { DestinationConfig } from "./destinationConfig";
-import type { CityPlannerModule } from "./cityPlannerModule";
+import type { CityPlannerModule, DayGeographyRepairContext } from "./cityPlannerModule";
 import { applyCrossDayOptimization } from "./plannerCrossDayOptimizer";
 import { applyNaturalClusterReclaim } from "./plannerNaturalClusterReclaim";
 import { applyTripCompositionPass } from "./plannerTripCompositionPass";
@@ -339,10 +339,11 @@ let { plan: optimizedPlan, legsByDay: optimizedLegsByDay } = applyCrossDayOptimi
     // City geography repair (multi-city; Prague): the shared passes above accept a day when a new area is linked to ANY area
     // already in it, so a day can end up pairing two areas that are not neighbours. A city may fix that here (reorder / swap
     // stops between days, same places). Barcelona has no such hook, so its plans are unchanged.
+    let repairContext: DayGeographyRepairContext | null = null;
     if (city.repairDayGeography) {
       const arrival = arrivalDateForResolution;
       const isoOf = (dayNumber: number) => (arrival ? addDaysToIsoDate(arrival, dayNumber - 1) : null);
-      const repaired = city.repairDayGeography({
+      repairContext = {
         plan: optimizedPlan,
         legsByDay: optimizedLegsByDay,
         config: configForRequest,
@@ -362,7 +363,8 @@ let { plan: optimizedPlan, legsByDay: optimizedLegsByDay } = applyCrossDayOptimi
         weekdayForDayNumber: (dayNumber) => { const iso = isoOf(dayNumber); return iso ? (weekdayOfIsoDate(iso) ?? null) : null; },
         monthForDayNumber: (dayNumber) => { const iso = isoOf(dayNumber); return iso ? Number(iso.slice(5, 7)) : null; },
         isoDateForDayNumber: (dayNumber) => isoOf(dayNumber) ?? null,
-      });
+      };
+      const repaired = city.repairDayGeography(repairContext);
       optimizedPlan = repaired.plan;
       optimizedLegsByDay = repaired.legsByDay;
     }
@@ -470,7 +472,15 @@ let { plan: optimizedPlan, legsByDay: optimizedLegsByDay } = applyCrossDayOptimi
       );
     let data = build(optimizedPlan, optimizedLegsByDay);
     // Opening hours as a hard constraint on the final plan (cities that opt in; see plannerTimingGuard.ts).
-    if (city.timingGuard) data = applyTimingGuard({ city, plan: optimizedPlan, legsByDay: optimizedLegsByDay, data, build });
+    const finalize = (plan: typeof optimizedPlan, legsByDay: typeof optimizedLegsByDay, built: V2Plan) => (city.timingGuard ? applyTimingGuard({ city, plan, legsByDay, data: built, build }) : built);
+    // Opt-in (city.reviewResolvedPlan): the city may change day orders / move places between days. Every version it compares, the
+    // current one included, is the schedule the customer would get: built (restaurants, meal lengths, every transfer) AND passed
+    // through the timing guard. What it returns is returned as is. Unset: nothing changes.
+    if (city.reviewResolvedPlan && repairContext) {
+      const reviewed = city.reviewResolvedPlan({ context: repairContext, plan: optimizedPlan, legsByDay: optimizedLegsByDay, data: finalize(optimizedPlan, optimizedLegsByDay, data), build: (plan, legsByDay) => finalize(plan, legsByDay, build(plan, legsByDay)), accommodationAnchored: !!accommodation?.coordinates });
+      return { ok: true, data: reviewed.data };
+    }
+    data = finalize(optimizedPlan, optimizedLegsByDay, data);
     return { ok: true, data };
   } catch {
     return { ok: false, error: "صار في خطأ غير متوقع. حاول مرة أخرى." };

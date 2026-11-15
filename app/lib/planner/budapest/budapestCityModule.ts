@@ -8,7 +8,9 @@ import type { PlannerRouteLeg, TransportOption } from "../plannerTransportTypes"
 import { repairCityDayGeography } from "../cityGeographyRepair";
 import { balanceCityDays, type DayFit } from "../cityDayBalance";
 import { buildBarcelonaDayTimeline, lunchPlacementFromTimeline, LUNCH_BREAK_ID, type TimelineMealInput, type TimelineStopInput } from "../barcelonaV2Timeline";
-import { checkWindow } from "../plannerTimingGuard";
+import { checkWindow, scheduleProblems } from "../plannerTimingGuard";
+import { DAY_REFERENCE_START, DAYLIGHT_PLACES, finalDayQuality, SUNSET_ESTIMATE_BY_MONTH, type FinalDayQuality } from "./budapestDayQuality";
+import type { V2Plan } from "../barcelonaV2Resolve";
 import type { DayGeographyRepairContext } from "../cityPlannerModule";
 import { ENABLE_MUST_SEE_PRIORITY, FLAGSHIP_MUST_SEE_BOOST, FLAGSHIP_TIER_B_BOOST, FLAGSHIP_TIER_B_SURPRISE_ME_BOOST } from "../barcelonaMustSeePolicy";
 import { V2_PLANNER_INTERESTS, type V2PlannerInterest } from "../v2PlannerTypes";
@@ -189,10 +191,11 @@ export type DayOnClock = {
  * - cafeLunch: a cafe may be lunch when no restaurant fits. OFF: no Budapest cafe has evidence of serving lunch (Gerbeaud: coffee and
  *   cakes), so lunch is a restaurant that fits, else the lunch break in the area.
  * - lunchAfterLastStop: lunch may come after the day's last visit (the restaurant, its walk, hours and full meal are still checked).
- * - clockOrder: each day's order is chosen on the real clock (orderDaysByClock), same places and lengths.
+ * - clockOrder: each day's order is proposed on the clock and ACCEPTED on the final schedule (reviewDayOrders), same places and lengths.
+ * - crossDay: a place that opens much later on its day than on another trip day may move there (reviewDayMoves), judged on the trip.
  */
-export type BudapestQualityOptions = { cafeLunch: boolean; lunchAfterLastStop: boolean; clockOrder: boolean };
-export const BUDAPEST_QUALITY_DEFAULTS: BudapestQualityOptions = { cafeLunch: false, lunchAfterLastStop: true, clockOrder: true };
+export type BudapestQualityOptions = { cafeLunch: boolean; lunchAfterLastStop: boolean; clockOrder: boolean; crossDay: boolean };
+export const BUDAPEST_QUALITY_DEFAULTS: BudapestQualityOptions = { cafeLunch: false, lunchAfterLastStop: true, clockOrder: true, crossDay: true };
 
 export function budapestDayOnClock(context: DayGeographyRepairContext, lunchAfterLastStop = BUDAPEST_QUALITY_DEFAULTS.lunchAfterLastStop): (ids: readonly string[], dayNumber: number, outside: ReadonlySet<string>) => DayOnClock {
   const legCache = new Map<string, PlannerRouteLeg>();
@@ -540,22 +543,20 @@ function withCruiseSuggestion(result: { plan: GeneratedPlannerPlan; legsByDay: P
   return { plan: { ...plan, days }, legsByDay: result.legsByDay };
 }
 
-// ── Order of each day on the real clock (round 1) ────────────────────────────────────────────────────────
-/**
- * Approximate sunset in Budapest by month (local time, mid-month; rounded, ±20 min across the month). A planning preference only, used
- * to keep visits that need daylight (an open park, a castle seen from outside) before dark; never a closure and never shown.
- */
-const SUNSET_BY_MONTH = [0, 16 * 60 + 20, 17 * 60 + 5, 17 * 60 + 45, 19 * 60 + 50, 20 * 60 + 25, 20 * 60 + 45, 20 * 60 + 40, 20 * 60, 19 * 60, 18 * 60, 16 * 60 + 15, 15 * 60 + 55];
-/** Visits whose point is seen in daylight. Viewpoints, bridges and lit squares are fine after dark; museums follow their hours. */
-const DAYLIGHT_PLACES = new Set(["margaret-island", "vajdahunyad-castle", "budapest-zoo"]);
-const DAY_REFERENCE_START = 9 * 60;
+// ── Day quality: order on the clock, judged on the FINAL schedule (rounds 1-2) ──────────────────────────────
 const ORDER_MAX_TRAVEL_INCREASE = 15;
 const ORDER_MIN_GAIN = 30;
 const ORDER_MAX_CANDIDATES = 120;
+const ORDER_PROPOSALS_PER_DAY = 4;
+const REVIEW_MAX_BUILDS = 6;
+const MOVE_MAX_BUILDS = 12;
+const MOVE_OPENING_LATER_BY = 120;
+/** Stage 1: a day that was NOT reordered may move by this much (e.g. its restaurant taken by another day); stage 2: no day may get worse. */
+const NO_WEAKER_TOLERANCE = 10;
 
 export type DayClockQuality = { morningGap: number; waits: number; travel: number; lateLunch: number; afterDark: number; cost: number };
 
-/** How a day reads on the clock: idle time from 09:00 to the first visit, waits between items, travel, a late lunch, daylight visits after dark. */
+/** The clock estimate of a day (lunch break placeholder, no restaurant): only used to PROPOSE orders; acceptance reads the final day. */
 export function dayClockQuality(clock: DayOnClock, month: number | null): DayClockQuality {
   const t = clock.timeline;
   const mid = (leg: PlannerRouteLeg | undefined) => {
@@ -572,7 +573,6 @@ export function dayClockQuality(clock: DayOnClock, month: number | null): DayClo
   for (let j = 1; j < items.length; j++) {
     const a = items[j - 1];
     const b = items[j];
-    // The lunch break is taken where the previous visit ends (no walk); after lunch, the walk is the previous visit's leg.
     const legMinutes = b.stop >= 0 && b.stop === a.after + 1 ? mid(clock.legs[a.after]) : 0;
     travel += legMinutes;
     waits += Math.max(0, b.start - a.end - legMinutes - 15);
@@ -580,7 +580,7 @@ export function dayClockQuality(clock: DayOnClock, month: number | null): DayClo
   const morningGap = Math.max(0, (t.stops[0]?.startMinutes ?? DAY_REFERENCE_START) - DAY_REFERENCE_START);
   const lunch = t.meals.find((m) => m.mealType === "lunch");
   const lateLunch = lunch ? Math.max(0, lunch.startMinutes - (13 * 60 + 30)) : 0;
-  const sunset = month ? SUNSET_BY_MONTH[month] : null;
+  const sunset = month ? SUNSET_ESTIMATE_BY_MONTH[month] : null;
   const afterDark = sunset === null ? 0 : t.stops.reduce((sum, w) => sum + (DAYLIGHT_PLACES.has(w.placeId) ? Math.max(0, w.endMinutes - sunset) : 0), 0);
   return { morningGap, waits, travel, lateLunch, afterDark, cost: morningGap + waits + 2 * lateLunch + afterDark + 0.5 * travel };
 }
@@ -590,66 +590,235 @@ function permutations<T>(items: readonly T[]): T[][] {
   return items.flatMap((x, i) => permutations([...items.slice(0, i), ...items.slice(i + 1)]).map((rest) => [x, ...rest]));
 }
 
+const isEveningPlace = (placeId: string) => getBudapestPlannerMetadataById(placeId)?.preferredTime === "evening";
+function legMidMinutes(a: string, b: string): number {
+  const leg = budapestLeg(a, b);
+  const o = leg.options.find((x) => x.mode === leg.recommendedMode);
+  return o ? (o.durationMinutesMin + o.durationMinutesMax) / 2 : 30;
+}
+const routeTravel = (ids: readonly string[]) => ids.slice(1).reduce((sum, id, i) => sum + legMidMinutes(ids[i], id), 0);
+
 /**
- * Round 1: each day keeps its places and their lengths; only the ORDER may change, and only when the day clearly reads better on the
- * clock: every visit inside its hours (timetabled departures exact), evening places last, at most +15 min of travel, and a gain of at least
- * 30 "idle-equivalent" minutes (idle from 09:00 to the first visit + waits + 2 x late lunch + daylight visits after dark + half the
- * travel) that is at least twice the added travel. Idle moved into the morning is not a gain (the morning counts from 09:00). Bounded
- * cost: at most 6 non-evening stops, and only the 120 cheapest orders by travel are tried on the clock.
+ * Orders proposed for a day by the clock estimate: same places, evening places last, at most +15 min of stop-to-stop travel, the 120
+ * cheapest orders by travel tried, the best ones first. `minClockGain` filters orders whose estimate is not clearly better.
  */
-function orderDaysByClock(
-  result: { plan: GeneratedPlannerPlan; legsByDay: PlannerRouteLeg[][] },
-  context: DayGeographyRepairContext,
-  lunchAfterLastStop: boolean
-): { plan: GeneratedPlannerPlan; legsByDay: PlannerRouteLeg[][] } {
-  const onClock = budapestDayOnClock(context, lunchAfterLastStop);
-  const isEvening = (placeId: string) => getBudapestPlannerMetadataById(placeId)?.preferredTime === "evening";
-  const legMid = (a: string, b: string) => {
-    const leg = budapestLeg(a, b);
-    const o = leg.options.find((x) => x.mode === leg.recommendedMode);
-    return o ? (o.durationMinutesMin + o.durationMinutesMax) / 2 : 30;
-  };
-  const routeTravel = (ids: readonly string[]) => ids.slice(1).reduce((sum, id, i) => sum + legMid(ids[i], id), 0);
-  let changed = false;
-  const days = result.plan.days.map((day) => {
-    const ids = day.stops.map((stop) => stop.placeId);
-    const rest = ids.filter((id) => !isEvening(id));
-    const evening = ids.filter((id) => isEvening(id));
-    if (rest.length < 2 || rest.length > 6) return day;
-    const outside = new Set(day.stops.filter((stop) => stop.visitMode === "outside").map((stop) => stop.placeId));
-    const month = context.monthForDayNumber?.(day.dayNumber) ?? null;
-    const baseClock = onClock(ids, day.dayNumber, outside);
-    // The current order may fail this check (it is stricter than the final timeline: it adds the lunch-detour allowance), so it is not
-    // skipped; it is compared by the same measure, and a new order is taken only for a clear gain.
-    const base = dayClockQuality(baseClock, month);
-    const baseTravel = routeTravel(ids);
-    const candidates = permutations(rest)
-      .map((order) => [...order, ...evening])
-      .filter((order) => order.some((id, i) => id !== ids[i]))
-      .map((order) => ({ order, travel: routeTravel(order) }))
-      .filter((c) => c.travel <= baseTravel + ORDER_MAX_TRAVEL_INCREASE)
-      .sort((a, b) => a.travel - b.travel)
-      .slice(0, ORDER_MAX_CANDIDATES);
-    let best: { order: string[]; quality: DayClockQuality } | null = null;
-    for (const candidate of candidates) {
-      const clock = onClock(candidate.order, day.dayNumber, outside);
-      if (clock.failing.length > 0) continue;
-      const quality = dayClockQuality(clock, month);
-      if (!best || quality.cost < best.quality.cost) best = { order: candidate.order, quality };
-    }
-    if (!best) return day;
-    const gain = base.cost - best.quality.cost;
-    const addedTravel = best.quality.travel - base.travel;
-    if (gain < ORDER_MIN_GAIN || addedTravel > gain / 2) return day;
-    changed = true;
-    const byId = new Map(day.stops.map((stop) => [stop.placeId, stop]));
-    return { ...day, stops: best.order.map((id) => byId.get(id)!) };
-  });
-  if (!changed) return result;
-  return { plan: { ...result.plan, days }, legsByDay: days.map((day) => day.stops.slice(0, -1).map((stop, i) => budapestLeg(stop.placeId, day.stops[i + 1].placeId))) };
+function clockOrderProposals(day: PlannerDay, context: DayGeographyRepairContext, onClock: ReturnType<typeof budapestDayOnClock>, ids: readonly string[], minClockGain: number, limit: number): string[][] {
+  const rest = ids.filter((id) => !isEveningPlace(id));
+  const evening = ids.filter((id) => isEveningPlace(id));
+  if (rest.length < 1 || rest.length > 6) return [];
+  const outside = new Set(day.stops.filter((stop) => stop.visitMode === "outside").map((stop) => stop.placeId));
+  const month = context.monthForDayNumber?.(day.dayNumber) ?? null;
+  const current = day.stops.map((s) => s.placeId);
+  const sameSet = current.length === ids.length && current.every((id) => ids.includes(id));
+  const base = sameSet ? dayClockQuality(onClock(current, day.dayNumber, outside), month) : null;
+  const baseTravel = sameSet ? routeTravel(current) : Infinity;
+  const scored: { order: string[]; cost: number }[] = [];
+  const tried = permutations(rest)
+    .map((order) => [...order, ...evening])
+    .filter((order) => !sameSet || order.some((id, i) => id !== current[i]))
+    .map((order) => ({ order, travel: routeTravel(order) }))
+    .filter((c) => c.travel <= baseTravel + ORDER_MAX_TRAVEL_INCREASE)
+    .sort((a, b) => a.travel - b.travel)
+    .slice(0, ORDER_MAX_CANDIDATES);
+  for (const c of tried) {
+    const clock = onClock(c.order, day.dayNumber, outside);
+    if (clock.failing.length > 0) continue;
+    const q = dayClockQuality(clock, month);
+    if (base && base.cost - q.cost < minClockGain) continue;
+    scored.push({ order: c.order, cost: q.cost });
+  }
+  return scored.sort((a, b) => a.cost - b.cost).slice(0, limit).map((s) => s.order);
 }
 
-/** Budapest's geography repair, day balance, evening order, clock order and cruise suggestion (options: see BudapestQualityOptions). */
+function stopMinutes(stop: { placeId: string; visitMode?: "outside" }): number {
+  return (stop.visitMode === "outside" ? OUTSIDE_STOP_MINUTES[stop.placeId] : undefined) ?? getBudapestPlannerMetadataById(stop.placeId)?.visitDurationMinutes ?? 60;
+}
+/** The plan with new stop lists for some days (same stop objects), each day's totals and clusters recomputed, and its legs rebuilt. */
+function withDayStops(plan: GeneratedPlannerPlan, changes: ReadonlyMap<number, PlannerDay["stops"]>): { plan: GeneratedPlannerPlan; legsByDay: PlannerRouteLeg[][] } {
+  const days = plan.days.map((day) => {
+    const stops = changes.get(day.dayNumber);
+    if (!stops) return day;
+    const clusters = [...new Set(stops.map((s) => getBudapestPlannerMetadataById(s.placeId)?.cluster).filter((c): c is string => !!c))];
+    return { ...day, stops, totalVisitMinutes: stops.reduce((sum, s) => sum + stopMinutes(s), 0), clusters };
+  });
+  return { plan: { ...plan, days }, legsByDay: days.map((day) => day.stops.slice(0, -1).map((stop, i) => budapestLeg(stop.placeId, day.stops[i + 1].placeId))) };
+}
+const reorder = (day: PlannerDay, ids: readonly string[]) => {
+  const byId = new Map(day.stops.map((s) => [s.placeId, s]));
+  return ids.map((id) => byId.get(id)!);
+};
+
+type Reviewed = { plan: GeneratedPlannerPlan; legsByDay: PlannerRouteLeg[][]; data: V2Plan };
+type Judged = { q: FinalDayQuality; problems: number };
+function judgeAll(data: V2Plan): Map<number, Judged> {
+  return new Map(data.days.map((d) => [d.dayNumber, { q: finalDayQuality(d), problems: scheduleProblems(d).size }]));
+}
+/** One day's change is accepted on the FINAL schedule: no new problem, no restaurant lunch lost, travel +15 at most, gain >= 30 and >= twice the added travel. */
+/** A restaurant lunch that becomes a lunch break is a loss for the customer, whatever the clock says. */
+const losesRestaurant = (base: Judged, trial: Judged) => base.q.lunch !== "break" && base.q.lunch !== "none" && (trial.q.lunch === "break" || trial.q.lunch === "none");
+function clearGain(base: Judged, trial: Judged): boolean {
+  if (trial.problems > base.problems) return false;
+  if (losesRestaurant(base, trial)) return false;
+  if (trial.q.travel > base.q.travel + ORDER_MAX_TRAVEL_INCREASE) return false;
+  const gain = base.q.cost - trial.q.cost;
+  return gain >= ORDER_MIN_GAIN && trial.q.travel - base.q.travel <= gain / 2;
+}
+/** A day that was not changed must not get worse through a change elsewhere (e.g. a restaurant taken by another day). */
+const notWeaker = (base: Judged, trial: Judged, tolerance = NO_WEAKER_TOLERANCE) => trial.problems <= base.problems && !losesRestaurant(base, trial) && trial.q.cost <= base.q.cost + tolerance && trial.q.travel <= base.q.travel + ORDER_MAX_TRAVEL_INCREASE;
+
+/** Stage 1: each day's order, proposed by the clock and accepted on the final schedule. Bounded: at most REVIEW_MAX_BUILDS rebuilds. */
+function reviewDayOrders(input: Reviewed, context: DayGeographyRepairContext, build: (plan: GeneratedPlannerPlan, legs: PlannerRouteLeg[][]) => V2Plan, lunchAfterLastStop: boolean, lockedDays: ReadonlySet<number>): Reviewed {
+  const onClock = budapestDayOnClock(context, lunchAfterLastStop);
+  const proposals = new Map<number, string[][]>();
+  for (const day of input.plan.days) {
+    if (lockedDays.has(day.dayNumber)) continue;
+    const list = clockOrderProposals(day, context, onClock, day.stops.map((s) => s.placeId), ORDER_MIN_GAIN / 2, ORDER_PROPOSALS_PER_DAY);
+    if (list.length) proposals.set(day.dayNumber, list);
+  }
+  if (proposals.size === 0) return input;
+  const base = judgeAll(input.data);
+  const accepted = new Map<number, string[]>();
+  const nextTry = new Map<number, number>([...proposals.keys()].map((n) => [n, 0]));
+  let builds = 0;
+  let current = input;
+  while (builds < REVIEW_MAX_BUILDS) {
+    const trialOrders = new Map(accepted);
+    for (const [n, i] of nextTry) trialOrders.set(n, proposals.get(n)![i]);
+    if (trialOrders.size === 0) break;
+    const changes = new Map([...trialOrders].map(([n, ids]) => [n, reorder(input.plan.days.find((d) => d.dayNumber === n)!, ids)]));
+    const trial = withDayStops(input.plan, changes);
+    const data = build(trial.plan, trial.legsByDay);
+    builds++;
+    const judged = judgeAll(data);
+    let stable = true;
+    for (const n of [...trialOrders.keys()]) {
+      const ok = clearGain(base.get(n)!, judged.get(n)!);
+      if (ok) {
+        if (nextTry.has(n)) { accepted.set(n, trialOrders.get(n)!); nextTry.delete(n); stable = false; }
+      } else {
+        stable = false;
+        if (accepted.has(n)) accepted.delete(n);
+        const i = nextTry.get(n);
+        if (i !== undefined && i + 1 < proposals.get(n)!.length) nextTry.set(n, i + 1);
+        else nextTry.delete(n);
+      }
+    }
+    const othersOk = [...judged].every(([n, j]) => trialOrders.has(n) || notWeaker(base.get(n)!, j));
+    if (!othersOk && accepted.size > 0) {
+      // Drop the accepted change with the smallest gain and try again.
+      const weakest = [...accepted.keys()].sort((a, b) => base.get(a)!.q.cost - judged.get(a)!.q.cost - (base.get(b)!.q.cost - judged.get(b)!.q.cost))[0];
+      accepted.delete(weakest);
+      stable = false;
+    }
+    if (stable && nextTry.size === 0 && othersOk) { current = { ...trial, data }; return current; }
+    if (nextTry.size === 0 && accepted.size === 0) return input;
+  }
+  if (accepted.size === 0) return input;
+  // Out of tries: keep only what the last check accepted, and verify it once more.
+  const changes = new Map([...accepted].map(([n, ids]) => [n, reorder(input.plan.days.find((d) => d.dayNumber === n)!, ids)]));
+  const final = withDayStops(input.plan, changes);
+  const data = build(final.plan, final.legsByDay);
+  const judged = judgeAll(data);
+  const ok = [...judged].every(([n, j]) => (accepted.has(n) ? clearGain(base.get(n)!, j) : notWeaker(base.get(n)!, j)));
+  return ok ? { ...final, data } : input;
+}
+
+/** The earliest opening of a place on a day (planning hours of that date), minutes; null when unknown or closed. */
+function openingOnDay(context: DayGeographyRepairContext, placeId: string, dayNumber: number): number | null {
+  const weekday = context.weekdayForDayNumber?.(dayNumber);
+  if (!weekday) return null;
+  const hours = planningHoursOf(context.hoursForPlaceOnDay?.(placeId, dayNumber) ?? context.hoursForPlace?.(placeId));
+  if (!hours) return 9 * 60;
+  if (hours.type !== "fixed") return 9 * 60;
+  const ranges = hours.schedule[weekday] ?? [];
+  if (ranges.length === 0) return null;
+  return Math.min(...ranges.map((r) => Number(r.open.slice(0, 2)) * 60 + Number(r.open.slice(3, 5))));
+}
+
+/**
+ * Stage 2: a place whose opening on its day is at least 2 hours later than on another day of the trip (e.g. St Stephen's on a Sunday,
+ * 13:00) may move to that day, alone or swapped with one place of that day (not an evening place, open on the first day). Each move is
+ * judged on the WHOLE trip's final schedule: total gain >= 30, no day worse at all, no new problem, travel +15 at most on any
+ * day, at least 2 places left on each day. Same places and lengths in the trip. Dated plans only. Bounded: MOVE_MAX_BUILDS rebuilds.
+ */
+function reviewDayMoves(input: Reviewed, context: DayGeographyRepairContext, build: (plan: GeneratedPlannerPlan, legs: PlannerRouteLeg[][]) => V2Plan, lunchAfterLastStop: boolean, lockedDays: ReadonlySet<number>): Reviewed {
+  if (context.weekdayForDayNumber?.(1) == null) return input;
+  const onClock = budapestDayOnClock(context, lunchAfterLastStop);
+  let current = input;
+  let builds = 0;
+  const candidates: { placeId: string; from: number; to: number; delta: number }[] = [];
+  for (const day of input.plan.days) {
+    if (lockedDays.has(day.dayNumber)) continue;
+    for (const stop of day.stops) {
+      if (isEveningPlace(stop.placeId)) continue;
+      const here = openingOnDay(context, stop.placeId, day.dayNumber);
+      if (here === null) continue;
+      for (const other of input.plan.days) {
+        if (other.dayNumber === day.dayNumber || lockedDays.has(other.dayNumber)) continue;
+        if (context.isPlaceEligibleForDay && !context.isPlaceEligibleForDay(stop.placeId, other.dayNumber)) continue;
+        const there = openingOnDay(context, stop.placeId, other.dayNumber);
+        if (there !== null && here - there >= MOVE_OPENING_LATER_BY) candidates.push({ placeId: stop.placeId, from: day.dayNumber, to: other.dayNumber, delta: here - there });
+      }
+    }
+  }
+  candidates.sort((a, b) => b.delta - a.delta || a.from - b.from || a.to - b.to);
+  for (const cand of candidates.slice(0, 4)) {
+    const plan = current.plan;
+    const from = plan.days.find((d) => d.dayNumber === cand.from)!;
+    const to = plan.days.find((d) => d.dayNumber === cand.to)!;
+    const moving = from.stops.find((s) => s.placeId === cand.placeId);
+    if (!moving) continue;
+    const base = judgeAll(current.data);
+    const baseTotal = [...base.values()].reduce((s, j) => s + j.q.cost, 0);
+    // Swap partners: places of the target day that can go to the first day (open there, not evening), nearest to the first day first.
+    const fromRest = from.stops.filter((s) => s.placeId !== cand.placeId);
+    const partners = to.stops
+      .filter((s) => !isEveningPlace(s.placeId) && (!context.isPlaceEligibleForDay || context.isPlaceEligibleForDay(s.placeId, cand.from)))
+      .map((s) => ({ s, near: fromRest.length ? Math.min(...fromRest.map((f) => legMidMinutes(f.placeId, s.placeId))) : 0 }))
+      .sort((a, b) => a.near - b.near)
+      .slice(0, 3)
+      .map((p) => p.s);
+    let best: { reviewed: Reviewed; total: number } | null = null;
+    for (const partner of [null, ...partners]) {
+      if (builds >= MOVE_MAX_BUILDS) break;
+      const newFrom = [...fromRest, ...(partner ? [partner] : [])];
+      const newTo = [...to.stops.filter((s) => s !== partner), moving];
+      if (newFrom.length < 2 || newTo.length < 2) continue;
+      const fromDay = { ...from, stops: newFrom };
+      const toDay = { ...to, stops: newTo };
+      const orderFrom = clockOrderProposals(fromDay, context, onClock, newFrom.map((s) => s.placeId), -Infinity, 1)[0];
+      const orderTo = clockOrderProposals(toDay, context, onClock, newTo.map((s) => s.placeId), -Infinity, 1)[0];
+      if (!orderFrom || !orderTo) continue;
+      const changes = new Map([[cand.from, reorder(fromDay, orderFrom)], [cand.to, reorder(toDay, orderTo)]]);
+      const trial = withDayStops(plan, changes);
+      const data = build(trial.plan, trial.legsByDay);
+      builds++;
+      const judged = judgeAll(data);
+      const total = [...judged.values()].reduce((s, j) => s + j.q.cost, 0);
+      const fair = [...judged].every(([n, j]) => notWeaker(base.get(n)!, j, 0));
+      if (fair && baseTotal - total >= ORDER_MIN_GAIN && (!best || total < best.total)) best = { reviewed: { ...trial, data }, total };
+    }
+    if (best) current = best.reviewed;
+    if (builds >= MOVE_MAX_BUILDS) break;
+  }
+  return current;
+}
+
+/** Budapest's review on the final schedule (CityPlannerModule.reviewResolvedPlan): stage 1 orders, then stage 2 moves between days. */
+export function budapestReviewResolvedPlan(
+  input: Parameters<NonNullable<CityPlannerModule["reviewResolvedPlan"]>>[0],
+  options: BudapestQualityOptions = BUDAPEST_QUALITY_DEFAULTS
+): Reviewed {
+  const locked = new Set<number>(input.accommodationAnchored ? [1] : []);
+  let reviewed: Reviewed = { plan: input.plan, legsByDay: input.legsByDay, data: input.data };
+  if (options.clockOrder) reviewed = reviewDayOrders(reviewed, input.context, input.build, options.lunchAfterLastStop, locked);
+  if (options.crossDay) {
+    reviewed = reviewDayMoves(reviewed, input.context, input.build, options.lunchAfterLastStop, locked);
+  }
+  return reviewed;
+}
+
+/** Budapest's geography repair, day balance, evening order and cruise suggestion (day order and moves: budapestReviewResolvedPlan). */
 export function budapestRepairDayGeography(context: DayGeographyRepairContext, options: BudapestQualityOptions = BUDAPEST_QUALITY_DEFAULTS): { plan: GeneratedPlannerPlan; legsByDay: PlannerRouteLeg[][] } {
   const repaired = repairCityDayGeography(context, { compatibility: BUDAPEST_CLUSTER_COMPATIBILITY, connectors: BUDAPEST_CONNECTORS, metadataById: getBudapestPlannerMetadataById, travelMinutes });
   const balanced = balanceCityDays(
@@ -674,9 +843,7 @@ export function budapestRepairDayGeography(context: DayGeographyRepairContext, o
     }
   );
   // Flexible dates: the cruise departure depends on the period (2026 timetable), so it is a suggestion there, never a guessed time.
-  const evening = eveningLast(balanced, context.weekdayForDayNumber?.(1) == null);
-  const ordered = options.clockOrder ? orderDaysByClock(evening, context, options.lunchAfterLastStop) : evening;
-  return withCruiseSuggestion(ordered, context);
+  return withCruiseSuggestion(eveningLast(balanced, context.weekdayForDayNumber?.(1) == null), context);
 }
 
 function budapestMealRules(options: BudapestQualityOptions): CityPlannerModule["mealStops"] {
@@ -754,6 +921,7 @@ export const BUDAPEST_CITY_MODULE: CityPlannerModule = {
   mealStops: budapestMealRules(BUDAPEST_QUALITY_DEFAULTS),
   compositionProtectedPlaceIds: [...FLAGSHIP_MUST_SEE, ...FLAGSHIP_TIER_B_IDS],
   repairDayGeography: (context) => budapestRepairDayGeography(context),
+  reviewResolvedPlan: (input) => budapestReviewResolvedPlan(input),
 
   mealLegsInTimeline: true,
   ticketEstimate: { currency: "HUF", forPlace: budapestTicketEstimate },
@@ -771,5 +939,5 @@ export const BUDAPEST_CITY_MODULE: CityPlannerModule = {
 
 /** TEST-ONLY: the Budapest module with some round-1 switches off, to measure each change alone (review tools; never registered). */
 export function budapestModuleWith(options: BudapestQualityOptions): CityPlannerModule {
-  return { ...BUDAPEST_CITY_MODULE, mealStops: budapestMealRules(options), repairDayGeography: (context) => budapestRepairDayGeography(context, options) };
+  return { ...BUDAPEST_CITY_MODULE, mealStops: budapestMealRules(options), repairDayGeography: (context) => budapestRepairDayGeography(context, options), reviewResolvedPlan: (input) => budapestReviewResolvedPlan(input, options) };
 }

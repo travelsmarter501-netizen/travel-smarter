@@ -2,9 +2,11 @@
 // Day-quality measurement (round 1): generates the same requests with test-only copies of the Budapest module (budapestModuleWith), one
 // per change, and reports per variant:
 //   morning gap (09:00 -> first visit), waits between items (beyond travel + the 15-minute margin; not before dinner), their sum,
-//   visit minutes, travel minutes, end of the day's program, lunches (restaurant / lunch break / Gerbeaud), late lunches (after 13:30),
-//   daylight visits after dark, generation time per plan.
-// Variants: "old" (all switches as in ddb1b98: must equal it byte for byte), "noCafeLunch", "lunchAfterLast", "clockOrder", "all".
+//   visit minutes, travel minutes (meal transfers included), end of the visits, end of lunch, dinners (optional, apart), lunches
+//   (restaurant / lunch break / Gerbeaud, and lunch breaks per interest set), late lunches (after 13:30), daylight places after the
+//   ESTIMATED monthly sunset, generation time per plan (median, p90, slowest).
+// Variants: "old" (as ddb1b98: must equal it byte for byte), "lunchRules" (no cafe lunch + lunch after the last visit), "order" (the same
+// lunch rules + each day's order accepted on the final schedule), "all" (+ moves between days). Optional 3rd argument: variants to run.
 // Usage: ROOT=$(pwd -W) NODE_OPTIONS=--conditions=react-server npx tsx docs/budapest/tools/bud-quality.mts <sample|launch> <outDir>
 //   sample = the 53-plan review sample (bud-sample.mts inputs); launch = 9 interest sets x 1-4 days x 3 date cases (108 plans).
 import { mkdirSync, writeFileSync } from "fs";
@@ -39,14 +41,15 @@ if (which === "sample") {
 writeFileSync(`${outDir}/inputs.json`, JSON.stringify(cases, null, 1));
 
 const VARIANTS: Record<string, any> = {
-  old: { cafeLunch: true, lunchAfterLastStop: false, clockOrder: false },
-  noCafeLunch: { cafeLunch: false, lunchAfterLastStop: false, clockOrder: false },
-  lunchAfterLast: { cafeLunch: true, lunchAfterLastStop: true, clockOrder: false },
-  clockOrder: { cafeLunch: true, lunchAfterLastStop: false, clockOrder: true },
+  old: { cafeLunch: true, lunchAfterLastStop: false, clockOrder: false, crossDay: false },
+  lunchRules: { cafeLunch: false, lunchAfterLastStop: true, clockOrder: false, crossDay: false },
+  order: { cafeLunch: false, lunchAfterLastStop: true, clockOrder: true, crossDay: false },
   all: M.BUDAPEST_QUALITY_DEFAULTS,
 };
+const only = process.argv[4] ? new Set(process.argv[4].split(",")) : null;
 const summary: any = {};
 for (const [name, options] of Object.entries(VARIANTS)) {
+  if (only && !only.has(name)) continue;
   const city = M.budapestModuleWith(options);
   const out: any[] = [];
   const times: number[] = [];
@@ -57,17 +60,18 @@ for (const [name, options] of Object.entries(VARIANTS)) {
     out.push(r.ok ? { id: c.id, c: c.input, plan: r.data, ms: Math.round(times[times.length - 1]) } : { id: c.id, c: c.input, error: r.error });
   }
   writeFileSync(`${outDir}/${name}.json`, JSON.stringify(out.map(({ ms, ...rest }) => rest)));
-  const days = out.flatMap((x) => (x.plan ? x.plan.days.map((d: any) => ({ id: x.id, ...dayMetrics(d) })) : []));
+  const days = out.flatMap((x) => (x.plan ? x.plan.days.map((d: any) => ({ id: x.id, day: d.dayNumber, date: d.actualDate ?? null, weekday: d.weekday ?? null, ...dayMetrics(d) })) : []));
   const sum = (k: string) => days.reduce((s, d: any) => s + (typeof d[k] === "number" ? d[k] : 0), 0);
   const sorted = [...times].sort((a, b) => a - b);
   summary[name] = {
     plans: out.filter((x) => x.plan).length, failed: out.filter((x) => !x.plan).map((x) => x.id), days: days.length,
     morningGap: sum("morningGap"), waits: sum("waits"), idle: sum("idle"), visits: sum("visits"), travel: sum("travel"),
-    avgEnd: Math.round(sum("end") / days.length), lunchRestaurant: days.filter((d: any) => d.lunch !== "break" && d.lunch !== "none").length, lunchBreak: days.filter((d: any) => d.lunch === "break").length,
-    gerbeaudLunch: days.filter((d: any) => d.lunch === "gerbeaud").length, lateLunch: sum("lateLunch"), afterDark: sum("afterDark"),
+    avgVisitsEnd: Math.round(sum("visitsEnd") / days.length), avgLunchEnd: Math.round(days.reduce((s, d: any) => s + (d.lunchEnd ?? 0), 0) / Math.max(1, days.filter((d: any) => d.lunchEnd).length)), dinners: days.filter((d: any) => d.dinnerStart !== null).length, lunchRestaurant: days.filter((d: any) => d.lunch !== "break" && d.lunch !== "none").length, lunchBreak: days.filter((d: any) => d.lunch === "break").length,
+    gerbeaudLunch: days.filter((d: any) => d.lunch === "gerbeaud").length, lateLunch: sum("lateLunch"), afterDarkEstimate: sum("afterDarkEstimate"),
+    lunchBreaksBySet: Object.fromEntries([...new Set(days.map((d: any) => d.id.split("-")[0]))].map((set) => [set, days.filter((d: any) => d.id.split("-")[0] === set && d.lunch === "break").length + "/" + days.filter((d: any) => d.id.split("-")[0] === set).length])),
     msMedian: Math.round(sorted[Math.floor(sorted.length / 2)]), msP90: Math.round(sorted[Math.floor(sorted.length * 0.9)]), msMax: Math.round(sorted[sorted.length - 1]),
   };
   writeFileSync(`${outDir}/${name}-days.json`, JSON.stringify(days));
   console.log(name.padEnd(15), JSON.stringify(summary[name]));
 }
-writeFileSync(`${outDir}/summary.json`, JSON.stringify(summary, null, 1));
+writeFileSync(`${outDir}/summary${only ? "-" + [...only].join("-") : ""}.json`, JSON.stringify(summary, null, 1));
