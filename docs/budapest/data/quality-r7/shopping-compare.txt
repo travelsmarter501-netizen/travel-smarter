@@ -1,0 +1,19 @@
+## sunday 2026-11-22
+BEFORE: Andrássy 09:00–09:45 → Parliament (outside) 10:30–10:50 → Chain Bridge 11:15–11:30 → Shoes on the Danube 12:00–12:10 → Hungarikum (lunch) 12:45–14:00 → Opera tour 15:00–16:00
+  idle 59, travel 61, longest wait 30 (Hungarikum (lunch) → Opera tour)
+AFTER:  Parliament (outside) 09:00–09:20 → Shoes on the Danube 09:45–09:55 → Andrássy 10:45–11:30 → Menza (lunch) 12:30–13:45 → Opera tour 15:00–16:00 → St Stephen's 16:30–17:45
+  idle 119, travel 46, longest wait 54 (Menza (lunch) → Opera tour)
+
+## monday 2026-11-23
+BEFORE: Great Market Hall 09:00–10:00 → Váci utca 10:30–11:15 → Gozsdu 11:45–12:15 → New York Café (lunch) 12:45–14:00 → Arena Mall 14:45–16:15 → Legenda cruise 17:20–18:20
+  idle 28, travel 97, longest wait 17 (Arena Mall → Legenda cruise)
+AFTER:  Great Market Hall 09:00–10:00 → Váci utca 10:30–11:15 → Gozsdu 11:45–12:15 → Frici Papa (lunch) 12:45–14:00 → Arena Mall 14:45–16:15 → Legenda cruise 17:20–18:20
+  idle 30, travel 95, longest wait 17 (Arena Mall → Legenda cruise)
+
+## tuesday 2026-11-24
+BEFORE: St Stephen's 09:00–10:15 → Fisherman's Bastion 11:00–11:40 → Matthias (outside) 12:00–12:15 → 21 Restaurant (lunch) 12:45–14:00 → National Gallery 14:45–16:45 → Citadella 17:30–18:15
+  idle 37, travel 73, longest wait 14 (21 Restaurant (lunch) → National Gallery)
+AFTER:  Fisherman's Bastion 09:00–09:40 → Matthias (outside) 10:00–10:15 → National Gallery 10:45–12:45 → 21 Restaurant (lunch) 13:30–14:45 → Citadella 15:30–16:15 → Chain Bridge 17:00–17:15
+  idle 30, travel 80, longest wait 14 (National Gallery → 21 Restaurant (lunch))
+
+TRIP: idle 124 -> 179, travel 231 -> 221

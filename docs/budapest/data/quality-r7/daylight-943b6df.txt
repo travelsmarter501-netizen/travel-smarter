@@ -1,0 +1,13 @@
+generated plans, prefers-daylight stops: {"margaret-island":{"after":0,"noted":0,"total":46},"citadella":{"after":1,"noted":1,"total":88},"vajdahunyad-castle":{"after":0,"noted":0,"total":52}}
+add: day 3 order heroes-square > house-of-music > opera-house-tour > vajdahunyad-castle; vajdahunyad 16:45-17:05 (estimate 16:15), note true
+  positions tried: at 0: 09:00-09:20, problems 0, latest shift of another visit +90, fixed session moved | at 1: 10:00-10:20, problems 0, latest shift of another visit +90, fixed session moved | at 2: 12:45-13:05, problems 0, latest shift of another visit +90, fixed session moved | at 3: 16:45-17:05, problems 0, latest shift of another visit +0
+start 10:00: vajdahunyad-castle 18:15-18:35, note true
+nightlife 2026-11-22 day 3 add vajdahunyad-castle: position 2, 14:30-14:50, house-of-music 15:15 (before 14:45), moved: house-of-music 14:45 -> 15:15
+nightlife 2026-12-01 day 3 add vajdahunyad-castle: position 2, 14:30-14:50, house-of-music 15:15 (before 14:45), moved: house-of-music 14:45 -> 15:15
+food 2026-10-20 day 1 add margaret-island: position 4, 15:30-17:00, danube-legend-cruise 18:00 (before 17:40), moved: danube-legend-cruise 17:40 -> 18:00
+nightlife 2026-10-20 day 1 add vajdahunyad-castle: position 4, 16:45-17:05, danube-legend-cruise 18:00 (before 17:40), moved: danube-legend-cruise 17:40 -> 18:00
+failures 4
+FAIL nightlife 2026-11-22 day 3 add vajdahunyad-castle: placed before the end, moving a fixed session (house-of-music 14:45 -> 15:15)
+FAIL nightlife 2026-12-01 day 3 add vajdahunyad-castle: placed before the end, moving a fixed session (house-of-music 14:45 -> 15:15)
+FAIL food 2026-10-20 day 1 add margaret-island: placed before the end, moving a fixed session (danube-legend-cruise 17:40 -> 18:00)
+FAIL nightlife 2026-10-20 day 1 add vajdahunyad-castle: placed before the end, moving a fixed session (danube-legend-cruise 17:40 -> 18:00)

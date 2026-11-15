@@ -1405,13 +1405,13 @@ B1 stays the fixed point. Areas by date stays off, and no threshold of the revie
 
 | Class | Places | Evidence | Planning decision |
 |---|---|---|---|
-| needs | Budapest Zoo | official hours close 16:00–19:00 by season, at or before dusk | held by its own hours; the test checks them against the estimate every month |
+| needs | Budapest Zoo | official hours close 16:00–19:00 by season (December 16:00 is 5 min after the 15:55 estimate, 23.2) | held by its own hours; the test reports closing vs the estimate every month |
 | prefers | Citadella | place data «قبل الغروب»; park open to 22:00 / 24:00 | soft: avoided after the estimate when creating; note; best add position |
 | prefers | Vajdahunyad (outside) | no official source on night lighting; data «أي وقت» | same, as a cautious soft preference |
 | prefers | Margaret Island | park walk, open at all hours | same |
 | evening | bridges, Parliament / Matthias exteriors, Heroes' Square, Shoes, Fisherman's Bastion, Andrássy, Váci, Gozsdu | data «أي وقت» or no daylight-only content | no rule |
 
-- **The time:** the MONTHLY sunset estimate (mid-month, about ±20 min), always named an estimate. Proposed note, awaiting review: «⏳ الأفضل قبل الغروب. الغروب بهالشهر تقريبًا 16:15 (تقدير شهري، مش الوقت الدقيق لتاريخك).»
+- **The time:** the MONTHLY sunset estimate (one rounded time per month), always named an estimate; its error for a date is not measured (the earlier "about ±20 min" is withdrawn, 23.2). Proposed note at the time: «⏳ الأفضل قبل الغروب. الغروب بهالشهر تقريبًا 16:15 (تقدير شهري، مش الوقت الدقيق لتاريخك).» Replaced by the approved text (23.2).
 - **Same rule in every path:**
   - **Creation:** the quality cost counts minutes after the estimate for "needs" / "prefers" places. Citadella was added; nothing was removed from the list.
   - **Edit and new start:** the note appears or disappears with the schedule.
@@ -1471,3 +1471,47 @@ B1 stays the fixed point. Areas by date stays off, and no threshold of the revie
    - a Vercel Preview with a test Supabase (real auth, real saves, real RLS);
    - real phones and Safari;
    - Budapest stays `available: false`.
+
+## 23. Round 7: corrections, then content (2026-11-15; `feature/budapest`)
+
+B1 stays the fixed point, areas by date stays off, and no threshold changed. No push, merge or publish; Budapest stays `available: false`.
+
+### 23.1 Fixed sessions kept when an add is placed earlier (c6e4867)
+**The gap:** the daylight add rule accepted an earlier position when no visit already in the day started more than 30 min later. A tour or admission slot can be 30 min away or less, so the limit alone let an add move a fixed session.
+
+**Found by a search of 523 adds on 943b6df** (10 interests × 10 start dates × 2–4 days; every "prefers daylight" place offered on every day; `docs/budapest/tools/bud-fixed-session-search.mts`): 12 adds moved a fixed session.
+- House of Music 14:45 → 15:15 (its next admission slot, +30), nightlife 4-day trips from 19 Nov – 6 Dec, day 3, adding Vajdahunyad before it.
+- The Legenda cruise 17:40 → 18:00 (its next departure, +20), October 1–4 day trips, day 1, adding Margaret Island or Vajdahunyad before it.
+
+**Rule now:** an earlier position also needs every visit held to a fixed session to keep exactly its start. Fixed session = a tour or admission slot (metadata `showWindow`: Opera tour, House of Music) or a timetabled departure (hours `startsAtOpening`: the cruise). The general 30-min limit stays as well. Only cities with a daylight policy use this path (Budapest), so the add policy of the other cities is unchanged.
+
+**Effect on the cases:** the place goes to the end of the day, with the daylight note.
+- House of Music keeps 14:45; Vajdahunyad 17:15–17:35.
+- The cruise keeps 17:40; Margaret Island 19:30–21:00 or Vajdahunyad 19:30–19:50, after the evening cruise. This is the add-at-the-end behaviour that existed before the daylight rule; it is reported, not changed.
+- The Opera case (food 22–24 Nov, day 3) is unchanged: Vajdahunyad at the end 16:45–17:05 with the note, the tour at 15:00.
+
+**Test** (`bud-daylight.mts`, part 5 plus the Opera assertions): new 0 failures; 943b6df 4 failures (the 4 cases above).
+
+### 23.2 The sunset note: approved text, no ±20 claim (ad57678)
+- **Text (owner, 2026-11-15):** «الأفضل تزوره بضوّ النهار. الغروب حوالي {time} حسب تقدير الشهر، وقد يختلف بتاريخ رحلتك.»
+- **The ±20 min claim is removed** from the code comments and from section 22: there is no measurement of the estimate's error for a given date. No astronomical calculation was added.
+- **The Zoo ("needs") check** no longer passes within a +20 margin. It reports the official closing time next to the month's estimate: at or before it in 11 months; December closes 16:00, 5 min after the 15:55 estimate. The Zoo is held by its official hours only, as before. This is a reported fact, not a new rule.
+- Classes and the measured list are unchanged.
+
+### 23.3 Shopping 22–24 Nov: the full effect of the daylight rule (943b6df)
+Before = B1 with the transport fix (round 5 sample, run 1); after = 943b6df. Same definitions as `finalDayQuality`: a wait is the gap minus the known transfer minus 15; travel counts known transfers, meals included. Script and output: `quality-r7/shopping-compare.mjs`, `shopping-compare.txt`.
+
+| Day | Before | After |
+|---|---|---|
+| Sunday 22 | Andrássy 09:00 → Parliament (outside) 10:30 → Chain Bridge 11:15 → Shoes 12:00–12:10 → lunch Hungarikum 12:45–14:00 → Opera tour 15:00–16:00. **Idle 59, travel 61, longest wait 30** (lunch → Opera) | Parliament (outside) 09:00 → Shoes 09:45 → Andrássy 10:45–11:30 → lunch Menza 12:30–13:45 → Opera tour 15:00–16:00 → St Stephen's 16:30–17:45. **Idle 119, travel 46, longest wait 54** (lunch → Opera) |
+| Monday 23 | Market Hall 09:00 → Váci 10:30 → Gozsdu 11:45 → lunch New York Café 12:45–14:00 → Arena 14:45–16:15 → cruise 17:20–18:20. **Idle 28, travel 97, longest wait 17** | Same visits; lunch Frici Papa 12:45–14:00 (restaurants are not repeated in a trip, and Menza moved to Sunday). **Idle 30, travel 95, longest wait 17** |
+| Tuesday 24 | St Stephen's 09:00–10:15 → Fisherman's 11:00 → Matthias 12:00 → lunch 21 Restaurant 12:45–14:00 → Gallery 14:45–16:45 → Citadella 17:30–18:15 (after the 16:15 estimate). **Idle 37, travel 73, longest wait 14** | Fisherman's 09:00 → Matthias 10:00 → Gallery 10:45–12:45 → lunch 21 Restaurant 13:30–14:45 → Citadella 15:30–16:15 → Chain Bridge 17:00–17:15. **Idle 30, travel 80, longest wait 14** |
+| **Trip** | **Idle 124, travel 231** | **Idle 179, travel 221** |
+
+**What it is and is not:**
+- Citadella now ends at the estimate instead of 2 hours after it.
+- The price: the trip has 55 more idle minutes, and Sunday's longest wait grows from 30 to 54 min.
+- Known travel is 10 min lower.
+- **Not an overall improvement:** it trades idle time for daylight at one viewpoint.
+- No new search for orders was run.
+- Section 22.2 said "Sunday idle 59 → 119" and "this trip changed 3 days". Both are right, but the Monday lunch change and the trip totals were missing; they are added here.
