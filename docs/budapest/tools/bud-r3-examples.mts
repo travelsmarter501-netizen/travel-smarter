@@ -28,6 +28,7 @@ const VARIANTS: Record<string, any> = {
   Ba: { ...D, travelRule: "B", mealCheck: "explicit", datedAreas: true },
   Ca: { ...D, travelRule: "C", mealCheck: "explicit", datedAreas: true },
   B1: { ...D, travelRule: "B1", mealCheck: "explicit" },
+  B1a: { ...D, travelRule: "B1", mealCheck: "explicit", datedAreas: true },
 };
 const hm = (m: number | null | undefined) => (m == null ? "-" : `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(Math.round(m % 60)).padStart(2, "0")}`);
 function describeDay(d: any) {

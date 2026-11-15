@@ -56,8 +56,9 @@ const VARIANTS: Record<string, any> = {
   Ba: { ...M.BUDAPEST_QUALITY_DEFAULTS, travelRule: "B", mealCheck: "explicit", datedAreas: true },
   Ca: { ...M.BUDAPEST_QUALITY_DEFAULTS, travelRule: "C", mealCheck: "explicit", datedAreas: true },
   B1: { ...M.BUDAPEST_QUALITY_DEFAULTS, travelRule: "B1", mealCheck: "explicit" },
+  B1a: { ...M.BUDAPEST_QUALITY_DEFAULTS, travelRule: "B1", mealCheck: "explicit", datedAreas: true },
 };
-const ROUND3 = new Set(["A", "Am", "B", "C", "Ba", "Ca", "B1"]);
+const ROUND3 = new Set(["A", "Am", "B", "C", "Ba", "Ca", "B1", "B1a"]);
 const only = process.argv[4] ? new Set(process.argv[4].split(",")) : null;
 const summary: any = {};
 for (const [name, options] of Object.entries(VARIANTS)) {

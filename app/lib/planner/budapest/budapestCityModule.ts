@@ -977,7 +977,10 @@ function reviewDayMoves(input: Reviewed, context: DayGeographyRepairContext, bui
 // ── Areas by date (round 3, TEST-ONLY switch `datedAreas`) ───────────────────────────────────────────────────
 const AREA_MAX_DAYS = 4;
 const AREA_MAX_ASSIGNMENTS = 6;
-const AREA_MAX_BUILT = 2;
+const AREA_MAX_BUILT = 3;
+/** Round 5: single swaps of one place between two days, tried on the clock for the best AREA_SWAP_ASSIGNMENTS assignments only. */
+const AREA_SWAP_ASSIGNMENTS = 2;
+const AREA_MAX_SWAPS = 150;
 const AREA_STRONG_RELEVANCE = 7;
 const AREA_DAY_TRAVEL_CEILING = 90;
 const AREA_DAY_VISITS_CEILING = 380;
@@ -993,6 +996,9 @@ const AREA_TRIP_IDLE_MORE_AT_MOST = 30;
  * plan only when, against the current plan's final schedule: no schedule problem; every current place kept; on every date no restaurant
  * lunch lost, travel within 90 min or not above that date's current travel, no new wait of 60+ min, visits within 380 min; trip travel
  * share at most +2 points; trip idle at most +30 min. Otherwise the current plan stays and the reasons are reported.
+ * Round 5: the best AREA_SWAP_ASSIGNMENTS assignments also get every single swap of one place between two days (both open on their
+ * new date, no evening place, at most AREA_MAX_SWAPS), all ranked on the CLOCK (each day's best order, memoized; no build); only the
+ * AREA_MAX_BUILT best are built. Among accepted candidates the one with the least idle + known travel wins. Still a test-only switch.
  */
 function reviewDatedAreas(currentFinal: Reviewed, input: ReviewInput, rules: ReviewRules, lunchAfterLastStop: boolean): Reviewed {
   const { context, build, undatedPlan, relevance } = input;
@@ -1012,6 +1018,42 @@ function reviewDatedAreas(currentFinal: Reviewed, input: ReviewInput, rules: Rev
   const wanted = new Set([...currentStops.keys(), ...restored]);
   type Candidate = { days: Map<number, string[]>; moved: string[]; dropped: string[]; clock: number; label: string };
   const candidates: Candidate[] = [];
+  // Each day's best order on the clock (every order, evening places last), memoized per date and set of places.
+  const dayMemo = new Map<string, { order: string[]; cost: number } | string>();
+  const bestDayOnClock = (n: number, ids: string[]): { order: string[]; cost: number } | string => {
+    const key = `${n}|${[...ids].sort().join(",")}`;
+    const hit = dayMemo.get(key);
+    if (hit !== undefined) return hit;
+    let result: { order: string[]; cost: number } | string;
+    const day = currentFinal.plan.days.find((d) => d.dayNumber === n)!;
+    const stops = ids.map((id) => currentStops.get(id) ?? undatedStops.get(id)!);
+    const evening = ids.filter((id) => isEveningPlace(id));
+    if (ids.length < 2 || ids.length - evening.length > 6) result = `day ${n}: ${ids.length} places`;
+    else {
+      const outside = new Set(stops.filter((st) => st.visitMode === "outside").map((st) => st.placeId));
+      const month = context.monthForDayNumber?.(n) ?? null;
+      const asListed = [...ids.filter((id) => !isEveningPlace(id)), ...evening];
+      const options = [asListed, ...clockOrderProposals({ ...day, stops }, context, onClock, asListed, -Infinity, 1, Infinity)]
+        .map((order) => ({ order, clock: onClock(order, n, outside) }))
+        .filter((o) => o.clock.failing.length === 0)
+        .map((o) => ({ order: o.order, cost: dayClockQuality(o.clock, month).cost }))
+        .sort((x, y) => x.cost - y.cost);
+      result = options.length ? options[0] : `day ${n}: no order fits the hours on the clock`;
+    }
+    dayMemo.set(key, result);
+    return result;
+  };
+  const scoreOnClock = (days: Map<number, string[]>): { days: Map<number, string[]>; clock: number } | string => {
+    const ordered = new Map<number, string[]>();
+    let clock = 0;
+    for (const [n, ids] of days) {
+      const r = bestDayOnClock(n, ids);
+      if (typeof r === "string") return r;
+      ordered.set(n, r.order);
+      clock += r.cost;
+    }
+    return { days: ordered, clock };
+  };
   // LIMIT (documented, round 4): permutations come in lexicographic order, so for a 4-day trip the first 6 all keep the undated plan's
   // FIRST day group on day 1 (only days 2-4 are permuted). The search is bounded, not exhaustive: a rejection proves nothing about
   // better distributions.
@@ -1038,30 +1080,34 @@ function reviewDatedAreas(currentFinal: Reviewed, input: ReviewInput, rules: Rev
     }
     const label = dayNumbers.map((n) => `day ${n}: ${days.get(n)!.join(", ")}`).join(" | ");
     if (invalid) { report("rejected", [invalid], { assignment: label }); continue; }
-    let clock = 0;
-    for (const [n, ids] of days) {
-      const day = currentFinal.plan.days.find((d) => d.dayNumber === n)!;
-      const stops = ids.map((id) => currentStops.get(id) ?? undatedStops.get(id)!);
-      const evening = ids.filter((id) => isEveningPlace(id));
-      if (ids.length < 2 || ids.length - evening.length > 6) { invalid = `day ${n}: ${ids.length} places`; break; }
-      const outside = new Set(stops.filter((s) => s.visitMode === "outside").map((s) => s.placeId));
-      const month = context.monthForDayNumber?.(n) ?? null;
-      // Every order of the day on the clock (the listed order included), evening places last; the cheapest one that fits the hours.
-      const asListed = [...ids.filter((id) => !isEveningPlace(id)), ...evening];
-      const options = [asListed, ...clockOrderProposals({ ...day, stops }, context, onClock, asListed, -Infinity, 1, Infinity)]
-        .map((order) => ({ order, clock: onClock(order, n, outside) }))
-        .filter((o) => o.clock.failing.length === 0)
-        .map((o) => ({ order: o.order, cost: dayClockQuality(o.clock, month).cost }))
-        .sort((a, b) => a.cost - b.cost);
-      if (!options.length) { invalid = `day ${n}: no order fits the hours on the clock`; break; }
-      days.set(n, options[0].order);
-      clock += options[0].cost;
-    }
-    if (invalid) { report("rejected", [invalid], { assignment: label }); continue; }
-    candidates.push({ days, moved, dropped, clock, label });
+    const scored = scoreOnClock(days);
+    if (typeof scored === "string") { report("rejected", [scored], { assignment: label }); continue; }
+    candidates.push({ days: scored.days, moved, dropped, clock: scored.clock, label });
   }
+  // Round 5: one general swap between two days (one place each way, both open on their new date, no evening place), on the clock only,
+  // for the best AREA_SWAP_ASSIGNMENTS assignments; at most AREA_MAX_SWAPS swaps. Only the AREA_MAX_BUILT best of everything are built.
+  let swapsTried = 0;
+  let swapLimitHit = false;
+  for (const base of [...candidates].sort((x, y) => x.clock - y.clock).slice(0, AREA_SWAP_ASSIGNMENTS)) {
+    const nums = [...base.days.keys()];
+    for (let i = 0; i < nums.length && !swapLimitHit; i++) for (let j = i + 1; j < nums.length && !swapLimitHit; j++) {
+      for (const x of base.days.get(nums[i])!) for (const y of base.days.get(nums[j])!) {
+        if (isEveningPlace(x) || isEveningPlace(y) || !open(x, nums[j]) || !open(y, nums[i])) continue;
+        if (swapsTried >= AREA_MAX_SWAPS) { swapLimitHit = true; break; }
+        swapsTried++;
+        const days = new Map(base.days);
+        days.set(nums[i], base.days.get(nums[i])!.map((id) => (id === x ? y : id)));
+        days.set(nums[j], base.days.get(nums[j])!.map((id) => (id === y ? x : id)));
+        const scored = scoreOnClock(days);
+        if (typeof scored === "string") continue;
+        candidates.push({ days: scored.days, moved: [...base.moved, `swap ${x} <-> ${y}`], dropped: base.dropped, clock: scored.clock, label: nums.map((n) => `day ${n}: ${scored.days.get(n)!.join(", ")}`).join(" | ") });
+      }
+      if (swapLimitHit) break;
+    }
+  }
+  report("skipped", [`search: ${candidates.length} candidates on the clock (${swapsTried} swaps${swapLimitHit ? ", swap limit reached" : ""}), ${Math.min(AREA_MAX_BUILT, candidates.length)} built`]);
   candidates.sort((a, b) => a.clock - b.clock);
-  for (const cand of candidates.slice(AREA_MAX_BUILT)) report("skipped", [`not built: ${AREA_MAX_BUILT} candidates with a better clock estimate`], { assignment: cand.label, clock: cand.clock });
+  if (candidates.length > AREA_MAX_BUILT) report("skipped", [`not built: ${candidates.length - AREA_MAX_BUILT} candidates (the ${AREA_MAX_BUILT} best on the clock were built)`], { nextOnTheClock: candidates.slice(AREA_MAX_BUILT, AREA_MAX_BUILT + 3).map((c) => ({ assignment: c.label, clock: c.clock })) });
   const baseJudged = judgeAll(currentFinal.data);
   const baseIdle = [...baseJudged.values()].reduce((s, j) => s + j.q.idle, 0);
   let best: { reviewed: Reviewed; cost: number } | null = null;
@@ -1089,11 +1135,12 @@ function reviewDatedAreas(currentFinal: Reviewed, input: ReviewInput, rules: Rev
     if (shareAfter - shareBefore > AREA_TRIP_SHARE_POINTS) reasons.push(`trip travel share ${shareBefore.toFixed(1)}% -> ${shareAfter.toFixed(1)}%`);
     const idle = [...judged.values()].reduce((s, j) => s + j.q.idle, 0);
     if (idle > baseIdle + AREA_TRIP_IDLE_MORE_AT_MOST) reasons.push(`trip idle ${baseIdle} -> ${idle}`);
-    const cost = [...judged.values()].reduce((s, j) => s + j.q.cost, 0);
+    // Among accepted candidates: the least time NOT spent visiting (idle + known travel), equal weight for waiting and moving.
+    const cost = [...judged.values()].reduce((s, j) => s + j.q.idle + j.q.travel, 0);
     report(reasons.length ? "rejected" : "accepted", reasons, {
       assignment: cand.label, moved: cand.moved, dropped: cand.dropped, restored: back,
       days: Object.fromEntries([...judged].map(([n, j]) => [n, { before: { ...brief(baseJudged.get(n)!), visits: baseJudged.get(n)!.q.visits }, after: { ...brief(j), visits: j.q.visits } }])),
-      trip: { shareBefore: +shareBefore.toFixed(1), shareAfter: +shareAfter.toFixed(1), idleBefore: baseIdle, idleAfter: idle },
+      trip: { shareBefore: +shareBefore.toFixed(1), shareAfter: +shareAfter.toFixed(1), idleBefore: baseIdle, idleAfter: idle, travelBefore: [...baseJudged.values()].reduce((s, j) => s + j.q.travel, 0), travelAfter: [...judged.values()].reduce((s, j) => s + j.q.travel, 0), idlePlusTravel: cost },
     });
     if (reasons.length === 0 && (!best || cost < best.cost)) best = { reviewed, cost };
   }
