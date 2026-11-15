@@ -1361,3 +1361,113 @@ Every day above +15 had lost time in its baseline, fits recovered / 4 (at most 4
   - `bud-boundary` ALL PASS; `bud-cruise-suggest` ALL PASS; `bud-mixed-dates` 307 / 0 (including start-time edits); `bud-action-save` 15 / 0.
   - tsc, eslint and `next build --webpack` pass.
 - **Prague and Barcelona, generation and edits:** byte-identical to `925512d` (`quality-r5/tests/prague-barcelona-generation-and-edits-19c33e0.txt`).
+
+## 22. Two fixes on top of B1 (2026-11-15; df53b31 transport, 943b6df daylight)
+
+B1 stays the fixed point. Areas by date stays off, and no threshold of the review changed.
+
+**A "0 problems" schedule is not "0 quality or data problems":** the independent check only proves the schedule against hours, lengths and transfers. The open quality and data items are listed in 22.4.
+
+### 22.1 Fix 1: one transport decision for the schedule, the connector and its links (df53b31)
+**Reproduced** (old = 4ba9904, phone viewport, food 22–24 Nov, day 3: remove Andrássy, add Vajdahunyad).
+
+| Path | Connector after the Opera | Sheet | Schedule |
+|---|---|---|---|
+| Old, in edit mode | «🚶 ≈ 39 دقيقة · 2.8 كم» | walking selected; Google / Apple walking; OSM walking route | Opera 15:00–16:00 → Vajdahunyad 16:45 (computed with transit 28 + 15 margin) |
+| Old, reopened | «🚇 ≈ 28 دقيقة» | transit | same |
+| New: edit, saved, reopened, start 10:00 | «🚇 ≈ 28 دقيقة» in every state | transit selected; Google `travelmode=transit`, Apple `dirflg=r`, between the leg's own points; no OSM walking route | same; with the 10:00 start the tour moves to 16:30 |
+
+**Causes:**
+1. **Display only, not the schedule.** The connector kept the previous leg's chosen mode at the same position (`useState` at mount); the schedule was right.
+2. **The walking route offered with transit.** Every Budapest leg carries the OSM foot route of its walking distance, including the 77 + 52 transit legs on the 53 sample (stop-to-stop + meal legs = the reviewer's 129; 212 on the 108). The sheet offered it with any mode. All of them reach the UI, in the connector sheet.
+3. **Links built from text addresses or a fallback.**
+   - The shared summary keeps coordinates for attractions only, so restaurant / shopping / experience links used text addresses ("Andrássy út, 1061", "Váci utca, 1052" are whole streets).
+   - The link after a lunch break (no point) became «استراحة غدا بالمنطقة, Barcelona, Spain».
+
+**Changes:**
+- The connector resets to the new leg's recommended mode (the schedule's mode).
+- The OSM route is offered only with walking.
+- Budapest legs carry `fromPoint` / `toPoint` (the points they were computed between), used by the Google / Apple links.
+- After a lunch break the links start at the place before it, where the server computes that leg.
+- Estimated times keep «≈» and their notes («تقدير حسب المسافة، مش من تطبيق خرائط»); only checked legs name a Google check.
+
+**Effect:**
+- No schedule changed (53 and 108 samples: 0 days).
+- Budapest plan data gains the two points per leg.
+- Prague / Barcelona: shared UI fixes only.
+
+**Test:** `bud-transport-links.mts` renders the real sheet for every leg of the samples:
+- new: 2,304 legs, 0 failures;
+- old: 1,617 failures.
+
+### 22.2 Fix 2: daylight policy (943b6df)
+**Classification** (`budapestDaylight.ts`, by hand with evidence; nothing read from descriptive text at run time):
+
+| Class | Places | Evidence | Planning decision |
+|---|---|---|---|
+| needs | Budapest Zoo | official hours close 16:00–19:00 by season, at or before dusk | held by its own hours; the test checks them against the estimate every month |
+| prefers | Citadella | place data «قبل الغروب»; park open to 22:00 / 24:00 | soft: avoided after the estimate when creating; note; best add position |
+| prefers | Vajdahunyad (outside) | no official source on night lighting; data «أي وقت» | same, as a cautious soft preference |
+| prefers | Margaret Island | park walk, open at all hours | same |
+| evening | bridges, Parliament / Matthias exteriors, Heroes' Square, Shoes, Fisherman's Bastion, Andrássy, Váci, Gozsdu | data «أي وقت» or no daylight-only content | no rule |
+
+- **The time:** the MONTHLY sunset estimate (mid-month, about ±20 min), always named an estimate. Proposed note, awaiting review: «⏳ الأفضل قبل الغروب. الغروب بهالشهر تقريبًا 16:15 (تقدير شهري، مش الوقت الدقيق لتاريخك).»
+- **Same rule in every path:**
+  - **Creation:** the quality cost counts minutes after the estimate for "needs" / "prefers" places. Citadella was added; nothing was removed from the list.
+  - **Edit and new start:** the note appears or disappears with the schedule.
+  - **Adding such a place:** the position that ends before the estimate, if the day holds it with no schedule problem and no visit already in the day starting more than 30 min later. Otherwise the end of the day, with the note. Never refused for daylight.
+
+**Shopping 22–24 Nov (Citadella), creation:**
+- **Before:** St Stephen's had moved to Tuesday (swap with the Chain Bridge); Citadella 17:30–18:15, after the 16:15 estimate, no note.
+- **After:** the swap is no longer chosen, because Citadella after dark now counts.
+  - Tuesday: Fisherman's → Matthias → Gallery → 21 Restaurant 13:30 → **Citadella 15:30–16:15** → Chain Bridge 17:00. Known travel +7.
+  - Sunday: St Stephen's comes back (16:30–17:45), idle 59 → 119.
+  - This is the only trip whose schedule changed (3 days); the 108 sample has 0 changes.
+
+**Vajdahunyad added (food 22–24 Nov, day 3):**
+- **Before:** appended at the end, 16:45–17:05, no note.
+- **After:** the same position, now with the note. Every earlier position pushes the 15:00 Opera tour to 16:30 (+90), so the end is kept.
+- **With the 10:00 start:** 18:15–18:35 with the note.
+- **Saved plans:** the customer's saved order is never moved; only the note appears.
+
+**Remaining after-dark case on the samples:** experiences 24 Dec, Citadella 17:15–18:00 (no position before the 15:55 estimate), shown with the note.
+
+**Test:** `bud-daylight.mts`:
+- new: 0 failures;
+- old: 5 failures (2 Citadella stops after dark with no note; the add placed after dark although a position existed; the 10:00 start with no note).
+
+### 22.3 Checks on 943b6df
+- **Validity:** the independent check finds 0 problems (159 + 270 days, 1,277 transfers with data).
+- **Cumulative-allowance proof:** 0 violations.
+- **Tests:** link test 0 / 2,304; daylight test 0 failures; `bud-boundary` ALL PASS; `bud-cruise-suggest` ALL PASS; `bud-mixed-dates` 307 / 0; `bud-action-save` 15 / 0.
+- **Build:** tsc, eslint and `next build --webpack` pass.
+- **UI, phone viewport 375×812 (emulated, not a real phone):**
+  - create, edit (remove / add), save, reopen, start change;
+  - connector, sheet links and schedule agree in every state;
+  - the daylight note appears as expected.
+- **Prague / Barcelona on 943b6df (clean tree):** generation and edits byte-identical to 925512d (`quality-r6/tests/prague-barcelona-generation-and-edits-943b6df.txt`).
+
+### 22.4 Everything that still blocks a launch (full list)
+1. **Photos and their rights:** 0 of 42 Budapest places have a photo, and the photo-credits page has no Budapest entry. Photos have to be chosen with a documented licence before launch.
+2. **Translations:**
+   - Budapest content shows in Arabic in the English view: day titles, notes, a food category label, suggestion reasons.
+   - Hebrew content is not written.
+   - The Hebrew gallery card text is not approved.
+   - Month names in the Budapest data (كانون / تشرين) differ from the site's (نوفمبر …).
+3. **Texts awaiting review:** the daylight note (22.2).
+4. **Saved plans:**
+   - The hours of a place a customer adds are recomputed from current data on every open (not stored with the edit); policy not decided.
+   - Compact stored hours are deferred (plan size).
+   - Plans saved before a rule change keep the stored base plan and its notes until a day is edited.
+   - After an edit the day title can still name a removed place (seen: «حديقة المدينة وAndrássy والأوبرا»); the mixed Arabic / Latin title renders «Andrássyو».
+5. **Daylight:**
+   - Vajdahunyad's class rests on caution, not a source (no official night-lighting information).
+   - The sunset is a monthly estimate, not per date.
+6. **Transport:**
+   - Most transit times are distance estimates (only some legs are checked in Google Maps, in one direction, for one departure).
+   - Budapest summaries still carry text addresses (links now use the legs' points).
+7. **Range per interest:** an owner decision after the translations and the Preview test. The table supports 1–4 days for A, C, shopping, experiences, food, surprise; 1–3 culture and popular; 1 day nature alone. The questionnaire is unchanged.
+8. **Not yet run:**
+   - a Vercel Preview with a test Supabase (real auth, real saves, real RLS);
+   - real phones and Safari;
+   - Budapest stays `available: false`.

@@ -1,0 +1,5 @@
+generated plans, prefers-daylight stops: {"margaret-island":{"after":0,"noted":0,"total":46},"citadella":{"after":1,"noted":1,"total":88},"vajdahunyad-castle":{"after":0,"noted":0,"total":52}}
+add: day 3 order heroes-square > house-of-music > opera-house-tour > vajdahunyad-castle; vajdahunyad 16:45-17:05 (estimate 16:15), note true
+  positions tried: at 0: 09:00-09:20, problems 0, latest shift of another visit +90 | at 1: 10:00-10:20, problems 0, latest shift of another visit +90 | at 2: 12:45-13:05, problems 0, latest shift of another visit +90 | at 3: 16:45-17:05, problems 0, latest shift of another visit +0
+start 10:00: vajdahunyad-castle 18:15-18:35, note true
+failures 0

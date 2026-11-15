@@ -1,0 +1,14 @@
+commit: 943b6df Budapest daylight policy: explicit classes, the same rule when creating, editing, adding and changing the start
+tree: 0 modified files
+{"cases":82,"plans":82,"failed":[]}
+{"cases":31,"plans":31,"failed":[]}
+{"plans":20,"failed":[],"totalSeconds":30,"perDaysMedianMs":{"5d":906,"7d":1568,"10d":1324},"maxMs":5177}
+barcelona requests 104 ok 104
+requests 378 ok 378
+prg-focus generation IDENTICAL to 925512d
+prg-oneday generation IDENTICAL to 925512d
+bcn104 generation IDENTICAL to 925512d
+bcn378 generation IDENTICAL to 925512d
+prg-long IDENTICAL PLANS to 925512d (timings excluded)
+prg-focus edits IDENTICAL to 925512d
+bcn104 edits IDENTICAL to 925512d
