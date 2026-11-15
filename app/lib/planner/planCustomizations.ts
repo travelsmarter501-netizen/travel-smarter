@@ -429,14 +429,32 @@ function buildDay(city: CityPlannerModule, baseDay: V2Day, edit: DayCustomizatio
   return { ...day, mealLegs: buildMealAdjacentLegs(city, day) };
 }
 
+/**
+ * Opt-in (city.editedDayText): a day whose places or order differ from the generated day gets the title and summary of the places it
+ * has now. Days are handled in order, so the other days' titles are the ones the customer sees.
+ */
+function withEditedDayTexts(dayText: NonNullable<CityPlannerModule["editedDayText"]>, base: V2Plan, days: V2Day[]): V2Day[] {
+  const out = [...days];
+  out.forEach((day, index) => {
+    const ids = day.stops.map((s) => s.id);
+    const original = base.days[index].stops.map((s) => s.id);
+    if (ids.length === original.length && ids.every((id, i) => id === original[i])) return;
+    const otherTitles = new Set(out.filter((_, i) => i !== index).map((d) => d.title));
+    const text = dayText(ids, day.dayNumber, otherTitles);
+    out[index] = { ...day, title: text.title, summary: text.summary };
+  });
+  return out;
+}
+
 /** The plan as the customer edited it (the original when there are no edits). */
 export function applyPlanCustomizations(city: CityPlannerModule, base: V2Plan, customizations: PlanCustomizations): V2Plan {
   if (Object.keys(customizations).length === 0) return base;
   const placeDetails = { ...(base.placeDetails ?? {}) };
-  const days = base.days.map((day) => {
+  const built = base.days.map((day) => {
     const edit = customizations[String(day.dayNumber)];
     return edit ? effectiveDay(city, day, edit, placeDetails) : day;
   });
+  const days = city.editedDayText ? withEditedDayTexts(city.editedDayText, base, built) : built;
   if (!city.tripHoursForAddedPlaces) return { ...base, days, placeDetails };
   // Per-day hours: a place ADDED to a day that the plan already shows elsewhere keeps the plan-level record, and gets this day's own
   // record in dayPlaceDetails when its hours differ there; a place new to the plan gets this day's record as its only one.

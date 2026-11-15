@@ -229,6 +229,13 @@ export type CityPlannerModule = {
    * closure: places that truly need daylight are held by their own hours. Unset: no daylight rule.
    */
   daylight?: { lateMinutes: (placeId: string, endMinutes: number, month: number | null) => number; noteAr: (month: number) => string };
+  /**
+   * Optional (Budapest): the day title and summary for the places a day has NOW, the same texts a new plan gets for those places. Used
+   * for every day whose places or order the customer changed, so the title and summary never name a removed place. `otherTitles` are
+   * the titles of the plan's other days (a repeated title gets the first stop, as when the plan is created). Unset: an edited day keeps
+   * the title and summary it was generated with (Prague, Barcelona).
+   */
+  editedDayText?: (placeIds: readonly string[], dayNumber: number, otherTitles: ReadonlySet<string>) => { title: string; summary: string };
   /** Shown when the content cannot fill every requested day (keeps the existing Barcelona wording for Barcelona). */
   capacityWarning: (daysGenerated: number) => string;
   /** Optional: the short "outside only" visit of a paid place (minutes, and the outside access hours when the outside closes). */

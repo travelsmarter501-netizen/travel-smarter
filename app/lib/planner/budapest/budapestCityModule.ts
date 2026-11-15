@@ -389,27 +389,50 @@ function placeName(placeId: string): string {
   return resolvePlannerPlace(placeId, BUDAPEST_PLACES)?.place.name ?? placeId;
 }
 
-function dayClustersByWeight(day: PlannerDay): string[] {
+function dayClustersByWeight(placeIds: readonly string[]): string[] {
   const minutes = new Map<string, number>();
-  for (const stop of day.stops) {
-    const meta = getBudapestPlannerMetadataById(stop.placeId);
+  for (const placeId of placeIds) {
+    const meta = getBudapestPlannerMetadataById(placeId);
     if (!meta) continue;
     minutes.set(meta.cluster, (minutes.get(meta.cluster) ?? 0) + meta.visitDurationMinutes);
   }
   return [...minutes.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).map(([cluster]) => cluster);
 }
 
+/**
+ * Areas whose label names places: the label names only the ones the day has, so an edited day never names a removed place. The
+ * one-place and fallback labels (added 2026-11-15) await the owner's review (docs/budapest/texts-review.md).
+ */
+const PLACE_NAMED_CLUSTER_LABEL_AR: Record<string, (has: (id: string) => boolean) => string> = {
+  lipotvaros: (has) =>
+    has("parliament-exterior") && has("st-stephens-basilica") ? "البرلمان والكاتدرائية" : has("parliament-exterior") ? "البرلمان" : has("st-stephens-basilica") ? "الكاتدرائية" : "ضفة الدانوب",
+  terezvaros: (has) => (has("andrassy-avenue") && has("opera-house-tour") ? "Andrássy والأوبرا" : has("opera-house-tour") ? "الأوبرا" : "شارع Andrássy"),
+};
+
+/** Arabic "and": attached to an Arabic word; before a Latin name with a space (attached, it renders against the name's last letter). */
+function arAnd(word: string): string {
+  return /^[؀-ۿ]/.test(word) ? `و${word}` : `و ${word}`;
+}
+
+/** The day title and summary for these places (creation and edits alike). A title already used by another day gets the first stop. */
+export function budapestDayText(placeIds: readonly string[], dayNumber: number, usedTitles: ReadonlySet<string>): { title: string; summary: string } {
+  const present = new Set(placeIds);
+  const clusters = dayClustersByWeight(placeIds).map((cluster) => PLACE_NAMED_CLUSTER_LABEL_AR[cluster]?.((id) => present.has(id)) ?? CLUSTER_LABEL_AR[cluster] ?? cluster);
+  const firstStop = placeIds[0] ? placeName(placeIds[0]) : "";
+  let title = clusters.length >= 2 ? `${clusters[0]} ${arAnd(clusters[1])}` : clusters[0] ? `يوم ${clusters[0]}` : `اليوم ${dayNumber}`;
+  if (usedTitles.has(title) && firstStop) title = `${title}: ${firstStop}`;
+  const names = placeIds.map(placeName);
+  const summary = names.length === 0 ? "" : names.length === 1 ? `محطة اليوم: ${names[0]}.` : `محطات اليوم: ${names.slice(0, -1).join("، ")} ${arAnd(names[names.length - 1])}.`;
+  return { title, summary };
+}
+
 function presentBudapestPlan(plan: GeneratedPlannerPlan): PresentedPlannerPlan {
   const usedTitles = new Set<string>();
   const byDay: PlannerDayPresentation[] = plan.days.map((day) => {
-    const clusterIds = dayClustersByWeight(day);
-    const clusters = clusterIds.map((cluster) => CLUSTER_LABEL_AR[cluster] ?? cluster);
-    const firstStop = day.stops[0] ? placeName(day.stops[0].placeId) : "";
-    let title = clusters.length >= 2 ? `${clusters[0]} و${clusters[1]}` : clusters[0] ? `يوم ${clusters[0]}` : `اليوم ${day.dayNumber}`;
-    if (usedTitles.has(title) && firstStop) title = `${title}: ${firstStop}`;
+    const placeIds = day.stops.map((stop) => stop.placeId);
+    const clusterIds = dayClustersByWeight(placeIds);
+    const { title, summary } = budapestDayText(placeIds, day.dayNumber, usedTitles);
     usedTitles.add(title);
-    const names = day.stops.map((stop) => placeName(stop.placeId));
-    const summary = names.length === 0 ? "" : names.length === 1 ? `محطة اليوم: ${names[0]}.` : `محطات اليوم: ${names.slice(0, -1).join("، ")} و${names[names.length - 1]}.`;
     const optionalNearby = [
       ...(day.optionalPlaceIds ?? []).map((placeId) => ({
         placeId,
@@ -1289,6 +1312,7 @@ export const BUDAPEST_CITY_MODULE: CityPlannerModule = {
   metadataForInterests: budapestPlannerMetadataForInterests,
   placeRelevance: budapestPlaceRelevance,
   daylight: { lateMinutes: budapestDaylightLateMinutes, noteAr: budapestDaylightNoteAr },
+  editedDayText: budapestDayText,
   relevanceThreshold: 5,
   relevanceThresholdFor: ({ days, relevance }) => {
     const minutesAt = (level: number) => BUDAPEST_PLANNER_METADATA.filter((m) => m.placeId !== "danube-legend-cruise" && relevance(m.placeId) >= level).reduce((sum, m) => sum + m.visitDurationMinutes, 0);
