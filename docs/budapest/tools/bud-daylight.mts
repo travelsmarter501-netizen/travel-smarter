@@ -1,9 +1,10 @@
 /* eslint-disable -- review test (not shipped): loose typing on generated plans is intended. */
 // Test (exit 1 on failure) of the Budapest daylight policy (budapestDaylight.ts), through the product paths only (generation, the edit
 // decision, the plan as edited), so it runs on older code too and fails where the policy is missing:
-//   1. "needs daylight" places: their official hours end by the monthly sunset ESTIMATE (+20 min, the estimate's spread) in every month.
+//   1. "needs daylight" places: they have official hours on every date (they are held by those hours); their closing time is printed
+//      next to the monthly sunset ESTIMATE as a report (the estimate's error for a date is not known, so no margin is claimed).
 //   2. Generation (both review samples, given as plan files): every "prefers daylight" stop (Citadella, Vajdahunyad, Margaret Island)
-//      that ends after the estimate carries a note naming the estimate as an estimate; counts are printed per place.
+//      that ends after the estimate carries the approved note (with the month's estimated time); counts are printed per place.
 //   3. Adding Vajdahunyad to food 22-24 Nov, day 3 (the case seen in the UI): it ends before the estimate when the day can hold it
 //      there without a schedule problem and without making a visit already in the day start more than 30 min later; otherwise it
 //      carries the note; never refused for daylight (the add is accepted).
@@ -28,9 +29,10 @@ const NEEDS = ["budapest-zoo"];
 const hm = (m: number) => `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
 const failures: string[] = [];
 const fixedSession = (s: any) => !!M.BUDAPEST_CITY_MODULE.metadataById(s.id)?.showWindow || !!s.hours?.startsAtOpening;
-const isNote = (w: any, month: number) => typeof w?.textAr === "string" && w.textAr.includes("تقدير شهري") && w.textAr.includes(hm(SUNSET[month]));
+// The approved note (owner, 2026-11-15), with the month's estimate.
+const isNote = (w: any, month: number) => w?.textAr === `الأفضل تزوره بضوّ النهار. الغروب حوالي ${hm(SUNSET[month])} حسب تقدير الشهر، وقد يختلف بتاريخ رحلتك.`;
 
-// 1. "needs": official hours end by the estimate (+20) every month.
+// 1. "needs": official hours on every date; closing time vs the estimate, reported.
 for (const id of NEEDS) {
   const place = PL.BUDAPEST_ATTRACTIONS.find((a: any) => a.id === id);
   for (let month = 1; month <= 12; month++) {
@@ -39,7 +41,7 @@ for (const id of NEEDS) {
     const season = seasons.find((s: any) => s.from <= date.slice(5) && date.slice(5) <= s.to);
     const closes = season ? Math.max(...Object.values<any>(season.schedule).flat().map((r: any) => Number(r.close.slice(0, 2)) * 60 + Number(r.close.slice(3, 5)))) : null;
     if (closes === null) { failures.push(`${id}: no season for ${date}`); continue; }
-    if (closes > SUNSET[month] + 20) failures.push(`${id}: closes ${hm(closes)} in month ${month}, after the estimated sunset ${hm(SUNSET[month])} + 20`);
+    console.log(`${id} month ${month}: closes ${hm(closes)}, estimate ${hm(SUNSET[month])}${closes > SUNSET[month] ? ` (after the estimate by ${closes - SUNSET[month]} min)` : ""}`);
   }
 }
 

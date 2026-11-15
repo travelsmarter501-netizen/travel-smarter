@@ -4,17 +4,18 @@
  * (what the planner does with the class):
  *
  * - "needs": the visit only makes sense in daylight. Enforced through the place's OWN planning hours (official hours or a planning
- *   window in the data), the same hours every path uses (create, edit, add, start change). Today the only such place is the Zoo, whose
- *   official hours already end at or before dusk (docs/budapest/tools/bud-daylight.mts checks this against the monthly estimate).
+ *   window in the data), the same hours every path uses (create, edit, add, start change). Today the only such place is the Zoo; its
+ *   official closing time is compared with the monthly estimate in docs/budapest/tools/bud-daylight.mts (a report, not a proof of dusk).
  * - "prefers": better in daylight, still possible after dark (open, safe, seen from outside). NEVER a closure or a ban. Creation avoids
  *   it through the day-quality cost (minutes after the estimated sunset); adding such a place picks the position of the day that keeps
  *   it before the estimate when one exists; any path that leaves it after the estimate shows a note naming the estimate.
  * - "evening": nothing in the visit depends on daylight; no rule.
  *
- * The sunset is a MONTHLY ESTIMATE (mid-month, local time, about ±20 min across the month; SUNSET_ESTIMATE_BY_MONTH), never the exact
- * sunset of the date, and is named as an estimate wherever it is shown.
+ * The sunset is a MONTHLY ESTIMATE (one rounded time per month, local time; SUNSET_ESTIMATE_BY_MONTH), never the exact sunset of the
+ * date. Its error for a given date is not measured here, so it is never used to claim a precise sunset, and it is named as an estimate
+ * wherever it is shown.
  */
-/** Estimated Budapest sunset by month (local time, mid-month, rounded; about ±20 min across a month). Index 1 = January. */
+/** Estimated Budapest sunset by month (local time, one rounded time per month; an estimate, not the sunset of a date). Index 1 = January. */
 export const SUNSET_ESTIMATE_BY_MONTH = [0, 16 * 60 + 20, 17 * 60 + 5, 17 * 60 + 45, 19 * 60 + 50, 20 * 60 + 25, 20 * 60 + 45, 20 * 60 + 40, 20 * 60, 19 * 60, 18 * 60, 16 * 60 + 15, 15 * 60 + 55];
 
 export type DaylightClass = "needs" | "prefers" | "evening";
@@ -37,7 +38,7 @@ export const BUDAPEST_DAYLIGHT: Record<string, { class: DaylightClass; evidence:
   "budapest-zoo": {
     class: "needs",
     evidence:
-      "Enforced by its official hours (zoobudapest.com): it closes between 16:00 and 19:00 by season, at or before dusk. No rule beyond the hours.",
+      "Enforced by its official hours (zoobudapest.com): it closes between 16:00 and 19:00 by season. Against the monthly estimate it closes at or before it in 11 months; in December it closes 16:00, after the 15:55 estimate. No rule beyond the hours.",
   },
   "chain-bridge": { class: "evening", evidence: "A bridge walk; place data «أي وقت» (any time)." },
   "parliament-exterior": { class: "evening", evidence: "Seen from Kossuth tér; place data «أي وقت» (any time)." },
@@ -67,9 +68,9 @@ export function budapestDaylightLateMinutes(placeId: string, endMinutes: number,
 
 const hhmm = (minutes: number) => `${String(Math.floor(minutes / 60)).padStart(2, "0")}:${String(minutes % 60).padStart(2, "0")}`;
 /**
- * The note on a "prefers daylight" stop that ends after the estimate. PROPOSED TEXT, awaiting the owner's review (2026-11-15). It names
- * the time as a monthly estimate, never as the exact sunset of the date.
+ * The note on a "prefers daylight" stop that ends after the estimate. Text approved by the owner (2026-11-15). It names the time as the
+ * month's estimate, never as the exact sunset of the date.
  */
 export function budapestDaylightNoteAr(month: number): string {
-  return `⏳ الأفضل قبل الغروب. الغروب بهالشهر تقريبًا ${hhmm(SUNSET_ESTIMATE_BY_MONTH[month])} (تقدير شهري، مش الوقت الدقيق لتاريخك).`;
+  return `الأفضل تزوره بضوّ النهار. الغروب حوالي ${hhmm(SUNSET_ESTIMATE_BY_MONTH[month])} حسب تقدير الشهر، وقد يختلف بتاريخ رحلتك.`;
 }
