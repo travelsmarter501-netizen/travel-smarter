@@ -279,10 +279,12 @@ export function applyPlanChange(city: CityPlannerModule, base: V2Plan, current: 
 /** Daylight policy: an added place may not make any visit already in the day start more than this much later. */
 const DAYLIGHT_ADD_SHIFT_AT_MOST = 30;
 /**
- * Daylight policy (city.daylight): the position for an added place. Only a place with a daylight preference is moved. Eligible positions:
- * the day has no schedule problem, and no visit already in the day starts more than DAYLIGHT_ADD_SHIFT_AT_MOST minutes later than before
- * the add (a fixed-time tour is never pushed to a later slot for daylight). Of those, the fewest minutes after the sunset estimate, then
- * the latest (closest to "added at the end"). Otherwise the end of the day, where the note says the place is better before sunset.
+ * Daylight policy (city.daylight): the position for an added place. Only a place with a daylight preference is moved. Eligible positions
+ * before the end: the day has no schedule problem, no visit already in the day starts more than DAYLIGHT_ADD_SHIFT_AT_MOST minutes later
+ * than before the add, and every visit held to a fixed session (a tour or admission slot, metadata `showWindow`; a timetabled departure,
+ * hours `startsAtOpening`) keeps exactly its session. The shift limit alone is not enough: the next slot can be 30 minutes away or less.
+ * Of those, the fewest minutes after the sunset estimate, then the latest (closest to "added at the end"). Otherwise the end of the day,
+ * where the note says the place is better before sunset.
  */
 function daylightAddOrder(city: CityPlannerModule, baseDay: V2Day, day: DayCustomization, base: V2Plan, order: string[], placeId: string): string[] {
   const daylight = city.daylight!;
@@ -298,12 +300,18 @@ function daylightAddOrder(city: CityPlannerModule, baseDay: V2Day, day: DayCusto
     const built = buildDay(city, baseDay, { ...day, order: trial }, placeDetails);
     if (scheduleProblems(built).size > 0) continue;
     const shifted = trial.some((id, i) => id !== placeId && (built.timeline?.stops[i]?.startMinutes ?? 0) - (startBefore.get(id) ?? 0) > DAYLIGHT_ADD_SHIFT_AT_MOST);
-    if (shifted && index !== order.length) continue;
+    const sessionMoved = built.stops.some((stop, i) => stop.id !== placeId && hasFixedSession(city, stop) && built.timeline?.stops[i]?.startMinutes !== startBefore.get(stop.id));
+    if ((shifted || sessionMoved) && index !== order.length) continue;
     const window = built.timeline?.stops[trial.indexOf(placeId)];
     const late = window ? daylight.lateMinutes(placeId, window.endMinutes, month) : Infinity;
     if (!best || late < best.late) best = { order: trial, late };
   }
   return best ? best.order : atEnd;
+}
+
+/** A visit held to a fixed session: a tour / admission slot (metadata `showWindow`) or a timetabled departure (hours `startsAtOpening`). */
+function hasFixedSession(city: CityPlannerModule, stop: V2Day["stops"][number]): boolean {
+  return !!city.metadataById(stop.id)?.showWindow || !!stop.hours?.startsAtOpening;
 }
 
 function placeMeals(baseDay: V2Day, stopCount: number, lunchAfterIndex?: number) {

@@ -8,6 +8,10 @@
 //      there without a schedule problem and without making a visit already in the day start more than 30 min later; otherwise it
 //      carries the note; never refused for daylight (the add is accepted).
 //   4. A new start (10:00) on that edited day: any "prefers daylight" stop after the estimate carries the note (and only then).
+//   5. Fixed sessions (2026-11-15, round 7): an add placed before the end never moves a visit held to a fixed session (a tour / admission
+//      slot, metadata showWindow; a timetabled departure, hours startsAtOpening) to another session, even when the move is within the
+//      general 30-min limit. Cases found by a search of 523 adds on 943b6df (House of Music 14:45 -> 15:15, the cruise 17:40 -> 18:00),
+//      plus the Opera case of part 3, which must stay as it is (Vajdahunyad at the end, the Opera tour at 15:00).
 // Usage: ROOT=$(pwd -W) NODE_OPTIONS=--conditions=react-server npx tsx docs/budapest/tools/bud-daylight.mts <plans.json> [<plans.json> ...]
 import { readFileSync } from "fs";
 import { pathToFileURL } from "url";
@@ -23,6 +27,7 @@ const PREFERS = new Set(["citadella", "vajdahunyad-castle", "margaret-island"]);
 const NEEDS = ["budapest-zoo"];
 const hm = (m: number) => `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
 const failures: string[] = [];
+const fixedSession = (s: any) => !!M.BUDAPEST_CITY_MODULE.metadataById(s.id)?.showWindow || !!s.hours?.startsAtOpening;
 const isNote = (w: any, month: number) => typeof w?.textAr === "string" && w.textAr.includes("تقدير شهري") && w.textAr.includes(hm(SUNSET[month]));
 
 // 1. "needs": official hours end by the estimate (+20) every month.
@@ -80,7 +85,7 @@ else {
   if (w.endMinutes > SUNSET[month] && !noted) failures.push(`add: vajdahunyad ends ${hm(w.endMinutes)} after the estimate, no note`);
   if (w.endMinutes <= SUNSET[month] && noted) failures.push(`add: note shown although vajdahunyad ends before the estimate`);
   // Could the day have held it before the estimate? (a position with no schedule problem, no visit already in the day starting more
-  // than 30 min later than before the add, and an end before the estimate)
+  // than 30 min later than before the add, every fixed session kept, and an end before the estimate)
   const order = day.stops.map((s: any) => s.id).filter((id: string) => id !== "vajdahunyad-castle");
   const ref = C.applyPlanCustomizations(city, base, { ...edits, "3": { ...(edits["3"] ?? {}), order } }).days[2];
   const startBefore = new Map(ref.stops.map((s: any, k: number) => [s.id, ref.timeline.stops[k].startMinutes]));
@@ -92,8 +97,9 @@ else {
     const tw = td.timeline.stops[td.stops.findIndex((s: any) => s.id === "vajdahunyad-castle")];
     const shift = Math.max(0, ...td.stops.map((s: any, q: number) => (s.id === "vajdahunyad-castle" ? 0 : td.timeline.stops[q].startMinutes - (startBefore.get(s.id) as number))));
     const problems = C.scheduleProblems(td).size;
-    positions.push(`at ${k}: ${hm(tw.startMinutes)}-${hm(tw.endMinutes)}, problems ${problems}, latest shift of another visit +${shift}`);
-    if (problems === 0 && shift <= 30 && tw.endMinutes <= SUNSET[month]) possible = true;
+    const sessionMoved = td.stops.some((s: any, q: number) => s.id !== "vajdahunyad-castle" && fixedSession(s) && td.timeline.stops[q].startMinutes !== startBefore.get(s.id));
+    positions.push(`at ${k}: ${hm(tw.startMinutes)}-${hm(tw.endMinutes)}, problems ${problems}, latest shift of another visit +${shift}${sessionMoved ? ", fixed session moved" : ""}`);
+    if (problems === 0 && shift <= 30 && !sessionMoved && tw.endMinutes <= SUNSET[month]) possible = true;
   }
   console.log("  positions tried: " + positions.join(" | "));
   if (possible && w.endMinutes > SUNSET[month]) failures.push(`add: a position before the estimate existed, but vajdahunyad was placed after it`);
@@ -110,6 +116,35 @@ else {
       if (sw.endMinutes <= SUNSET[month] && n) failures.push(`start 10:00: note shown although ${s.id} ends before the estimate`);
     });
   } else console.log(`start 10:00 not valid for this day (${start.code})`);
+  // 5, the Opera case: unchanged (the tour keeps 15:00, Vajdahunyad stays at the end).
+  const opera = day.stops.findIndex((s: any) => s.id === "opera-house-tour");
+  if (opera < 0 || hm(day.timeline.stops[opera].startMinutes) !== "15:00") failures.push(`opera case: the Opera tour no longer at 15:00`);
+  if (i !== day.stops.length - 1) failures.push(`opera case: vajdahunyad no longer at the end`);
+}
+
+// 5. Fixed sessions kept when the add goes before the end.
+const sessionCases = [
+  { interests: ["nightlife"], arrivalDate: "2026-11-22", departureDate: "2026-11-25", dayNumber: 3, placeId: "vajdahunyad-castle", session: "house-of-music" },
+  { interests: ["nightlife"], arrivalDate: "2026-12-01", departureDate: "2026-12-04", dayNumber: 3, placeId: "vajdahunyad-castle", session: "house-of-music" },
+  { interests: ["food"], arrivalDate: "2026-10-20", departureDate: "2026-10-21", dayNumber: 1, placeId: "margaret-island", session: "danube-legend-cruise" },
+  { interests: ["nightlife"], arrivalDate: "2026-10-20", departureDate: "2026-10-23", dayNumber: 1, placeId: "vajdahunyad-castle", session: "danube-legend-cruise" },
+];
+for (const c of sessionCases) {
+  const g: any = await P.generateCityPlanV2(city, { destinationId: "budapest", dateMode: "specific", arrivalDate: c.arrivalDate, departureDate: c.departureDate, interests: c.interests, accommodation: { booked: false } });
+  const b = g.data;
+  const before = b.days[c.dayNumber - 1];
+  const startBefore = new Map(before.stops.map((s: any, k: number) => [s.id, before.timeline.stops[k].startMinutes]));
+  const label = `${c.interests.join("+")} ${c.arrivalDate} day ${c.dayNumber} add ${c.placeId}`;
+  if (!startBefore.has(c.session)) { failures.push(`${label}: case no longer has ${c.session} (regenerate the case list)`); continue; }
+  const d = C.decidePlanChange(city, b, {}, { kind: "add", dayNumber: c.dayNumber, placeId: c.placeId });
+  if (!d.ok) { failures.push(`${label}: add refused (${d.code})`); continue; }
+  const after = C.applyPlanCustomizations(city, b, d.next).days[c.dayNumber - 1];
+  const at = after.stops.findIndex((s: any) => s.id === c.placeId);
+  const w = after.timeline.stops[at];
+  const moved = after.stops.flatMap((s: any, k: number) => (s.id !== c.placeId && fixedSession(s) && after.timeline.stops[k].startMinutes !== startBefore.get(s.id) ? [`${s.id} ${hm(startBefore.get(s.id) as number)} -> ${hm(after.timeline.stops[k].startMinutes)}`] : []));
+  const atEnd = at === after.stops.length - 1;
+  console.log(`${label}: position ${at}${atEnd ? " (end)" : ""}, ${hm(w.startMinutes)}-${hm(w.endMinutes)}, ${c.session} ${hm(after.timeline.stops[after.stops.findIndex((s: any) => s.id === c.session)].startMinutes)} (before ${hm(startBefore.get(c.session) as number)})${moved.length ? ", moved: " + moved.join(", ") : ""}`);
+  if (!atEnd && moved.length) failures.push(`${label}: placed before the end, moving a fixed session (${moved.join(", ")})`);
 }
 console.log(`failures ${failures.length}`);
 for (const f of failures.slice(0, 30)) console.log("FAIL " + f);
