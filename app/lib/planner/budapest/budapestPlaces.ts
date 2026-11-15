@@ -15,8 +15,8 @@ import { withBudapestPhoto } from "./budapestPhotos";
  * single-gender sessions: Széchenyi, Rudas, Hospital in the Rock), activities without verified times for the trip's dates (Hospital
  * in the Rock tour slots, Matthias Church interior, Parliament interior, Dohány Synagogue on flexible dates). They are suggestions
  * with their information and official link (no planner metadata, so they are never scheduled or offered by the "add" button).
- * Photos: only Wikimedia Commons files whose free license and author were checked (budapestPhotos.ts, credit shown with the photo and on
- *   the photo-credits page). A place without such a photo keeps `image: ""` (every card handles that).
+ * Photos: only Wikimedia Commons files whose free license and author were checked (budapestPhotos.ts; credits on the photo-credits page,
+ *   linked from the footer, as for Prague). A place without such a photo keeps `image: ""` (every card handles that).
  */
 
 const VERIFIED = "2026-11-13";

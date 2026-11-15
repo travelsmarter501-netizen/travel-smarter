@@ -3,9 +3,9 @@ import type { ImageCredit } from "../../guideTypes";
 /**
  * Photos of Budapest places (2026-11-15). Each file is a Wikimedia Commons image (Commons' own 960px thumbnail, not edited). Every one
  * was checked on its Commons file page: a free license that allows commercial use (CC0 / public domain / "Attribution" / CC BY /
- * CC BY-SA) and its author. CC BY, CC BY-SA and "Attribution" require the author, a link to the file and a link to the license next to
- * the use; PhotoCredit and the photo-credits page render exactly these fields. Where the file page asks for a specific credit (Heroes'
- * Square) that credit is used.
+ * CC BY-SA) and its author. CC BY, CC BY-SA and "Attribution" require the author, a link to the file and a link to the license; the plan
+ * cards show no credit, so these fields are listed on the photo-credits page linked from the footer (the same arrangement as Prague).
+ * Where the file page asks for a specific credit (Heroes' Square) that credit is used.
  * Each photo was matched to its place through the place's Wikidata item near the place's own point (or a Commons file named after the
  * place and its address) and then looked at, so it shows that place. Full record: docs/budapest/photo-rights.md.
  * No photo (not found, or the only photos do not show the place): danube-legend-cruise, hungarikum-bisztro, menza, frici-papa,

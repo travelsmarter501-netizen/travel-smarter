@@ -6,7 +6,7 @@ generated image. Each photo was matched to its place (Wikidata item near the pla
 and then looked at.
 
 **Files:** `public/images-budapest/<place id>.jpg` = Commons' own 960px thumbnail of the file, not edited. Credits in
-`app/lib/planner/budapest/budapestPhotos.ts`; shown with the photo (PhotoCredit) and on `/photo-credits` (Budapest is listed there only
+`app/lib/planner/budapest/budapestPhotos.ts`; the plan cards show no credit next to the photo, so the credits are on `/photo-credits`, linked from the footer (the same arrangement as Prague) (Budapest is listed there only
 while the city can be chosen: public, or the local / Preview switch).
 
 **Coverage:** 28 of the 33 places a plan can show (the 9 area entries have no photo in any city).
