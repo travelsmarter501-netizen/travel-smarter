@@ -1,0 +1,3 @@
+WORSE experiences-4d-2026-11-19 d3 2026-11-21 saturday: idle 36->42, travel 44->53, lunch 21-restaurant 12:45-14:00 -> 21-restaurant 13:30-14:45, visits end 16:45->17:30  [idle +6; travel +9; cost +11]
+WORSE experiences-4d-2026-11-19 d4 2026-11-22 sunday: idle 59->114, travel 61->36, lunch hungarikum-bisztro 12:45-14:00 -> menza 12:30-13:45, visits end 16:00->16:00  [idle +55; cost +43]
+{"changedDays":2,"worseDays":2,"travelOver15":0,"maxTravelIncrease":9}

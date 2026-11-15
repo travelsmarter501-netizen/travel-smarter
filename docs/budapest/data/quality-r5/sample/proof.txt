@@ -1,0 +1,6 @@
+{"variant":"all","days":159,"increaseHistogram":{"<=15":154,"16-30":4,"31-45":1,">45":0},"maxIncrease":35,"daysAbove15":5,"violations":0,"daysAbove90":6,"daysAbove90WithoutTheLargerAllowance":6}
+ok   B-2026-11-22 d1 2026-11-22 sunday: travel 19 -> 45 (+26), idle 256 -> 15 (recovered 241, allowed 45; baseline morning 240, longest wait 8)
+ok   nature-2027-07-17 d3 2027-07-19 monday: travel 0 -> 23 (+23), idle 180 -> 37 (recovered 143, allowed 35; baseline morning 180, longest wait 0)
+ok   shopping-2026-11-22 d1 2026-11-22 sunday: travel 33 -> 61 (+28), idle 192 -> 59 (recovered 133, allowed 33; baseline morning 0, longest wait 130)
+ok   experiences-2026-11-22 d1 2026-11-22 sunday: travel 44 -> 79 (+35), idle 301 -> 121 (recovered 180, allowed 45; baseline morning 270, longest wait 14)
+ok   food-2026-11-22 d1 2026-11-22 sunday: travel 44 -> 64 (+20), idle 266 -> 30 (recovered 236, allowed 45; baseline morning 240, longest wait 8)

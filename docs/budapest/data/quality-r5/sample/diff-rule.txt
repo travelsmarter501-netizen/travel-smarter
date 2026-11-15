@@ -1,0 +1,9 @@
+      nature-2027-07-17 d2 2027-07-18 sunday: idle 19->13, travel 51->42, lunch hungarikum-bisztro 12:45-14:00 -> hungarikum-bisztro 12:45-14:00, visits end 15:45->12:20
+WORSE nature-2027-07-17 d3 2027-07-19 monday: idle 180->37, travel 0->23, lunch break 13:00-14:15 -> break 12:30-13:45, visits end 12:45->11:45  [travel +23]
+WORSE shopping-2026-11-22 d1 2026-11-22 sunday: idle 192->59, travel 33->61, lunch hungarikum-bisztro 12:30-13:45 -> hungarikum-bisztro 12:45-14:00, visits end 18:45->16:00  [travel +28]
+WORSE shopping-2026-11-22 d3 2026-11-24 tuesday: idle 37->37, travel 73->73, lunch 21-restaurant 13:30-14:45 -> 21-restaurant 12:45-14:00, visits end 17:15->18:15  [visits end 17:15 -> 18:15]
+WORSE experiences-2026-11-22 d1 2026-11-22 sunday: idle 188->121, travel 57->79, lunch hungarikum-bisztro 12:30-13:45 -> hungarikum-bisztro 12:30-13:45, visits end 19:20->17:40  [travel +22]
+      experiences-2026-11-22 d2 2026-11-23 monday: idle 37->22, travel 73->73, lunch 21-restaurant 12:30-13:45 -> hungarikum-bisztro 13:15-14:30, visits end 15:45->16:25
+WORSE food-2026-11-22 d1 2026-11-22 sunday: idle 266->30, travel 44->64, lunch break 14:30-15:45 -> hungarikum-bisztro 13:00-14:15, visits end 19:45->16:00  [travel +20]
+WORSE food-2026-11-22 d3 2026-11-24 tuesday: idle 79->71, travel 50->65, lunch menza 13:00-14:15 -> varosliget-cafe 12:45-14:00, visits end 17:15->17:15  [travel +15]
+{"changedDays":8,"worseDays":6,"travelOver15":4,"maxTravelIncrease":28}

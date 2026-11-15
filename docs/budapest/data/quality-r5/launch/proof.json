@@ -1,0 +1,82 @@
+{
+ "summary": {
+  "variant": "all",
+  "days": 270,
+  "increaseHistogram": {
+   "<=15": 267,
+   "16-30": 3,
+   "31-45": 0,
+   ">45": 0
+  },
+  "maxIncrease": 24,
+  "daysAbove15": 3,
+  "violations": 0,
+  "daysAbove90": 12,
+  "daysAbove90WithoutTheLargerAllowance": 12
+ },
+ "rows": [
+  {
+   "id": "nature-3d-2027-07-17",
+   "day": 3,
+   "date": "2027-07-19",
+   "weekday": "monday",
+   "baseline": {
+    "travel": 0,
+    "idle": 180,
+    "morningGap": 180,
+    "longestWait": 0
+   },
+   "final": {
+    "travel": 23,
+    "idle": 37
+   },
+   "increase": 23,
+   "recovered": 143,
+   "allowed": 35,
+   "ok": true,
+   "reasons": []
+  },
+  {
+   "id": "nature-4d-2027-07-17",
+   "day": 3,
+   "date": "2027-07-19",
+   "weekday": "monday",
+   "baseline": {
+    "travel": 0,
+    "idle": 180,
+    "morningGap": 180,
+    "longestWait": 0
+   },
+   "final": {
+    "travel": 23,
+    "idle": 37
+   },
+   "increase": 23,
+   "recovered": 143,
+   "allowed": 35,
+   "ok": true,
+   "reasons": []
+  },
+  {
+   "id": "experiences-4d-flex",
+   "day": 4,
+   "date": null,
+   "weekday": null,
+   "baseline": {
+    "travel": 32,
+    "idle": 118,
+    "morningGap": 60,
+    "longestWait": 34
+   },
+   "final": {
+    "travel": 56,
+    "idle": 19
+   },
+   "increase": 24,
+   "recovered": 99,
+   "allowed": 24,
+   "ok": true,
+   "reasons": []
+  }
+ ]
+}

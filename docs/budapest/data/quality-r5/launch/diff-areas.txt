@@ -1,0 +1,11 @@
+WORSE B-3d-2027-07-17 d1 2027-07-17 saturday: idle 68->22, travel 32->58, lunch gundel 12:30-13:45 -> 21-restaurant 13:30-14:45, visits end 16:00->16:15  [travel +26]
+WORSE B-3d-2027-07-17 d2 2027-07-18 sunday: idle 19->42, travel 31->13, lunch 21-restaurant 13:30-14:45 -> varosliget-cafe 12:30-13:45, visits end 12:45->16:15  [idle +23; cost +14; visits end 12:45 -> 16:15]
+WORSE B-3d-2027-07-17 d3 2027-07-19 monday: idle 36->33, travel 54->57, lunch hungarikum-bisztro 13:00-14:15 -> hungarikum-bisztro 13:00-14:15, visits end 15:45->16:00  [travel +3]
+WORSE nature-1d-2026-11-19 d1 2026-11-19 thursday: idle 76->32, travel 64->83, lunch hungarikum-bisztro 13:15-14:30 -> hungarikum-bisztro 13:15-14:30, visits end 17:20->18:40  [travel +19; visits end 17:20 -> 18:40]
+WORSE shopping-1d-2026-11-19 d1 2026-11-19 thursday: idle 45->39, travel 65->76, lunch frici-papa 12:45-14:00 -> menza 13:15-14:30, visits end 17:20->18:40  [travel +11; visits end 17:20 -> 18:40]
+WORSE experiences-3d-2026-11-19 d1 2026-11-19 thursday: idle 100->30, travel 55->70, lunch break 13:15-14:30 -> menza 13:15-14:30, visits end 17:20->17:45  [travel +15]
+WORSE experiences-3d-2026-11-19 d2 2026-11-20 friday: idle 79->46, travel 36->84, lunch menza 13:00-14:15 -> 21-restaurant 13:15-14:30, visits end 17:15->19:00  [travel +48; visits end 17:15 -> 19:00]
+      experiences-3d-2026-11-19 d3 2026-11-21 saturday: idle 88->38, travel 52->17, lunch 21-restaurant 12:30-13:45 -> gundel 12:45-14:00, visits end 18:15->16:45
+WORSE food-2d-2026-11-19 d1 2026-11-19 thursday: idle 100->16, travel 77->81, lunch break 13:15-14:30 -> break 13:00-14:15, visits end 17:20->18:40  [travel +4; visits end 17:20 -> 18:40]
+      food-2d-2026-11-19 d2 2026-11-20 friday: idle 35->30, travel 76->75, lunch 21-restaurant 13:30-14:45 -> menza 13:15-14:30, visits end 17:30->16:00
+{"changedDays":10,"worseDays":8,"travelOver15":3,"maxTravelIncrease":48}

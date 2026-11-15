@@ -1,0 +1,592 @@
+{
+ "B1": {
+  "totals": {
+   "trips": 53,
+   "changedTrips": 4,
+   "changedDays": 8,
+   "idleA": 9422,
+   "idleX": 8814,
+   "idleL": 13676,
+   "travelA": 8166,
+   "travelX": 8265,
+   "travelL": 7937,
+   "visitsA": 34690,
+   "visitsX": 34690,
+   "unknownFoodA": 31,
+   "unknownFoodX": 30,
+   "restaurantA": 128,
+   "restaurantX": 129,
+   "placesA": 689,
+   "placesX": 689,
+   "daysOver15VsA": 4,
+   "daysOver30VsA": 0,
+   "maxDayTravelX": 97
+  },
+  "failures": [],
+  "changes": [
+   {
+    "id": "nature-2027-07-17",
+    "trip": {
+     "A": {
+      "idle": 218,
+      "travel": 82,
+      "share": 16.3,
+      "unknownFood": 1,
+      "restaurantLunches": 2,
+      "places": 8,
+      "visits": 420
+     },
+     "X": {
+      "idle": 69,
+      "travel": 96,
+      "share": 18.6,
+      "unknownFood": 1,
+      "restaurantLunches": 2,
+      "places": 8,
+      "visits": 420
+     },
+     "unreviewed": {
+      "idle": 452,
+      "travel": 73
+     }
+    },
+    "days": [
+     {
+      "day": 2,
+      "date": "2027-07-18",
+      "weekday": "sunday",
+      "unreviewed": {
+       "order": "st-stephens-basilica>chain-bridge>parliament-exterior>margaret-island",
+       "idle": 253,
+       "morning": 240,
+       "waits": 13,
+       "longestWait": 6,
+       "travel": 42,
+       "stopTravel": 42,
+       "mealTravel": 0,
+       "foodAccessUnknown": true,
+       "lunch": "break",
+       "visits": 200,
+       "visitsEnd": 1170
+      },
+      "A": {
+       "order": "margaret-island>parliament-exterior>chain-bridge>st-stephens-basilica",
+       "idle": 19,
+       "morning": 0,
+       "waits": 19,
+       "longestWait": 7,
+       "travel": 51,
+       "stopTravel": 33,
+       "mealTravel": 18,
+       "foodAccessUnknown": false,
+       "lunch": "hungarikum-bisztro",
+       "visits": 200,
+       "visitsEnd": 945
+      },
+      "X": {
+       "order": "margaret-island>chain-bridge>parliament-exterior",
+       "idle": 13,
+       "morning": 0,
+       "waits": 13,
+       "longestWait": 6,
+       "travel": 42,
+       "stopTravel": 35,
+       "mealTravel": 7,
+       "foodAccessUnknown": false,
+       "lunch": "hungarikum-bisztro",
+       "visits": 125,
+       "visitsEnd": 740
+      },
+      "absolute": {
+       "idle": -6,
+       "travel": -9
+      },
+      "cumulative": {
+       "idle": -240,
+       "travel": 0
+      }
+     },
+     {
+      "day": 3,
+      "date": "2027-07-19",
+      "weekday": "monday",
+      "unreviewed": {
+       "order": "citadella",
+       "idle": 180,
+       "morning": 180,
+       "waits": 0,
+       "longestWait": 0,
+       "travel": 0,
+       "stopTravel": 0,
+       "mealTravel": 0,
+       "foodAccessUnknown": true,
+       "lunch": "break",
+       "visits": 45,
+       "visitsEnd": 765
+      },
+      "A": {
+       "order": "citadella",
+       "idle": 180,
+       "morning": 180,
+       "waits": 0,
+       "longestWait": 0,
+       "travel": 0,
+       "stopTravel": 0,
+       "mealTravel": 0,
+       "foodAccessUnknown": true,
+       "lunch": "break",
+       "visits": 45,
+       "visitsEnd": 765
+      },
+      "X": {
+       "order": "st-stephens-basilica>citadella",
+       "idle": 37,
+       "morning": 0,
+       "waits": 37,
+       "longestWait": 30,
+       "travel": 23,
+       "stopTravel": 23,
+       "mealTravel": 0,
+       "foodAccessUnknown": true,
+       "lunch": "break",
+       "visits": 120,
+       "visitsEnd": 705
+      },
+      "absolute": {
+       "idle": -143,
+       "travel": 23
+      },
+      "cumulative": {
+       "idle": -143,
+       "travel": 23
+      }
+     }
+    ]
+   },
+   {
+    "id": "shopping-2026-11-22",
+    "trip": {
+     "A": {
+      "idle": 257,
+      "travel": 203,
+      "share": 21.8,
+      "unknownFood": 0,
+      "restaurantLunches": 3,
+      "places": 15,
+      "visits": 730
+     },
+     "X": {
+      "idle": 124,
+      "travel": 231,
+      "share": 24,
+      "unknownFood": 0,
+      "restaurantLunches": 3,
+      "places": 15,
+      "visits": 730
+     },
+     "unreviewed": {
+      "idle": 257,
+      "travel": 203
+     }
+    },
+    "days": [
+     {
+      "day": 1,
+      "date": "2026-11-22",
+      "weekday": "sunday",
+      "unreviewed": {
+       "order": "parliament-exterior>shoes-on-the-danube>st-stephens-basilica>opera-house-tour>andrassy-avenue",
+       "idle": 192,
+       "morning": 0,
+       "waits": 192,
+       "longestWait": 130,
+       "travel": 33,
+       "stopTravel": 13,
+       "mealTravel": 20,
+       "foodAccessUnknown": false,
+       "lunch": "hungarikum-bisztro",
+       "visits": 210,
+       "visitsEnd": 1125
+      },
+      "A": {
+       "order": "parliament-exterior>shoes-on-the-danube>st-stephens-basilica>opera-house-tour>andrassy-avenue",
+       "idle": 192,
+       "morning": 0,
+       "waits": 192,
+       "longestWait": 130,
+       "travel": 33,
+       "stopTravel": 13,
+       "mealTravel": 20,
+       "foodAccessUnknown": false,
+       "lunch": "hungarikum-bisztro",
+       "visits": 210,
+       "visitsEnd": 1125
+      },
+      "X": {
+       "order": "andrassy-avenue>parliament-exterior>chain-bridge>shoes-on-the-danube>opera-house-tour",
+       "idle": 59,
+       "morning": 0,
+       "waits": 59,
+       "longestWait": 30,
+       "travel": 61,
+       "stopTravel": 36,
+       "mealTravel": 25,
+       "foodAccessUnknown": false,
+       "lunch": "hungarikum-bisztro",
+       "visits": 150,
+       "visitsEnd": 960
+      },
+      "absolute": {
+       "idle": -133,
+       "travel": 28
+      },
+      "cumulative": {
+       "idle": -133,
+       "travel": 28
+      }
+     },
+     {
+      "day": 3,
+      "date": "2026-11-24",
+      "weekday": "tuesday",
+      "unreviewed": {
+       "order": "fishermans-bastion>matthias-church-exterior>hungarian-national-gallery>chain-bridge>citadella",
+       "idle": 37,
+       "morning": 0,
+       "waits": 37,
+       "longestWait": 14,
+       "travel": 73,
+       "stopTravel": 37,
+       "mealTravel": 36,
+       "foodAccessUnknown": false,
+       "lunch": "21-restaurant",
+       "visits": 235,
+       "visitsEnd": 1035
+      },
+      "A": {
+       "order": "fishermans-bastion>matthias-church-exterior>hungarian-national-gallery>chain-bridge>citadella",
+       "idle": 37,
+       "morning": 0,
+       "waits": 37,
+       "longestWait": 14,
+       "travel": 73,
+       "stopTravel": 37,
+       "mealTravel": 36,
+       "foodAccessUnknown": false,
+       "lunch": "21-restaurant",
+       "visits": 235,
+       "visitsEnd": 1035
+      },
+      "X": {
+       "order": "st-stephens-basilica>fishermans-bastion>matthias-church-exterior>hungarian-national-gallery>citadella",
+       "idle": 37,
+       "morning": 0,
+       "waits": 37,
+       "longestWait": 14,
+       "travel": 73,
+       "stopTravel": 52,
+       "mealTravel": 21,
+       "foodAccessUnknown": false,
+       "lunch": "21-restaurant",
+       "visits": 295,
+       "visitsEnd": 1095
+      },
+      "absolute": {
+       "idle": 0,
+       "travel": 0
+      },
+      "cumulative": {
+       "idle": 0,
+       "travel": 0
+      }
+     }
+    ]
+   },
+   {
+    "id": "experiences-2026-11-22",
+    "trip": {
+     "A": {
+      "idle": 250,
+      "travel": 155,
+      "share": 18.2,
+      "unknownFood": 0,
+      "restaurantLunches": 3,
+      "places": 13,
+      "visits": 695
+     },
+     "X": {
+      "idle": 168,
+      "travel": 177,
+      "share": 20.3,
+      "unknownFood": 0,
+      "restaurantLunches": 3,
+      "places": 13,
+      "visits": 695
+     },
+     "unreviewed": {
+      "idle": 358,
+      "travel": 132
+     }
+    },
+    "days": [
+     {
+      "day": 1,
+      "date": "2026-11-22",
+      "weekday": "sunday",
+      "unreviewed": {
+       "order": "opera-house-tour>st-stephens-basilica>vaci-utca>danube-legend-cruise",
+       "idle": 301,
+       "morning": 270,
+       "waits": 31,
+       "longestWait": 14,
+       "travel": 44,
+       "stopTravel": 24,
+       "mealTravel": 20,
+       "foodAccessUnknown": false,
+       "lunch": "menza",
+       "visits": 240,
+       "visitsEnd": 1260
+      },
+      "A": {
+       "order": "vaci-utca>opera-house-tour>st-stephens-basilica>danube-legend-cruise",
+       "idle": 188,
+       "morning": 0,
+       "waits": 188,
+       "longestWait": 130,
+       "travel": 57,
+       "stopTravel": 22,
+       "mealTravel": 35,
+       "foodAccessUnknown": false,
+       "lunch": "hungarikum-bisztro",
+       "visits": 240,
+       "visitsEnd": 1160
+      },
+      "X": {
+       "order": "parliament-exterior>vaci-utca>opera-house-tour>danube-legend-cruise",
+       "idle": 121,
+       "morning": 0,
+       "waits": 121,
+       "longestWait": 70,
+       "travel": 79,
+       "stopTravel": 44,
+       "mealTravel": 35,
+       "foodAccessUnknown": false,
+       "lunch": "hungarikum-bisztro",
+       "visits": 185,
+       "visitsEnd": 1060
+      },
+      "absolute": {
+       "idle": -67,
+       "travel": 22
+      },
+      "cumulative": {
+       "idle": -180,
+       "travel": 35
+      }
+     },
+     {
+      "day": 2,
+      "date": "2026-11-23",
+      "weekday": "monday",
+      "unreviewed": {
+       "order": "fishermans-bastion>parliament-exterior>shoes-on-the-danube>chain-bridge>great-market-hall",
+       "idle": 32,
+       "morning": 0,
+       "waits": 32,
+       "longestWait": 13,
+       "travel": 63,
+       "stopTravel": 29,
+       "mealTravel": 34,
+       "foodAccessUnknown": false,
+       "lunch": "hungarikum-bisztro",
+       "visits": 145,
+       "visitsEnd": 930
+      },
+      "A": {
+       "order": "fishermans-bastion>parliament-exterior>shoes-on-the-danube>chain-bridge>great-market-hall",
+       "idle": 37,
+       "morning": 0,
+       "waits": 37,
+       "longestWait": 14,
+       "travel": 73,
+       "stopTravel": 29,
+       "mealTravel": 44,
+       "foodAccessUnknown": false,
+       "lunch": "21-restaurant",
+       "visits": 145,
+       "visitsEnd": 945
+      },
+      "X": {
+       "order": "great-market-hall>chain-bridge>st-stephens-basilica>shoes-on-the-danube>fishermans-bastion",
+       "idle": 22,
+       "morning": 0,
+       "waits": 22,
+       "longestWait": 6,
+       "travel": 73,
+       "stopTravel": 53,
+       "mealTravel": 20,
+       "foodAccessUnknown": false,
+       "lunch": "hungarikum-bisztro",
+       "visits": 200,
+       "visitsEnd": 985
+      },
+      "absolute": {
+       "idle": -15,
+       "travel": 0
+      },
+      "cumulative": {
+       "idle": -10,
+       "travel": 10
+      }
+     }
+    ]
+   },
+   {
+    "id": "food-2026-11-22",
+    "trip": {
+     "A": {
+      "idle": 491,
+      "travel": 145,
+      "share": 19.9,
+      "unknownFood": 2,
+      "restaurantLunches": 1,
+      "places": 13,
+      "visits": 585
+     },
+     "X": {
+      "idle": 247,
+      "travel": 180,
+      "share": 23.5,
+      "unknownFood": 1,
+      "restaurantLunches": 2,
+      "places": 13,
+      "visits": 585
+     },
+     "unreviewed": {
+      "idle": 491,
+      "travel": 145
+     }
+    },
+    "days": [
+     {
+      "day": 1,
+      "date": "2026-11-22",
+      "weekday": "sunday",
+      "unreviewed": {
+       "order": "st-stephens-basilica>chain-bridge>shoes-on-the-danube>parliament-exterior>fishermans-bastion>matthias-church-exterior",
+       "idle": 266,
+       "morning": 240,
+       "waits": 26,
+       "longestWait": 8,
+       "travel": 44,
+       "stopTravel": 39,
+       "mealTravel": 5,
+       "foodAccessUnknown": true,
+       "lunch": "break",
+       "visits": 175,
+       "visitsEnd": 1185
+      },
+      "A": {
+       "order": "st-stephens-basilica>chain-bridge>shoes-on-the-danube>parliament-exterior>fishermans-bastion>matthias-church-exterior",
+       "idle": 266,
+       "morning": 240,
+       "waits": 26,
+       "longestWait": 8,
+       "travel": 44,
+       "stopTravel": 39,
+       "mealTravel": 5,
+       "foodAccessUnknown": true,
+       "lunch": "break",
+       "visits": 175,
+       "visitsEnd": 1185
+      },
+      "X": {
+       "order": "fishermans-bastion>matthias-church-exterior>shoes-on-the-danube>parliament-exterior>chain-bridge>st-stephens-basilica",
+       "idle": 30,
+       "morning": 0,
+       "waits": 30,
+       "longestWait": 11,
+       "travel": 64,
+       "stopTravel": 32,
+       "mealTravel": 32,
+       "foodAccessUnknown": false,
+       "lunch": "hungarikum-bisztro",
+       "visits": 175,
+       "visitsEnd": 960
+      },
+      "absolute": {
+       "idle": -236,
+       "travel": 20
+      },
+      "cumulative": {
+       "idle": -236,
+       "travel": 20
+      }
+     },
+     {
+      "day": 3,
+      "date": "2026-11-24",
+      "weekday": "tuesday",
+      "unreviewed": {
+       "order": "heroes-square>house-of-music>opera-house-tour>andrassy-avenue",
+       "idle": 79,
+       "morning": 0,
+       "waits": 79,
+       "longestWait": 30,
+       "travel": 50,
+       "stopTravel": 12,
+       "mealTravel": 38,
+       "foodAccessUnknown": false,
+       "lunch": "menza",
+       "visits": 245,
+       "visitsEnd": 1035
+      },
+      "A": {
+       "order": "heroes-square>house-of-music>opera-house-tour>andrassy-avenue",
+       "idle": 79,
+       "morning": 0,
+       "waits": 79,
+       "longestWait": 30,
+       "travel": 50,
+       "stopTravel": 12,
+       "mealTravel": 38,
+       "foodAccessUnknown": false,
+       "lunch": "menza",
+       "visits": 245,
+       "visitsEnd": 1035
+      },
+      "X": {
+       "order": "heroes-square>house-of-music>opera-house-tour>andrassy-avenue",
+       "idle": 71,
+       "morning": 0,
+       "waits": 71,
+       "longestWait": 30,
+       "travel": 65,
+       "stopTravel": 12,
+       "mealTravel": 53,
+       "foodAccessUnknown": false,
+       "lunch": "varosliget-cafe",
+       "visits": 245,
+       "visitsEnd": 1035
+      },
+      "absolute": {
+       "idle": -8,
+       "travel": 15
+      },
+      "cumulative": {
+       "idle": -8,
+       "travel": 15
+      }
+     }
+    ]
+   }
+  ],
+  "rejectionsJudged": 0,
+  "searchLimit": {
+   "areasNotBuilt": 0,
+   "areasCandidates": 0
+  },
+  "rejectionsByCondition": {},
+  "blockedByOneConditionOnly": {}
+ }
+}

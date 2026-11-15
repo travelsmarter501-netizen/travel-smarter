@@ -1,0 +1,14 @@
+
+== B1 vs A (cumulative vs the unreviewed plans)
+{"trips":53,"changedTrips":4,"changedDays":8,"idleA":9422,"idleX":8814,"idleL":13676,"travelA":8166,"travelX":8265,"travelL":7937,"visitsA":34690,"visitsX":34690,"unknownFoodA":31,"unknownFoodX":30,"restaurantA":128,"restaurantX":129,"placesA":689,"placesX":689,"daysOver15VsA":4,"daysOver30VsA":0,"maxDayTravelX":97,"shareA":19.05,"shareX":19.24}
+acceptance failures: 0 trips
+  nature-2027-07-17 d2 2027-07-18 sunday: idle 253 -> A 19 -> X 13 | known travel 42 -> A 51 -> X 42 (between visits 35 + restaurants 7) | lunch hungarikum-bisztro -> hungarikum-bisztro
+  nature-2027-07-17 d3 2027-07-19 monday: idle 180 -> A 180 -> X 37 | known travel 0 -> A 0 -> X 23 (between visits 23 + restaurants 0) | food access unknown | lunch break -> break
+  shopping-2026-11-22 d1 2026-11-22 sunday: idle 192 -> A 192 -> X 59 | known travel 33 -> A 33 -> X 61 (between visits 36 + restaurants 25) | lunch hungarikum-bisztro -> hungarikum-bisztro
+  shopping-2026-11-22 d3 2026-11-24 tuesday: idle 37 -> A 37 -> X 37 | known travel 73 -> A 73 -> X 73 (between visits 52 + restaurants 21) | lunch 21-restaurant -> 21-restaurant
+  experiences-2026-11-22 d1 2026-11-22 sunday: idle 301 -> A 188 -> X 121 | known travel 44 -> A 57 -> X 79 (between visits 44 + restaurants 35) | lunch hungarikum-bisztro -> hungarikum-bisztro
+  experiences-2026-11-22 d2 2026-11-23 monday: idle 32 -> A 37 -> X 22 | known travel 63 -> A 73 -> X 73 (between visits 53 + restaurants 20) | lunch 21-restaurant -> hungarikum-bisztro
+  food-2026-11-22 d1 2026-11-22 sunday: idle 266 -> A 266 -> X 30 | known travel 44 -> A 44 -> X 64 (between visits 32 + restaurants 32) | lunch break -> hungarikum-bisztro
+  food-2026-11-22 d3 2026-11-24 tuesday: idle 79 -> A 79 -> X 71 | known travel 50 -> A 50 -> X 65 (between visits 12 + restaurants 53) | lunch menza -> varosliget-cafe
+rejections judged (distinct): 0; areas candidates logged 0, not built (search limit) 0
+blocked by ONE condition only: {}

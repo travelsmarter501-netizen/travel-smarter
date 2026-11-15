@@ -1,0 +1,13 @@
+WORSE B-2026-11-22 d1 2026-11-22 sunday: idle 15->22, travel 45->58, lunch hungarikum-bisztro 12:30-13:45 -> 21-restaurant 13:30-14:45, visits end 12:00->16:15  [idle +7; travel +13; cost +14; visits end 12:00 -> 16:15]
+WORSE B-2026-11-22 d2 2026-11-23 monday: idle 97->30, travel 48->60, lunch menza 12:30-13:45 -> menza 13:15-14:30, visits end 16:00->16:00  [travel +12]
+WORSE B-2026-11-22 d3 2026-11-24 tuesday: idle 19->42, travel 31->13, lunch 21-restaurant 13:30-14:45 -> varosliget-cafe 12:30-13:45, visits end 12:45->16:15  [idle +23; cost +14; visits end 12:45 -> 16:15]
+WORSE B-2027-07-17 d1 2027-07-17 saturday: idle 68->22, travel 32->58, lunch gundel 12:30-13:45 -> 21-restaurant 13:30-14:45, visits end 16:00->16:15  [travel +26]
+WORSE B-2027-07-17 d2 2027-07-18 sunday: idle 19->42, travel 31->13, lunch 21-restaurant 13:30-14:45 -> varosliget-cafe 12:30-13:45, visits end 12:45->16:15  [idle +23; cost +14; visits end 12:45 -> 16:15]
+WORSE B-2027-07-17 d3 2027-07-19 monday: idle 36->33, travel 54->57, lunch hungarikum-bisztro 13:00-14:15 -> hungarikum-bisztro 13:00-14:15, visits end 15:45->16:00  [travel +3]
+WORSE experiences-2026-11-19 d1 2026-11-19 thursday: idle 100->30, travel 55->70, lunch break 13:15-14:30 -> menza 13:15-14:30, visits end 17:20->17:45  [travel +15]
+WORSE experiences-2026-11-19 d2 2026-11-20 friday: idle 79->46, travel 36->84, lunch menza 13:00-14:15 -> 21-restaurant 13:15-14:30, visits end 17:15->19:00  [travel +48; visits end 17:15 -> 19:00]
+      experiences-2026-11-19 d3 2026-11-21 saturday: idle 88->38, travel 52->17, lunch 21-restaurant 12:30-13:45 -> gundel 12:45-14:00, visits end 18:15->16:45
+      experiences-2026-11-22 d1 2026-11-22 sunday: idle 121->12, travel 79->38, lunch hungarikum-bisztro 12:30-13:45 -> varosliget-cafe 12:45-14:00, visits end 17:40->17:15
+WORSE experiences-2026-11-22 d2 2026-11-23 monday: idle 22->33, travel 73->57, lunch hungarikum-bisztro 13:15-14:30 -> hungarikum-bisztro 13:00-14:15, visits end 16:25->16:00  [idle +11; cost +3]
+WORSE experiences-2026-11-22 d3 2026-11-24 tuesday: idle 25->21, travel 25->69, lunch varosliget-cafe 12:45-14:00 -> 21-restaurant 12:30-13:45, visits end 17:15->16:40  [travel +44; cost +18]
+{"changedDays":12,"worseDays":10,"travelOver15":3,"maxTravelIncrease":48}

@@ -1,0 +1,4 @@
+{"variant":"all","days":270,"increaseHistogram":{"<=15":267,"16-30":3,"31-45":0,">45":0},"maxIncrease":24,"daysAbove15":3,"violations":0,"daysAbove90":12,"daysAbove90WithoutTheLargerAllowance":12}
+ok   nature-3d-2027-07-17 d3 2027-07-19 monday: travel 0 -> 23 (+23), idle 180 -> 37 (recovered 143, allowed 35; baseline morning 180, longest wait 0)
+ok   nature-4d-2027-07-17 d3 2027-07-19 monday: travel 0 -> 23 (+23), idle 180 -> 37 (recovered 143, allowed 35; baseline morning 180, longest wait 0)
+ok   experiences-4d-flex d4 flex : travel 32 -> 56 (+24), idle 118 -> 19 (recovered 99, allowed 24; baseline morning 60, longest wait 34)

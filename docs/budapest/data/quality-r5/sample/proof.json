@@ -1,0 +1,124 @@
+{
+ "summary": {
+  "variant": "all",
+  "days": 159,
+  "increaseHistogram": {
+   "<=15": 154,
+   "16-30": 4,
+   "31-45": 1,
+   ">45": 0
+  },
+  "maxIncrease": 35,
+  "daysAbove15": 5,
+  "violations": 0,
+  "daysAbove90": 6,
+  "daysAbove90WithoutTheLargerAllowance": 6
+ },
+ "rows": [
+  {
+   "id": "B-2026-11-22",
+   "day": 1,
+   "date": "2026-11-22",
+   "weekday": "sunday",
+   "baseline": {
+    "travel": 19,
+    "idle": 256,
+    "morningGap": 240,
+    "longestWait": 8
+   },
+   "final": {
+    "travel": 45,
+    "idle": 15
+   },
+   "increase": 26,
+   "recovered": 241,
+   "allowed": 45,
+   "ok": true,
+   "reasons": []
+  },
+  {
+   "id": "nature-2027-07-17",
+   "day": 3,
+   "date": "2027-07-19",
+   "weekday": "monday",
+   "baseline": {
+    "travel": 0,
+    "idle": 180,
+    "morningGap": 180,
+    "longestWait": 0
+   },
+   "final": {
+    "travel": 23,
+    "idle": 37
+   },
+   "increase": 23,
+   "recovered": 143,
+   "allowed": 35,
+   "ok": true,
+   "reasons": []
+  },
+  {
+   "id": "shopping-2026-11-22",
+   "day": 1,
+   "date": "2026-11-22",
+   "weekday": "sunday",
+   "baseline": {
+    "travel": 33,
+    "idle": 192,
+    "morningGap": 0,
+    "longestWait": 130
+   },
+   "final": {
+    "travel": 61,
+    "idle": 59
+   },
+   "increase": 28,
+   "recovered": 133,
+   "allowed": 33,
+   "ok": true,
+   "reasons": []
+  },
+  {
+   "id": "experiences-2026-11-22",
+   "day": 1,
+   "date": "2026-11-22",
+   "weekday": "sunday",
+   "baseline": {
+    "travel": 44,
+    "idle": 301,
+    "morningGap": 270,
+    "longestWait": 14
+   },
+   "final": {
+    "travel": 79,
+    "idle": 121
+   },
+   "increase": 35,
+   "recovered": 180,
+   "allowed": 45,
+   "ok": true,
+   "reasons": []
+  },
+  {
+   "id": "food-2026-11-22",
+   "day": 1,
+   "date": "2026-11-22",
+   "weekday": "sunday",
+   "baseline": {
+    "travel": 44,
+    "idle": 266,
+    "morningGap": 240,
+    "longestWait": 8
+   },
+   "final": {
+    "travel": 64,
+    "idle": 30
+   },
+   "increase": 20,
+   "recovered": 236,
+   "allowed": 45,
+   "ok": true,
+   "reasons": []
+  }
+ ]
+}

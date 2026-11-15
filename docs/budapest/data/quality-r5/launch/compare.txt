@@ -1,0 +1,13 @@
+
+== B1 vs A (cumulative vs the unreviewed plans)
+{"trips":108,"changedTrips":4,"changedDays":7,"idleA":15472,"idleX":15136,"idleL":25466,"travelA":14366,"travelX":14402,"travelL":13865,"visitsA":59205,"visitsX":59205,"unknownFoodA":47,"unknownFoodX":47,"restaurantA":223,"restaurantX":223,"placesA":1189,"placesX":1189,"daysOver15VsA":3,"daysOver30VsA":0,"maxDayTravelX":119,"shareA":19.53,"shareX":19.57}
+acceptance failures: 0 trips
+  nature-3d-2027-07-17 d2 2027-07-18 sunday: idle 253 -> A 19 -> X 13 | known travel 42 -> A 51 -> X 42 (between visits 35 + restaurants 7) | lunch hungarikum-bisztro -> hungarikum-bisztro
+  nature-3d-2027-07-17 d3 2027-07-19 monday: idle 180 -> A 180 -> X 37 | known travel 0 -> A 0 -> X 23 (between visits 23 + restaurants 0) | food access unknown | lunch break -> break
+  nature-4d-2027-07-17 d2 2027-07-18 sunday: idle 253 -> A 19 -> X 13 | known travel 42 -> A 51 -> X 42 (between visits 35 + restaurants 7) | lunch hungarikum-bisztro -> hungarikum-bisztro
+  nature-4d-2027-07-17 d3 2027-07-19 monday: idle 180 -> A 180 -> X 37 | known travel 0 -> A 0 -> X 23 (between visits 23 + restaurants 0) | food access unknown | lunch break -> break
+  experiences-4d-flex d4 flex : idle 118 -> A 118 -> X 19 | known travel 32 -> A 32 -> X 56 (between visits 26 + restaurants 30) | lunch gundel -> gundel
+  experiences-4d-2026-11-19 d3 2026-11-21 saturday: idle 94 -> A 36 -> X 42 | known travel 46 -> A 44 -> X 53 (between visits 32 + restaurants 21) | lunch 21-restaurant -> 21-restaurant
+  experiences-4d-2026-11-19 d4 2026-11-22 sunday: idle 192 -> A 59 -> X 114 | known travel 33 -> A 61 -> X 36 (between visits 23 + restaurants 13) | lunch hungarikum-bisztro -> menza
+rejections judged (distinct): 0; areas candidates logged 0, not built (search limit) 0
+blocked by ONE condition only: {}

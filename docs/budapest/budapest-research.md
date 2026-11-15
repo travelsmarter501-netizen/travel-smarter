@@ -1219,3 +1219,145 @@ The sample's single C change is shopping 3 days (no dates), day 1: idle 192 → 
   - `bud-boundary` ALL PASS; `bud-cruise-suggest` ALL PASS; `bud-mixed-dates` 307 / 0; `bud-action-save` 15 / 0.
 - **Build:** tsc, eslint (changed files) and `next build --webpack` all pass.
 - **Prague and Barcelona on c73ae93 (clean tree):** generation byte-identical to `925512d` (prg-focus 82, prg-oneday 31, bcn104, bcn378; prg-long plans identical, timings excluded); edits byte-identical (prg-focus, bcn104). `docs/budapest/data/quality-r4/tests/prague-barcelona-generation-and-edits-c73ae93.txt`.
+
+## 21. Day quality, round 5: B1 as the Budapest default, finalised (2026-11-15; code e248511, 4ba9904, 19c33e0 on `feature/budapest`)
+
+**Status:**
+- Owner decision: B1 with the explicit meal check is the Budapest default on the branch.
+- Areas by date stays a test-only switch.
+- No push, merge or publish. Budapest stays unavailable.
+
+### 21.1 What changed
+- **Default = B1 + explicit meals** (`BUDAPEST_QUALITY_DEFAULTS`).
+  - **Pass 1:** rule A, counted against the same fixed baseline (A1). Two stages can no longer add +15 each.
+  - **Days whose places did not change:** held to +15 against that baseline.
+  - **Pass 2 (only days with lost time):** the allowance (recovered / 4, at most +45, day total at most 90), cumulative against the baseline.
+  - **The 90-min ceiling is a condition of that exceptional increase only.** Many days are longer without using it: 6 of 159 and 12 of 270 days exceed 90 min of known travel, all of them before any review.
+  - **Meals:** no dietary judgement, because the request has no dietary preference.
+- **Gundel:**
+  - **Shown to the customer:** the restaurant's hours, every day 11:30–22:00. The source text names the 21:00 kitchen close.
+  - **Planning:** meals end by 21:00 through `planningSchedule`, the same pattern as Prague's Mlýnec. It is never shown as a closing time; checked in the UI ("ساعات يوم السبت: 11:30–22:00").
+- **Approved texts:**
+  - **Gundel:** «مطعم للمأكولات الهنغارية قرب حديقة الحيوانات في حديقة المدينة، يقدّم قائمة غداء يومية.»
+  - **Városliget Café:** «مطعم ومقهى قرب البحيرة وقلعة فاجداهونياد في حديقة المدينة، يقدّم شوربات وأطباقًا رئيسية.»
+- **Accepted as is (not a general rule):** the culture day-3 lunch (idle 17 → 51 for a named restaurant).
+- **Areas by date (separate commit 4ba9904, still a switch):** a bounded single-swap search on the clock (21.4).
+
+### 21.2 Proof that the allowance is cumulative (`bud-travel-proof.mjs`, final results)
+| Sample | Days | Increase vs fixed baseline ≤15 / 16–30 / 31–45 / >45 | Days above +15 | Violations | Days > 90 min travel (none from the allowance) |
+|---|---|---|---|---|---|
+| 53 plans | 159 | 154 / 4 / 1 / 0 | 5 | 0 | 6 |
+| 108 plans | 270 | 267 / 3 / 0 / 0 | 3 | 0 | 12 |
+
+Every day above +15 had lost time in its baseline, fits recovered / 4 (at most 45), and stays at most 90:
+- culture 22 Nov, Sunday: +26;
+- nature 19 Jul 2027, Monday: +23;
+- shopping 22 Nov, Sunday: +28;
+- experiences 22 Nov, Sunday: +35;
+- food 22 Nov, Sunday: +20;
+- launch: nature 3 / 4 days, Monday +23; experiences 4 days, day 4: +24.
+
+### 21.3 Results (3 runs each, one process per variant and run; identical plans across runs)
+| | Unreviewed | A (8e8a309 rules) | **B1 (default)** | B1 + areas (switch) |
+|---|---|---|---|---|
+| 53 plans: idle / known travel | 13,676 / 7,937 | 9,422 / 8,166 | **8,814 / 8,265** | 8,496 / 8,298 (+5 places, +525 visit min) |
+| 108 plans: idle / known travel | 25,466 / 13,865 | 15,472 / 14,366 | **15,136 / 14,402** | 14,818 / 14,474 (+5 places, +480 visit min) |
+| Median / p90 / max ms (53) | — | 269 / 744 / 960 | **246 / 755 / 979** | 744 / 1,648 / 3,018 |
+| Median / p90 / max ms (108) | — | 161 / 707 / 978 | **168 / 741 / 984** | 283 / 1,245 / 3,103 |
+
+- **Validity:** the independent check finds 0 problems for A, B1 and B1a on both samples.
+- **Rule A:** exactly the plans of round 4. The new display hours of Gundel change no plan.
+
+**Every worse day, B1 against A:**
+- 6 days in the 53 sample, 5 in the 108 sample.
+- Known travel up with a large idle recovery (food, shopping, experiences and culture Sundays, nature Monday, experiences day 4).
+- Shopping Tuesday: different content (21.5).
+- **New against round 4 (the cumulative first pass):**
+  - experiences 4 days from 19 Nov, Sunday: idle 59 (A) → 114.
+  - A reaches 59 in two stages of +15, a cumulative +25 in travel. B1 refuses it: the recovered 55 min allow 13. This is the rule working as intended, not an accident.
+  - The Saturday of that trip: idle +6, travel +9, from the moved meals.
+- Lists: `quality-r5/<sample|launch>/diff-rule.txt`.
+
+### 21.4 Culture 22–24 Nov: the bounded search (switch `datedAreas`, not the default)
+**The search:**
+- The best 2 area assignments on the clock also get every single swap of one place between two days (both open on their new date, no evening place, at most 150).
+- Every variant is ranked on the CLOCK only (each day's best order, memoized, no build). The 3 best are built and get stage 1.
+- The accepted candidate with the least idle + known travel wins.
+- No place names or request inputs in code.
+- **Cost on this trip:** 64 swaps, 63 candidates on the clock, 3 built.
+
+| | Sunday | Monday | Tuesday | Trip |
+|---|---|---|---|---|
+| **Current (B1 default, from the UI)** | Citadella 09:00 → Shoes → Parliament → Chain Bridge → Hungarikum 12:30 | Heroes' 09:00 → St Stephen's 10:15 → Menza 12:30 → Opera 15:00 | Fisherman's → Matthias → Gallery 10:45–12:45 → 21 Restaurant 13:30 | 10 places, idle 131, travel 124 |
+| **Search result** | Fisherman's 09:00 → Matthias → Gallery 10:45–12:45 → 21 Restaurant 13:30 → Citadella 15:30 | Parliament 09:00 → Chain Bridge → St Stephen's 10:30 → Shoes → Menza 13:15 → Opera 15:00 | Heroes' 09:00 → Fine Arts 10:00–12:00 → Városliget Café 12:30 → House of Music 14:15–16:15 | 12 places, idle 94, travel 131 |
+| Owner's preferred (swap experiment) | City Park museums | Centre + Chain Bridge | Castle + Citadella | 12 places, idle 89, travel 136 |
+
+- The search finds the owner's grouping in mirror (Castle on Sunday, City Park on Tuesday). The two are tied on idle + travel (225 each); both were accepted.
+- **Areas on the samples:** places restored in 7 trips (53) and 9 trips (108).
+- **Cost:** median ×3.0 (53) and ×1.7 (108); slowest about 3.1 s. The swap limit was reached in 2 of 41 searches (16 in the 53 sample, 25 in the 108).
+- **Flagged restored days:** known travel +26 to +48 on a day that gained places (B 17 Jul 2027, experiences 19–20 Nov), and days with more idle and more visits. They are listed in `compare-areas.txt` / `diff-areas.txt`.
+- **Not recommended as the default yet**, because of the cost and those days. A rejection still proves nothing about better plans.
+
+### 21.5 Shopping 22–24 Nov, Tuesday (corrected)
+**What happened under B1:** stage 2 moved St Stephen's from Sunday to Tuesday in exchange for the Chain Bridge, and reordered Sunday. It is not the same day an hour later.
+
+| | Sunday | Monday | Tuesday | Trip |
+|---|---|---|---|---|
+| **A** | Parliament 09:00 → Shoes → Hungarikum 12:30 → St Stephen's 14:15 → Opera 16:30 → Andrássy to 18:45 | Market Hall → Váci → Gozsdu → New York Café → Arena → cruise 17:20 | Fisherman's → Matthias → Gallery → 21 Restaurant 13:30 → Chain Bridge 15:30 → Citadella 16:30–17:15 | Idle 257, travel 203 |
+| **B1** | Andrássy 09:00 → Parliament → Chain Bridge → Shoes → Hungarikum 12:45 → Opera 15:00–16:00 | Same | St Stephen's 09:00–10:15 → Fisherman's → Matthias → 21 Restaurant 12:45 → Gallery 14:45–16:45 → Citadella 17:30–18:15 | Idle 124, travel 231 |
+
+**Citadella in the evening is NOT intended:**
+- The place's own data says «أفضل وقت: قبل الغروب» (before sunset).
+- The November sunset estimate is 16:15, so Citadella ends after dark in A (17:15) and in B1 (18:15).
+- The daylight check covers only three listed places and does not read the "best time" field.
+- **A decision for the owner:** let places marked "before sunset" join the daylight check. That is a new rule, not applied in this round.
+
+### 21.6 UI check (local only)
+**Setup:** `next dev --webpack` with fake values, `ALLPAY_MODE=disabled`, the in-memory Supabase test double (`review/mock-bud.mjs`), and a test session.
+
+**Food 22–24 Nov:**
+- **Create:** questionnaire → plan generated and saved (the double recorded `begin_owner_plan_generation`, the insert, `end_owner_plan_generation`).
+- **Days in the UI:** match the measured plan.
+  - Sunday: Fisherman's 09:00 … Hungarikum 13:00 … St Stephen's 14:45, dinner Menza.
+  - Tuesday: Városliget Café 12:45, dinner New York Café.
+- **Edit day 3:**
+  - Removed Andrássy and added Vajdahunyad; each saved through `replace_owned_plan_content` (2 calls).
+  - **Reopened:** the edits stayed.
+- **English:** the interface switches (headings, buttons, times). Budapest's own texts stay in Arabic: day titles, notes, a food category label, suggestion reasons.
+
+**Other plans:**
+- **Culture 22–24 Nov and shopping 22–24 Nov:** created from the UI; the days match the measured plans (shopping Tuesday ends with Citadella 17:30–18:15).
+- **Culture 17–19 Jul 2027:** Gundel lunch 12:30; its details show «ساعات يوم السبت: 11:30–22:00» and the approved text.
+
+**Observed, not fixed:**
+- **Daylight when adding:** an added Vajdahunyad (a daylight place) was placed 16:45–17:05 in November, after the sunset estimate. The add path does not check daylight.
+- **The leg after an added place:** Opera → Vajdahunyad showed "walk 39 min" in edit mode and "transit ≈ 28 min" after reopening.
+
+**Limits:**
+- Emulated desktop viewport in the built-in browser; not real Safari or a phone.
+- Real Supabase / Vercel Preview not exercised.
+
+### 21.7 Range supported by the results (108-plan table, B1; a measurement, not a launch decision)
+- **1–4 days meet all thresholds:** A, C, shopping, experiences, food, surprise.
+- **1–3 days:** culture (4 days: thin days), popular (4 days: 58% strong match).
+- **1 day only:** nature alone (2–4 days: few places, thin days, weak match).
+
+### 21.8 What still blocks a launch
+1. Budapest English (and Hebrew) content: day titles, notes, category labels, suggestion reasons.
+2. Daylight:
+   - places marked "before sunset" (Citadella) can end after dark;
+   - adding a daylight place does not check daylight.
+3. The leg-mode difference between edit mode and the reopened plan.
+4. Texts awaiting review:
+   - the Hebrew gallery card text;
+   - month names in Budapest data (كانون/تشرين vs the site's).
+5. The policy for hours of places added to saved plans (stored hours vs current data), not decided.
+6. Launch range per interest: owner decision (21.7).
+7. Not yet run: a Vercel Preview with a test Supabase, real phones.
+
+### 21.9 Checks
+- **On 19c33e0:**
+  - Independent check: 0 problems for A, B1 and B1a on both samples.
+  - `bud-boundary` ALL PASS; `bud-cruise-suggest` ALL PASS; `bud-mixed-dates` 307 / 0 (including start-time edits); `bud-action-save` 15 / 0.
+  - tsc, eslint and `next build --webpack` pass.
+- **Prague and Barcelona, generation and edits:** byte-identical to `925512d` (`quality-r5/tests/prague-barcelona-generation-and-edits-19c33e0.txt`).

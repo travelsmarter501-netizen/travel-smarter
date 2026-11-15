@@ -1,0 +1,14 @@
+commit: 19c33e0 Budapest tools: proof that the travel allowance is cumulative against the fixed baseline; B1a in the comparison
+tree: 0 modified files
+{"cases":82,"plans":82,"failed":[]}
+{"cases":31,"plans":31,"failed":[]}
+{"plans":20,"failed":[],"totalSeconds":29,"perDaysMedianMs":{"5d":1021,"7d":1715,"10d":1403},"maxMs":5071}
+barcelona requests 104 ok 104
+requests 378 ok 378
+prg-focus generation IDENTICAL to 925512d
+prg-oneday generation IDENTICAL to 925512d
+bcn104 generation IDENTICAL to 925512d
+bcn378 generation IDENTICAL to 925512d
+prg-long IDENTICAL PLANS to 925512d (timings excluded)
+prg-focus edits IDENTICAL to 925512d
+bcn104 edits IDENTICAL to 925512d
