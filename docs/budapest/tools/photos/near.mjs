@@ -1,4 +1,4 @@
-/* eslint-disable -- review tool (not shipped): photo search and licence check, read-only requests to Wikidata / Commons. */
+// Review tool (not shipped): photo search and licence check, read-only requests to Wikidata / Commons.
 // Wikidata items WITH an image (P18) within a radius of each place's own point (SPARQL, one query per place, spaced out).
 import { readFileSync, writeFileSync } from "fs";
 const UA = { "User-Agent": "TravelPlannerPhotoCheck/1.0 (photo licence check)", Accept: "application/sparql-results+json" };

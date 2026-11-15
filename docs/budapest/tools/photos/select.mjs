@@ -1,4 +1,4 @@
-/* eslint-disable -- review tool (not shipped): photo search and licence check, read-only requests to Wikidata / Commons. */
+// Review tool (not shipped): photo search and licence check, read-only requests to Wikidata / Commons.
 // The chosen photo per place (each looked at; see photo-review.md), the credit as the Commons file page gives it, and the download of
 // Commons' own 960px thumbnail (unedited) into public/images-budapest/<id>.jpg. Writes selected.json.
 import { readFileSync, writeFileSync, mkdirSync } from "fs";

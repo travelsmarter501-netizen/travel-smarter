@@ -1,4 +1,4 @@
-/* eslint-disable -- review tool (not shipped): photo search and licence check, read-only requests to Wikidata / Commons. */
+// Review tool (not shipped): photo search and licence check, read-only requests to Wikidata / Commons.
 // Commons file page metadata for candidate files: license (short name + URL), author, the file page URL, and a 960px thumbnail URL
 // (+ a 400px one to look at). Accepts only free licenses that allow commercial use: CC0, public domain, CC BY, CC BY-SA, FAL.
 import { readFileSync, writeFileSync } from "fs";

@@ -1,4 +1,4 @@
-/* eslint-disable -- review tool (not shipped): photo search and licence check, read-only requests to Wikidata / Commons. */
+// Review tool (not shipped): photo search and licence check, read-only requests to Wikidata / Commons.
 // Writes docs/budapest/photo-rights.md from selected.json: one row per photo, plus the places without a photo and why.
 import { readFileSync, writeFileSync } from "fs";
 const sel = JSON.parse(readFileSync("selected.json", "utf8"));

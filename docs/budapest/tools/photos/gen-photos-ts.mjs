@@ -1,4 +1,4 @@
-/* eslint-disable -- review tool (not shipped): photo search and licence check, read-only requests to Wikidata / Commons. */
+// Review tool (not shipped): photo search and licence check, read-only requests to Wikidata / Commons.
 // Writes app/lib/planner/budapest/budapestPhotos.ts from selected.json (the same record shape as praguePhotos.ts).
 import { readFileSync, writeFileSync } from "fs";
 const sel = JSON.parse(readFileSync("selected.json", "utf8"));
