@@ -10,7 +10,7 @@ import { balanceCityDays, type DayFit } from "../cityDayBalance";
 import { buildBarcelonaDayTimeline, lunchPlacementFromTimeline, LUNCH_BREAK_ID, type TimelineMealInput, type TimelineStopInput } from "../barcelonaV2Timeline";
 import { checkWindow, scheduleProblems } from "../plannerTimingGuard";
 import { DAY_REFERENCE_START, DAYLIGHT_PLACES, finalDayQuality, SUNSET_ESTIMATE_BY_MONTH, type FinalDayQuality } from "./budapestDayQuality";
-import type { V2Plan } from "../barcelonaV2Resolve";
+import type { V2Day, V2Plan } from "../barcelonaV2Resolve";
 import type { DayGeographyRepairContext } from "../cityPlannerModule";
 import { ENABLE_MUST_SEE_PRIORITY, FLAGSHIP_MUST_SEE_BOOST, FLAGSHIP_TIER_B_BOOST, FLAGSHIP_TIER_B_SURPRISE_ME_BOOST } from "../barcelonaMustSeePolicy";
 import { V2_PLANNER_INTERESTS, type V2PlannerInterest } from "../v2PlannerTypes";
@@ -193,8 +193,20 @@ export type DayOnClock = {
  * - lunchAfterLastStop: lunch may come after the day's last visit (the restaurant, its walk, hours and full meal are still checked).
  * - clockOrder: each day's order is proposed on the clock and ACCEPTED on the final schedule (reviewDayOrders), same places and lengths.
  * - crossDay: a place that opens much later on its day than on another trip day may move there (reviewDayMoves), judged on the trip.
+ *
+ * Round 3 (TEST-ONLY, absent = the round-2 behaviour): travelRule ("A" = +15, "B" / "C" = more after lost time, see TRAVEL_RULES),
+ * mealCheck ("tolerance" / "explicit"), datedAreas (areas by date, see reviewDatedAreas), report (every review decision, for the tools).
  */
-export type BudapestQualityOptions = { cafeLunch: boolean; lunchAfterLastStop: boolean; clockOrder: boolean; crossDay: boolean };
+export type BudapestQualityOptions = {
+  cafeLunch: boolean;
+  lunchAfterLastStop: boolean;
+  clockOrder: boolean;
+  crossDay: boolean;
+  travelRule?: TravelRuleName;
+  mealCheck?: "tolerance" | "explicit";
+  datedAreas?: boolean;
+  report?: (entry: ReviewReportEntry) => void;
+};
 export const BUDAPEST_QUALITY_DEFAULTS: BudapestQualityOptions = { cafeLunch: false, lunchAfterLastStop: true, clockOrder: true, crossDay: true };
 
 export function budapestDayOnClock(context: DayGeographyRepairContext, lunchAfterLastStop = BUDAPEST_QUALITY_DEFAULTS.lunchAfterLastStop): (ids: readonly string[], dayNumber: number, outside: ReadonlySet<string>) => DayOnClock {
@@ -599,10 +611,10 @@ function legMidMinutes(a: string, b: string): number {
 const routeTravel = (ids: readonly string[]) => ids.slice(1).reduce((sum, id, i) => sum + legMidMinutes(ids[i], id), 0);
 
 /**
- * Orders proposed for a day by the clock estimate: same places, evening places last, at most +15 min of stop-to-stop travel, the 120
+ * Orders proposed for a day by the clock estimate: same places, evening places last, at most +15 min (or the given limit) of stop-to-stop travel, the 120
  * cheapest orders by travel tried, the best ones first. `minClockGain` filters orders whose estimate is not clearly better.
  */
-function clockOrderProposals(day: PlannerDay, context: DayGeographyRepairContext, onClock: ReturnType<typeof budapestDayOnClock>, ids: readonly string[], minClockGain: number, limit: number): string[][] {
+function clockOrderProposals(day: PlannerDay, context: DayGeographyRepairContext, onClock: ReturnType<typeof budapestDayOnClock>, ids: readonly string[], minClockGain: number, limit: number, maxTravelIncrease = ORDER_MAX_TRAVEL_INCREASE): string[][] {
   const rest = ids.filter((id) => !isEveningPlace(id));
   const evening = ids.filter((id) => isEveningPlace(id));
   if (rest.length < 1 || rest.length > 6) return [];
@@ -617,7 +629,7 @@ function clockOrderProposals(day: PlannerDay, context: DayGeographyRepairContext
     .map((order) => [...order, ...evening])
     .filter((order) => !sameSet || order.some((id, i) => id !== current[i]))
     .map((order) => ({ order, travel: routeTravel(order) }))
-    .filter((c) => c.travel <= baseTravel + ORDER_MAX_TRAVEL_INCREASE)
+    .filter((c) => c.travel <= baseTravel + maxTravelIncrease)
     .sort((a, b) => a.travel - b.travel)
     .slice(0, ORDER_MAX_CANDIDATES);
   for (const c of tried) {
@@ -649,34 +661,159 @@ const reorder = (day: PlannerDay, ids: readonly string[]) => {
 };
 
 type Reviewed = { plan: GeneratedPlannerPlan; legsByDay: PlannerRouteLeg[][]; data: V2Plan };
-type Judged = { q: FinalDayQuality; problems: number };
+type Judged = { q: FinalDayQuality; problems: number; day: V2Day };
 function judgeAll(data: V2Plan): Map<number, Judged> {
-  return new Map(data.days.map((d) => [d.dayNumber, { q: finalDayQuality(d), problems: scheduleProblems(d).size }]));
+  return new Map(data.days.map((d) => [d.dayNumber, { q: finalDayQuality(d), problems: scheduleProblems(d).size, day: d }]));
 }
-/** One day's change is accepted on the FINAL schedule: no new problem, no restaurant lunch lost, travel +15 at most, gain >= 30 and >= twice the added travel. */
+
+/**
+ * Review rules (round 3, TEST-ONLY switches; the defaults are the round-2 behaviour of 8e8a309).
+ * - travel "A": a day's travel may grow by 15 min at most. "B" / "C": the A review first, then a second pass that allows MORE only on days with lost time (first visit
+ *   60+ min after 09:00, or one wait of 60+ min): at most the recovered minutes (morning + waits) / k (B: 4, C: 3), 45 at most, the
+ *   day's total travel 90 at most; and then the trip's travel share (travel / (visits + travel)) may not grow by more than 2 points.
+ *   Restaurant transfers always count in full; a lunch break has no point, so its food access is unknown (never counted as 0 proof).
+ * - meals "tolerance": a day NOT reordered may get worse by 10 cost points (round 2). "explicit": instead, each changed meal is checked:
+ *   same meal categories, no dietary tag lost and no "may contain pork" added, not served on another day of the trip, its walk at most
+ *   10 min longer, and no new wait of 30+ min that day. A restaurant lunch that becomes a lunch break is a loss in every mode.
+ * - areas (datedAreas): see reviewDatedAreas.
+ * Policies that are NOT changed here: one restaurant per trip (variety), evening places last, the accommodation day.
+ */
+export type TravelRuleName = "A" | "B" | "C";
+const TRAVEL_RULES: Record<TravelRuleName, { k: number; maxIncrease: number; dayCeiling: number; tripSharePoints: number }> = {
+  A: { k: Infinity, maxIncrease: ORDER_MAX_TRAVEL_INCREASE, dayCeiling: Infinity, tripSharePoints: Infinity },
+  B: { k: 4, maxIncrease: 45, dayCeiling: 90, tripSharePoints: 2 },
+  C: { k: 3, maxIncrease: 45, dayCeiling: 90, tripSharePoints: 2 },
+};
+const LOST_TIME_MINUTES = 60;
+const MEAL_WALK_MORE_AT_MOST = 10;
+const NEW_WAIT_AT_MOST = 30;
+export type ReviewReportEntry = { stage: "order" | "move" | "areas"; decision: "accepted" | "rejected" | "kept" | "skipped"; day?: number; reasons: string[]; detail?: Record<string, unknown> };
+type ReviewRules = { travel: TravelRuleName; meals: "tolerance" | "explicit"; report?: (entry: ReviewReportEntry) => void };
+const DEFAULT_RULES: ReviewRules = { travel: "A", meals: "tolerance" };
+
+const hadLostTime = (q: FinalDayQuality) => q.morningGap >= LOST_TIME_MINUTES || q.longestWait >= LOST_TIME_MINUTES;
+/** Why a day's travel increase is not allowed (null = allowed). */
+function travelRefusal(rules: ReviewRules, base: FinalDayQuality, trial: FinalDayQuality): string | null {
+  const increase = trial.travel - base.travel;
+  if (increase <= ORDER_MAX_TRAVEL_INCREASE) return null;
+  if (rules.travel === "A") return `travel +${increase} (more than 15)`;
+  const r = TRAVEL_RULES[rules.travel];
+  if (!hadLostTime(base)) return `travel +${increase} (more than 15, no lost morning or long wait)`;
+  const recovered = base.morningGap + base.waits - (trial.morningGap + trial.waits);
+  const allowed = Math.min(recovered / r.k, r.maxIncrease);
+  if (increase > allowed) return `travel +${increase} (allowed ${Math.floor(allowed)}: recovered ${recovered} / ${r.k}, at most ${r.maxIncrease})`;
+  if (trial.travel > r.dayCeiling) return `day travel ${trial.travel} (above ${r.dayCeiling})`;
+  return null;
+}
+const proposalTravelLimit = (rules: ReviewRules, base: FinalDayQuality | undefined) =>
+  rules.travel !== "A" && base && hadLostTime(base) ? TRAVEL_RULES[rules.travel].maxIncrease : ORDER_MAX_TRAVEL_INCREASE;
+const tripShare = (judged: ReadonlyMap<number, Judged>) => {
+  let travel = 0;
+  let visits = 0;
+  for (const j of judged.values()) { travel += j.q.travel; visits += j.q.visits; }
+  return travel + visits > 0 ? (100 * travel) / (travel + visits) : 0;
+};
+/** The trip's travel share, checked only when some day uses the larger allowance (more than +15): B / C extend A, never restrict it. */
+function tripShareRefusal(rules: ReviewRules, base: ReadonlyMap<number, Judged>, trial: ReadonlyMap<number, Judged>): string | null {
+  const points = TRAVEL_RULES[rules.travel].tripSharePoints;
+  if (!Number.isFinite(points)) return null;
+  if (![...trial].some(([n, j]) => j.q.travel - (base.get(n)?.q.travel ?? j.q.travel) > ORDER_MAX_TRAVEL_INCREASE)) return null;
+  const before = tripShare(base);
+  const after = tripShare(trial);
+  return after - before > points ? `trip travel share ${before.toFixed(1)}% -> ${after.toFixed(1)}% (more than +${points} points)` : null;
+}
+
 /** A restaurant lunch that becomes a lunch break is a loss for the customer, whatever the clock says. */
 const losesRestaurant = (base: Judged, trial: Judged) => base.q.lunch !== "break" && base.q.lunch !== "none" && (trial.q.lunch === "break" || trial.q.lunch === "none");
-function clearGain(base: Judged, trial: Judged): boolean {
-  if (trial.problems > base.problems) return false;
-  if (losesRestaurant(base, trial)) return false;
-  if (trial.q.travel > base.q.travel + ORDER_MAX_TRAVEL_INCREASE) return false;
+/** Why one day's change is not a clear gain on the FINAL schedule (empty = accepted). */
+function gainRefusals(rules: ReviewRules, base: Judged, trial: Judged): string[] {
+  const reasons: string[] = [];
+  if (trial.problems > base.problems) reasons.push("new schedule problem");
+  if (losesRestaurant(base, trial)) reasons.push(`restaurant lunch lost (${base.q.lunch})`);
+  const travel = travelRefusal(rules, base.q, trial.q);
+  if (travel) reasons.push(travel);
   const gain = base.q.cost - trial.q.cost;
-  return gain >= ORDER_MIN_GAIN && trial.q.travel - base.q.travel <= gain / 2;
+  if (gain < ORDER_MIN_GAIN) reasons.push(`gain ${gain} (less than ${ORDER_MIN_GAIN})`);
+  else if (trial.q.travel - base.q.travel > gain / 2) reasons.push(`added travel ${trial.q.travel - base.q.travel} more than half the gain ${gain}`);
+  return reasons;
 }
-/** A day that was not changed must not get worse through a change elsewhere (e.g. a restaurant taken by another day). */
-const notWeaker = (base: Judged, trial: Judged, tolerance = NO_WEAKER_TOLERANCE) => trial.problems <= base.problems && !losesRestaurant(base, trial) && trial.q.cost <= base.q.cost + tolerance && trial.q.travel <= base.q.travel + ORDER_MAX_TRAVEL_INCREASE;
+const clearGain = (rules: ReviewRules, base: Judged, trial: Judged) => gainRefusals(rules, base, trial).length === 0;
+
+const FOOD_BY_ID = new Map<string, FoodPlace>(BUDAPEST_PLACES.foodPlaces.map((p) => [p.id, p]));
+const midLegMinutes = (leg: PlannerRouteLeg | undefined) => {
+  const o = leg && leg.sourceStatus !== "unresolved" ? leg.options.find((x) => x.mode === leg.recommendedMode) : undefined;
+  return o ? Math.round((o.durationMinutesMin + o.durationMinutesMax) / 2) : 0;
+};
+/** Minutes of the walks to and from one meal of a day (its meal legs). */
+function mealWalk(day: V2Day, mealId: string): number {
+  let sum = 0;
+  for (const [key, leg] of Object.entries(day.mealLegs ?? {})) if (key.startsWith(`${mealId}::`) || key.endsWith(`::${mealId}`)) sum += midLegMinutes(leg);
+  return sum;
+}
+/** Why the meals of a day whose places did not change are worse (explicit meal criteria; empty = fine). */
+function mealRefusals(base: Judged, trial: Judged, servedElsewhere: (placeId: string, dayNumber: number) => boolean): string[] {
+  const reasons: string[] = [];
+  for (const type of ["lunch", "dinner"] as const) {
+    const before = base.day.timeline?.meals.find((m) => m.mealType === type);
+    const after = trial.day.timeline?.meals.find((m) => m.mealType === type);
+    if (!before || before.placeId === after?.placeId) continue;
+    if (!after) { reasons.push(`${type} lost (${before.placeId})`); continue; }
+    if (after.placeId === "lunch-break" || before.placeId === "lunch-break") continue;
+    const a = FOOD_BY_ID.get(before.placeId);
+    const b = FOOD_BY_ID.get(after.placeId);
+    if (!b) { reasons.push(`${type} ${after.placeId}: unknown place`); continue; }
+    const allowed = type === "lunch" ? ["local", "restaurants"] : ["local", "restaurants"];
+    if (!allowed.includes(b.categoryId)) reasons.push(`${type} ${b.id}: category ${b.categoryId}`);
+    const tagsBefore = new Set(a?.dietaryTags ?? []);
+    const tagsAfter = new Set(b.dietaryTags ?? []);
+    const lost = [...tagsBefore].filter((t) => t !== "pork-maybe" && !tagsAfter.has(t));
+    if (lost.length) reasons.push(`${type} ${b.id}: dietary tags lost (${lost.join(", ")})`);
+    if (tagsAfter.has("pork-maybe") && !tagsBefore.has("pork-maybe")) reasons.push(`${type} ${b.id}: may contain pork (the previous one did not)`);
+    if (servedElsewhere(b.id, trial.day.dayNumber)) reasons.push(`${type} ${b.id}: served on another day too`);
+    const walk = mealWalk(trial.day, after.placeId) - mealWalk(base.day, before.placeId);
+    if (walk > MEAL_WALK_MORE_AT_MOST) reasons.push(`${type} ${before.placeId} -> ${b.id}: walk +${walk} min (more than ${MEAL_WALK_MORE_AT_MOST})`);
+  }
+  if (trial.q.longestWait >= NEW_WAIT_AT_MOST && trial.q.longestWait > base.q.longestWait) reasons.push(`new wait of ${trial.q.longestWait} min`);
+  return reasons;
+}
+function servedElsewhereIn(judged: ReadonlyMap<number, Judged>) {
+  return (placeId: string, dayNumber: number) => [...judged.values()].some((j) => j.day.dayNumber !== dayNumber && !!j.day.timeline?.meals.some((m) => m.placeId === placeId));
+}
+/** Why a day whose PLACES did not change got worse through a change elsewhere (e.g. its restaurant taken by another day). */
+function unchangedDayRefusals(rules: ReviewRules, base: Judged, trial: Judged, judged: ReadonlyMap<number, Judged>, tolerance: number): string[] {
+  const reasons: string[] = [];
+  if (trial.problems > base.problems) reasons.push("new schedule problem");
+  if (losesRestaurant(base, trial)) reasons.push(`restaurant lunch lost (${base.q.lunch})`);
+  if (trial.q.travel > base.q.travel + ORDER_MAX_TRAVEL_INCREASE) reasons.push(`travel +${trial.q.travel - base.q.travel} (more than 15)`);
+  if (rules.meals === "tolerance") {
+    if (trial.q.cost > base.q.cost + tolerance) reasons.push(`cost +${trial.q.cost - base.q.cost} (tolerance ${tolerance})`);
+  } else reasons.push(...mealRefusals(base, trial, servedElsewhereIn(judged)));
+  return reasons;
+}
+/** Why a day whose places DID change (stage 2) is weaker: it may not get worse at all; its travel follows the travel rule. */
+function changedDayRefusals(rules: ReviewRules, base: Judged, trial: Judged): string[] {
+  const reasons: string[] = [];
+  if (trial.problems > base.problems) reasons.push("new schedule problem");
+  if (losesRestaurant(base, trial)) reasons.push(`restaurant lunch lost (${base.q.lunch})`);
+  if (trial.q.cost > base.q.cost) reasons.push(`cost +${trial.q.cost - base.q.cost}`);
+  const travel = travelRefusal(rules, base.q, trial.q);
+  if (travel) reasons.push(travel);
+  return reasons;
+}
+const brief = (j: Judged) => ({ order: j.q.order, idle: j.q.idle, morning: j.q.morningGap, waits: j.q.waits, travel: j.q.travel, stopTravel: j.q.stopTravel, mealTravel: j.q.mealTravel, foodAccessUnknown: j.q.foodAccessUnknown, lunch: j.q.lunch, cost: j.q.cost });
 
 /** Stage 1: each day's order, proposed by the clock and accepted on the final schedule. Bounded: at most REVIEW_MAX_BUILDS rebuilds. */
-function reviewDayOrders(input: Reviewed, context: DayGeographyRepairContext, build: (plan: GeneratedPlannerPlan, legs: PlannerRouteLeg[][]) => V2Plan, lunchAfterLastStop: boolean, lockedDays: ReadonlySet<number>): Reviewed {
+function reviewDayOrders(input: Reviewed, context: DayGeographyRepairContext, build: (plan: GeneratedPlannerPlan, legs: PlannerRouteLeg[][]) => V2Plan, lunchAfterLastStop: boolean, lockedDays: ReadonlySet<number>, rules: ReviewRules = DEFAULT_RULES, onlyLostTime = false): Reviewed {
   const onClock = budapestDayOnClock(context, lunchAfterLastStop);
+  const base = judgeAll(input.data);
   const proposals = new Map<number, string[][]>();
   for (const day of input.plan.days) {
     if (lockedDays.has(day.dayNumber)) continue;
-    const list = clockOrderProposals(day, context, onClock, day.stops.map((s) => s.placeId), ORDER_MIN_GAIN / 2, ORDER_PROPOSALS_PER_DAY);
+    if (onlyLostTime && !hadLostTime(base.get(day.dayNumber)!.q)) continue;
+    const list = clockOrderProposals(day, context, onClock, day.stops.map((s) => s.placeId), ORDER_MIN_GAIN / 2, ORDER_PROPOSALS_PER_DAY, proposalTravelLimit(rules, base.get(day.dayNumber)?.q));
     if (list.length) proposals.set(day.dayNumber, list);
   }
   if (proposals.size === 0) return input;
-  const base = judgeAll(input.data);
   const accepted = new Map<number, string[]>();
   const nextTry = new Map<number, number>([...proposals.keys()].map((n) => [n, 0]));
   let builds = 0;
@@ -692,8 +829,9 @@ function reviewDayOrders(input: Reviewed, context: DayGeographyRepairContext, bu
     const judged = judgeAll(data);
     let stable = true;
     for (const n of [...trialOrders.keys()]) {
-      const ok = clearGain(base.get(n)!, judged.get(n)!);
-      if (ok) {
+      const refusals = gainRefusals(rules, base.get(n)!, judged.get(n)!);
+      if (nextTry.has(n)) rules.report?.({ stage: "order", day: n, decision: refusals.length ? "rejected" : "accepted", reasons: refusals, detail: { base: brief(base.get(n)!), trial: brief(judged.get(n)!) } });
+      if (refusals.length === 0) {
         if (nextTry.has(n)) { accepted.set(n, trialOrders.get(n)!); nextTry.delete(n); stable = false; }
       } else {
         stable = false;
@@ -703,8 +841,11 @@ function reviewDayOrders(input: Reviewed, context: DayGeographyRepairContext, bu
         else nextTry.delete(n);
       }
     }
-    const othersOk = [...judged].every(([n, j]) => trialOrders.has(n) || notWeaker(base.get(n)!, j));
+    const otherRefusals = [...judged].flatMap(([n, j]) => (trialOrders.has(n) ? [] : unchangedDayRefusals(rules, base.get(n)!, j, judged, NO_WEAKER_TOLERANCE).map((r) => `day ${n}: ${r}`)));
+    const share = tripShareRefusal(rules, base, judged);
+    const othersOk = otherRefusals.length === 0 && !share;
     if (!othersOk && accepted.size > 0) {
+      rules.report?.({ stage: "order", decision: "rejected", reasons: [...otherRefusals, ...(share ? [share] : [])], detail: { dropping: "the accepted change with the smallest gain" } });
       // Drop the accepted change with the smallest gain and try again.
       const weakest = [...accepted.keys()].sort((a, b) => base.get(a)!.q.cost - judged.get(a)!.q.cost - (base.get(b)!.q.cost - judged.get(b)!.q.cost))[0];
       accepted.delete(weakest);
@@ -719,7 +860,7 @@ function reviewDayOrders(input: Reviewed, context: DayGeographyRepairContext, bu
   const final = withDayStops(input.plan, changes);
   const data = build(final.plan, final.legsByDay);
   const judged = judgeAll(data);
-  const ok = [...judged].every(([n, j]) => (accepted.has(n) ? clearGain(base.get(n)!, j) : notWeaker(base.get(n)!, j)));
+  const ok = [...judged].every(([n, j]) => (accepted.has(n) ? clearGain(rules, base.get(n)!, j) : unchangedDayRefusals(rules, base.get(n)!, j, judged, NO_WEAKER_TOLERANCE).length === 0)) && !tripShareRefusal(rules, base, judged);
   return ok ? { ...final, data } : input;
 }
 
@@ -738,10 +879,11 @@ function openingOnDay(context: DayGeographyRepairContext, placeId: string, dayNu
 /**
  * Stage 2: a place whose opening on its day is at least 2 hours later than on another day of the trip (e.g. St Stephen's on a Sunday,
  * 13:00) may move to that day, alone or swapped with one place of that day (not an evening place, open on the first day). Each move is
- * judged on the WHOLE trip's final schedule: total gain >= 30, no day worse at all, no new problem, travel +15 at most on any
- * day, at least 2 places left on each day. Same places and lengths in the trip. Dated plans only. Bounded: MOVE_MAX_BUILDS rebuilds.
+ * judged on the WHOLE trip's final schedule: total gain >= 30, no day worse (the two changed days: not at all, travel by the travel rule;
+ * the other days: as in stage 1 with no tolerance), no new problem, at least 2 places left on each day. Same places and lengths in the
+ * trip. Dated plans only. Bounded: MOVE_MAX_BUILDS rebuilds.
  */
-function reviewDayMoves(input: Reviewed, context: DayGeographyRepairContext, build: (plan: GeneratedPlannerPlan, legs: PlannerRouteLeg[][]) => V2Plan, lunchAfterLastStop: boolean, lockedDays: ReadonlySet<number>): Reviewed {
+function reviewDayMoves(input: Reviewed, context: DayGeographyRepairContext, build: (plan: GeneratedPlannerPlan, legs: PlannerRouteLeg[][]) => V2Plan, lunchAfterLastStop: boolean, lockedDays: ReadonlySet<number>, rules: ReviewRules = DEFAULT_RULES): Reviewed {
   if (context.weekdayForDayNumber?.(1) == null) return input;
   const onClock = budapestDayOnClock(context, lunchAfterLastStop);
   let current = input;
@@ -795,8 +937,14 @@ function reviewDayMoves(input: Reviewed, context: DayGeographyRepairContext, bui
       builds++;
       const judged = judgeAll(data);
       const total = [...judged.values()].reduce((s, j) => s + j.q.cost, 0);
-      const fair = [...judged].every(([n, j]) => notWeaker(base.get(n)!, j, 0));
-      if (fair && baseTotal - total >= ORDER_MIN_GAIN && (!best || total < best.total)) best = { reviewed: { ...trial, data }, total };
+      const refusals = [...judged].flatMap(([n, j]) =>
+        (n === cand.from || n === cand.to ? changedDayRefusals(rules, base.get(n)!, j) : unchangedDayRefusals(rules, base.get(n)!, j, judged, 0)).map((r) => `day ${n}: ${r}`)
+      );
+      const share = tripShareRefusal(rules, base, judged);
+      if (share) refusals.push(share);
+      if (baseTotal - total < ORDER_MIN_GAIN) refusals.push(`trip gain ${baseTotal - total} (less than ${ORDER_MIN_GAIN})`);
+      rules.report?.({ stage: "move", decision: refusals.length ? "rejected" : "accepted", reasons: refusals, detail: { place: cand.placeId, from: cand.from, to: cand.to, partner: partner?.placeId ?? null, days: Object.fromEntries([...judged].map(([n, j]) => [n, { before: brief(base.get(n)!), after: brief(j) }])) } });
+      if (refusals.length === 0 && (!best || total < best.total)) best = { reviewed: { ...trial, data }, total };
     }
     if (best) current = best.reviewed;
     if (builds >= MOVE_MAX_BUILDS) break;
@@ -804,17 +952,151 @@ function reviewDayMoves(input: Reviewed, context: DayGeographyRepairContext, bui
   return current;
 }
 
+// ── Areas by date (round 3, TEST-ONLY switch `datedAreas`) ───────────────────────────────────────────────────
+const AREA_MAX_DAYS = 4;
+const AREA_MAX_ASSIGNMENTS = 6;
+const AREA_MAX_BUILT = 2;
+const AREA_STRONG_RELEVANCE = 7;
+const AREA_DAY_TRAVEL_CEILING = 90;
+const AREA_DAY_VISITS_CEILING = 380;
+const AREA_TRIP_SHARE_POINTS = 2;
+const AREA_TRIP_IDLE_MORE_AT_MOST = 30;
+
+/**
+ * Places dropped only because of the date their area landed on: the same request without dates (one extra generation, made by the
+ * pipeline, never recursive) is a SOURCE of candidates, not a replacement. The current dated plan stays a candidate. Each assignment of
+ * the undated plan's day groups to the trip's dates (at most AREA_MAX_ASSIGNMENTS, best AREA_MAX_BUILT on the clock built) keeps every
+ * place of the current plan (a timetabled or dated place stays, on a day where it is open) and adds back the strong places (relevance
+ * >= 7) that the current plan lacks, each on a date where it is open. Each built candidate gets stage 1 (orders). It replaces the current
+ * plan only when, against the current plan's final schedule: no schedule problem; every current place kept; on every date no restaurant
+ * lunch lost, travel within 90 min or not above that date's current travel, no new wait of 60+ min, visits within 380 min; trip travel
+ * share at most +2 points; trip idle at most +30 min. Otherwise the current plan stays and the reasons are reported.
+ */
+function reviewDatedAreas(currentFinal: Reviewed, input: ReviewInput, rules: ReviewRules, lunchAfterLastStop: boolean): Reviewed {
+  const { context, build, undatedPlan, relevance } = input;
+  const report = (decision: ReviewReportEntry["decision"], reasons: string[], detail?: Record<string, unknown>) => rules.report?.({ stage: "areas", decision, reasons, detail });
+  if (!undatedPlan || !relevance || context.weekdayForDayNumber?.(1) == null) return currentFinal;
+  if (input.accommodationAnchored) { report("skipped", ["day 1 follows the accommodation"]); return currentFinal; }
+  const dayNumbers = currentFinal.plan.days.map((d) => d.dayNumber);
+  if (dayNumbers.length > AREA_MAX_DAYS || undatedPlan.days.length !== dayNumbers.length) { report("skipped", [`${dayNumbers.length} days (areas by date: ${AREA_MAX_DAYS} at most)`]); return currentFinal; }
+  const currentStops = new Map(currentFinal.plan.days.flatMap((d) => d.stops.map((s) => [s.placeId, s] as const)));
+  const undatedStops = new Map(undatedPlan.days.flatMap((d) => d.stops.map((s) => [s.placeId, s] as const)));
+  const restored = [...undatedStops.keys()].filter((id) => !currentStops.has(id) && relevance(id) >= AREA_STRONG_RELEVANCE);
+  if (restored.length === 0) { report("skipped", ["no strong place missing from the dated plan"]); return currentFinal; }
+  const open = (placeId: string, dayNumber: number) => (!context.isPlaceEligibleForDay || context.isPlaceEligibleForDay(placeId, dayNumber)) && openingOnDay(context, placeId, dayNumber) !== null;
+  const nearest = (placeId: string, days: Map<number, string[]>, allowed: (n: number) => boolean) =>
+    [...days.entries()].filter(([n]) => allowed(n) && open(placeId, n)).map(([n, ids]) => ({ n, near: ids.length ? Math.min(...ids.map((id) => legMidMinutes(id, placeId))) : 60 })).sort((a, b) => a.near - b.near || a.n - b.n)[0]?.n;
+  const onClock = budapestDayOnClock(context, lunchAfterLastStop);
+  const wanted = new Set([...currentStops.keys(), ...restored]);
+  type Candidate = { days: Map<number, string[]>; moved: string[]; dropped: string[]; clock: number; label: string };
+  const candidates: Candidate[] = [];
+  for (const assignment of permutations(undatedPlan.days.map((_, i) => i)).slice(0, AREA_MAX_ASSIGNMENTS)) {
+    const days = new Map<number, string[]>(dayNumbers.map((n, i) => [n, undatedPlan.days[assignment[i]].stops.map((s) => s.placeId).filter((id) => wanted.has(id))]));
+    const moved: string[] = [];
+    const dropped: string[] = [];
+    let invalid: string | null = null;
+    // A place closed on its date: to the nearest open date of the trip; a current place that cannot move makes the assignment invalid.
+    for (const [n, ids] of [...days.entries()]) for (const id of [...ids]) {
+      if (open(id, n)) continue;
+      days.set(n, days.get(n)!.filter((x) => x !== id));
+      const to = nearest(id, days, (m) => m !== n);
+      if (to !== undefined) { days.get(to)!.push(id); moved.push(`${id} -> day ${to}`); }
+      else if (currentStops.has(id)) invalid = `${id} open on no date of the trip`;
+      else dropped.push(id);
+    }
+    // Current places the undated plan does not have (a timetabled or dated place, e.g. the cruise): on the nearest date where open.
+    for (const id of currentStops.keys()) {
+      if ([...days.values()].some((ids) => ids.includes(id))) continue;
+      const to = nearest(id, days, () => true);
+      if (to === undefined) { invalid = `${id} open on no date of the trip`; break; }
+      days.get(to)!.push(id);
+    }
+    const label = dayNumbers.map((n) => `day ${n}: ${days.get(n)!.join(", ")}`).join(" | ");
+    if (invalid) { report("rejected", [invalid], { assignment: label }); continue; }
+    let clock = 0;
+    for (const [n, ids] of days) {
+      const day = currentFinal.plan.days.find((d) => d.dayNumber === n)!;
+      const stops = ids.map((id) => currentStops.get(id) ?? undatedStops.get(id)!);
+      const evening = ids.filter((id) => isEveningPlace(id));
+      if (ids.length < 2 || ids.length - evening.length > 6) { invalid = `day ${n}: ${ids.length} places`; break; }
+      const outside = new Set(stops.filter((s) => s.visitMode === "outside").map((s) => s.placeId));
+      const month = context.monthForDayNumber?.(n) ?? null;
+      // Every order of the day on the clock (the listed order included), evening places last; the cheapest one that fits the hours.
+      const asListed = [...ids.filter((id) => !isEveningPlace(id)), ...evening];
+      const options = [asListed, ...clockOrderProposals({ ...day, stops }, context, onClock, asListed, -Infinity, 1, Infinity)]
+        .map((order) => ({ order, clock: onClock(order, n, outside) }))
+        .filter((o) => o.clock.failing.length === 0)
+        .map((o) => ({ order: o.order, cost: dayClockQuality(o.clock, month).cost }))
+        .sort((a, b) => a.cost - b.cost);
+      if (!options.length) { invalid = `day ${n}: no order fits the hours on the clock`; break; }
+      days.set(n, options[0].order);
+      clock += options[0].cost;
+    }
+    if (invalid) { report("rejected", [invalid], { assignment: label }); continue; }
+    candidates.push({ days, moved, dropped, clock, label });
+  }
+  candidates.sort((a, b) => a.clock - b.clock);
+  for (const cand of candidates.slice(AREA_MAX_BUILT)) report("skipped", [`not built: ${AREA_MAX_BUILT} candidates with a better clock estimate`], { assignment: cand.label, clock: cand.clock });
+  const baseJudged = judgeAll(currentFinal.data);
+  const baseIdle = [...baseJudged.values()].reduce((s, j) => s + j.q.idle, 0);
+  let best: { reviewed: Reviewed; cost: number } | null = null;
+  for (const cand of candidates.slice(0, AREA_MAX_BUILT)) {
+    const changes = new Map([...cand.days].map(([n, ids]) => [n, ids.map((id) => currentStops.get(id) ?? undatedStops.get(id)!)]));
+    const trial = withDayStops(currentFinal.plan, changes);
+    const built: Reviewed = { ...trial, data: build(trial.plan, trial.legsByDay) };
+    const reviewed = reviewDayOrders(built, context, build, lunchAfterLastStop, new Set<number>(), rules);
+    const judged = judgeAll(reviewed.data);
+    const reasons: string[] = [];
+    const ids = new Set(reviewed.plan.days.flatMap((d) => d.stops.map((s) => s.placeId)));
+    for (const id of currentStops.keys()) if (!ids.has(id)) reasons.push(`current place lost: ${id}`);
+    const back = restored.filter((id) => ids.has(id));
+    if (back.length === 0) reasons.push("no place restored");
+    for (const [n, j] of judged) {
+      const b = baseJudged.get(n)!;
+      if (j.problems > 0) reasons.push(`day ${n}: schedule problem`);
+      if (losesRestaurant(b, j)) reasons.push(`day ${n}: restaurant lunch lost (${b.q.lunch} -> lunch break)`);
+      if (j.q.travel > AREA_DAY_TRAVEL_CEILING && j.q.travel > b.q.travel) reasons.push(`day ${n}: travel ${j.q.travel} (above ${AREA_DAY_TRAVEL_CEILING} and above ${b.q.travel} now)`);
+      if (j.q.longestWait >= LOST_TIME_MINUTES && j.q.longestWait > b.q.longestWait) reasons.push(`day ${n}: new wait of ${j.q.longestWait} min`);
+      if (j.q.visits > AREA_DAY_VISITS_CEILING && j.q.visits > b.q.visits) reasons.push(`day ${n}: ${j.q.visits} min of visits (above ${AREA_DAY_VISITS_CEILING})`);
+    }
+    const shareBefore = tripShare(baseJudged);
+    const shareAfter = tripShare(judged);
+    if (shareAfter - shareBefore > AREA_TRIP_SHARE_POINTS) reasons.push(`trip travel share ${shareBefore.toFixed(1)}% -> ${shareAfter.toFixed(1)}%`);
+    const idle = [...judged.values()].reduce((s, j) => s + j.q.idle, 0);
+    if (idle > baseIdle + AREA_TRIP_IDLE_MORE_AT_MOST) reasons.push(`trip idle ${baseIdle} -> ${idle}`);
+    const cost = [...judged.values()].reduce((s, j) => s + j.q.cost, 0);
+    report(reasons.length ? "rejected" : "accepted", reasons, {
+      assignment: cand.label, moved: cand.moved, dropped: cand.dropped, restored: back,
+      days: Object.fromEntries([...judged].map(([n, j]) => [n, { before: { ...brief(baseJudged.get(n)!), visits: baseJudged.get(n)!.q.visits }, after: { ...brief(j), visits: j.q.visits } }])),
+      trip: { shareBefore: +shareBefore.toFixed(1), shareAfter: +shareAfter.toFixed(1), idleBefore: baseIdle, idleAfter: idle },
+    });
+    if (reasons.length === 0 && (!best || cost < best.cost)) best = { reviewed, cost };
+  }
+  if (!best) report("kept", ["the current dated plan stays"]);
+  return best ? best.reviewed : currentFinal;
+}
+
+type ReviewInput = Parameters<NonNullable<CityPlannerModule["reviewResolvedPlan"]>>[0];
 /** Budapest's review on the final schedule (CityPlannerModule.reviewResolvedPlan): stage 1 orders, then stage 2 moves between days. */
-export function budapestReviewResolvedPlan(
-  input: Parameters<NonNullable<CityPlannerModule["reviewResolvedPlan"]>>[0],
-  options: BudapestQualityOptions = BUDAPEST_QUALITY_DEFAULTS
-): Reviewed {
+export function budapestReviewResolvedPlan(input: ReviewInput, options: BudapestQualityOptions = BUDAPEST_QUALITY_DEFAULTS): Reviewed {
+  const travel = options.travelRule ?? "A";
+  const meals = options.mealCheck ?? "tolerance";
+  // Pass 1 is always rule A (+15). B / C only EXTEND it: a second pass on the days that still have lost time, with the larger allowance
+  // (and the trip travel share), so they can never accept less than A. Bounded: pass 1 at most 6 + 12 rebuilds, pass 2 the same again.
+  const rulesA: ReviewRules = { travel: "A", meals, report: options.report };
+  const rulesX: ReviewRules = { travel, meals, report: options.report && ((e) => options.report!({ ...e, reasons: e.reasons, detail: { ...e.detail, pass: `extension ${travel}` } })) };
   const locked = new Set<number>(input.accommodationAnchored ? [1] : []);
   let reviewed: Reviewed = { plan: input.plan, legsByDay: input.legsByDay, data: input.data };
-  if (options.clockOrder) reviewed = reviewDayOrders(reviewed, input.context, input.build, options.lunchAfterLastStop, locked);
+  if (options.clockOrder) reviewed = reviewDayOrders(reviewed, input.context, input.build, options.lunchAfterLastStop, locked, rulesA);
   if (options.crossDay) {
-    reviewed = reviewDayMoves(reviewed, input.context, input.build, options.lunchAfterLastStop, locked);
+    reviewed = reviewDayMoves(reviewed, input.context, input.build, options.lunchAfterLastStop, locked, rulesA);
   }
+  if (travel !== "A") {
+    if (options.clockOrder) reviewed = reviewDayOrders(reviewed, input.context, input.build, options.lunchAfterLastStop, locked, rulesX, true);
+    if (options.crossDay) reviewed = reviewDayMoves(reviewed, input.context, input.build, options.lunchAfterLastStop, locked, rulesX);
+  }
+  const rules = rulesX;
+  if (options.datedAreas) reviewed = reviewDatedAreas(reviewed, input, rules, options.lunchAfterLastStop);
   return reviewed;
 }
 
@@ -939,5 +1221,11 @@ export const BUDAPEST_CITY_MODULE: CityPlannerModule = {
 
 /** TEST-ONLY: the Budapest module with some round-1 switches off, to measure each change alone (review tools; never registered). */
 export function budapestModuleWith(options: BudapestQualityOptions): CityPlannerModule {
-  return { ...BUDAPEST_CITY_MODULE, mealStops: budapestMealRules(options), repairDayGeography: (context) => budapestRepairDayGeography(context, options), reviewResolvedPlan: (input) => budapestReviewResolvedPlan(input, options) };
+  return {
+    ...BUDAPEST_CITY_MODULE,
+    mealStops: budapestMealRules(options),
+    repairDayGeography: (context) => budapestRepairDayGeography(context, options),
+    reviewResolvedPlan: (input) => budapestReviewResolvedPlan(input, options),
+    ...(options.datedAreas ? { undatedCandidates: true } : {}),
+  };
 }

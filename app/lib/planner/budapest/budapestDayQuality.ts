@@ -7,7 +7,10 @@ import type { V2Day } from "../barcelonaV2Resolve";
  * - morningGap: from 09:00 to the first visit. Idle moved into the morning is idle, never a saving.
  * - waits: between consecutive items (visits and lunch), beyond the shown transfer and the shared 15-minute margin; never before the
  *   optional dinner (evening rest).
- * - travel: every transfer of the day, meal transfers included (a lunch break taken where a visit ends has none).
+ * - travel: every KNOWN transfer of the day, meal transfers included. Split: stopTravel (between visits; a lunch break has no point,
+ *   so the route around it counts here) and mealTravel (to and from a named restaurant). A lunch break says nothing about how far the
+ *   food is: foodAccessUnknown marks it, and that day's travel is a lower bound (no distance is invented).
+ * - longestWait: the longest single wait (same definition as waits).
  * - lateLunchMinutes: how far lunch starts after 13:30.
  * - afterDarkEstimate: minutes that the LISTED daylight places (an open park, a castle seen from outside) run after an ESTIMATED sunset:
  *   a monthly table (mid-month local time, rounded), not a calculation for the date and coordinates. The project has no such calculation.
@@ -26,6 +29,10 @@ export type FinalDayQuality = {
   idle: number;
   visits: number;
   travel: number;
+  stopTravel: number;
+  mealTravel: number;
+  foodAccessUnknown: boolean;
+  longestWait: number;
   lunch: string;
   lunchStart: number | null;
   lunchEnd: number | null;
@@ -47,6 +54,8 @@ export function finalDayQuality(day: V2Day): FinalDayQuality {
   ].sort((a, b) => a.start - b.start);
   let waits = 0;
   let travel = 0;
+  let stopTravel = 0;
+  let longestWait = 0;
   for (let j = 1; j < items.length; j++) {
     const a = items[j - 1];
     const b = items[j];
@@ -57,7 +66,10 @@ export function finalDayQuality(day: V2Day): FinalDayQuality {
       minutes = option ? Math.round((option.durationMinutesMin + option.durationMinutesMax) / 2) : 0;
     }
     travel += minutes;
-    if (b.kind !== "dinner") waits += Math.max(0, b.start - a.end - minutes - 15);
+    if ((a.kind === "stop" || a.id === "lunch-break") && (b.kind === "stop" || b.id === "lunch-break")) stopTravel += minutes;
+    const wait = b.kind !== "dinner" ? Math.max(0, b.start - a.end - minutes - 15) : 0;
+    waits += wait;
+    longestWait = Math.max(longestWait, wait);
   }
   const first = timeline?.stops[0]?.startMinutes ?? DAY_REFERENCE_START;
   const morningGap = Math.max(0, first - DAY_REFERENCE_START);
@@ -74,6 +86,10 @@ export function finalDayQuality(day: V2Day): FinalDayQuality {
     idle: morningGap + waits,
     visits: day.stops.reduce((sum, s) => sum + s.visitDurationMinutes, 0),
     travel,
+    stopTravel,
+    mealTravel: travel - stopTravel,
+    foodAccessUnknown: !!lunch && lunch.placeId === "lunch-break",
+    longestWait,
     lunch: lunch ? (lunch.placeId === "lunch-break" ? "break" : lunch.placeId) : "none",
     lunchStart: lunch?.startMinutes ?? null,
     lunchEnd: lunch?.endMinutes ?? null,

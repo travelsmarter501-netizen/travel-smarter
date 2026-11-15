@@ -7,6 +7,9 @@
 //   ESTIMATED monthly sunset, generation time per plan (median, p90, slowest).
 // Variants: "old" (as ddb1b98: must equal it byte for byte), "lunchRules" (no cafe lunch + lunch after the last visit), "order" (the same
 // lunch rules + each day's order accepted on the final schedule), "all" (+ moves between days). Optional 3rd argument: variants to run.
+// Round 3 (test-only rules, 8e8a309 = "A"): "A" (= all), "Am" (A + explicit meal checks), "B" / "C" (travel rule B / C + explicit meals),
+// "Ba" / "Ca" (+ areas by date). Each variant also writes <name>-times.json (ms per plan) and <name>-review-log.json (every review
+// decision with its reasons). Repeat runs for timings: one process per variant and run.
 // Usage: ROOT=$(pwd -W) NODE_OPTIONS=--conditions=react-server npx tsx docs/budapest/tools/bud-quality.mts <sample|launch> <outDir>
 //   sample = the 53-plan review sample (bud-sample.mts inputs); launch = 9 interest sets x 1-4 days x 3 date cases (108 plans).
 import { mkdirSync, writeFileSync } from "fs";
@@ -45,21 +48,34 @@ const VARIANTS: Record<string, any> = {
   lunchRules: { cafeLunch: false, lunchAfterLastStop: true, clockOrder: false, crossDay: false },
   order: { cafeLunch: false, lunchAfterLastStop: true, clockOrder: true, crossDay: false },
   all: M.BUDAPEST_QUALITY_DEFAULTS,
+  A: M.BUDAPEST_QUALITY_DEFAULTS,
+  Am: { ...M.BUDAPEST_QUALITY_DEFAULTS, mealCheck: "explicit" },
+  B: { ...M.BUDAPEST_QUALITY_DEFAULTS, travelRule: "B", mealCheck: "explicit" },
+  C: { ...M.BUDAPEST_QUALITY_DEFAULTS, travelRule: "C", mealCheck: "explicit" },
+  Ba: { ...M.BUDAPEST_QUALITY_DEFAULTS, travelRule: "B", mealCheck: "explicit", datedAreas: true },
+  Ca: { ...M.BUDAPEST_QUALITY_DEFAULTS, travelRule: "C", mealCheck: "explicit", datedAreas: true },
 };
+const ROUND3 = new Set(["A", "Am", "B", "C", "Ba", "Ca"]);
 const only = process.argv[4] ? new Set(process.argv[4].split(",")) : null;
 const summary: any = {};
 for (const [name, options] of Object.entries(VARIANTS)) {
-  if (only && !only.has(name)) continue;
-  const city = M.budapestModuleWith(options);
+  if (only ? !only.has(name) : ROUND3.has(name)) continue;
+  let sink: any[] = [];
+  const log: any[] = [];
+  const city = M.budapestModuleWith(ROUND3.has(name) ? { ...options, report: (e: any) => sink.push(e) } : options);
   const out: any[] = [];
   const times: number[] = [];
   for (const c of cases) {
     const t0 = performance.now();
+    sink = [];
     const r: any = await P.generateCityPlanV2(city, c.input);
     times.push(performance.now() - t0);
+    if (sink.length) log.push({ id: c.id, entries: sink });
     out.push(r.ok ? { id: c.id, c: c.input, plan: r.data, ms: Math.round(times[times.length - 1]) } : { id: c.id, c: c.input, error: r.error });
   }
   writeFileSync(`${outDir}/${name}.json`, JSON.stringify(out.map(({ ms, ...rest }) => rest)));
+  writeFileSync(`${outDir}/${name}-times.json`, JSON.stringify(out.map((x) => ({ id: x.id, ms: x.ms }))));
+  if (ROUND3.has(name)) writeFileSync(`${outDir}/${name}-review-log.json`, JSON.stringify(log));
   const days = out.flatMap((x) => (x.plan ? x.plan.days.map((d: any) => ({ id: x.id, day: d.dayNumber, date: d.actualDate ?? null, weekday: d.weekday ?? null, ...dayMetrics(d) })) : []));
   const sum = (k: string) => days.reduce((s, d: any) => s + (typeof d[k] === "number" ? d[k] : 0), 0);
   const sorted = [...times].sort((a, b) => a - b);

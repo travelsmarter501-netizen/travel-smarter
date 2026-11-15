@@ -477,7 +477,15 @@ let { plan: optimizedPlan, legsByDay: optimizedLegsByDay } = applyCrossDayOptimi
     // current one included, is the schedule the customer would get: built (restaurants, meal lengths, every transfer) AND passed
     // through the timing guard. What it returns is returned as is. Unset: nothing changes.
     if (city.reviewResolvedPlan && repairContext) {
-      const reviewed = city.reviewResolvedPlan({ context: repairContext, plan: optimizedPlan, legsByDay: optimizedLegsByDay, data: finalize(optimizedPlan, optimizedLegsByDay, data), build: (plan, legsByDay) => finalize(plan, legsByDay, build(plan, legsByDay)), accommodationAnchored: !!accommodation?.coordinates });
+      // Opt-in (city.undatedCandidates): the same request without dates, planned once as a source of candidates. The inner run has the
+      // switch off and its own review skipped, so it can never start another one.
+      let undatedPlan: typeof optimizedPlan | undefined;
+      if (baseCity.undatedCandidates && arrivalDateForResolution && days <= 4) {
+        const inner: CityPlannerModule = { ...baseCity, undatedCandidates: false, reviewResolvedPlan: (inp) => { undatedPlan = inp.plan; return { plan: inp.plan, legsByDay: inp.legsByDay, data: inp.data }; } };
+        await generateCityPlanV2(inner, { ...input, dateMode: "flexible", durationDays: days, arrivalDate: undefined, departureDate: undefined });
+      }
+      const relevance = city.placeRelevance?.(v2Interests, surpriseMe);
+      const reviewed = city.reviewResolvedPlan({ context: repairContext, plan: optimizedPlan, legsByDay: optimizedLegsByDay, data: finalize(optimizedPlan, optimizedLegsByDay, data), build: (plan, legsByDay) => finalize(plan, legsByDay, build(plan, legsByDay)), accommodationAnchored: !!accommodation?.coordinates, ...(undatedPlan ? { undatedPlan } : {}), ...(relevance ? { relevance } : {}) });
       return { ok: true, data: reviewed.data };
     }
     data = finalize(optimizedPlan, optimizedLegsByDay, data);

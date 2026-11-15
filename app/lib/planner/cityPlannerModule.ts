@@ -212,7 +212,16 @@ export type CityPlannerModule = {
     data: V2Plan;
     build: (plan: GeneratedPlannerPlan, legsByDay: PlannerRouteLeg[][]) => V2Plan;
     accommodationAnchored: boolean;
+    /** With `undatedCandidates` on a dated request: the same request planned without dates (a source of candidates, not a replacement). */
+    undatedPlan?: GeneratedPlannerPlan;
+    /** This request's place relevance (0-10), when the city has `placeRelevance`. */
+    relevance?: (placeId: string) => number;
   }) => { plan: GeneratedPlannerPlan; legsByDay: PlannerRouteLeg[][]; data: V2Plan };
+  /**
+   * Optional, with reviewResolvedPlan (Budapest test-only experiments): on a dated request of up to 4 days the pipeline also plans the
+   * same request without dates ONCE (that inner run never does this again) and passes its plan as `undatedPlan`. Unset = never.
+   */
+  undatedCandidates?: boolean;
   /** Shown when the content cannot fill every requested day (keeps the existing Barcelona wording for Barcelona). */
   capacityWarning: (daysGenerated: number) => string;
   /** Optional: the short "outside only" visit of a paid place (minutes, and the outside access hours when the outside closes). */
