@@ -1,6 +1,7 @@
 "use client";
 
 import { PlanDisplayProvider } from "../smart-planner/planDisplay";
+import { tripDateMessages } from "../../lib/planner/tripLengthLimits";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { customizeSavedPlan } from "../../smart-planner/barcelona-v2/saved/[id]/actions";
@@ -264,6 +265,13 @@ export default function SmartPlannerV2Result({
           {plan.densityWarning}
         </p>
       )}
+
+      {(() => {
+        // A plan without dates does not check holiday closures; destinations with a temporary date scope say so (Budapest only today).
+        const undated = !plan.days.some((day) => day.actualDate);
+        const note = undated ? tripDateMessages(plan.destination, language)?.undatedNote : undefined;
+        return note ? <p className="mt-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-medium leading-5 text-slate-600">{note}</p> : null;
+      })()}
 
       {(onEditSelections || onRegenerate) && (
         <div className="mt-3 flex flex-wrap items-center gap-2">

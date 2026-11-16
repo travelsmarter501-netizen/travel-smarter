@@ -2,7 +2,7 @@ import { V2_PLANNER_INTERESTS } from "./v2PlannerTypes";
 import type { V2PlannerInterest } from "./v2PlannerTypes";
 import { parseIsoDate, inclusiveDayCount } from "./dateOnly";
 import { isAvailablePlannerDestinationId } from "./plannerDestinations";
-import { tripLengthLimit } from "./tripLengthLimits";
+import { tripLengthLimit, unavailableTripDates } from "./tripLengthLimits";
 import { PRODUCT_SLUGS } from "../commerce/catalog";
 
 /**
@@ -85,6 +85,8 @@ export function normalizePersonalizedAnswers(rawAnswers: unknown, rawDestination
     if (!parseIsoDate(arrivalDate) || !parseIsoDate(departureDate)) return fail;
     const count = inclusiveDayCount(arrivalDate, departureDate);
     if (count === null || count < 1 || count > MAX_PERSONALIZED_PLAN_DAYS) return fail;
+    // Temporary launch scope by date (tripLengthLimits.ts; Budapest's 2026/27 year-end holidays): refused here, before any order or plan.
+    if (unavailableTripDates(rawDestinationId, arrivalDate, departureDate)) return fail;
     days = count;
     dates.arrivalDate = arrivalDate;
     dates.departureDate = departureDate;

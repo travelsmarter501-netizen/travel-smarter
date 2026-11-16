@@ -204,6 +204,37 @@ if (localizePlan) {
   check("warnings: no booking condition (Opera, cruise, House of Music)", warnings.length === 3 && warnings.every((t: string) => !/مشروطة بالحجز|محجوز/.test(t)), warnings.join(" | "));
 }
 
+// Temporary launch scope by date (owner, 2026-11-16): Budapest dated trips touching 24-26 Dec 2026, 31 Dec 2026 or 1 Jan 2027 are refused,
+// in the shared function and in the server check, before any order or plan; other years, other cities and undated plans are not.
+{
+  const { unavailableTripDates, tripDateMessages } = await import(pathToFileURL(R + "lib/planner/tripLengthLimits.ts").href);
+  const dateCases: [string, string, string, string, boolean][] = [
+    ["ends the day before", "budapest", "2026-12-20", "2026-12-23", false],
+    ["starts before, runs into 24 Dec", "budapest", "2026-12-21", "2026-12-24", true],
+    ["23-26 Dec", "budapest", "2026-12-23", "2026-12-26", true],
+    ["24 Dec only", "budapest", "2026-12-24", "2026-12-24", true],
+    ["26-27 Dec (first day blocked)", "budapest", "2026-12-26", "2026-12-27", true],
+    ["27-30 Dec (between the two windows)", "budapest", "2026-12-27", "2026-12-30", false],
+    ["28-31 Dec (runs into 31 Dec)", "budapest", "2026-12-28", "2026-12-31", true],
+    ["30 Dec-1 Jan", "budapest", "2026-12-30", "2027-01-01", true],
+    ["1-2 Jan 2027", "budapest", "2027-01-01", "2027-01-02", true],
+    ["starts the day after", "budapest", "2027-01-02", "2027-01-05", false],
+    ["24-26 Dec 2027 (other year, not generalised)", "budapest", "2027-12-24", "2027-12-26", false],
+    ["24-26 Dec 2025 (other year)", "budapest", "2025-12-24", "2025-12-26", false],
+    ["Prague 24-26 Dec 2026", "prague", "2026-12-24", "2026-12-26", false],
+    ["Barcelona 30 Dec 2026-1 Jan 2027", "barcelona", "2026-12-30", "2027-01-01", false],
+  ];
+  for (const [name, city, a, d, blocked] of dateCases) {
+    check(`date scope (function) ${name}`, !!unavailableTripDates(city, a, d) === blocked, JSON.stringify(unavailableTripDates(city, a, d)));
+    const interests = city === "budapest" ? ["food"] : ["popular"];
+    const r = normalizePersonalizedAnswers({ dateMode: "specific", arrivalDate: a, departureDate: d, interests, surpriseMe: false, accommodation: { booked: false } }, city);
+    check(`date scope (server) ${name}`, r.ok === !blocked, `ok=${r.ok}`);
+  }
+  check("date scope (server) Budapest flexible 3 days accepted", normalizePersonalizedAnswers({ dateMode: "flexible", durationDays: 3, interests: ["food"], surpriseMe: false, accommodation: { booked: false } }, "budapest").ok === true);
+  check("date scope message (ar) is the owner's wording", tripDateMessages("budapest", "ar")?.unavailable === "خطط بودابست مش متاحة حاليًا لهالتواريخ بسبب تغيّر مواعيد الأماكن بالأعياد. اختار تواريخ ثانية أو مدينة ثانية.");
+  check("undated note exists for Budapest only", !!tripDateMessages("budapest", "en")?.undatedNote && tripDateMessages("prague", "ar") === null && tripDateMessages("barcelona", "ar") === null);
+}
+
 // The generated holiday plans, in the shape the other review tools read ([{ id, plan }]).
 if (process.argv[2]) writeFileSync(process.argv[2], JSON.stringify(plans.filter((p) => p.plan).map((p) => ({ id: p.id, c: p.input, plan: p.plan }))));
 console.log(log.join("\n"));

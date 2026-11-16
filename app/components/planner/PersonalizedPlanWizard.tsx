@@ -17,7 +17,7 @@ import { PLAN_PRICE_ILS } from "../home/homeOffer";
 import type { V2PlannerInterest } from "../../lib/planner/v2PlannerTypes";
 import { PLANNER_DESTINATIONS, DEFAULT_PLANNER_DESTINATION_ID, interestGroupLabelForDestination, isAvailablePlannerDestinationId, isPreviewPlannerDestinationId, plannerDestinationName } from "../../lib/planner/plannerDestinations";
 import { MAX_ACCOMMODATION_TEXT_LENGTH, MAX_PERSONALIZED_PLAN_DAYS } from "../../lib/planner/personalizedPlanAnswers";
-import { tripLengthLimit } from "../../lib/planner/tripLengthLimits";
+import { tripDateMessages, tripLengthLimit, unavailableTripDates } from "../../lib/planner/tripLengthLimits";
 
 type DateMode = "flexible" | "specific";
 
@@ -116,10 +116,15 @@ export default function PersonalizedPlanWizard({
     return fillCopy(template, { days: daysPhrase(lengthLimit.maxDays) });
   })();
 
+  // Temporary launch scope by date (same function as the server): dated trips touching those dates are refused with the message; the
+  // dates are never changed for the visitor. Undated plans get a short note instead.
+  const dateMessages = tripDateMessages(destinationId, language);
+  const datesUnavailable = dateMode === "specific" && !!arrivalDate && !!departureDate && !dateRangeError && !!unavailableTripDates(destinationId, arrivalDate, departureDate);
+
   const accommodationTextRequired = accommodationStatus === "hotel" || accommodationStatus === "apartment";
   const stepValid: Record<Step, boolean> = {
     1: !!destinationId,
-    2: (dateMode === "flexible" ? true : !!arrivalDate && !!departureDate && !dateRangeError) && !overLimit,
+    2: (dateMode === "flexible" ? true : !!arrivalDate && !!departureDate && !dateRangeError) && !overLimit && !datesUnavailable,
     3: (interests.length >= 1 || surpriseMe) && !overLimit,
     4: accommodationStatus !== null && (!accommodationTextRequired || accommodationText.trim().length > 0),
   };
@@ -163,6 +168,26 @@ export default function PersonalizedPlanWizard({
   }
 
   if (creating) return <PlanGeneratingScreen />;
+
+  // Dates this destination does not offer: the message, and (after the dates step, e.g. an edited plan) a way back to the dates.
+  const datesUnavailableBlock =
+    datesUnavailable && dateMessages ? (
+      <div role="alert" className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs font-semibold leading-5 text-amber-900">
+        <p>{dateMessages.unavailable}</p>
+        {step !== 2 && (
+          <button
+            type="button"
+            onClick={() => {
+              quizHaptic();
+              setStep(2);
+            }}
+            className={`mt-2 rounded-full border border-amber-300 bg-white px-3 py-1.5 text-xs font-bold text-amber-900 hover:border-amber-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 ${QUIZ_PRESS}`}
+          >
+            {wizard.limitChangeDates}
+          </button>
+        )}
+      </div>
+    ) : null;
 
   // The reason and the options, on the step where the answer stopped fitting (dates, interests) and on the last step (an edited plan).
   const lengthLimitBlock =
@@ -296,6 +321,7 @@ export default function PersonalizedPlanWizard({
               </div>
               {lengthLimit && !overLimit && <p className="mt-2 text-xs text-slate-500">{lengthLimitText}</p>}
               {lengthLimitBlock}
+              {dateMessages && <p className="mt-2 text-xs leading-5 text-slate-500">{dateMessages.undatedNote}</p>}
             </div>
           ) : (
             <div className="mt-3 space-y-2.5">
@@ -333,6 +359,7 @@ export default function PersonalizedPlanWizard({
               )}
               {lengthLimit && !overLimit && <p className="text-xs text-slate-500">{lengthLimitText}</p>}
               {lengthLimitBlock}
+              {datesUnavailableBlock}
             </div>
           )}
         </div>
@@ -357,6 +384,7 @@ export default function PersonalizedPlanWizard({
           }}
         />
         {lengthLimitBlock}
+        {datesUnavailableBlock}
         </div>
       )}
 
@@ -404,6 +432,7 @@ export default function PersonalizedPlanWizard({
           )}
           {!stepValid[4] && <p className="mt-2 text-xs text-slate-400">{wizard.accommodationHint}</p>}
           {lengthLimitBlock}
+          {datesUnavailableBlock}
         </div>
       )}
 
