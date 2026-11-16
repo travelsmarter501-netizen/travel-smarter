@@ -1,0 +1,248 @@
+PASS limit budapest surprise — got 4, want 4
+PASS limit budapest popular+cultureHistory — got 4, want 4
+PASS limit budapest cultureHistory — got 3, want 3
+PASS limit budapest popular — got 3, want 3
+PASS limit budapest natureViews+beachRelax — got 1, want 1
+PASS limit budapest natureViews — got 1, want 1
+PASS limit budapest beachRelax — got 1, want 1
+PASS limit budapest natureViews+beachRelax+food — got 4, want 4
+PASS limit budapest food — got 4, want 4
+PASS limit budapest shopping — got 4, want 4
+PASS limit budapest footballExperiences+nightlife — got 4, want 4
+PASS limit prague cultureHistory — got none, want none
+PASS limit prague natureViews+beachRelax — got none, want none
+PASS limit barcelona popular — got none, want none
+PASS limit barcelona surprise — got none, want none
+PASS server budapest flexible 4 days, mixed — ok=true, want true
+PASS server budapest flexible 5 days, mixed — ok=false, want false
+PASS server budapest flexible 10 days, food — ok=false, want false
+PASS server budapest surprise 4 — ok=true, want true
+PASS server budapest surprise 5 — ok=false, want false
+PASS server budapest culture only 3 — ok=true, want true
+PASS server budapest culture only 4 — ok=false, want false
+PASS server budapest popular only 3 — ok=true, want true
+PASS server budapest popular only 4 — ok=false, want false
+PASS server budapest nature only 1 — ok=true, want true
+PASS server budapest nature only 2 — ok=false, want false
+PASS server budapest nature + food 4 — ok=true, want true
+PASS server budapest dated 4 days (1-4 Dec) — ok=true, want true
+PASS server budapest dated 5 days (1-5 Dec) — ok=false, want false
+PASS server budapest dated culture only 3 days — ok=true, want true
+PASS server budapest dated culture only 4 days — ok=false, want false
+PASS server budapest dated nature only 1 day — ok=true, want true
+PASS server budapest dated nature only 2 days — ok=false, want false
+PASS server prague flexible 10, culture only — ok=true, want true
+PASS server prague dated 10 days, nature only — ok=true, want true
+PASS server barcelona flexible 10, popular only — ok=true, want true
+PASS server barcelona flexible 11 (general limit) — ok=false, want false
+PASS culture 24-26 Dec 2026: generated
+PASS culture 24-26 Dec 2026: hungarian-national-museum not on the clock on an unconfirmed date — []
+PASS culture 24-26 Dec 2026: museum not on an official closed date — []
+PASS culture 24-26 Dec 2026: hungarian-national-museum conditional suggestion not offered (relevance 9/5, on clock 0, other suggestion 0) — []
+PASS culture 24-26 Dec 2026: hungarian-national-gallery not on the clock on an unconfirmed date — []
+PASS culture 24-26 Dec 2026: hungarian-national-gallery conditional suggestion offered (relevance 9/5, on clock 0, other suggestion 0) — [{"day":1,"reason":"اختياري: مواعيد العطلة لهاليوم مش مؤكدة. تأكّد من الموقع الرسمي قبل ما تروح."}]
+PASS culture 24-26 Dec 2026: opera-house-tour not on the clock on an unconfirmed date — []
+PASS culture 24-26 Dec 2026: opera-house-tour conditional suggestion offered (relevance 8/5, on clock 0, other suggestion 0) — [{"day":3,"reason":"اختياري: مواعيد العطلة لهاليوم مش مؤكدة. تأكّد من الموقع الرسمي قبل ما تروح."}]
+PASS culture 24-26 Dec 2026: house-of-music not on the clock on an unconfirmed date — []
+PASS culture 24-26 Dec 2026: house-of-music conditional suggestion offered (relevance 7/5, on clock 0, other suggestion 0) — [{"day":3,"reason":"اختياري: مواعيد العطلة لهاليوم مش مؤكدة. تأكّد من الموقع الرسمي قبل ما تروح."}]
+PASS culture 25-27 Dec 2026: generated
+PASS culture 25-27 Dec 2026: hungarian-national-museum not on the clock on an unconfirmed date — []
+PASS culture 25-27 Dec 2026: museum not on an official closed date — []
+PASS culture 25-27 Dec 2026: hungarian-national-museum conditional suggestion not offered (relevance 9/5, on clock 0, other suggestion 0) — []
+PASS culture 25-27 Dec 2026: hungarian-national-gallery not on the clock on an unconfirmed date — ["2026-12-27"]
+PASS culture 25-27 Dec 2026: hungarian-national-gallery conditional suggestion not offered (relevance 9/5, on clock 1, other suggestion 0) — []
+PASS culture 25-27 Dec 2026: opera-house-tour not on the clock on an unconfirmed date — []
+PASS culture 25-27 Dec 2026: opera-house-tour conditional suggestion offered (relevance 8/5, on clock 0, other suggestion 0) — [{"day":2,"reason":"اختياري: مواعيد العطلة لهاليوم مش مؤكدة. تأكّد من الموقع الرسمي قبل ما تروح."}]
+PASS culture 25-27 Dec 2026: house-of-music not on the clock on an unconfirmed date — []
+PASS culture 25-27 Dec 2026: house-of-music conditional suggestion offered (relevance 7/5, on clock 0, other suggestion 0) — [{"day":2,"reason":"اختياري: مواعيد العطلة لهاليوم مش مؤكدة. تأكّد من الموقع الرسمي قبل ما تروح."}]
+PASS culture 30 Dec 2026-1 Jan 2027: generated
+PASS culture 30 Dec 2026-1 Jan 2027: hungarian-national-museum not on the clock on an unconfirmed date — []
+PASS culture 30 Dec 2026-1 Jan 2027: museum not on an official closed date — []
+PASS culture 30 Dec 2026-1 Jan 2027: hungarian-national-museum conditional suggestion not offered (relevance 9/5, on clock 0, other suggestion 0) — []
+PASS culture 30 Dec 2026-1 Jan 2027: hungarian-national-gallery not on the clock on an unconfirmed date — []
+PASS culture 30 Dec 2026-1 Jan 2027: hungarian-national-gallery conditional suggestion offered (relevance 9/5, on clock 0, other suggestion 0) — [{"day":3,"reason":"اختياري: مواعيد العطلة لهاليوم مش مؤكدة. تأكّد من الموقع الرسمي قبل ما تروح."}]
+PASS culture 30 Dec 2026-1 Jan 2027: opera-house-tour not on the clock on an unconfirmed date — ["2026-12-30"]
+PASS culture 30 Dec 2026-1 Jan 2027: opera-house-tour conditional suggestion not offered (relevance 8/5, on clock 1, other suggestion 0) — []
+PASS culture 30 Dec 2026-1 Jan 2027: house-of-music not on the clock on an unconfirmed date — []
+PASS culture 30 Dec 2026-1 Jan 2027: house-of-music conditional suggestion offered (relevance 7/5, on clock 0, other suggestion 0) — [{"day":3,"reason":"اختياري: مواعيد العطلة لهاليوم مش مؤكدة. تأكّد من الموقع الرسمي قبل ما تروح."}]
+PASS culture 31 Dec 2026: generated
+PASS culture 31 Dec 2026: hungarian-national-museum not on the clock on an unconfirmed date — []
+PASS culture 31 Dec 2026: museum not on an official closed date — []
+PASS culture 31 Dec 2026: hungarian-national-museum conditional suggestion not offered (relevance 9/5, on clock 0, other suggestion 0) — []
+PASS culture 31 Dec 2026: hungarian-national-gallery not on the clock on an unconfirmed date — []
+PASS culture 31 Dec 2026: hungarian-national-gallery conditional suggestion offered (relevance 9/5, on clock 0, other suggestion 0) — [{"day":1,"reason":"اختياري: مواعيد العطلة لهاليوم مش مؤكدة. تأكّد من الموقع الرسمي قبل ما تروح."}]
+PASS culture 31 Dec 2026: opera-house-tour not on the clock on an unconfirmed date — []
+PASS culture 31 Dec 2026: opera-house-tour conditional suggestion offered (relevance 8/5, on clock 0, other suggestion 0) — [{"day":1,"reason":"اختياري: مواعيد العطلة لهاليوم مش مؤكدة. تأكّد من الموقع الرسمي قبل ما تروح."}]
+PASS culture 31 Dec 2026: house-of-music not on the clock on an unconfirmed date — []
+PASS culture 31 Dec 2026: house-of-music conditional suggestion offered (relevance 7/5, on clock 0, other suggestion 0) — [{"day":1,"reason":"اختياري: مواعيد العطلة لهاليوم مش مؤكدة. تأكّد من الموقع الرسمي قبل ما تروح."}]
+PASS mixed 23-26 Dec 2026: generated
+PASS mixed 23-26 Dec 2026: hungarian-national-museum not on the clock on an unconfirmed date — []
+PASS mixed 23-26 Dec 2026: museum not on an official closed date — []
+PASS mixed 23-26 Dec 2026: hungarian-national-museum conditional suggestion not offered (relevance 9/5, on clock 0, other suggestion 0) — []
+PASS mixed 23-26 Dec 2026: hungarian-national-gallery not on the clock on an unconfirmed date — ["2026-12-23"]
+PASS mixed 23-26 Dec 2026: hungarian-national-gallery conditional suggestion not offered (relevance 9/5, on clock 1, other suggestion 0) — []
+PASS mixed 23-26 Dec 2026: opera-house-tour not on the clock on an unconfirmed date — []
+PASS mixed 23-26 Dec 2026: opera-house-tour conditional suggestion offered (relevance 8/5, on clock 0, other suggestion 0) — [{"day":4,"reason":"اختياري: مواعيد العطلة لهاليوم مش مؤكدة. تأكّد من الموقع الرسمي قبل ما تروح."}]
+PASS mixed 23-26 Dec 2026: house-of-music not on the clock on an unconfirmed date — []
+PASS mixed 23-26 Dec 2026: house-of-music conditional suggestion offered (relevance 7/5, on clock 0, other suggestion 0) — [{"day":4,"reason":"اختياري: مواعيد العطلة لهاليوم مش مؤكدة. تأكّد من الموقع الرسمي قبل ما تروح."}]
+PASS culture 27 Dec 2026 (ordinary): generated
+PASS culture 27 Dec 2026 (ordinary): hungarian-national-museum not on the clock on an unconfirmed date — []
+PASS culture 27 Dec 2026 (ordinary): museum not on an official closed date — []
+PASS culture 27 Dec 2026 (ordinary): hungarian-national-museum conditional suggestion not offered (relevance 9/5, on clock 0, other suggestion 0) — []
+PASS culture 27 Dec 2026 (ordinary): hungarian-national-gallery not on the clock on an unconfirmed date — []
+PASS culture 27 Dec 2026 (ordinary): hungarian-national-gallery conditional suggestion not offered (relevance 9/5, on clock 0, other suggestion 0) — []
+PASS culture 27 Dec 2026 (ordinary): opera-house-tour not on the clock on an unconfirmed date — ["2026-12-27"]
+PASS culture 27 Dec 2026 (ordinary): opera-house-tour conditional suggestion not offered (relevance 8/5, on clock 1, other suggestion 0) — []
+PASS culture 27 Dec 2026 (ordinary): house-of-music not on the clock on an unconfirmed date — []
+PASS culture 27 Dec 2026 (ordinary): house-of-music conditional suggestion not offered (relevance 7/5, on clock 0, other suggestion 0) — []
+PASS culture 24-26 Dec 2027: generated
+PASS culture 24-26 Dec 2027: hungarian-national-museum not on the clock on an unconfirmed date — []
+PASS culture 24-26 Dec 2027: museum not on an official closed date — []
+PASS culture 24-26 Dec 2027: hungarian-national-museum conditional suggestion offered (relevance 9/5, on clock 0, other suggestion 0) — [{"day":3,"reason":"اختياري: مواعيد العطلة لهاليوم مش مؤكدة. تأكّد من الموقع الرسمي قبل ما تروح."}]
+PASS culture 24-26 Dec 2027: hungarian-national-gallery not on the clock on an unconfirmed date — []
+PASS culture 24-26 Dec 2027: hungarian-national-gallery conditional suggestion offered (relevance 9/5, on clock 0, other suggestion 0) — [{"day":1,"reason":"اختياري: مواعيد العطلة لهاليوم مش مؤكدة. تأكّد من الموقع الرسمي قبل ما تروح."}]
+PASS culture 24-26 Dec 2027: opera-house-tour not on the clock on an unconfirmed date — []
+PASS culture 24-26 Dec 2027: opera-house-tour conditional suggestion offered (relevance 8/5, on clock 0, other suggestion 0) — [{"day":3,"reason":"اختياري: مواعيد العطلة لهاليوم مش مؤكدة. تأكّد من الموقع الرسمي قبل ما تروح."}]
+PASS culture 24-26 Dec 2027: house-of-music not on the clock on an unconfirmed date — []
+PASS culture 24-26 Dec 2027: house-of-music conditional suggestion offered (relevance 7/5, on clock 0, other suggestion 0) — [{"day":3,"reason":"اختياري: مواعيد العطلة لهاليوم مش مؤكدة. تأكّد من الموقع الرسمي قبل ما تروح."}]
+PASS culture 31 Dec 2027-1 Jan 2028: generated
+PASS culture 31 Dec 2027-1 Jan 2028: hungarian-national-museum not on the clock on an unconfirmed date — []
+PASS culture 31 Dec 2027-1 Jan 2028: museum not on an official closed date — []
+PASS culture 31 Dec 2027-1 Jan 2028: hungarian-national-museum conditional suggestion offered (relevance 9/5, on clock 0, other suggestion 0) — [{"day":2,"reason":"اختياري: مواعيد العطلة لهاليوم مش مؤكدة. تأكّد من الموقع الرسمي قبل ما تروح."}]
+PASS culture 31 Dec 2027-1 Jan 2028: hungarian-national-gallery not on the clock on an unconfirmed date — []
+PASS culture 31 Dec 2027-1 Jan 2028: hungarian-national-gallery conditional suggestion offered (relevance 9/5, on clock 0, other suggestion 0) — [{"day":1,"reason":"اختياري: مواعيد العطلة لهاليوم مش مؤكدة. تأكّد من الموقع الرسمي قبل ما تروح."}]
+PASS culture 31 Dec 2027-1 Jan 2028: opera-house-tour not on the clock on an unconfirmed date — []
+PASS culture 31 Dec 2027-1 Jan 2028: opera-house-tour conditional suggestion offered (relevance 8/5, on clock 0, other suggestion 0) — [{"day":2,"reason":"اختياري: مواعيد العطلة لهاليوم مش مؤكدة. تأكّد من الموقع الرسمي قبل ما تروح."}]
+PASS culture 31 Dec 2027-1 Jan 2028: house-of-music not on the clock on an unconfirmed date — []
+PASS culture 31 Dec 2027-1 Jan 2028: house-of-music conditional suggestion offered (relevance 7/5, on clock 0, other suggestion 0) — [{"day":2,"reason":"اختياري: مواعيد العطلة لهاليوم مش مؤكدة. تأكّد من الموقع الرسمي قبل ما تروح."}]
+PASS culture 25 Dec 2029: generated
+PASS culture 25 Dec 2029: hungarian-national-museum not on the clock on an unconfirmed date — []
+PASS culture 25 Dec 2029: museum not on an official closed date — []
+PASS culture 25 Dec 2029: hungarian-national-museum conditional suggestion offered (relevance 9/5, on clock 0, other suggestion 0) — [{"day":1,"reason":"اختياري: مواعيد العطلة لهاليوم مش مؤكدة. تأكّد من الموقع الرسمي قبل ما تروح."}]
+PASS culture 25 Dec 2029: hungarian-national-gallery not on the clock on an unconfirmed date — []
+PASS culture 25 Dec 2029: hungarian-national-gallery conditional suggestion offered (relevance 9/5, on clock 0, other suggestion 0) — [{"day":1,"reason":"اختياري: مواعيد العطلة لهاليوم مش مؤكدة. تأكّد من الموقع الرسمي قبل ما تروح."}]
+PASS culture 25 Dec 2029: opera-house-tour not on the clock on an unconfirmed date — []
+PASS culture 25 Dec 2029: opera-house-tour conditional suggestion offered (relevance 8/5, on clock 0, other suggestion 0) — [{"day":1,"reason":"اختياري: مواعيد العطلة لهاليوم مش مؤكدة. تأكّد من الموقع الرسمي قبل ما تروح."}]
+PASS culture 25 Dec 2029: house-of-music not on the clock on an unconfirmed date — []
+PASS culture 25 Dec 2029: house-of-music conditional suggestion offered (relevance 7/5, on clock 0, other suggestion 0) — [{"day":1,"reason":"اختياري: مواعيد العطلة لهاليوم مش مؤكدة. تأكّد من الموقع الرسمي قبل ما تروح."}]
+PASS culture 21-23 Dec 2027 (ordinary): generated
+PASS culture 21-23 Dec 2027 (ordinary): hungarian-national-museum not on the clock on an unconfirmed date — []
+PASS culture 21-23 Dec 2027 (ordinary): museum not on an official closed date — []
+PASS culture 21-23 Dec 2027 (ordinary): hungarian-national-museum conditional suggestion not offered (relevance 9/5, on clock 0, other suggestion 0) — []
+PASS culture 21-23 Dec 2027 (ordinary): hungarian-national-gallery not on the clock on an unconfirmed date — ["2027-12-22"]
+PASS culture 21-23 Dec 2027 (ordinary): hungarian-national-gallery conditional suggestion not offered (relevance 9/5, on clock 1, other suggestion 0) — []
+PASS culture 21-23 Dec 2027 (ordinary): opera-house-tour not on the clock on an unconfirmed date — ["2027-12-21"]
+PASS culture 21-23 Dec 2027 (ordinary): opera-house-tour conditional suggestion not offered (relevance 8/5, on clock 1, other suggestion 0) — []
+PASS culture 21-23 Dec 2027 (ordinary): house-of-music not on the clock on an unconfirmed date — ["2027-12-23"]
+PASS culture 21-23 Dec 2027 (ordinary): house-of-music conditional suggestion not offered (relevance 7/5, on clock 1, other suggestion 0) — []
+PASS shopping 24-26 Dec 2027: generated
+PASS shopping 24-26 Dec 2027: hungarian-national-museum not on the clock on an unconfirmed date — []
+PASS shopping 24-26 Dec 2027: museum not on an official closed date — []
+PASS shopping 24-26 Dec 2027: hungarian-national-museum conditional suggestion offered (relevance 5/5, on clock 0, other suggestion 0) — [{"day":3,"reason":"اختياري: مواعيد العطلة لهاليوم مش مؤكدة. تأكّد من الموقع الرسمي قبل ما تروح."}]
+PASS shopping 24-26 Dec 2027: hungarian-national-gallery not on the clock on an unconfirmed date — []
+PASS shopping 24-26 Dec 2027: hungarian-national-gallery conditional suggestion offered (relevance 6/5, on clock 0, other suggestion 0) — [{"day":3,"reason":"اختياري: مواعيد العطلة لهاليوم مش مؤكدة. تأكّد من الموقع الرسمي قبل ما تروح."}]
+PASS shopping 24-26 Dec 2027: opera-house-tour not on the clock on an unconfirmed date — []
+PASS shopping 24-26 Dec 2027: opera-house-tour conditional suggestion offered (relevance 7/5, on clock 0, other suggestion 0) — [{"day":1,"reason":"اختياري: مواعيد العطلة لهاليوم مش مؤكدة. تأكّد من الموقع الرسمي قبل ما تروح."}]
+PASS shopping 24-26 Dec 2027: house-of-music not on the clock on an unconfirmed date — []
+PASS shopping 24-26 Dec 2027: house-of-music conditional suggestion offered (relevance 5/5, on clock 0, other suggestion 0) — [{"day":3,"reason":"اختياري: مواعيد العطلة لهاليوم مش مؤكدة. تأكّد من الموقع الرسمي قبل ما تروح."}]
+PASS nature 25 Dec 2027: generated
+PASS nature 25 Dec 2027: hungarian-national-museum not on the clock on an unconfirmed date — []
+PASS nature 25 Dec 2027: museum not on an official closed date — []
+PASS nature 25 Dec 2027: hungarian-national-museum conditional suggestion not offered (relevance 0/5, on clock 0, other suggestion 0) — []
+PASS nature 25 Dec 2027: hungarian-national-gallery not on the clock on an unconfirmed date — []
+PASS nature 25 Dec 2027: hungarian-national-gallery conditional suggestion not offered (relevance 4/5, on clock 0, other suggestion 0) — []
+PASS nature 25 Dec 2027: opera-house-tour not on the clock on an unconfirmed date — []
+PASS nature 25 Dec 2027: opera-house-tour conditional suggestion not offered (relevance 0/5, on clock 0, other suggestion 0) — []
+PASS nature 25 Dec 2027: house-of-music not on the clock on an unconfirmed date — []
+PASS nature 25 Dec 2027: house-of-music conditional suggestion not offered (relevance 0/5, on clock 0, other suggestion 0) — []
+PASS food 31 Dec 2027-1 Jan 2028: generated
+PASS food 31 Dec 2027-1 Jan 2028: hungarian-national-museum not on the clock on an unconfirmed date — []
+PASS food 31 Dec 2027-1 Jan 2028: museum not on an official closed date — []
+PASS food 31 Dec 2027-1 Jan 2028: hungarian-national-museum conditional suggestion offered (relevance 5/5, on clock 0, other suggestion 0) — [{"day":2,"reason":"اختياري: مواعيد العطلة لهاليوم مش مؤكدة. تأكّد من الموقع الرسمي قبل ما تروح."}]
+PASS food 31 Dec 2027-1 Jan 2028: hungarian-national-gallery not on the clock on an unconfirmed date — []
+PASS food 31 Dec 2027-1 Jan 2028: hungarian-national-gallery conditional suggestion offered (relevance 6/5, on clock 0, other suggestion 0) — [{"day":2,"reason":"اختياري: مواعيد العطلة لهاليوم مش مؤكدة. تأكّد من الموقع الرسمي قبل ما تروح."}]
+PASS food 31 Dec 2027-1 Jan 2028: opera-house-tour not on the clock on an unconfirmed date — []
+PASS food 31 Dec 2027-1 Jan 2028: opera-house-tour conditional suggestion offered (relevance 7/5, on clock 0, other suggestion 0) — [{"day":1,"reason":"اختياري: مواعيد العطلة لهاليوم مش مؤكدة. تأكّد من الموقع الرسمي قبل ما تروح."}]
+PASS food 31 Dec 2027-1 Jan 2028: house-of-music not on the clock on an unconfirmed date — []
+PASS food 31 Dec 2027-1 Jan 2028: house-of-music conditional suggestion offered (relevance 5/5, on clock 0, other suggestion 0) — [{"day":2,"reason":"اختياري: مواعيد العطلة لهاليوم مش مؤكدة. تأكّد من الموقع الرسمي قبل ما تروح."}]
+PASS 21-23 Dec 2027 (ordinary): museums or tours scheduled as usual
+PASS planning hours hungarian-national-museum 2026-12-23 — 10:00-18:00 last 17:00
+PASS planning hours hungarian-national-museum 2026-12-24 — none last 17:00
+PASS planning hours hungarian-national-museum 2026-12-25 — none last 17:00
+PASS planning hours hungarian-national-museum 2026-12-26 — none last 17:00
+PASS planning hours hungarian-national-museum 2026-12-27 — 10:00-18:00 last 17:00
+PASS planning hours hungarian-national-museum 2026-12-28 — none last 17:00
+PASS planning hours hungarian-national-museum 2026-12-29 — 10:00-18:00 last 17:00
+PASS planning hours hungarian-national-museum 2026-12-30 — 10:00-18:00 last 17:00
+PASS planning hours hungarian-national-museum 2026-12-31 — 10:00-14:00 last 13:00
+PASS planning hours hungarian-national-museum 2027-01-01 — none last 17:00
+PASS planning hours hungarian-national-museum 2027-01-02 — 10:00-18:00 last 17:00
+PASS planning hours hungarian-national-museum 2027-12-24 — none last 17:00
+PASS planning hours hungarian-national-museum 2027-12-27 — none last 17:00
+PASS planning hours hungarian-national-museum 2027-12-28 — 10:00-18:00 last 17:00
+PASS planning hours hungarian-national-museum 2027-12-31 — none last 17:00
+PASS planning hours opera-house-tour 2026-12-23 — 13:30-17:30 last 16:30
+PASS planning hours opera-house-tour 2026-12-27 — 13:30-17:30 last 16:30
+PASS planning hours opera-house-tour 2026-12-24 — none last 16:30
+PASS planning hours opera-house-tour 2026-12-31 — none last 16:30
+PASS planning hours opera-house-tour 2027-01-01 — none last 16:30
+PASS planning hours house-of-music 2026-12-23 — 10:15-17:50 last 16:15
+PASS planning hours house-of-music 2026-12-27 — 10:15-17:50 last 16:15
+PASS planning hours house-of-music 2026-12-25 — none last 16:15
+PASS planning hours house-of-music 2026-12-26 — none last 16:15
+PASS planning hours house-of-music 2027-01-01 — none last 16:15
+PASS planning hours hungarian-national-gallery 2026-12-23 — 10:00-17:30 last 17:00
+PASS planning hours hungarian-national-gallery 2026-12-30 — 10:00-17:30 last 17:00
+PASS planning hours hungarian-national-gallery 2026-12-24 — none last 17:00
+PASS planning hours hungarian-national-gallery 2026-12-28 — none last 17:00
+PASS planning hours hungarian-national-gallery 2027-01-01 — none last 17:00
+PASS museum card shows its 2026 holiday text
+PASS gallery card says the year-end hours are not confirmed (no dates stated as fact)
+PASS House of Music card is a text (no weekly table that says open on a holiday)
+PASS title: City Park + Andrássy and the Opera — City Park, Andrássy Avenue and the Opera
+PASS title: Parliament and St Stephen's + Margaret Island — Parliament, St Stephen’s Basilica and Margaret Island
+PASS title: two parts keep & — Castle Hill & Danube bank
+PASS title: Hebrew unchanged — פארק העיר ו־Andrássy והאופרה
+PASS House of Music text translated (en) — {"destination":"budapest","days":[{"dayNumber":1,"title":"Castle Hill","summary":"","stops":[],"legs":[],"optionalNearby":[{"id":"x","name":"x","reason":"Timed entry every 30 minutes, at :15 and :45 p
+PASS label: Budapest nature group (ar)
+PASS label: Budapest nature group (en)
+PASS label: Barcelona keeps the default
+PASS one day, flexible (ar)
+PASS one day, dates (ar)
+PASS one day, flexible (en)
+PASS Opera card line (ar) — الدخول بجولة فقط، حسب المواعيد وتوفّر التذاكر.
+PASS Opera card line (en) — Entry by guided tour only, subject to tour times and ticket availability.
+PASS warnings: no booking condition (Opera, cruise, House of Music) — ⚠️ الجولات بس 13:30 و15:00 و16:30، حسب توفّر التذاكر، والتذاكر بتنزل قبل أسبوع. ما في جولات وقت العروض. | ⚠️ الموعد المنشور مش ضمان مكان، حسب التوفّر. المشروب المشمول ممكن يكون مي أو مشروب غازي. | ⚠️ الدخول بفترات كل نص ساعة (:15 و:45)، وتذاكر الويكند بتخلص بسرعة. خزانة الملابس إلزامية.
+PASS date scope (function) ends the day before — null
+PASS date scope (server) ends the day before — ok=true
+PASS date scope (function) starts before, runs into 24 Dec — ["2026-12-24"]
+PASS date scope (server) starts before, runs into 24 Dec — ok=false
+PASS date scope (function) 23-26 Dec — ["2026-12-24","2026-12-25","2026-12-26"]
+PASS date scope (server) 23-26 Dec — ok=false
+PASS date scope (function) 24 Dec only — ["2026-12-24"]
+PASS date scope (server) 24 Dec only — ok=false
+PASS date scope (function) 26-27 Dec (first day blocked) — ["2026-12-26"]
+PASS date scope (server) 26-27 Dec (first day blocked) — ok=false
+PASS date scope (function) 27-30 Dec (between the two windows) — null
+PASS date scope (server) 27-30 Dec (between the two windows) — ok=true
+PASS date scope (function) 28-31 Dec (runs into 31 Dec) — ["2026-12-31"]
+PASS date scope (server) 28-31 Dec (runs into 31 Dec) — ok=false
+PASS date scope (function) 30 Dec-1 Jan — ["2026-12-31","2027-01-01"]
+PASS date scope (server) 30 Dec-1 Jan — ok=false
+PASS date scope (function) 1-2 Jan 2027 — ["2027-01-01"]
+PASS date scope (server) 1-2 Jan 2027 — ok=false
+PASS date scope (function) starts the day after — null
+PASS date scope (server) starts the day after — ok=true
+PASS date scope (function) 24-26 Dec 2027 (other year, not generalised) — null
+PASS date scope (server) 24-26 Dec 2027 (other year, not generalised) — ok=true
+PASS date scope (function) 24-26 Dec 2025 (other year) — null
+PASS date scope (server) 24-26 Dec 2025 (other year) — ok=true
+PASS date scope (function) Prague 24-26 Dec 2026 — null
+PASS date scope (server) Prague 24-26 Dec 2026 — ok=true
+PASS date scope (function) Barcelona 30 Dec 2026-1 Jan 2027 — null
+PASS date scope (server) Barcelona 30 Dec 2026-1 Jan 2027 — ok=true
+PASS date scope (server) Budapest flexible 3 days accepted
+PASS date scope message (ar) is the owner's wording
+PASS undated note exists for Budapest only
+
+ALL PASS (246 checks)

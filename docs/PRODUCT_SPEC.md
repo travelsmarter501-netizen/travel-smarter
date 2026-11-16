@@ -18,7 +18,7 @@ Paths are relative to the repo root. Prefer function and file names over line nu
 - Price stays **₪39, one-time** (Allpay, ILS).
 - One purchase should give access to **all supported cities**. There is no per-city charge.
 - Customers keep the ability to **create and edit multiple plans**, with the current maximum of **30 saved plans per customer**. Never describe this as unlimited.
-- **Supported destinations: Barcelona and Prague** (Prague public since 2026-11-08). The Barcelona guide is included only when the purchase is for a Barcelona plan.
+- **Supported destinations: Barcelona, Prague and Budapest** (Prague public since 2026-11-08; Budapest from its launch commit, with a limited scope: at most 4 days and no dated trips touching 24–26 Dec 2026, 31 Dec 2026 or 1 Jan 2027, see 2.6c). The Barcelona guide is included only when the purchase is for a Barcelona plan.
 - Target destinations: Barcelona, Rome, Prague, Budapest, Dubai, Batumi, Istanbul, Vienna, Paris, London. These are targets, not a claim of support.
 - A destination stays unavailable until its data, generation, saving, viewing and quality checks are ready.
 - Priority: a simple **mobile-first** experience. A visitor should quickly understand the product, what they receive, the price, and the next step.
@@ -92,8 +92,8 @@ Server-side validation and the stored shape: `app/lib/planner/personalizedPlanAn
 
 | Layer | State |
 |---|---|
-| UI | All ten cities are listed in `app/lib/planner/plannerDestinations.ts`; Barcelona and Prague have `available: true` (public, Prague since 2026-11-08); Vienna stays off in this release |
-| Server | A destination is accepted only if it is enabled (`isAvailablePlannerDestinationId`: `available: true`, or the local-only preview switch below) **and** has an engine module (`app/lib/planner/cityPlannerRegistry.ts`). In production only Barcelona passes |
+| UI | All ten cities are listed in `app/lib/planner/plannerDestinations.ts`; Barcelona, Prague and Budapest have `available: true` (public; Prague since 2026-11-08, Budapest from its launch commit, scope in 2.6c); Vienna stays off in this release |
+| Server | A destination is accepted only if it is enabled (`isAvailablePlannerDestinationId`: `available: true`, or the local-only preview switch below) **and** has an engine module (`app/lib/planner/cityPlannerRegistry.ts`). In production Barcelona, Prague and Budapest pass (Budapest within its trip-length and date scope) |
 | Engine | Multi-city since 2026-11-05 (local, uncommitted): one pipeline (`app/lib/planner/v2CityPipeline.ts`) driven by a per-city `CityPlannerModule` (`cityPlannerModule.ts`). Modules: Barcelona (`barcelonaCityModule.ts`, same data and rules as before; output proven byte-identical on 87 plans) and Prague (`prague/`) |
 | Saving | One planner tag for every city (`product_slug = 'barcelona-smart-planner-v2'`, which the 30-plan cap and edit/delete rules key on) and the city in `destination_slug`, `preferences_json.destinationId` and `generated_plan_json.plan.destination`. Old Barcelona rows are unchanged and still valid. Editing a plan keeps its city. No database change |
 | Database | `personalized_plan_requests.destination_id` accepts any slug by pattern; adding a city needs no schema change |
@@ -119,6 +119,30 @@ The saved-plan URL stays `/smart-planner/barcelona-v2/saved/<id>` for every city
 - 43 sights, 2 booked experiences and 2 shopping streets (47 possible main stops), plus 19 food places; hours and prices from each place's own official site, coordinates from Wikidata / OpenStreetMap; facts not found on an official page are omitted, never assumed (details and exclusions in `docs/PROJECT_PLAN.md`, phase 5c).
 - Transport between stops is a distance-based estimate, labelled as such (same as Prague).
 - No restaurant is marked halal by an official source; Viennese kitchens usually serve pork (shown on the cards). No Middle-Eastern restaurant and no nightlife venue yet.
+
+### 2.6c Budapest (public with a limited launch scope; launch commit on `feature/budapest`, 2026-11-16)
+Public once the launch commit reaches `main` (`available: true`); research and checks in `docs/budapest/`.
+- **Trip length** (questionnaire and server, `app/lib/planner/tripLengthLimits.ts`):
+  - at most 4 days;
+  - culture only or popular only: at most 3;
+  - nature only: 1 day.
+  - The visitor sees the reason and the options; nothing is shortened automatically.
+- **Dates:** dated trips touching **24–26 Dec 2026, 31 Dec 2026 or 1 Jan 2027** are refused, before any order or plan, with the message «خطط بودابست مش متاحة حاليًا لهالتواريخ بسبب تغيّر مواعيد الأماكن بالأعياد. اختار تواريخ ثانية أو مدينة ثانية.».
+  - This is a limit on our readiness, not a claim that places are closed.
+  - Only these dates; other dates are not claimed to be checked.
+  - Plans without dates carry a note that they do not check holiday closures.
+- **Holiday hours in plans:**
+  - the National Museum uses its official 2026 holiday table;
+  - year-end dates whose hours are not confirmed are never on the clock: the National Gallery, the Opera tour and the House of Music from Dec 2026, the National Museum from Dec 2027. They appear as a conditional suggestion when relevant, never called closed.
+  - Other places' holiday hours are not modelled.
+- **Content:**
+  - 33 places a plan can show, 28 with a Commons photo (rights in `docs/budapest/photo-rights.md`), 5 without (deferred);
+  - transport between stops is mostly a distance-based estimate, labelled as such;
+  - no Budapest guide is sold or promised.
+- **Languages:**
+  - Arabic, with English through the plan-view catalog (AI-written, the owner's spot fixes applied);
+  - Hebrew stays off in Production (`releaseScope.ts`; Preview only).
+- **Not done:** a real payment, a live Budapest purchase, or a check on a real phone beyond the owner's one Safari/iPhone test on the Preview.
 
 ### 2.7 Contact
 

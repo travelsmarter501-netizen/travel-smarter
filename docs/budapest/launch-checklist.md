@@ -3,6 +3,11 @@
 Code: `feature/budapest` at `ece9b36` (Preview). Budapest stays unavailable in Production. No new optimisation round was run for this
 list: every number comes from results already in `docs/budapest/data/`.
 
+## Launch commit (2026-11-16, research 25.7; branch only, not merged or deployed)
+- Budapest `available: true` in `plannerDestinations.ts`, with the trip-length and date scope below.
+- Site copy names Barcelona, Prague and Budapest (Arabic, English). Hebrew stays off in Production; no Preview variable or key moved to Production.
+- Go-live = merging this branch into `main` (Vercel deploys Production). Rollback = a commit on `main` setting Budapest `available: false` (no force push).
+
 ## Temporary launch scope (owner, 2026-11-16, research 25.6)
 - Budapest dated requests touching **24–26 Dec 2026, 31 Dec 2026 or 1 Jan 2027** are not offered: a limit on our readiness for these holidays (the plans for those days were too thin), not a claim that places are closed. Refused in the questionnaire and on the server before any order or plan; dates are never changed for the visitor.
 - Plans without dates show a note: they do not check holiday closures, and the scope above is not supported.

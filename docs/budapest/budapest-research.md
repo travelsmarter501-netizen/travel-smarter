@@ -1903,3 +1903,27 @@ No padding, no shorter visits, no engine work.
 - **Refusal before any order:** the checkout action called directly as a visitor on the local server with the Supabase test double (which records every database call):
   - dates 21–24 Dec 2026 → `invalid_planner_answers` and no database call at all;
   - the control 27–30 Dec 2026 → `create_personalized_plan_order` recorded, then `payment_setup_failed` because Allpay is `disabled`; nothing external contacted.
+
+### 25.7 Launch commit (2026-11-16; branch only, not merged or deployed)
+**What changes:**
+- `plannerDestinations.ts`: Budapest `available: true`, the same mechanism as Prague on 2026-11-08.
+- The preview switch no longer decides Budapest; Vienna stays release-excluded.
+- Site copy that named "Barcelona and Prague" now names Barcelona, Prague and Budapest, in Arabic and English:
+  - meta descriptions, the questionnaire note, the price line, the FAQ line, the comparison hint;
+  - Hebrew copy left as it is: off in Production, and already out of date for Prague.
+- Unchanged: payments, prices, permissions, database (destination ids are checked by pattern only), Prague, Barcelona.
+- `bud-preview-gates.mts` updated: Budapest available in every environment; Hebrew still only on a Preview or `next dev`.
+
+**Simulated Production** (local production build and `next start`):
+- **Values:** `VERCEL=1`, `VERCEL_ENV=production`, `NEXT_PUBLIC_VERCEL_ENV=production`, the Preview switches set by mistake (`he`, `budapest`), `ALLPAY_MODE=disabled`, the local Supabase test double. Test values only.
+- **Questionnaire:**
+  - Barcelona, Prague and Budapest selectable, with no "preview" label;
+  - languages Arabic and English only (no Hebrew);
+  - Budapest days 5–10 disabled;
+  - dates 21–24 Dec 2026 refused with the message, 27–30 Dec accepted.
+- **Server actions called directly:**
+  - Budapest 3-day culture accepted;
+  - 5 days, culture 4 days and 21–24 Dec 2026 refused (`invalid_answers`);
+  - 27–30 Dec 2026 accepted;
+  - Prague 10 days and Barcelona 24–26 Dec 2026 accepted;
+  - a visitor checkout for Budapest 21–24 Dec refused with no database call.
