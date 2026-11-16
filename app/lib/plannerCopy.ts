@@ -69,6 +69,11 @@ export type PlannerCopy = {
     limitFixDaysOrInterest: string;
     limitFixDates: string;
     limitFixDatesOrInterest: string;
+    /** The same when the limit is ONE day (no "or fewer"); specific dates: arrival and departure on the same day. */
+    limitFixOneDay: string;
+    limitFixOneDayOrInterest: string;
+    limitFixOneDate: string;
+    limitFixOneDateOrInterest: string;
     /** Button (flexible dates): set the trip to the allowed length. Placeholder: {days} */
     limitUseMax: string;
     /** Button (specific dates): back to the dates step. */
@@ -220,6 +225,10 @@ export const plannerCopyAr: PlannerCopy = {
     limitFixDaysOrInterest: "اختار {days} أو أقل، أو ضيف اهتمام تاني.",
     limitFixDates: "قصّر التواريخ لحد {days}.",
     limitFixDatesOrInterest: "قصّر التواريخ لحد {days}، أو ضيف اهتمام تاني.",
+    limitFixOneDay: "اختار يوم واحد.",
+    limitFixOneDayOrInterest: "اختار يوم واحد أو ضيف اهتمام تاني.",
+    limitFixOneDate: "خلّي الوصول والمغادرة بنفس اليوم.",
+    limitFixOneDateOrInterest: "خلّي الوصول والمغادرة بنفس اليوم، أو ضيف اهتمام تاني.",
     limitUseMax: "خلّيها {days}",
     limitChangeDates: "غيّر التواريخ",
     daysPhraseOne: "يوم واحد",
@@ -364,6 +373,10 @@ export const plannerCopyEn: PlannerCopy = {
     limitFixDaysOrInterest: "Choose {days} or fewer, or add another interest.",
     limitFixDates: "Shorten your dates to {days} or fewer.",
     limitFixDatesOrInterest: "Shorten your dates to {days} or fewer, or add another interest.",
+    limitFixOneDay: "Choose 1 day.",
+    limitFixOneDayOrInterest: "Choose 1 day, or add another interest.",
+    limitFixOneDate: "Make arrival and departure the same day.",
+    limitFixOneDateOrInterest: "Make arrival and departure the same day, or add another interest.",
     limitUseMax: "Make it {days}",
     limitChangeDates: "Change dates",
     daysPhraseOne: "1 day",
@@ -508,6 +521,10 @@ export const plannerCopyHe: PlannerCopy = {
     limitFixDaysOrInterest: "בחרו {days} או פחות, או הוסיפו תחום עניין נוסף.",
     limitFixDates: "קצרו את התאריכים עד {days}.",
     limitFixDatesOrInterest: "קצרו את התאריכים עד {days}, או הוסיפו תחום עניין נוסף.",
+    limitFixOneDay: "בחרו יום אחד.",
+    limitFixOneDayOrInterest: "בחרו יום אחד, או הוסיפו תחום עניין נוסף.",
+    limitFixOneDate: "קבעו הגעה ועזיבה באותו יום.",
+    limitFixOneDateOrInterest: "קבעו הגעה ועזיבה באותו יום, או הוסיפו תחום עניין נוסף.",
     limitUseMax: "לקבוע {days}",
     limitChangeDates: "שינוי תאריכים",
     daysPhraseOne: "יום אחד",

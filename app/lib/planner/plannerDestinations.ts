@@ -93,6 +93,8 @@ export function isPreviewPlannerDestinationId(value: string | null | undefined):
 const INTEREST_GROUP_LABEL_OVERRIDES: Record<string, { ar: Record<string, string>; en: Record<string, string>; he: Record<string, string> }> = {
   prague: { ar: { natureBeaches: "طبيعة وإطلالات" }, en: { natureBeaches: "Nature & views" }, he: { natureBeaches: "טבע ונופים" } },
   vienna: { ar: { natureBeaches: "طبيعة وإطلالات" }, en: { natureBeaches: "Nature & views" }, he: { natureBeaches: "טבע ונופים" } },
+  // Budapest has no beaches (owner, 2026-11-16): label only; the group keeps the same two internal keys.
+  budapest: { ar: { natureBeaches: "طبيعة وإطلالات" }, en: { natureBeaches: "Nature & views" }, he: { natureBeaches: "טבע ונופים" } },
 };
 
 export function interestGroupLabelForDestination(destinationId: string | null | undefined, groupId: string, language: "ar" | "en" | "he"): string | undefined {

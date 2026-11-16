@@ -498,9 +498,9 @@ function nearestCluster(point: GeoPoint): { cluster: string; distanceKm: number 
 
 // ── Warnings shown on a stop ────────────────────────────────────────────────────────────────────────
 const WARNINGS: Record<string, PlannerOperationalWarning[]> = {
-  "opera-house-tour": [{ textAr: "⚠️ مشروطة بالحجز: الجولات بس 13:30 و15:00 و16:30، والتذاكر بتنزل قبل أسبوع. ما في جولات وقت العروض." }],
-  "danube-legend-cruise": [{ textAr: "⚠️ مشروطة بالحجز: الموعد المنشور مش ضمان مكان. المشروب المشمول ممكن يكون مي أو مشروب غازي." }],
-  "house-of-music": [{ textAr: "⚠️ الدخول بفترة محجوزة كل نص ساعة (:15 و:45)، وتذاكر الويكند بتخلص بسرعة. خزانة الملابس إلزامية." }],
+  "opera-house-tour": [{ textAr: "⚠️ الجولات بس 13:30 و15:00 و16:30، حسب توفّر التذاكر، والتذاكر بتنزل قبل أسبوع. ما في جولات وقت العروض." }],
+  "danube-legend-cruise": [{ textAr: "⚠️ الموعد المنشور مش ضمان مكان، حسب التوفّر. المشروب المشمول ممكن يكون مي أو مشروب غازي." }],
+  "house-of-music": [{ textAr: "⚠️ الدخول بفترات كل نص ساعة (:15 و:45)، وتذاكر الويكند بتخلص بسرعة. خزانة الملابس إلزامية." }],
   "budapest-zoo": [{ textAr: "المواعيد بتتغير حسب الشهر (بالشتا لحد 16:00 وآخر دخول 15:00)." }],
   "st-stephens-basilica": [{ textAr: "الأحد: الكنيسة بتفتح من 13:00 بس (التراس من 9:00).", onlyRelevantOnWeekday: "sunday" }],
   "hungarian-national-museum": [{ textAr: "في قاعات مسكّرة للترميم حسب موقع المتحف." }],
@@ -554,7 +554,7 @@ const RIVER_CLUSTERS = new Set(["belvaros", "lipotvaros"]);
 /** A place's hours are not published for this date: the "PLANNING EXCLUSION" entries of its data (budapestPlaces.ts). */
 function planningExcludedOn(placeId: string, isoDate: string): boolean {
   const hours = (resolvePlannerPlace(placeId, BUDAPEST_PLACES)?.place as { hours?: HoursInfo } | undefined)?.hours;
-  const exceptions = hours && hours.type === "variable" ? hours.dateExceptions : undefined;
+  const exceptions = hours && (hours.type === "variable" || hours.type === "fixed") ? hours.dateExceptions : undefined;
   return !!exceptions?.some((e) => e.note?.startsWith("PLANNING EXCLUSION") && isoDate >= e.from && isoDate <= e.to);
 }
 
@@ -564,14 +564,15 @@ function cruiseTimetableUnpublished(isoDate: string): boolean {
 }
 
 /**
- * Museums whose year-end holiday hours are not published for the trip's year (PLANNING EXCLUSION entries, from Dec 2027): never on the
- * clock on those dates. When such a museum matches the request (the same relevance rule as the cruise) and the plan does not have it on
+ * Places whose year-end holiday hours are not confirmed for the trip's dates (PLANNING EXCLUSION entries: the National Gallery, the Opera
+ * tour and the House of Music from Dec 2026; the National Museum from Dec 2027, its 2026 table being official): never on the clock on
+ * those dates. When such a museum matches the request (the same relevance rule as the cruise) and the plan does not have it on
  * another day, it is a conditional suggestion on one of those dates (the day with the most minutes in its area, else the last one), with
  * a reason that says the hours are not published -- never that it is closed. Plans without dates and other dates are not affected.
  */
-const HOLIDAY_UNCONFIRMED_PLACE_IDS = ["hungarian-national-museum", "hungarian-national-gallery"];
+const HOLIDAY_UNCONFIRMED_PLACE_IDS = ["hungarian-national-museum", "hungarian-national-gallery", "opera-house-tour", "house-of-music"];
 /** Customer text (2026-11-16), NOT yet reviewed by the owner. */
-const HOLIDAY_UNCONFIRMED_REASON_AR = "اختياري: مواعيد العطلة لهاليوم مش منشورة لسا. تأكّد من موقع المتحف قبل ما تروح.";
+const HOLIDAY_UNCONFIRMED_REASON_AR = "اختياري: مواعيد العطلة لهاليوم مش مؤكدة. تأكّد من الموقع الرسمي قبل ما تروح.";
 
 function withHolidayUnconfirmedSuggestions(result: { plan: GeneratedPlannerPlan; legsByDay: PlannerRouteLeg[][] }, context: DayGeographyRepairContext): { plan: GeneratedPlannerPlan; legsByDay: PlannerRouteLeg[][] } {
   if (context.weekdayForDayNumber?.(1) == null) return result;

@@ -104,14 +104,17 @@ export default function PersonalizedPlanWizard({
     const groups = lengthLimit.groupIds.map((id) => interestGroupLabelForDestination(destinationId, id, language) ?? wizard.interestGroups[id] ?? id).join(" + ");
     return fillCopy(wizard.limitInterests, { interests: groups, city, days });
   })();
-  const lengthFixText = lengthLimit
-    ? fillCopy(
-        dateMode === "flexible"
-          ? lengthLimit.reason === "interests" ? wizard.limitFixDaysOrInterest : wizard.limitFixDays
-          : lengthLimit.reason === "interests" ? wizard.limitFixDatesOrInterest : wizard.limitFixDates,
-        { days: daysPhrase(lengthLimit.maxDays) }
-      )
-    : null;
+  const lengthFixText = (() => {
+    if (!lengthLimit) return null;
+    const orInterest = lengthLimit.reason === "interests";
+    // One day: no "or fewer"; with dates, arrival and departure on the same day.
+    if (lengthLimit.maxDays === 1) {
+      if (dateMode === "flexible") return orInterest ? wizard.limitFixOneDayOrInterest : wizard.limitFixOneDay;
+      return orInterest ? wizard.limitFixOneDateOrInterest : wizard.limitFixOneDate;
+    }
+    const template = dateMode === "flexible" ? (orInterest ? wizard.limitFixDaysOrInterest : wizard.limitFixDays) : orInterest ? wizard.limitFixDatesOrInterest : wizard.limitFixDates;
+    return fillCopy(template, { days: daysPhrase(lengthLimit.maxDays) });
+  })();
 
   const accommodationTextRequired = accommodationStatus === "hotel" || accommodationStatus === "apartment";
   const stepValid: Record<Step, boolean> = {

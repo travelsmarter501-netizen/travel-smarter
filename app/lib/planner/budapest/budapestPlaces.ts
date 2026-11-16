@@ -192,9 +192,9 @@ export const BUDAPEST_ATTRACTIONS: Attraction[] = [
     address: "Szent György tér 2, 1014 Budapest",
     priceText: "5,800 HUF (بالغ، كامل) · مخفّض 2,900 حسب العمر",
     // `variable` (not `fixed`) so the plan can end visits at 17:30 (halls start closing) while the card shows the building's 10:00-18:00.
-    // Customer text approved by the owner 2026-11-14 (holiday dates first, with their years; last entry per listed day; the 17:30 hall
-    // closing only for regular days). English / Hebrew in planCatalog.ts (Hebrew not yet reviewed).
-    hours: variable("مواعيد العطلة: 24–25 ديسمبر 2026 مسكّر · 26–30 ديسمبر 2026 (ومعها الإثنين 28) 10:00–18:00، آخر دخول 17:00 · 31 ديسمبر 2026 10:00–16:00، آخر دخول 15:00 · 1 يناير 2027 12:00–18:00، آخر دخول 17:00 — المواعيد العادية: الثلاثاء–الأحد 10:00–18:00، آخر دخول 17:00، والقاعات بتبلش تسكّر 17:30 · الإثنين مسكّر", "https://en.mng.hu/opening-hours/", "en.mng.hu (official)", ["monday"]),
+    // Customer text (2026-11-16, NOT yet reviewed): the holiday dates are no longer stated as fact (no kept evidence, see PLANNING_HOURS);
+    // replaces the text approved on 2026-11-14. English / Hebrew in budapestCatalog.ts.
+    hours: variable("مواعيد عطلة آخر السنة (24–26 و31 ديسمبر و1 يناير): ما قدرنا نتأكد منها، تأكّد من موقع المتحف — المواعيد العادية: الثلاثاء–الأحد 10:00–18:00، آخر دخول 17:00، والقاعات بتبلش تسكّر 17:30 · الإثنين مسكّر", "https://en.mng.hu/opening-hours/", "en.mng.hu (official)", ["monday"]),
     coordinates: { lat: 47.496282, lng: 19.039849 }, // OSM node/5842060882 entrance=main ref=C
   }),
   attraction({
@@ -343,7 +343,8 @@ export const BUDAPEST_ATTRACTIONS: Attraction[] = [
     address: "Olof Palme sétány 3, 1146 Budapest",
     // zenehaza.hu (occasion page): Tue-Thu, Sat, Sun 10:15-17:50, last admission 16:15; Fri 10:15-19:50, last 17:45; closed Monday.
     // Location page: also closed the first Tuesday of each month (stricter rule kept, as date exceptions below).
-    hours: fixed({ ...days(["tuesday", "wednesday", "thursday", "saturday", "sunday"], ["10:15", "17:50"]), friday: [{ open: "10:15", close: "19:50" }] }, "https://zenehaza.hu/en/occasion/dimensions-of-sound-musical-journey-through-space-and-time", "zenehaza.hu (official)"),
+    // `variable` since 2026-11-16 (customer text NOT yet reviewed): planning hours unchanged (PLANNING_HOURS); the year-end holidays are unconfirmed.
+    hours: variable("الثلاثاء–الأحد 10:15–17:50، الجمعة لحد 19:50 · آخر دخول 16:15 (الجمعة 17:45) · الإثنين وأول ثلاثاء بكل شهر مسكّر · مواعيد عطلة آخر السنة (24–26 و31 ديسمبر و1 يناير) مش مؤكدة", "https://zenehaza.hu/en/opening-hours", "zenehaza.hu (official)", ["monday"]),
     coordinates: { lat: 47.512794, lng: 19.083528 }, // OSM node/9344029111 entrance=main
   }),
   attraction({
@@ -489,15 +490,15 @@ const every20 = (first: string, last: string): string[] => {
 };
 
 /**
- * PLANNING EXCLUSIONS, NOT CLOSURES (2026-11-16): the year-end holidays (24-26 Dec, 31 Dec, 1 Jan) of years whose holiday hours the
- * museum has not published (from Dec 2027). In 2026 these were exactly the dates with changed hours. The planner does not put the museum
- * on the clock on those dates; it is offered as a conditional suggestion instead (budapestCityModule.ts), never called closed.
- * Generated to 2040, like the House of Music rule; later dates keep the regular hours.
+ * PLANNING EXCLUSIONS, NOT CLOSURES (2026-11-16): the year-end holidays (24-26 Dec, 31 Dec, 1 Jan) from `fromYear` on, for a place whose
+ * hours on those dates are not confirmed by a source we read and kept (the National Museum's 2026 table showed these are the dates that
+ * change). The planner does not put the place on the clock on those dates; it is offered as a conditional suggestion instead
+ * (budapestCityModule.ts), never called closed. Other trip days are not affected. Generated to 2040, like the House of Music rule.
  */
-function yearEndHolidaysNotPublished(source: string): HoursDateException[] {
+function yearEndHolidaysUnconfirmed(fromYear: number, why: string): HoursDateException[] {
   const out: HoursDateException[] = [];
-  for (let year = 2027; year <= 2040; year++) {
-    const note = `PLANNING EXCLUSION (not a closure): holiday hours for ${year}/${year + 1} not published (${source}, checked 2026-11-16)`;
+  for (let year = fromYear; year <= 2040; year++) {
+    const note = `PLANNING EXCLUSION (not a closure): ${year}/${year + 1} year-end holiday hours not confirmed (${why})`;
     out.push({ from: `${year}-12-24`, to: `${year}-12-26`, closed: true, note }, { from: `${year}-12-31`, to: `${year + 1}-01-01`, closed: true, note });
   }
   return out;
@@ -508,18 +509,12 @@ const PLANNING_HOURS: Record<string, PlanningHours> = {
     // Planning hours: the building is open 10:00-18:00, but the halls start closing at 17:30 (top floor), so a visit is planned to END by
     // 17:30; last entry 17:00 (en.mng.hu/opening-hours/, read by us 2026-11-13). Customers see the hours text of the place.
     seasonalSchedules: [season("01-01", "12-31", days(TUE_TO_SUN, ["10:00", "17:30"]), "17:00")],
-    // Holidays 2026/27: https://en.mng.hu/opening-hours-during-holidays/ AS READ BY THE INDEPENDENT REVIEWER on 2026-11-14 (relayed by the owner).
-    // Our own tool could not open the page (HTTP 520 on 13 and 14 Nov 2026); we did not read it ourselves. 26-30 Dec includes Monday 28 Dec
-    // (normally closed): `override` opens it. The 17:30 hall closing is applied to the published 18:00 days; for 31 Dec (building 10:00-16:00)
-    // the source gives no hall-closing time, so the plan uses 16:00.
-    dateExceptions: [
-      { from: "2026-12-24", to: "2026-12-25", closed: true, note: "official (reviewer's reading 2026-11-14)" },
-      { from: "2026-12-26", to: "2026-12-30", hours: R("10:00", "17:30"), lastEntry: "17:00", override: true, note: "official 10:00-18:00, last entry 17:00 (reviewer's reading); halls close from 17:30" },
-      { from: "2026-12-31", to: "2026-12-31", hours: R("10:00", "16:00"), lastEntry: "15:00", override: true, note: "official 10:00-16:00, last entry 15:00 (reviewer's reading)" },
-      { from: "2027-01-01", to: "2027-01-01", hours: R("12:00", "17:30"), lastEntry: "17:00", override: true, note: "official 12:00-18:00, last entry 17:00 (reviewer's reading); halls close from 17:30" },
-      ...yearEndHolidaysNotPublished("en.mng.hu/opening-hours-during-holidays"),
-    ],
-    conflict: "Holiday dates 24 Dec 2026 - 1 Jan 2027 come from the reviewer's reading of the official holidays page (14 Nov 2026), relayed by the owner; our direct access failed (Cloudflare 520, 13 and 14 Nov; again 16 Nov 2026 for en.mng.hu, mng.hu and szepmuveszeti.hu). Regular hours and the 17:30 hall closing: en.mng.hu/opening-hours/, read by us 13 Nov.",
+    // Holidays (owner, 2026-11-16): the 2026/27 dates read by the independent reviewer on 14 Nov were relayed without a kept copy of the
+    // page, and our own access fails (en.mng.hu/opening-hours-during-holidays/, mng.hu and szepmuveszeti.hu: HTTP 520 on 13, 14 and 16 Nov;
+    // the newest Wayback copy, 4 Nov, holds the same error). So they are not a direct check: the year-end dates are unconfirmed from 2026
+    // (no Monday 28 Dec opening either; ordinary days keep the regular hours).
+    dateExceptions: [...yearEndHolidaysUnconfirmed(2026, "en.mng.hu holidays page not readable; the reviewer's 2026 reading has no kept copy")],
+    conflict: "Year-end holiday hours unconfirmed: the reviewer's reading of the official holidays page (14 Nov 2026: 24-25 Dec closed, 26-30 Dec 10-18, 31 Dec 10-16, 1 Jan 12-18) was relayed without a kept copy, and our direct access failed (Cloudflare 520 on 13, 14 and 16 Nov 2026 for en.mng.hu, mng.hu and szepmuveszeti.hu; Wayback 4 Nov: the same error). Regular hours and the 17:30 hall closing: en.mng.hu/opening-hours/, read by us 13 Nov.",
   },
   "hungarian-national-museum": {
     // Regular planning hours unchanged from the former `fixed` record: Tuesday-Sunday 10:00-18:00, last entry 17:00 (ticket office).
@@ -531,7 +526,7 @@ const PLANNING_HOURS: Record<string, PlanningHours> = {
       { from: "2026-12-24", to: "2026-12-26", closed: true, note: "official mnm.hu/nyitvatartas 2026 table: zárva (closed)" },
       { from: "2026-12-31", to: "2026-12-31", hours: R("10:00", "14:00"), lastEntry: "13:00", note: "official 10:00-14:00; last entry not published for 31 Dec: one hour before closing assumed (as the regular ticket office)" },
       { from: "2027-01-01", to: "2027-01-01", closed: true, note: "official mnm.hu/nyitvatartas 2026 table: zárva (closed)" },
-      ...yearEndHolidaysNotPublished("mnm.hu/nyitvatartas"),
+      ...yearEndHolidaysUnconfirmed(2027, "not published yet on mnm.hu/nyitvatartas, checked 2026-11-16"),
     ],
     conflict: "mnm.hu: ticket office closes 17:00, exhibitions close from 17:30. Holiday table 2026 read on mnm.hu/nyitvatartas 2026-11-16; later years not published.",
   },
@@ -546,13 +541,22 @@ const PLANNING_HOURS: Record<string, PlanningHours> = {
       { from: "2027-01-01", to: "2027-01-01", hours: R("12:00", "18:00"), lastEntry: "17:00", note: "permanent exhibitions limited" },
     ],
   },
-  "opera-house-tour": { lastEntry: "16:30", conflict: "opera.hu: tours only at 13:30, 15:00, 16:30 (60 min); no tours during performances (per date, not published here)." },
+  "opera-house-tour": {
+    lastEntry: "16:30",
+    // Holidays (2026-11-16): opera.hu's OperaTour page and its FAQ publish no holiday tour hours.
+    dateExceptions: [...yearEndHolidaysUnconfirmed(2026, "opera.hu OperaTour page and FAQ publish no holiday tour hours, checked 2026-11-16")],
+    conflict: "opera.hu: tours only at 13:30, 15:00, 16:30 (60 min); no tours during performances (per date, not published here).",
+  },
   "house-of-music": {
     // The RULE "closed the first Tuesday of each month" was read on the location page on 2026-11-13; it is computed for the trip's own dates.
     // Individual future first Tuesdays are not confirmed one by one by the source (only the rule is).
     recurringClosures: [{ nth: 1, weekday: "tuesday", note: "rule read 2026-11-13 on zenehaza.hu/en/location/permanent-exhibition" }],
-    seasonalSchedules: [season("01-01", "12-31", { ...days(["tuesday", "wednesday", "thursday", "saturday", "sunday"], ["10:15", "17:50"]), friday: R("10:15", "19:50") })],
+    // `variable` since 2026-11-16 (the card shows a text, not a weekly table that would say "open" on an unconfirmed holiday): the last
+    // entry moves into the season, where a `variable` record reads it; the planning hours stay the same.
+    seasonalSchedules: [season("01-01", "12-31", { ...days(["tuesday", "wednesday", "thursday", "saturday", "sunday"], ["10:15", "17:50"]), friday: R("10:15", "19:50") }, "16:15")],
     lastEntry: "16:15",
+    // Holidays (2026-11-16): zenehaza.hu's opening-hours pages (English and Hungarian) publish no holiday hours.
+    dateExceptions: [...yearEndHolidaysUnconfirmed(2026, "zenehaza.hu opening hours (en, hu) publish no holiday hours, checked 2026-11-16")],
     conflict: "zenehaza.hu occasion page: last admission 16:15 (Friday 17:45). The planner stores 16:15 for every day (Friday's later entry not used). Location page lists 10:00-18:00 and adds 'closed first Tuesday': the occasion page's 10:15 slots and the first-Tuesday closure are both kept.",
   },
   "budapest-zoo": {

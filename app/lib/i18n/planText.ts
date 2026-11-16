@@ -404,7 +404,7 @@ export const PLACE_CARD_TEXT = {
       yourTripDay: "يوم رحلتك",
       todayBadge: "اليوم",
       sessionsTitle: "🕒 مواعيد الجولات: ",
-      sessionsBooking: "الدخول بجولة بس، بموعد محجوز مسبقًا",
+      sessionsBooking: "الدخول بجولة فقط، حسب المواعيد وتوفّر التذاكر.",
     },
   },
   en: {
@@ -465,7 +465,7 @@ export const PLACE_CARD_TEXT = {
       yourTripDay: "Your trip day",
       todayBadge: "Today",
       sessionsTitle: "🕒 Tour times: ",
-      sessionsBooking: "Entry by tour only, booked in advance",
+      sessionsBooking: "Entry by guided tour only, subject to tour times and ticket availability.",
     },
   },
   he: {
@@ -526,7 +526,7 @@ export const PLACE_CARD_TEXT = {
       yourTripDay: "יום הטיול שלכם",
       todayBadge: "היום",
       sessionsTitle: "🕒 שעות הסיורים: ",
-      sessionsBooking: "כניסה בסיור בלבד, בהזמנה מראש",
+      sessionsBooking: "כניסה בסיור מודרך בלבד, בהתאם לשעות הסיורים ולזמינות הכרטיסים.",
     },
   },
 } as const;

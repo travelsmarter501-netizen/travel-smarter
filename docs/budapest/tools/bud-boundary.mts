@@ -41,18 +41,13 @@ const is = (w: string) => [(g: string) => g === w, w] as const;
 const open = (g: string) => g !== "NOT SCHEDULABLE";
 const closed = (g: string) => g === "NOT SCHEDULABLE";
 
-// ── 1. National Gallery: holiday hours 2026/27 as read by the reviewer on the official page (14 Nov 2026). Planning end 17:30 (halls close).
+// ── 1. National Gallery (owner, 2026-11-16): the reviewer's 2026/27 reading has no kept copy and the official page is unreadable, so the
+// year-end dates (24-26 Dec, 31 Dec, 1 Jan) are unconfirmed: never on the clock (a conditional suggestion instead, bud-closeout.mts).
+// Other days keep the regular hours (planning end 17:30, halls close); Mondays stay closed (no 28 Dec opening without evidence).
 const MNG = "hungarian-national-gallery";
-for (const d of ["2026-11-19", "2026-12-23", "2027-01-02"]) expect(`National Gallery ${d} (regular day)`, rangesOn(MNG, d), ...is("10:00-17:30 last 17:00"));
-for (const d of ["2026-12-24", "2026-12-25"]) expect(`National Gallery ${d} (closed, published)`, rangesOn(MNG, d), closed, "not schedulable");
-for (const d of ["2026-12-26", "2026-12-27", "2026-12-28", "2026-12-29", "2026-12-30"]) expect(`National Gallery ${d}${d === "2026-12-28" ? " (Monday, open)" : ""}`, rangesOn(MNG, d), ...is("10:00-17:30 last 17:00"));
-expect("National Gallery 2026-12-31", rangesOn(MNG, "2026-12-31"), ...is("10:00-16:00 last 15:00"));
-expect("National Gallery 2027-01-01", rangesOn(MNG, "2027-01-01"), ...is("12:00-17:30 last 17:00"));
-for (const d of ["2026-11-23", "2027-01-04"]) expect(`National Gallery ${d} (ordinary Monday)`, rangesOn(MNG, d), closed, "not schedulable");
-// A trip with two Mondays, only one of them a published opening (28 Dec open, 4 Jan closed): the weekday plan stays closed (conservative).
-const winter = ["2026-12-26", "2026-12-27", "2026-12-28", "2026-12-29", "2026-12-30", "2026-12-31", "2027-01-01", "2027-01-02", "2027-01-03", "2027-01-04"];
-expect("National Gallery Monday in trip 26 Dec - 4 Jan (28 open, 4 closed)", rangesOn(MNG, "2026-12-28", winter), closed, "not schedulable (one plan per weekday)");
-expect("National Gallery Monday in trip 26 - 30 Dec (only 28 Dec)", rangesOn(MNG, "2026-12-28", winter.slice(0, 5)), ...is("10:00-17:30 last 17:00"));
+for (const d of ["2026-11-19", "2026-12-23", "2026-12-27", "2026-12-29", "2026-12-30", "2027-01-02"]) expect(`National Gallery ${d} (regular day)`, rangesOn(MNG, d), ...is("10:00-17:30 last 17:00"));
+for (const d of ["2026-12-24", "2026-12-25", "2026-12-26", "2026-12-31", "2027-01-01", "2027-12-24", "2027-12-31", "2040-12-25"]) expect(`National Gallery ${d} (year-end, unconfirmed)`, rangesOn(MNG, d), closed, "not schedulable");
+for (const d of ["2026-11-23", "2026-12-28", "2027-01-04"]) expect(`National Gallery ${d} (Monday)`, rangesOn(MNG, d), closed, "not schedulable");
 
 // ── 2. House of Music: the RULE "closed the first Tuesday of the month", computed for each trip date (no end year).
 const HOM = "house-of-music";
@@ -67,7 +62,10 @@ for (let y = 2026; y <= 2075; y++) for (let m = 1; m <= 12; m++) {
 }
 expect("House of Music: first Tuesday closed, second Tuesday and the Wednesday after open, every month 2026-2075", ruleMiss.length ? ruleMiss.slice(0, 5).join(", ") : "all 600 months", (g) => g === "all 600 months", "no miss");
 expect("House of Music 2026-11-23 (Monday)", rangesOn(HOM, "2026-11-23"), closed, "not schedulable");
-expect("House of Music: no stored date list", String(JSON.stringify(place(HOM).hours.dateExceptions ?? []).length), (g) => Number(g) < 10, "no dateExceptions");
+// The first-Tuesday rule stays a rule (no stored list of Tuesdays). Since 2026-11-16 the only stored dates are the year-end planning
+// exclusions (24-26 Dec, 31 Dec - 1 Jan, 2026 to 2040).
+const homExceptions: any[] = place(HOM).hours.dateExceptions ?? [];
+expect("House of Music: no stored first-Tuesday list (only year-end planning exclusions)", `${homExceptions.length} entries, ${homExceptions.filter((e) => !String(e.note).startsWith("PLANNING EXCLUSION")).length} other`, (g) => g === "30 entries, 0 other", "30 entries, 0 other");
 expect("House of Music trip 30 Nov - 2 Dec 2026 (Tue 1 Dec = first Tuesday)", rangesOn(HOM, "2026-12-01", ["2026-11-30", "2026-12-01", "2026-12-02"]), closed, "not schedulable");
 
 // ── 3. Cruise timetable 2026 (legenda.hu/en/timetable), typed here LITERALLY from the published table (not computed like the data).

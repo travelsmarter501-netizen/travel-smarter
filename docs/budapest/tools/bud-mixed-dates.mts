@@ -116,16 +116,21 @@ function hoursOnPlanDay(caseId: string, date: string, placeId: string): { text: 
   const hours = H.planningHoursOf(stop.hours);
   return { text: fmt(hours, day.weekday), hours, weekday: day.weekday };
 }
-const MNG = "hungarian-national-gallery", HOM = "house-of-music", CRUISE = "danube-legend-cruise";
+// 2026-11-16: the per-date special hours are the National Museum's (official 2026 table: 31 Dec 10:00-14:00, closed 24-26 Dec and 1 Jan).
+// The National Gallery's year-end dates are unconfirmed (planning exclusions: not schedulable, a conditional suggestion instead).
+const MNG = "hungarian-national-gallery", MNM = "hungarian-national-museum", HOM = "house-of-music", CRUISE = "danube-legend-cruise";
 const firstDeparture = (x: { text: string }) => x.text.split(",")[0].split(" last ")[0];
-expect("D1 gallery Wed 30 Dec 2026 (trip 29 Dec-1 Jan has 31 Dec)", hoursOnPlanDay("M2-A-2026-12-29", "2026-12-30", MNG).text, "10:00-17:30 last 17:00");
-expect("D2 gallery Fri 1 Jan 2027 (same trip)", hoursOnPlanDay("M2-A-2026-12-29", "2027-01-01", MNG).text, "12:00-17:30 last 17:00");
-const d3 = hoursOnPlanDay("M2-A-2026-12-29", "2026-12-30", MNG);
-expect("D3 gallery Wed 30 Dec: a 15:15-17:15 visit is accepted", G.checkWindow(d3.hours, d3.weekday, 915, 1035, 120) ?? "accepted", "accepted");
-expect("D4 gallery Mon 28 Dec 2026 (trip also has Mon 4 Jan)", hoursOnPlanDay("M1-culture-2026-12-26", "2026-12-28", MNG).text, "10:00-17:30 last 17:00");
+expect("D1 museum Wed 30 Dec 2026 (trip 29 Dec-1 Jan has 31 Dec)", hoursOnPlanDay("M2-A-2026-12-29", "2026-12-30", MNM).text, "10:00-18:00 last 17:00");
+expect("D2 museum Fri 1 Jan 2027 (same trip, official: closed)", hoursOnPlanDay("M2-A-2026-12-29", "2027-01-01", MNM).text, "CLOSED");
+expect("D2b gallery Fri 1 Jan 2027 (same trip, unconfirmed)", hoursOnPlanDay("M2-A-2026-12-29", "2027-01-01", MNG).text, "CLOSED");
+const d3 = hoursOnPlanDay("M2-A-2026-12-29", "2026-12-30", MNM);
+expect("D3 museum Wed 30 Dec: a 15:15-16:45 visit is accepted", G.checkWindow(d3.hours, d3.weekday, 915, 1005, 90) ?? "accepted", "accepted");
+expect("D4 gallery Mon 28 Dec 2026 (Monday, no opening without evidence)", hoursOnPlanDay("M1-culture-2026-12-26", "2026-12-28", MNG).text, "CLOSED");
 expect("D4b gallery Mon 4 Jan 2027 (same trip, ordinary Monday)", hoursOnPlanDay("M1-culture-2026-12-26", "2027-01-04", MNG).text, "CLOSED");
-expect("D4c gallery Thu 31 Dec 2026 (trip 23 Dec-1 Jan)", hoursOnPlanDay("M7-A-2026-12-23", "2026-12-31", MNG).text, "10:00-16:00 last 15:00");
-expect("D4d gallery Thu 24 Dec 2026 (same trip)", hoursOnPlanDay("M7-A-2026-12-23", "2026-12-24", MNG).text, "CLOSED");
+expect("D4c museum Thu 31 Dec 2026 (trip 23 Dec-1 Jan)", hoursOnPlanDay("M7-A-2026-12-23", "2026-12-31", MNM).text, "10:00-14:00 last 13:00");
+expect("D4c2 gallery Thu 31 Dec 2026 (same trip, unconfirmed)", hoursOnPlanDay("M7-A-2026-12-23", "2026-12-31", MNG).text, "CLOSED");
+expect("D4d museum Thu 24 Dec 2026 (same trip, official: closed)", hoursOnPlanDay("M7-A-2026-12-23", "2026-12-24", MNM).text, "CLOSED");
+expect("D4e museum Tue 29 Dec 2026 (same trip, open)", hoursOnPlanDay("M7-A-2026-12-23", "2026-12-29", MNM).text, "10:00-18:00 last 17:00");
 expect("D5 House of Music Tue 8 Dec 2026 (trip also has Tue 1 Dec)", hoursOnPlanDay("M3-culture-2026-12-01", "2026-12-08", HOM).text, "10:15-17:50 last 16:15");
 expect("D5b House of Music Tue 1 Dec 2026 (first Tuesday)", hoursOnPlanDay("M3-culture-2026-12-01", "2026-12-01", HOM).text, "CLOSED");
 expect("D6 cruise Thu 31 Dec 2026 (trip also has Thu 24 Dec)", firstDeparture(hoursOnPlanDay("M4-C-2026-12-23", "2026-12-31", CRUISE)), "15:40-16:40");
@@ -135,22 +140,22 @@ expect("D7b cruise Mon 23 Nov 2026 (next period, 15:40)", firstDeparture(hoursOn
 expect("D7c cruise Thu 31 Dec 2026 (year end, published)", firstDeparture(hoursOnPlanDay("M6-C-2026-12-30", "2026-12-31", CRUISE)), "15:40-16:40");
 expect("D7d cruise Sat 2 Jan 2027 (no timetable published)", hoursOnPlanDay("M6-C-2026-12-30", "2027-01-02", CRUISE).text, "CLOSED");
 
-// F. Timeline and details agree on 28 Dec, 31 Dec 2026 and 1 Jan 2027 (trip 23 Dec - 1 Jan): the gallery on that day (planned or added
-// through the edit path), its stop hours, and the details record the plan returns for it.
+// F. Timeline and details agree on 27, 29 and 31 Dec 2026 (trip 23 Dec - 1 Jan): the National Museum on that day (planned or added
+// through the edit path), its stop hours, and the details record the plan returns for it (31 Dec: the official short day).
 city = SC.cityForSavedPlan(plans["M7-A-2026-12-23"]);
-for (const [date, want] of [["2026-12-28", "10:00-17:30 last 17:00"], ["2026-12-31", "10:00-16:00 last 15:00"], ["2027-01-01", "12:00-17:30 last 17:00"]]) {
+for (const [date, want] of [["2026-12-27", "10:00-18:00 last 17:00"], ["2026-12-29", "10:00-18:00 last 17:00"], ["2026-12-31", "10:00-14:00 last 13:00"]]) {
   const plan = plans["M7-A-2026-12-23"];
   const day = plan.days.find((d: any) => d.actualDate === date);
-  const has = day.stops.some((s: any) => s.id === MNG);
-  const edited = has ? plan : C.applyPlanCustomizations(city, plan, { [String(day.dayNumber)]: { order: [MNG, ...day.stops.map((s: any) => s.id)] } });
+  const has = day.stops.some((s: any) => s.id === MNM);
+  const edited = has ? plan : C.applyPlanCustomizations(city, plan, { [String(day.dayNumber)]: { order: [MNM, ...day.stops.map((s: any) => s.id)] } });
   const eDay = edited.days.find((d: any) => d.dayNumber === day.dayNumber);
-  const stopText = fmt(H.planningHoursOf(eDay.stops.find((s: any) => s.id === MNG).hours), day.weekday);
+  const stopText = fmt(H.planningHoursOf(eDay.stops.find((s: any) => s.id === MNM).hours), day.weekday);
   // Opened from that day, the page shows the day's own record when there is one (dayPlaceDetails), else the plan-level one.
-  const opened = { ...(edited.placeDetails ?? {}), ...(edited.dayPlaceDetails?.[String(day.dayNumber)] ?? {}) }[MNG];
+  const opened = { ...(edited.placeDetails ?? {}), ...(edited.dayPlaceDetails?.[String(day.dayNumber)] ?? {}) }[MNM];
   const detailsText = fmt(H.planningHoursOf(opened.place.hours), day.weekday);
-  const w = eDay.timeline.stops.find((x: any) => x.placeId === MNG);
-  const insideOwnDate = G.checkWindow(onDate(MNG, date), day.weekday, w.startMinutes, w.endMinutes, eDay.stops.find((s: any) => s.id === MNG).visitDurationMinutes) ?? "inside";
-  expect(`F gallery ${date} (${has ? "planned" : "added"}): stop / details / visit ${hm(w.startMinutes)}-${hm(w.endMinutes)}`, `${stopText} / ${detailsText} / ${insideOwnDate}`, `${want} / ${want} / inside`);
+  const w = eDay.timeline.stops.find((x: any) => x.placeId === MNM);
+  const insideOwnDate = G.checkWindow(onDate(MNM, date), day.weekday, w.startMinutes, w.endMinutes, eDay.stops.find((s: any) => s.id === MNM).visitDurationMinutes) ?? "inside";
+  expect(`F museum ${date} (${has ? "planned" : "added"}): stop / details / visit ${hm(w.startMinutes)}-${hm(w.endMinutes)}`, `${stopText} / ${detailsText} / ${insideOwnDate}`, `${want} / ${want} / inside`);
 }
 
 // G. Details opened from a day = that day's date, with the SAME merge the plan page uses (SmartPlannerV2Result.tsx): add-candidate
@@ -184,19 +189,22 @@ for (const [id, plan] of Object.entries(plans)) {
   expect(`G1 ${id}: details opened from each day = that date (${res.checked} places checked)`, res.bad.join(", ") || "all match", "all match");
 }
 {
-  // G2: the gallery as an add candidate on Wed 30 Dec (removed from that day) and as an added visit on Thu 31 Dec, same plan.
+  // G2: the National Museum added through the edit path on Wed 30 Dec (regular day) in one edit, and on Thu 31 Dec (official short day) in
+  // another; the details opened from each day carry that date's hours. (The museum is not among this trip's add candidates: they are the
+  // few places near each day's route, and the museum is in Pest while 30 Dec is a Castle Hill day.)
   const plan = plans["M2-A-2026-12-29"];
   const d30 = plan.days.find((d: any) => d.actualDate === "2026-12-30"), d31 = plan.days.find((d: any) => d.actualDate === "2026-12-31");
-  const removed = { [String(d30.dayNumber)]: { order: d30.stops.map((s: any) => s.id).filter((x: string) => x !== MNG) } };
   const cityForPlan = SC.cityForSavedPlan(plan);
-  const opts = C.planAddOptions(cityForPlan, plan, removed);
-  const cand30 = opts.detailsByDay?.[String(d30.dayNumber)]?.[MNG];
-  expect("G2 gallery offered on Wed 30 Dec after removal: details = 30 Dec", cand30 ? fmt(H.planningHoursOf(cand30.place.hours), "wednesday") : "not offered", "10:00-17:30 last 17:00");
-  const both = { ...removed, [String(d31.dayNumber)]: { order: [MNG, ...d31.stops.map((s: any) => s.id)] } };
+  const add30 = { [String(d30.dayNumber)]: { order: [MNM, ...d30.stops.map((s: any) => s.id)] } };
+  const shown30 = C.applyPlanCustomizations(cityForPlan, plan, add30);
+  const on30 = detailsOpenedFrom(shown30, C.planAddOptions(cityForPlan, plan, add30), d30.dayNumber)[MNM];
+  expect("G2 museum added on Wed 30 Dec: details opened from 30 Dec", on30 ? fmt(H.planningHoursOf(on30.place.hours), "wednesday") : "missing", "10:00-18:00 last 17:00");
+  const removed = {};
+  const both = { ...removed, [String(d31.dayNumber)]: { order: [MNM, ...d31.stops.map((s: any) => s.id)] } };
   const shown = C.applyPlanCustomizations(cityForPlan, plan, both);
   const opts2 = C.planAddOptions(cityForPlan, plan, both);
-  const on31 = detailsOpenedFrom(shown, opts2, d31.dayNumber)[MNG];
-  expect("G2 gallery added on Thu 31 Dec: details opened from 31 Dec", on31 ? fmt(H.planningHoursOf(on31.place.hours), "thursday") : "missing", "10:00-16:00 last 15:00");
+  const on31 = detailsOpenedFrom(shown, opts2, d31.dayNumber)[MNM];
+  expect("G2 museum added on Thu 31 Dec: details opened from 31 Dec", on31 ? fmt(H.planningHoursOf(on31.place.hours), "thursday") : "missing", "10:00-14:00 last 13:00");
   const res = detailsPerDayProblems(plan, both);
   expect(`G2 whole plan after both edits: details opened from each day = that date (${res.checked} checked)`, res.bad.join(", ") || "all match", "all match");
 }

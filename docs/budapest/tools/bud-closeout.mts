@@ -77,7 +77,8 @@ for (const [name, city, a, accept] of serverCases) {
 }
 
 // ── 3. Holiday hours on the affected dates (real generation entry point) ────────────────────────────────────
-const MNM = "hungarian-national-museum", MNG = "hungarian-national-gallery";
+const MNM = "hungarian-national-museum", MNG = "hungarian-national-gallery", OPERA = "opera-house-tour", HOM = "house-of-music";
+const RULE_PLACES = [MNM, MNG, OPERA, HOM];
 const toMin = (t: string) => Number(t.slice(0, 2)) * 60 + Number(t.slice(3, 5));
 const plans: any[] = [];
 async function gen(id: string, arrival: string, departure: string, interests: string[]) {
@@ -89,76 +90,88 @@ async function gen(id: string, arrival: string, departure: string, interests: st
 const dateOf = (arrival: string, dayNumber: number) => { const d = new Date(arrival + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() + dayNumber - 1); return d.toISOString().slice(0, 10); };
 const scheduled = (plan: any, placeId: string) => (plan?.days ?? []).flatMap((d: any) => (d.timeline?.stops ?? []).filter((s: any) => s.placeId === placeId).map((s: any) => ({ day: d.dayNumber, start: s.startMinutes, end: s.endMinutes })));
 const suggested = (plan: any, placeId: string) => (plan?.days ?? []).flatMap((d: any) => (d.optionalNearby ?? []).filter((o: any) => o.id === placeId).map((o: any) => ({ day: d.dayNumber, reason: o.reason })));
-const REASON = "اختياري: مواعيد العطلة لهاليوم مش منشورة لسا. تأكّد من موقع المتحف قبل ما تروح.";
+const REASON = "اختياري: مواعيد العطلة لهاليوم مش مؤكدة. تأكّد من الموقع الرسمي قبل ما تروح.";
+// Year-end dates (24-26 Dec, 31 Dec, 1 Jan) whose hours are unconfirmed: from Dec 2026 for the gallery, the Opera tour and the House of
+// Music (no kept official source); from Dec 2027 for the National Museum (its 2026 table is official).
+const unconfirmedFrom = (placeId: string) => (placeId === MNM ? 2027 : 2026);
+const unconfirmedOn = (placeId: string, iso: string) => {
+  const y = Number(iso.slice(0, 4)), md = iso.slice(5);
+  return (["12-24", "12-25", "12-26", "12-31"].includes(md) && y >= unconfirmedFrom(placeId)) || (md === "01-01" && y - 1 >= unconfirmedFrom(placeId));
+};
+const MNM_CLOSED_2026 = ["2026-12-24", "2026-12-25", "2026-12-26", "2027-01-01"];
+const { BUDAPEST_CITY_MODULE } = await import(pathToFileURL(R + "lib/planner/budapest/budapestCityModule.ts").href);
 
-// 2026 (official table): closed 24-26 Dec and 1 Jan; 31 Dec 10:00-14:00 (last entry 13:00 assumed); 27, 29, 30 open.
-for (const [id, a, d] of [["culture 24-26 Dec 2026", "2026-12-24", "2026-12-26"], ["culture 25-27 Dec 2026", "2026-12-25", "2026-12-27"], ["culture 30 Dec 2026-1 Jan 2027", "2026-12-30", "2027-01-01"], ["culture 31 Dec 2026", "2026-12-31", "2026-12-31"]] as const) {
-  const plan = await gen(id, a, d, ["cultureHistory"]);
+/** The rule on one generated trip: never on the clock on an unconfirmed date; a conditional suggestion with the reason exactly when the
+ *  place matches the request (the module's own relevance rule), the trip has such a date and the plan has the place nowhere else. */
+async function holidayTrip(id: string, a: string, d: string, interests: string[]) {
+  const plan = await gen(id, a, d, interests);
   check(`${id}: generated`, !!plan);
-  for (const v of scheduled(plan, MNM)) {
-    const iso = dateOf(a, v.day);
-    check(`${id}: museum not scheduled on a closed date`, !["2026-12-24", "2026-12-25", "2026-12-26", "2027-01-01"].includes(iso), iso);
-    if (iso === "2026-12-31") check(`${id}: museum on 31 Dec within 10:00-14:00, start by 13:00`, v.start >= toMin("10:00") && v.end <= toMin("14:00") && v.start <= toMin("13:00"), `${v.start}-${v.end}`);
+  if (!plan) return;
+  const tripDates = plan.days.map((day: any) => dateOf(a, day.dayNumber));
+  const relevance = BUDAPEST_CITY_MODULE.placeRelevance(interests, false);
+  const threshold = BUDAPEST_CITY_MODULE.relevanceThresholdFor({ days: plan.days.length, relevance });
+  for (const p of RULE_PLACES) {
+    const onClock = scheduled(plan, p).map((v: any) => ({ ...v, iso: dateOf(a, v.day) }));
+    check(`${id}: ${p} not on the clock on an unconfirmed date`, onClock.every((v: any) => !unconfirmedOn(p, v.iso)), JSON.stringify(onClock.map((v: any) => v.iso)));
+    if (p === MNM) {
+      check(`${id}: museum not on an official closed date`, onClock.every((v: any) => !MNM_CLOSED_2026.includes(v.iso)), JSON.stringify(onClock.map((v: any) => v.iso)));
+      for (const v of onClock.filter((x: any) => x.iso === "2026-12-31")) check(`${id}: museum on 31 Dec 2026 within 10:00-14:00, start by 13:00`, v.start >= toMin("10:00") && v.end <= toMin("14:00") && v.start <= toMin("13:00"), `${v.start}-${v.end}`);
+    }
+    const all = suggested(plan, p);
+    const withReason = all.filter((s: any) => s.reason === REASON);
+    const otherOptional = all.length - withReason.length;
+    const expected = relevance(p) >= threshold && onClock.length === 0 && otherOptional === 0 && tripDates.some((iso: string) => unconfirmedOn(p, iso)) ? 1 : 0;
+    check(`${id}: ${p} conditional suggestion ${expected ? "offered" : "not offered"} (relevance ${relevance(p)}/${threshold}, on clock ${onClock.length}, other suggestion ${otherOptional})`, withReason.length === expected && withReason.every((s: any) => unconfirmedOn(p, dateOf(a, s.day))), JSON.stringify(withReason));
   }
-  check(`${id}: no "not published" suggestion in 2026/27 (official hours known)`, suggested(plan, MNM).every((s: any) => s.reason !== REASON) && suggested(plan, MNG).every((s: any) => s.reason !== REASON));
 }
-// The National Museum's planning hours on each date of the official 2026 table (the generated culture trips above do not pick it).
+for (const [id, a, d, interests] of [
+  ["culture 24-26 Dec 2026", "2026-12-24", "2026-12-26", ["cultureHistory"]],
+  ["culture 25-27 Dec 2026", "2026-12-25", "2026-12-27", ["cultureHistory"]],
+  ["culture 30 Dec 2026-1 Jan 2027", "2026-12-30", "2027-01-01", ["cultureHistory"]],
+  ["culture 31 Dec 2026", "2026-12-31", "2026-12-31", ["cultureHistory"]],
+  ["mixed 23-26 Dec 2026", "2026-12-23", "2026-12-26", ["popular", "cultureHistory", "natureViews", "beachRelax"]],
+  ["culture 27 Dec 2026 (ordinary)", "2026-12-27", "2026-12-27", ["cultureHistory"]],
+  ["culture 24-26 Dec 2027", "2027-12-24", "2027-12-26", ["cultureHistory"]],
+  ["culture 31 Dec 2027-1 Jan 2028", "2027-12-31", "2028-01-01", ["cultureHistory"]],
+  ["culture 25 Dec 2029", "2029-12-25", "2029-12-25", ["cultureHistory"]],
+  ["culture 21-23 Dec 2027 (ordinary)", "2027-12-21", "2027-12-23", ["cultureHistory"]],
+  ["shopping 24-26 Dec 2027", "2027-12-24", "2027-12-26", ["shopping"]],
+  ["nature 25 Dec 2027", "2027-12-25", "2027-12-25", N],
+  ["food 31 Dec 2027-1 Jan 2028", "2027-12-31", "2028-01-01", ["food"]],
+] as const) await holidayTrip(id, a, d, [...interests]);
+{
+  const ord = plans.find((x) => x.id === "culture 21-23 Dec 2027 (ordinary)")?.plan;
+  check("21-23 Dec 2027 (ordinary): museums or tours scheduled as usual", RULE_PLACES.some((p) => scheduled(ord, p).length > 0));
+}
+
+// Planning hours per date: the official 2026 table for the museum; the other places keep their regular hours on ordinary days of the same
+// weeks (the rest of a trip is not blocked) and are not schedulable on the unconfirmed dates.
 {
   const { resolveHoursForTrip } = await import(pathToFileURL(R + "lib/planner/tripHours.ts").href);
   const { BUDAPEST_PLACES } = await import(pathToFileURL(R + "lib/planner/budapest/budapestPlaces.ts").href);
   const { resolvePlannerPlace } = await import(pathToFileURL(R + "lib/readyPlan.ts").href);
-  const hours = (resolvePlannerPlace(MNM, BUDAPEST_PLACES)?.place as any)?.hours;
+  const hoursOf = (id: string) => (resolvePlannerPlace(id, BUDAPEST_PLACES)?.place as any)?.hours;
   const WD = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
-  const on = (iso: string) => { const h = resolveHoursForTrip(hours, [iso]); const wd = WD[new Date(iso + "T12:00:00Z").getUTCDay()]; return { ranges: (h?.planningSchedule?.[wd] ?? []).map((r: any) => `${r.open}-${r.close}`).join(","), last: h?.planningLastEntry ?? "" }; };
-  const expect: [string, string, string][] = [
-    ["2026-12-23", "10:00-18:00", "17:00"], ["2026-12-24", "", ""], ["2026-12-25", "", ""], ["2026-12-26", "", ""], ["2026-12-27", "10:00-18:00", "17:00"],
-    ["2026-12-28", "", ""], ["2026-12-29", "10:00-18:00", "17:00"], ["2026-12-30", "10:00-18:00", "17:00"], ["2026-12-31", "10:00-14:00", "13:00"], ["2027-01-01", "", ""],
-    ["2027-01-02", "10:00-18:00", "17:00"], ["2027-12-24", "", ""], ["2027-12-27", "", ""], ["2027-12-28", "10:00-18:00", "17:00"], ["2027-12-31", "", ""],
+  const on = (id: string, iso: string) => { const h = resolveHoursForTrip(hoursOf(id), [iso]); const wd = WD[new Date(iso + "T12:00:00Z").getUTCDay()]; const sch = h?.planningSchedule ?? h?.schedule; return { ranges: (sch?.[wd] ?? []).map((r: any) => `${r.open}-${r.close}`).join(","), last: h?.planningLastEntry ?? h?.lastEntry ?? "" }; };
+  const expect: [string, string, string, string][] = [
+    [MNM, "2026-12-23", "10:00-18:00", "17:00"], [MNM, "2026-12-24", "", ""], [MNM, "2026-12-25", "", ""], [MNM, "2026-12-26", "", ""], [MNM, "2026-12-27", "10:00-18:00", "17:00"],
+    [MNM, "2026-12-28", "", ""], [MNM, "2026-12-29", "10:00-18:00", "17:00"], [MNM, "2026-12-30", "10:00-18:00", "17:00"], [MNM, "2026-12-31", "10:00-14:00", "13:00"], [MNM, "2027-01-01", "", ""],
+    [MNM, "2027-01-02", "10:00-18:00", "17:00"], [MNM, "2027-12-24", "", ""], [MNM, "2027-12-27", "", ""], [MNM, "2027-12-28", "10:00-18:00", "17:00"], [MNM, "2027-12-31", "", ""],
+    [OPERA, "2026-12-23", "13:30-17:30", "16:30"], [OPERA, "2026-12-27", "13:30-17:30", "16:30"], [OPERA, "2026-12-24", "", ""], [OPERA, "2026-12-31", "", ""], [OPERA, "2027-01-01", "", ""],
+    [HOM, "2026-12-23", "10:15-17:50", "16:15"], [HOM, "2026-12-27", "10:15-17:50", "16:15"], [HOM, "2026-12-25", "10:15-19:50", ""], [HOM, "2026-12-26", "", ""], [HOM, "2027-01-01", "", ""],
+    [MNG, "2026-12-23", "10:00-17:30", "17:00"], [MNG, "2026-12-30", "10:00-17:30", "17:00"], [MNG, "2026-12-24", "", ""], [MNG, "2026-12-28", "", ""], [MNG, "2027-01-01", "", ""],
   ];
-  for (const [iso, ranges, last] of expect) {
-    const got = on(iso);
-    check(`museum planning hours ${iso}`, got.ranges === ranges && (ranges === "" || got.last === last), `${got.ranges || "none"} last ${got.last || "-"}`);
+  for (const [id, iso, ranges, last] of expect) {
+    const got = on(id, iso);
+    // 25 Dec 2026 is a Friday: the House of Music row checks it is NOT schedulable (an unconfirmed date), whatever Friday's hours are.
+    const want = id === HOM && iso === "2026-12-25" ? "" : ranges;
+    check(`planning hours ${id} ${iso}`, got.ranges === want && (want === "" || got.last === last), `${got.ranges || "none"} last ${got.last || "-"}`);
   }
-  check("museum card shows the holiday text, not a weekly table", hours?.type === "variable" && String(hours.display).startsWith("مواعيد العطلة: 24–26 ديسمبر 2026 مسكّر"));
+  check("museum card shows its 2026 holiday text", hoursOf(MNM)?.type === "variable" && String(hoursOf(MNM).display).startsWith("مواعيد العطلة: 24–26 ديسمبر 2026 مسكّر"));
+  check("gallery card says the year-end hours are not confirmed (no dates stated as fact)", hoursOf(MNG)?.type === "variable" && String(hoursOf(MNG).display).startsWith("مواعيد عطلة آخر السنة (24–26 و31 ديسمبر و1 يناير): ما قدرنا نتأكد منها"));
+  check("House of Music card is a text (no weekly table that says open on a holiday)", hoursOf(HOM)?.type === "variable" && String(hoursOf(HOM).display).includes("مواعيد عطلة آخر السنة (24–26 و31 ديسمبر و1 يناير) مش مؤكدة"));
 }
-// The 2026 museum visit on 27 Dec (open) still possible: one-day trip on 27 Dec.
-{
-  const plan = await gen("culture 27 Dec 2026 (open)", "2026-12-27", "2026-12-27", ["cultureHistory"]);
-  check("27 Dec 2026: generated", !!plan);
-}
-// 2027+ (not published): never on the clock on 24-26, 31 Dec, 1 Jan; a conditional suggestion with the reason when relevant.
-for (const [id, a, d] of [["culture 24-26 Dec 2027", "2027-12-24", "2027-12-26"], ["culture 31 Dec 2027-1 Jan 2028", "2027-12-31", "2028-01-01"], ["culture 25 Dec 2029", "2029-12-25", "2029-12-25"]] as const) {
-  const plan = await gen(id, a, d, ["cultureHistory"]);
-  check(`${id}: generated`, !!plan);
-  for (const p of [MNM, MNG]) {
-    check(`${id}: ${p} not on the clock`, scheduled(plan, p).length === 0, JSON.stringify(scheduled(plan, p)));
-    const s = suggested(plan, p);
-    check(`${id}: ${p} offered as a conditional suggestion with the reason`, s.length === 1 && s[0].reason === REASON, JSON.stringify(s));
-  }
-}
-// The day after (27 Dec 2027, Monday: both closed as every Monday) and an ordinary 2027 day keep regular behaviour.
-{
-  const plan = await gen("culture 21-23 Dec 2027 (ordinary)", "2027-12-21", "2027-12-23", ["cultureHistory"]);
-  check("21-23 Dec 2027: generated", !!plan);
-  check("21-23 Dec 2027: no holiday suggestion", [MNM, MNG].every((p) => suggested(plan, p).every((s: any) => s.reason !== REASON)));
-  check("21-23 Dec 2027: the museum is scheduled as usual", scheduled(plan, MNM).length + scheduled(plan, MNG).length > 0);
-}
-// The suggestion follows the module's own relevance rule (the same as the cruise's): offered exactly when the museum matches the request
-// at the request's threshold (it drops to 3 when the interests have few places, so a museum can match a shopping trip too).
-{
-  const { BUDAPEST_CITY_MODULE } = await import(pathToFileURL(R + "lib/planner/budapest/budapestCityModule.ts").href);
-  for (const [id, a, d, interests] of [["shopping 24-26 Dec 2027", "2027-12-24", "2027-12-26", ["shopping"]], ["nature 25 Dec 2027", "2027-12-25", "2027-12-25", N], ["food 31 Dec 2027-1 Jan 2028", "2027-12-31", "2028-01-01", ["food"]]] as const) {
-    const plan = await gen(id, a, d, [...interests]);
-    const days = Math.round((Date.parse(d) - Date.parse(a)) / 86400000) + 1;
-    const relevance = BUDAPEST_CITY_MODULE.placeRelevance([...interests], false);
-    const threshold = BUDAPEST_CITY_MODULE.relevanceThresholdFor({ days, relevance });
-    for (const p of [MNM, MNG]) {
-      const relevant = relevance(p) >= threshold;
-      const got = suggested(plan, p).filter((s: any) => s.reason === REASON).length;
-      check(`${id}: ${p} suggested only if relevant (relevance ${relevance(p)}, threshold ${threshold})`, got === (relevant ? 1 : 0) && scheduled(plan, p).length === 0, `suggested ${got}`);
-    }
-  }
-}
+
 
 // ── 4. Texts ────────────────────────────────────────────────────────────────────────────────────────────
 check("title: City Park + Andrássy and the Opera", budapestTemplate("حديقة المدينة و Andrássy والأوبرا", "en") === "City Park, Andrássy Avenue and the Opera", String(budapestTemplate("حديقة المدينة و Andrássy والأوبرا", "en")));
@@ -171,6 +184,24 @@ if (localizePlan) {
   let en = "";
   try { en = JSON.stringify(localizePlan(probe as any, "en")); } catch (e: any) { en = "error " + e.message; }
   check("House of Music text translated (en)", en.includes("Timed entry every 30 minutes, at :15 and :45 past the hour. Book the entry time that fits your plan."), en.slice(0, 200));
+}
+
+// Point 1-2 of the owner's Preview approval (2026-11-16): one-day texts, Budapest's "nature" label, no booking condition.
+{
+  const { interestGroupLabelForDestination } = await import(pathToFileURL(R + "lib/planner/plannerDestinations.ts").href);
+  const { plannerCopyAr, plannerCopyEn } = await import(pathToFileURL(R + "lib/plannerCopy.ts").href);
+  const { PLACE_CARD_TEXT } = await import(pathToFileURL(R + "lib/i18n/planText.ts").href);
+  const { BUDAPEST_CITY_MODULE } = await import(pathToFileURL(R + "lib/planner/budapest/budapestCityModule.ts").href);
+  check("label: Budapest nature group (ar)", interestGroupLabelForDestination("budapest", "natureBeaches", "ar") === "طبيعة وإطلالات");
+  check("label: Budapest nature group (en)", interestGroupLabelForDestination("budapest", "natureBeaches", "en") === "Nature & views");
+  check("label: Barcelona keeps the default", interestGroupLabelForDestination("barcelona", "natureBeaches", "ar") === undefined);
+  check("one day, flexible (ar)", plannerCopyAr.wizard.limitFixOneDayOrInterest === "اختار يوم واحد أو ضيف اهتمام تاني.");
+  check("one day, dates (ar)", plannerCopyAr.wizard.limitFixOneDateOrInterest === "خلّي الوصول والمغادرة بنفس اليوم، أو ضيف اهتمام تاني.");
+  check("one day, flexible (en)", plannerCopyEn.wizard.limitFixOneDayOrInterest === "Choose 1 day, or add another interest.");
+  check("Opera card line (ar)", PLACE_CARD_TEXT.ar.hours.sessionsBooking === "الدخول بجولة فقط، حسب المواعيد وتوفّر التذاكر.", PLACE_CARD_TEXT.ar.hours.sessionsBooking);
+  check("Opera card line (en)", PLACE_CARD_TEXT.en.hours.sessionsBooking === "Entry by guided tour only, subject to tour times and ticket availability.", PLACE_CARD_TEXT.en.hours.sessionsBooking);
+  const warnings = ["opera-house-tour", "danube-legend-cruise", "house-of-music"].flatMap((id) => (BUDAPEST_CITY_MODULE.operationalWarnings(id, null) ?? []).map((w: any) => w.textAr));
+  check("warnings: no booking condition (Opera, cruise, House of Music)", warnings.length === 3 && warnings.every((t: string) => !/مشروطة بالحجز|محجوز/.test(t)), warnings.join(" | "));
 }
 
 // The generated holiday plans, in the shape the other review tools read ([{ id, plan }]).
