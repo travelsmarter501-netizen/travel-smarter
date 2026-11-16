@@ -60,6 +60,23 @@ export type PlannerCopy = {
     tripLength: string;
     errDepartureBeforeArrival: string;
     errMaxDays: string;
+    /** A destination's trip-length limit (lib/planner/tripLengthLimits.ts). Placeholders: {city} {days} */
+    limitDestination: string;
+    /** The limit comes from the chosen interests. Placeholders: {interests} {city} {days} */
+    limitInterests: string;
+    /** What the visitor can do (flexible dates / specific dates; "OrInterest" when another interest would lift the limit). Placeholder: {days} */
+    limitFixDays: string;
+    limitFixDaysOrInterest: string;
+    limitFixDates: string;
+    limitFixDatesOrInterest: string;
+    /** Button (flexible dates): set the trip to the allowed length. Placeholder: {days} */
+    limitUseMax: string;
+    /** Button (specific dates): back to the dates step. */
+    limitChangeDates: string;
+    /** Day counts inside the limit texts. Placeholder of `daysPhraseMany`: {n} */
+    daysPhraseOne: string;
+    daysPhraseTwo: string;
+    daysPhraseMany: string;
     interestsTitle: string;
     /** Placeholder: {n} */
     interestsSelectedCount: string;
@@ -197,6 +214,17 @@ export const plannerCopyAr: PlannerCopy = {
     tripLength: "مدة الرحلة: {n} أيام",
     errDepartureBeforeArrival: "تاريخ المغادرة لازم يكون بعد أو بنفس تاريخ الوصول.",
     errMaxDays: "أقصى مدة مدعومة حاليًا 10 أيام. اختار تواريخ أقرب.",
+    limitDestination: "خطط {city} حاليًا لحد {days}.",
+    limitInterests: "إذا اخترت «{interests}» بس، خطة {city} حاليًا لحد {days}.",
+    limitFixDays: "اختار {days} أو أقل.",
+    limitFixDaysOrInterest: "اختار {days} أو أقل، أو ضيف اهتمام تاني.",
+    limitFixDates: "قصّر التواريخ لحد {days}.",
+    limitFixDatesOrInterest: "قصّر التواريخ لحد {days}، أو ضيف اهتمام تاني.",
+    limitUseMax: "خلّيها {days}",
+    limitChangeDates: "غيّر التواريخ",
+    daysPhraseOne: "يوم واحد",
+    daysPhraseTwo: "يومين",
+    daysPhraseMany: "{n} أيام",
     interestsTitle: "شو بتحب بالرحلة؟",
     interestsSelectedCount: "{n} مختارة",
     surpriseSelected: "فاجئني مختارة",
@@ -330,6 +358,17 @@ export const plannerCopyEn: PlannerCopy = {
     tripLength: "Trip length: {n} days",
     errDepartureBeforeArrival: "The departure date must be on or after the arrival date.",
     errMaxDays: "The maximum supported trip length is 10 days. Please choose closer dates.",
+    limitDestination: "{city} plans are currently up to {days}.",
+    limitInterests: "With only “{interests}”, a {city} plan is currently up to {days}.",
+    limitFixDays: "Choose {days} or fewer.",
+    limitFixDaysOrInterest: "Choose {days} or fewer, or add another interest.",
+    limitFixDates: "Shorten your dates to {days} or fewer.",
+    limitFixDatesOrInterest: "Shorten your dates to {days} or fewer, or add another interest.",
+    limitUseMax: "Make it {days}",
+    limitChangeDates: "Change dates",
+    daysPhraseOne: "1 day",
+    daysPhraseTwo: "2 days",
+    daysPhraseMany: "{n} days",
     interestsTitle: "What do you like on a trip?",
     interestsSelectedCount: "{n} selected",
     surpriseSelected: "Surprise me selected",
@@ -463,6 +502,17 @@ export const plannerCopyHe: PlannerCopy = {
     tripLength: "אורך הטיול: {n} ימים",
     errDepartureBeforeArrival: "תאריך העזיבה צריך להיות באותו יום של ההגעה או אחריו.",
     errMaxDays: "אורך הטיול המקסימלי הנתמך הוא 10 ימים. בחרו תאריכים קרובים יותר.",
+    limitDestination: "התוכניות ל{city} הן כרגע עד {days}.",
+    limitInterests: "עם „{interests}” בלבד, תוכנית ל{city} היא כרגע עד {days}.",
+    limitFixDays: "בחרו {days} או פחות.",
+    limitFixDaysOrInterest: "בחרו {days} או פחות, או הוסיפו תחום עניין נוסף.",
+    limitFixDates: "קצרו את התאריכים עד {days}.",
+    limitFixDatesOrInterest: "קצרו את התאריכים עד {days}, או הוסיפו תחום עניין נוסף.",
+    limitUseMax: "לקבוע {days}",
+    limitChangeDates: "שינוי תאריכים",
+    daysPhraseOne: "יום אחד",
+    daysPhraseTwo: "יומיים",
+    daysPhraseMany: "{n} ימים",
     interestsTitle: "מה אתם אוהבים בטיול?",
     interestsSelectedCount: "{n} נבחרו",
     surpriseSelected: "נבחר \"תפתיעו אותי\"",

@@ -437,7 +437,7 @@ function presentBudapestPlan(plan: GeneratedPlannerPlan): PresentedPlannerPlan {
       ...(day.optionalPlaceIds ?? []).map((placeId) => ({
         placeId,
         type: "experience" as const,
-        reason: day.optionalReasons?.[placeId] === "unpublished" ? CRUISE_UNPUBLISHED_REASON_AR : getBudapestPlannerMetadataById(placeId)?.preferredTime === "evening" && !day.optionalReasons?.[placeId] ? "اختياري: رحلة مسائية، مواعيدها حسب فترة سفرك؛ احجز موعد لما تعرف تاريخك" : day.optionalReasons?.[placeId] === "closing" ? "اختياري: بيسكّر قبل ما توصله بهاليوم" : "اختياري: اليوم مليان، زوره إذا ضل عندك وقت",
+        reason: day.optionalReasons?.[placeId] === "unpublished" ? CRUISE_UNPUBLISHED_REASON_AR : day.optionalReasons?.[placeId] === "holidayUnconfirmed" ? HOLIDAY_UNCONFIRMED_REASON_AR :getBudapestPlannerMetadataById(placeId)?.preferredTime === "evening" && !day.optionalReasons?.[placeId] ? "اختياري: رحلة مسائية، مواعيدها حسب فترة سفرك؛ احجز موعد لما تعرف تاريخك" : day.optionalReasons?.[placeId] === "closing" ? "اختياري: بيسكّر قبل ما توصله بهاليوم" : "اختياري: اليوم مليان، زوره إذا ضل عندك وقت",
       })),
       ...(day.goalSuggestionPlaceIds ?? []).map((placeId) => ({ placeId, type: "experience" as const, reason: "تسوّق قريب من مسارك إذا حابب" })),
       ...(day.freeTimePlaceIds ?? []).map((placeId) => ({ placeId, type: "experience" as const, reason: "قريب من مسارك إذا حابب" })),
@@ -551,11 +551,47 @@ const CRUISE_ID = "danube-legend-cruise";
 const CRUISE_UNPUBLISHED_REASON_AR = "رحلة مسائية على الدانوب — خيار إضافي. تأكّد من المواعيد والتوفّر لتاريخ سفرك قبل الحجز.";
 const RIVER_CLUSTERS = new Set(["belvaros", "lipotvaros"]);
 
-/** The cruise's timetable is not published for this date: the "PLANNING EXCLUSION" entries of its data (budapestPlaces.ts). */
-function cruiseTimetableUnpublished(isoDate: string): boolean {
-  const hours = (resolvePlannerPlace(CRUISE_ID, BUDAPEST_PLACES)?.place as { hours?: HoursInfo } | undefined)?.hours;
+/** A place's hours are not published for this date: the "PLANNING EXCLUSION" entries of its data (budapestPlaces.ts). */
+function planningExcludedOn(placeId: string, isoDate: string): boolean {
+  const hours = (resolvePlannerPlace(placeId, BUDAPEST_PLACES)?.place as { hours?: HoursInfo } | undefined)?.hours;
   const exceptions = hours && hours.type === "variable" ? hours.dateExceptions : undefined;
   return !!exceptions?.some((e) => e.note?.startsWith("PLANNING EXCLUSION") && isoDate >= e.from && isoDate <= e.to);
+}
+
+/** The cruise's timetable is not published for this date. */
+function cruiseTimetableUnpublished(isoDate: string): boolean {
+  return planningExcludedOn(CRUISE_ID, isoDate);
+}
+
+/**
+ * Museums whose year-end holiday hours are not published for the trip's year (PLANNING EXCLUSION entries, from Dec 2027): never on the
+ * clock on those dates. When such a museum matches the request (the same relevance rule as the cruise) and the plan does not have it on
+ * another day, it is a conditional suggestion on one of those dates (the day with the most minutes in its area, else the last one), with
+ * a reason that says the hours are not published -- never that it is closed. Plans without dates and other dates are not affected.
+ */
+const HOLIDAY_UNCONFIRMED_PLACE_IDS = ["hungarian-national-museum", "hungarian-national-gallery"];
+/** Customer text (2026-11-16), NOT yet reviewed by the owner. */
+const HOLIDAY_UNCONFIRMED_REASON_AR = "اختياري: مواعيد العطلة لهاليوم مش منشورة لسا. تأكّد من موقع المتحف قبل ما تروح.";
+
+function withHolidayUnconfirmedSuggestions(result: { plan: GeneratedPlannerPlan; legsByDay: PlannerRouteLeg[][] }, context: DayGeographyRepairContext): { plan: GeneratedPlannerPlan; legsByDay: PlannerRouteLeg[][] } {
+  if (context.weekdayForDayNumber?.(1) == null) return result;
+  let days = result.plan.days;
+  for (const placeId of HOLIDAY_UNCONFIRMED_PLACE_IDS) {
+    if (days.some((day) => day.stops.some((stop) => stop.placeId === placeId) || day.optionalPlaceIds?.includes(placeId))) continue;
+    if (!context.config.dayBuilderConfig.isPlaceRelevant?.(placeId)) continue;
+    const candidates = days.filter((day) => {
+      const iso = context.isoDateForDayNumber?.(day.dayNumber);
+      return !!iso && planningExcludedOn(placeId, iso);
+    });
+    if (candidates.length === 0) continue;
+    const cluster = getBudapestPlannerMetadataById(placeId)?.cluster;
+    const areaMinutes = (day: PlannerDay) => day.stops.reduce((sum, stop) => { const meta = getBudapestPlannerMetadataById(stop.placeId); return sum + (meta && meta.cluster === cluster ? meta.visitDurationMinutes : 0); }, 0);
+    const target = [...candidates].sort((a, b) => areaMinutes(b) - areaMinutes(a) || b.dayNumber - a.dayNumber)[0];
+    days = days.map((day) =>
+      day !== target ? day : { ...day, optionalPlaceIds: [...(day.optionalPlaceIds ?? []), placeId], optionalReasons: { ...day.optionalReasons, [placeId]: "holidayUnconfirmed" as const } }
+    );
+  }
+  return days === result.plan.days ? result : { plan: { ...result.plan, days }, legsByDay: result.legsByDay };
 }
 
 /**
@@ -1227,7 +1263,7 @@ export function budapestRepairDayGeography(context: DayGeographyRepairContext, o
     }
   );
   // Flexible dates: the cruise departure depends on the period (2026 timetable), so it is a suggestion there, never a guessed time.
-  return withCruiseSuggestion(eveningLast(balanced, context.weekdayForDayNumber?.(1) == null), context);
+  return withHolidayUnconfirmedSuggestions(withCruiseSuggestion(eveningLast(balanced, context.weekdayForDayNumber?.(1) == null), context), context);
 }
 
 function budapestMealRules(options: BudapestQualityOptions): CityPlannerModule["mealStops"] {

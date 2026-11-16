@@ -49,6 +49,7 @@ export const BUDAPEST_PLACE_TEXT: (PlanCatalogEntry & { keys: string[] })[] = [
   { keys: ["budapest/attractions/hungarian-national-gallery/whyRecommend"], ar: "أكبر مجموعة فن مجري، ومن القبة إطلالة على المدينة.", en: "The largest collection of Hungarian art, and a view of the city from the dome.", he: "האוסף הגדול ביותר של אמנות הונגרית, ומהכיפה נוף על העיר." },
   { keys: ["budapest/attractions/hungarian-national-gallery/duration"], ar: "ساعتين تقريبًا (المتحف بيقترح 1.5–3 ساعات)", en: "About 2 hours (the museum suggests 1.5–3 hours)", he: "כשעתיים (המוזיאון ממליץ על 1.5–3 שעות)" },
   { keys: ["budapest/attractions/hungarian-national-gallery/priceText"], ar: "5,800 HUF (بالغ، كامل) · مخفّض 2,900 حسب العمر", en: "5,800 HUF (adult, full price) · reduced 2,900 by age", he: "5,800 HUF (מבוגר, מחיר מלא) · מוזל 2,900 לפי גיל" },
+  { keys: ["budapest/attractions/hungarian-national-museum/hours.display"], ar: "مواعيد العطلة: 24–26 ديسمبر 2026 مسكّر · 31 ديسمبر 2026 10:00–14:00 · 1 يناير 2027 مسكّر · عطلة آخر السنة بالسنين الجاية: المواعيد مش منشورة لسا — المواعيد العادية: الثلاثاء–الأحد 10:00–18:00، الشباك بيسكّر 17:00، والقاعات بتبلش تسكّر 17:30 · الإثنين مسكّر", en: "Holiday hours: closed 24–26 December 2026 · 31 December 2026 10:00–14:00 · closed 1 January 2027 · year-end holidays in later years: hours not published yet — Regular hours: Tuesday–Sunday 10:00–18:00, the ticket office closes at 17:00, and the halls start closing at 17:30 · closed on Mondays", he: "שעות החגים: סגור ב־24–26 בדצמבר 2026 · 31 בדצמבר 2026 10:00–14:00 · סגור ב־1 בינואר 2027 · חגי סוף השנה בשנים הבאות: השעות עדיין לא פורסמו — שעות רגילות: שלישי–ראשון 10:00–18:00, הקופה נסגרת ב־17:00, והאולמות מתחילים להיסגר ב־17:30 · סגור בימי שני" },
   { keys: ["budapest/attractions/hungarian-national-museum/description"], ar: "تاريخ هنغاريا من العصور القديمة لليوم، بمبنى كلاسيكي.", en: "Hungary's history from ancient times to today, in a classical building.", he: "ההיסטוריה של הונגריה מהעת העתיקה ועד היום, בבניין קלאסי." },
   { keys: ["budapest/attractions/hungarian-national-museum/whyRecommend"], ar: "أهم متحف تاريخي بالمدينة.", en: "The city's most important history museum.", he: "מוזיאון ההיסטוריה החשוב ביותר בעיר." },
   { keys: ["budapest/attractions/hungarian-national-museum/tip"], ar: "الشباك لحد 17:00. في قاعات مسكّرة للترميم من 2 ديسمبر 2025، ومعطف التتويج مسكّر حاليًا (حسب موقع المتحف).", en: "Ticket desk until 17:00. Some halls have been closed for renovation since 2 December 2025, and the Coronation Mantle display is currently closed (according to the museum's website).", he: "הקופה פתוחה עד 17:00. חלק מהאולמות סגורים לשיפוץ מ־2 בדצמבר 2025, ותצוגת גלימת ההכתרה סגורה כרגע (לפי אתר המוזיאון)." },
@@ -132,21 +133,25 @@ export const BUDAPEST_PHRASES: (PlanCatalogEntry & { key: string })[] = [
   { key: "budapest/warning/basilica-sunday", ar: "الأحد: الكنيسة بتفتح من 13:00 بس (التراس من 9:00).", en: "Sunday: the church opens only from 13:00 (the terrace from 9:00).", he: "ראשון: הכנסייה נפתחת רק מ־13:00 (המרפסת מ־9:00)." },
   { key: "budapest/warning/museum-halls", ar: "في قاعات مسكّرة للترميم حسب موقع المتحف.", en: "Some halls are closed for renovation, according to the museum's website.", he: "חלק מהאולמות סגורים לשיפוץ, לפי אתר המוזיאון." },
   { key: "budapest/show-window/opera", ar: "الجولات بس 13:30 و15:00 و16:30: احجز الموعد اللي بيناسب خطتك.", en: "Tours only at 13:30, 15:00 and 16:30: book the time that fits your plan.", he: "סיורים רק ב־13:30, 15:00 ו־16:30: הזמינו את המועד שמתאים לתוכנית שלכם." },
-  { key: "budapest/show-window/house-of-music", ar: "الدخول بفترات كل نص ساعة (:15 و:45): احجز الفترة اللي بتناسب خطتك.", en: "Entry in half-hour slots (:15 and :45): book the slot that fits your plan.", he: "הכניסה במשבצות של חצי שעה (:15 ו־:45): הזמינו את המשבצת שמתאימה לתוכנית שלכם." },
+  // Owner's wording 2026-11-16 (Arabic and English; an AI language review, not a person's review). Hebrew follows it, not reviewed.
+  { key: "budapest/show-window/house-of-music", ar: "مواعيد الدخول كل نص ساعة، عند الدقيقة 15 و45. احجز الموعد اللي بناسب خطتك.", en: "Timed entry every 30 minutes, at :15 and :45 past the hour. Book the entry time that fits your plan.", he: "כניסה בזמנים קבועים כל 30 דקות, ב־:15 וב־:45 בכל שעה. הזמינו את שעת הכניסה שמתאימה לתוכנית שלכם." },
+  // 2026-11-16: museums whose year-end holiday hours are not published for the trip's year (budapestCityModule.ts). Not reviewed.
+  { key: "budapest/reason/holiday-unconfirmed", ar: "اختياري: مواعيد العطلة لهاليوم مش منشورة لسا. تأكّد من موقع المتحف قبل ما تروح.", en: "Optional: the holiday opening hours for this day are not published yet. Check the museum's website before you go.", he: "אופציונלי: שעות הפתיחה בחג ליום הזה עדיין לא פורסמו. בדקו באתר המוזיאון לפני שאתם יוצאים." },
 ];
 
-type Pair = { en: string; he: string };
+/** `enParts` (two-place labels): their parts, so a title of three or more parts reads as one list in English (owner, 2026-11-16). */
+type Pair = { en: string; he: string; enParts?: [string, string] };
 
 /** Budapest area labels of day titles (budapestCityModule.ts), without an article, for titles. Not reviewed by a person (see above). */
 const AREA_TITLE: Record<string, Pair> = {
-  "البرلمان والكاتدرائية": { en: "Parliament and St Stephen's", he: "הפרלמנט וסנט סטפן" },
+  "البرلمان والكاتدرائية": { en: "Parliament and St Stephen's", he: "הפרלמנט וסנט סטפן", enParts: ["Parliament", "St Stephen’s Basilica"] },
   البرلمان: { en: "Parliament", he: "הפרלמנט" },
   الكاتدرائية: { en: "St Stephen's Basilica", he: "בזיליקת סנט סטפן" },
   "ضفة الدانوب": { en: "Danube bank", he: "גדת הדנובה" },
   "وسط Pest": { en: "Central Pest", he: "מרכז Pest" },
   "تلة القلعة": { en: "Castle Hill", he: "גבעת הטירה" },
   "تلة Gellért": { en: "Gellért Hill", he: "גבעת Gellért" },
-  "Andrássy والأوبرا": { en: "Andrássy and the Opera", he: "Andrássy והאופרה" },
+  "Andrássy والأوبرا": { en: "Andrássy and the Opera", he: "Andrássy והאופרה", enParts: ["Andrássy Avenue", "the Opera"] },
   الأوبرا: { en: "Opera House", he: "בית האופרה" },
   "شارع Andrássy": { en: "Andrássy Avenue", he: "שדרות Andrássy" },
   "الحي اليهودي": { en: "Jewish Quarter", he: "הרובע היהודי" },
@@ -179,7 +184,10 @@ function budapestTitle(text: string, lang: "en" | "he"): string | null {
     const b = AREA_TITLE[core.slice(a.length + 2).trimStart()];
     if (!b) continue;
     const A = AREA_TITLE[a][lang];
-    return (lang === "en" ? `${A} & ${b.en}` : `${A} ${heAnd(b.he)}`) + suffix;
+    if (lang === "he") return `${A} ${heAnd(b.he)}` + suffix;
+    // English: two parts keep "A & B"; three or more read as a list, "City Park, Andrássy Avenue and the Opera".
+    const parts = [...(AREA_TITLE[a].enParts ?? [A]), ...(b.enParts ?? [b.en])];
+    return (parts.length > 2 ? `${parts.slice(0, -1).join(", ")} and ${parts[parts.length - 1]}` : `${A} & ${b.en}`) + suffix;
   }
   return null;
 }

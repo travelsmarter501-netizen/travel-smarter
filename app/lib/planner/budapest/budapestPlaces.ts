@@ -213,7 +213,9 @@ export const BUDAPEST_ATTRACTIONS: Attraction[] = [
     mustSee: false,
     address: "Múzeum krt. 14-16, 1088 Budapest",
     priceText: "3,500 HUF (بالغ، كامل) · المخفّض لمواطني هنغاريا وEEA بس",
-    hours: fixed(days(TUE_TO_SUN, ["10:00", "18:00"]), "https://mnm.hu/en", "mnm.hu (official)"),
+    // `variable` (was `fixed`, 2026-11-16) so the card shows the holiday hours as text instead of a weekly table that would call the
+    // museum "open" on a holiday date. Planning uses the same regular hours as before (PLANNING_HOURS). Customer text NOT yet reviewed.
+    hours: variable("مواعيد العطلة: 24–26 ديسمبر 2026 مسكّر · 31 ديسمبر 2026 10:00–14:00 · 1 يناير 2027 مسكّر · عطلة آخر السنة بالسنين الجاية: المواعيد مش منشورة لسا — المواعيد العادية: الثلاثاء–الأحد 10:00–18:00، الشباك بيسكّر 17:00، والقاعات بتبلش تسكّر 17:30 · الإثنين مسكّر", "https://mnm.hu/nyitvatartas", "mnm.hu (official)", ["monday"]),
     coordinates: { lat: 47.491101, lng: 19.062318 }, // OSM node/9195573290 entrance=main, Múzeum krt. 14-16
   }),
   attraction({
@@ -486,6 +488,21 @@ const every20 = (first: string, last: string): string[] => {
   return out;
 };
 
+/**
+ * PLANNING EXCLUSIONS, NOT CLOSURES (2026-11-16): the year-end holidays (24-26 Dec, 31 Dec, 1 Jan) of years whose holiday hours the
+ * museum has not published (from Dec 2027). In 2026 these were exactly the dates with changed hours. The planner does not put the museum
+ * on the clock on those dates; it is offered as a conditional suggestion instead (budapestCityModule.ts), never called closed.
+ * Generated to 2040, like the House of Music rule; later dates keep the regular hours.
+ */
+function yearEndHolidaysNotPublished(source: string): HoursDateException[] {
+  const out: HoursDateException[] = [];
+  for (let year = 2027; year <= 2040; year++) {
+    const note = `PLANNING EXCLUSION (not a closure): holiday hours for ${year}/${year + 1} not published (${source}, checked 2026-11-16)`;
+    out.push({ from: `${year}-12-24`, to: `${year}-12-26`, closed: true, note }, { from: `${year}-12-31`, to: `${year + 1}-01-01`, closed: true, note });
+  }
+  return out;
+}
+
 const PLANNING_HOURS: Record<string, PlanningHours> = {
   "hungarian-national-gallery": {
     // Planning hours: the building is open 10:00-18:00, but the halls start closing at 17:30 (top floor), so a visit is planned to END by
@@ -500,10 +517,24 @@ const PLANNING_HOURS: Record<string, PlanningHours> = {
       { from: "2026-12-26", to: "2026-12-30", hours: R("10:00", "17:30"), lastEntry: "17:00", override: true, note: "official 10:00-18:00, last entry 17:00 (reviewer's reading); halls close from 17:30" },
       { from: "2026-12-31", to: "2026-12-31", hours: R("10:00", "16:00"), lastEntry: "15:00", override: true, note: "official 10:00-16:00, last entry 15:00 (reviewer's reading)" },
       { from: "2027-01-01", to: "2027-01-01", hours: R("12:00", "17:30"), lastEntry: "17:00", override: true, note: "official 12:00-18:00, last entry 17:00 (reviewer's reading); halls close from 17:30" },
+      ...yearEndHolidaysNotPublished("en.mng.hu/opening-hours-during-holidays"),
     ],
-    conflict: "Holiday dates 24 Dec 2026 - 1 Jan 2027 come from the reviewer's reading of the official holidays page (14 Nov 2026), relayed by the owner; our direct access failed (Cloudflare 520, 13 and 14 Nov). Regular hours and the 17:30 hall closing: en.mng.hu/opening-hours/, read by us 13 Nov.",
+    conflict: "Holiday dates 24 Dec 2026 - 1 Jan 2027 come from the reviewer's reading of the official holidays page (14 Nov 2026), relayed by the owner; our direct access failed (Cloudflare 520, 13 and 14 Nov; again 16 Nov 2026 for en.mng.hu, mng.hu and szepmuveszeti.hu). Regular hours and the 17:30 hall closing: en.mng.hu/opening-hours/, read by us 13 Nov.",
   },
-  "hungarian-national-museum": { lastEntry: "17:00", conflict: "mnm.hu: ticket office closes 17:00, exhibitions close from 17:30. Holiday hours page not read." },
+  "hungarian-national-museum": {
+    // Regular planning hours unchanged from the former `fixed` record: Tuesday-Sunday 10:00-18:00, last entry 17:00 (ticket office).
+    seasonalSchedules: [season("01-01", "12-31", days(TUE_TO_SUN, ["10:00", "18:00"]), "17:00")],
+    // Holidays 2026/27: the museum's own table «Magyar Nemzeti Múzeum ünnepi nyitvatartása 2026-ban» on https://mnm.hu/nyitvatartas
+    // (Hungarian page; read by us 2026-11-16; the English opening-hours page has no holiday table). Other 2026 holidays in that table
+    // (15 Mar, Easter, 1 May, Whitsun, 20 Aug, 23 Oct, 1 Nov) are open or fall on a Monday, as the regular hours. 27, 29, 30 Dec: open.
+    dateExceptions: [
+      { from: "2026-12-24", to: "2026-12-26", closed: true, note: "official mnm.hu/nyitvatartas 2026 table: zárva (closed)" },
+      { from: "2026-12-31", to: "2026-12-31", hours: R("10:00", "14:00"), lastEntry: "13:00", note: "official 10:00-14:00; last entry not published for 31 Dec: one hour before closing assumed (as the regular ticket office)" },
+      { from: "2027-01-01", to: "2027-01-01", closed: true, note: "official mnm.hu/nyitvatartas 2026 table: zárva (closed)" },
+      ...yearEndHolidaysNotPublished("mnm.hu/nyitvatartas"),
+    ],
+    conflict: "mnm.hu: ticket office closes 17:00, exhibitions close from 17:30. Holiday table 2026 read on mnm.hu/nyitvatartas 2026-11-16; later years not published.",
+  },
   "museum-of-fine-arts": {
     lastEntry: "17:00",
     dateExceptions: [

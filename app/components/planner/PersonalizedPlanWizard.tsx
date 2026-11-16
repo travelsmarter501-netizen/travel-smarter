@@ -15,8 +15,9 @@ import TextWithPrice from "../home/TextWithPrice";
 import { QUIZ_CHOICE_BASE, QUIZ_PRESS, quizChoiceClass, quizHaptic } from "./quizFeedback";
 import { PLAN_PRICE_ILS } from "../home/homeOffer";
 import type { V2PlannerInterest } from "../../lib/planner/v2PlannerTypes";
-import { PLANNER_DESTINATIONS, DEFAULT_PLANNER_DESTINATION_ID, isAvailablePlannerDestinationId, isPreviewPlannerDestinationId } from "../../lib/planner/plannerDestinations";
+import { PLANNER_DESTINATIONS, DEFAULT_PLANNER_DESTINATION_ID, interestGroupLabelForDestination, isAvailablePlannerDestinationId, isPreviewPlannerDestinationId, plannerDestinationName } from "../../lib/planner/plannerDestinations";
 import { MAX_ACCOMMODATION_TEXT_LENGTH, MAX_PERSONALIZED_PLAN_DAYS } from "../../lib/planner/personalizedPlanAnswers";
+import { tripLengthLimit } from "../../lib/planner/tripLengthLimits";
 
 type DateMode = "flexible" | "specific";
 
@@ -88,11 +89,35 @@ export default function PersonalizedPlanWizard({
           : null
       : null;
 
+  // Per-destination trip length (lib/planner/tripLengthLimits.ts, Budapest only today): the same rule the server applies. It is never
+  // applied silently: an answer over the limit blocks "next" with the reason and the visitor's options (fewer days / other dates / another
+  // interest), and only the visitor's own click changes the length.
+  const lengthLimit = tripLengthLimit(destinationId, surpriseMe ? [] : interests, surpriseMe);
+  const tripDays = dateMode === "flexible" ? durationDays : previewDays;
+  const overLimit = !!lengthLimit && tripDays !== null && tripDays > lengthLimit.maxDays && !dateRangeError;
+  const daysPhrase = (n: number) => (n === 1 ? wizard.daysPhraseOne : n === 2 ? wizard.daysPhraseTwo : fillCopy(wizard.daysPhraseMany, { n }));
+  const lengthLimitText = (() => {
+    if (!lengthLimit) return null;
+    const city = wizard.destinationNames[destinationId] ?? plannerDestinationName(destinationId, language);
+    const days = daysPhrase(lengthLimit.maxDays);
+    if (lengthLimit.reason === "destination") return fillCopy(wizard.limitDestination, { city, days });
+    const groups = lengthLimit.groupIds.map((id) => interestGroupLabelForDestination(destinationId, id, language) ?? wizard.interestGroups[id] ?? id).join(" + ");
+    return fillCopy(wizard.limitInterests, { interests: groups, city, days });
+  })();
+  const lengthFixText = lengthLimit
+    ? fillCopy(
+        dateMode === "flexible"
+          ? lengthLimit.reason === "interests" ? wizard.limitFixDaysOrInterest : wizard.limitFixDays
+          : lengthLimit.reason === "interests" ? wizard.limitFixDatesOrInterest : wizard.limitFixDates,
+        { days: daysPhrase(lengthLimit.maxDays) }
+      )
+    : null;
+
   const accommodationTextRequired = accommodationStatus === "hotel" || accommodationStatus === "apartment";
   const stepValid: Record<Step, boolean> = {
     1: !!destinationId,
-    2: dateMode === "flexible" ? true : !!arrivalDate && !!departureDate && !dateRangeError,
-    3: interests.length >= 1 || surpriseMe,
+    2: (dateMode === "flexible" ? true : !!arrivalDate && !!departureDate && !dateRangeError) && !overLimit,
+    3: (interests.length >= 1 || surpriseMe) && !overLimit,
     4: accommodationStatus !== null && (!accommodationTextRequired || accommodationText.trim().length > 0),
   };
   const canContinue = stepValid[1] && stepValid[2] && stepValid[3] && stepValid[4];
@@ -135,6 +160,28 @@ export default function PersonalizedPlanWizard({
   }
 
   if (creating) return <PlanGeneratingScreen />;
+
+  // The reason and the options, on the step where the answer stopped fitting (dates, interests) and on the last step (an edited plan).
+  const lengthLimitBlock =
+    overLimit && lengthLimit ? (
+      <div role="alert" className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs leading-5 text-amber-900">
+        <p className="font-semibold">{lengthLimitText}</p>
+        <p>{lengthFixText}</p>
+        {(dateMode === "flexible" || step !== 2) && (
+          <button
+            type="button"
+            onClick={() => {
+              quizHaptic();
+              if (dateMode === "flexible") setDurationDays(lengthLimit.maxDays);
+              else setStep(2);
+            }}
+            className={`mt-2 rounded-full border border-amber-300 bg-white px-3 py-1.5 text-xs font-bold text-amber-900 hover:border-amber-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 ${QUIZ_PRESS}`}
+          >
+            {dateMode === "flexible" ? fillCopy(wizard.limitUseMax, { days: daysPhrase(lengthLimit.maxDays) }) : wizard.limitChangeDates}
+          </button>
+        )}
+      </div>
+    ) : null;
 
   return (
     <div className="space-y-5">
@@ -232,16 +279,20 @@ export default function PersonalizedPlanWizard({
                     key={count}
                     type="button"
                     aria-pressed={count === durationDays}
+                    // Over this destination's limit: not selectable; the reason is shown under the buttons.
+                    disabled={!!lengthLimit && count > lengthLimit.maxDays}
                     onClick={() => {
                       if (count !== durationDays) quizHaptic();
                       setDurationDays(count);
                     }}
-                    className={`rounded-xl border px-2 py-2.5 pointer-coarse:min-h-11 text-xs font-bold ${choiceClass(count === durationDays)}`}
+                    className={`rounded-xl border px-2 py-2.5 pointer-coarse:min-h-11 text-xs font-bold disabled:cursor-not-allowed disabled:opacity-40 ${choiceClass(count === durationDays)}`}
                   >
                     {count} {count === 1 ? wizard.dayOne : wizard.dayMany}
                   </button>
                 ))}
               </div>
+              {lengthLimit && !overLimit && <p className="mt-2 text-xs text-slate-500">{lengthLimitText}</p>}
+              {lengthLimitBlock}
             </div>
           ) : (
             <div className="mt-3 space-y-2.5">
@@ -277,12 +328,15 @@ export default function PersonalizedPlanWizard({
               ) : (
                 previewDays !== null && <p className="text-xs font-semibold text-teal-700">{fillCopy(wizard.tripLength, { n: previewDays })}</p>
               )}
+              {lengthLimit && !overLimit && <p className="text-xs text-slate-500">{lengthLimitText}</p>}
+              {lengthLimitBlock}
             </div>
           )}
         </div>
       )}
 
       {step === 3 && (
+        <div>
         <V2InterestSelector
           destinationId={destinationId}
           selected={interests}
@@ -299,6 +353,8 @@ export default function PersonalizedPlanWizard({
             setInterests([]);
           }}
         />
+        {lengthLimitBlock}
+        </div>
       )}
 
       {step === 4 && (
@@ -344,6 +400,7 @@ export default function PersonalizedPlanWizard({
             </label>
           )}
           {!stepValid[4] && <p className="mt-2 text-xs text-slate-400">{wizard.accommodationHint}</p>}
+          {lengthLimitBlock}
         </div>
       )}
 

@@ -2,6 +2,7 @@ import { V2_PLANNER_INTERESTS } from "./v2PlannerTypes";
 import type { V2PlannerInterest } from "./v2PlannerTypes";
 import { parseIsoDate, inclusiveDayCount } from "./dateOnly";
 import { isAvailablePlannerDestinationId } from "./plannerDestinations";
+import { tripLengthLimit } from "./tripLengthLimits";
 import { PRODUCT_SLUGS } from "../commerce/catalog";
 
 /**
@@ -100,6 +101,10 @@ export function normalizePersonalizedAnswers(rawAnswers: unknown, rawDestination
     if (new Set(rawInterests).size !== rawInterests.length) return fail;
     interests = [...(rawInterests as V2PlannerInterest[])].sort();
   }
+
+  // Per-destination trip length (tripLengthLimits.ts; Budapest only today), on the server-derived day count -- flexible and dated alike.
+  const lengthLimit = tripLengthLimit(rawDestinationId, interests, surpriseMe);
+  if (lengthLimit && days > lengthLimit.maxDays) return fail;
 
   const rawAccommodation = rawAnswers.accommodation;
   if (!isPlainObject(rawAccommodation) || typeof rawAccommodation.booked !== "boolean") return fail;

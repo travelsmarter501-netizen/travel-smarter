@@ -64,7 +64,8 @@ export type PlannerDayStop = {
   visitMode?: "outside";
 };
 
-export type OptionalPlaceReason = "full" | "closing" | "unpublished";
+/** `holidayUnconfirmed` (Budapest, opt-in by its module): the place's holiday hours for that date are not published; a suggestion only. */
+export type OptionalPlaceReason = "full" | "closing" | "unpublished" | "holidayUnconfirmed";
 
 export type PlannerDay = {
   dayNumber: number;

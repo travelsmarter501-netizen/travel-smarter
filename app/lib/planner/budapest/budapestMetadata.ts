@@ -53,7 +53,7 @@ export const BUDAPEST_PLANNER_METADATA: PlannerPlaceMetadata[] = [
   place("museum-of-fine-arts", "city-park", [6, 9, 0, 0, 1, 0], 7, "daytime", 120),
   place("budapest-zoo", "city-park", [6, 0, 7, 2, 7, 0], 6, "morning", 150),
   // House of Music: admission in 30-minute slots at :15 and :45 (offset 15); the start is held to the next slot.
-  { ...place("house-of-music", "city-park", [5, 7, 0, 0, 7, 0], 6, "daytime", 120), showWindow: { everyMinutes: 30, offsetMinutes: 15, minutes: 1, maxWaitMinutes: 29, missNoteAr: "الدخول بفترات كل نص ساعة (:15 و:45): احجز الفترة اللي بتناسب خطتك." } },
+  { ...place("house-of-music", "city-park", [5, 7, 0, 0, 7, 0], 6, "daytime", 120), showWindow: { everyMinutes: 30, offsetMinutes: 15, minutes: 1, maxWaitMinutes: 29, missNoteAr: "مواعيد الدخول كل نص ساعة، عند الدقيقة 15 و45. احجز الموعد اللي بناسب خطتك." } },
   // Margaret Island
   place("margaret-island", "margaret-island", [6, 2, 9, 8, 1, 0], 6, "afternoon", 90),
 ];
