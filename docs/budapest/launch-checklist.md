@@ -7,11 +7,12 @@ list: every number comes from results already in `docs/budapest/data/`.
 - **1. Day range: done.**
   - Budapest at most 4 days; culture only or popular only 3; nature only 1.
   - Same rule in the questionnaire and on the server; the reason and options are shown, never applied silently.
-- **2. Holiday hours:**
+- **2. Holiday hours (updated before the Preview push, research 25.5):** National Museum 2026/27 official; National Gallery, Opera tour and House of Music: year-end dates (24–26, 31 Dec, 1 Jan) unconfirmed, so a conditional suggestion, never on the clock. Earlier status:
   - **National Museum:** done, from its official 2026 table (`mnm.hu/nyitvatartas`). From Dec 2027 a conditional suggestion on 24–26 Dec, 31 Dec and 1 Jan, never on the clock.
   - **National Gallery:** official site still unreachable (520); 2026/27 stays the reviewer's reading; from Dec 2027 the same conditional rule.
   - **Other places' holiday hours:** not modelled (e.g. the Opera tour and the House of Music on 24–25 Dec).
 - **3. Added places:** unchanged; not required before launch.
+- **Booking wording:** no booking condition left in Budapest texts (Opera card line as the owner wrote it; warnings reworded).
 - **4. Texts:**
   - House of Music and the two English titles changed as asked (an AI language review, not a person's review);
   - "Depends on booking" kept: booking is not a documented requirement;

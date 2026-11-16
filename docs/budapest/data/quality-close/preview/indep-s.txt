@@ -1,0 +1,3 @@
+s.json: 159 days, 877 visits and meals, 358 checked against opening hours (23 timetabled departures checked exactly), 718 transfers checked (0 without data), 0 problems
+without data: []
+

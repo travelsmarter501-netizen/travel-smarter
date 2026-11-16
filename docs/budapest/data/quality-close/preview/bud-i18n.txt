@@ -1,0 +1,1 @@
+data texts 158; plans checked 1365 (generated + edited), untranslated texts 0, failures 0

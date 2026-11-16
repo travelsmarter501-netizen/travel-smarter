@@ -1,0 +1,89 @@
+PASS  National Gallery 2026-11-19 (regular day): 10:00-17:30 last 17:00
+PASS  National Gallery 2026-12-23 (regular day): 10:00-17:30 last 17:00
+PASS  National Gallery 2026-12-27 (regular day): 10:00-17:30 last 17:00
+PASS  National Gallery 2026-12-29 (regular day): 10:00-17:30 last 17:00
+PASS  National Gallery 2026-12-30 (regular day): 10:00-17:30 last 17:00
+PASS  National Gallery 2027-01-02 (regular day): 10:00-17:30 last 17:00
+PASS  National Gallery 2026-12-24 (year-end, unconfirmed): NOT SCHEDULABLE
+PASS  National Gallery 2026-12-25 (year-end, unconfirmed): NOT SCHEDULABLE
+PASS  National Gallery 2026-12-26 (year-end, unconfirmed): NOT SCHEDULABLE
+PASS  National Gallery 2026-12-31 (year-end, unconfirmed): NOT SCHEDULABLE
+PASS  National Gallery 2027-01-01 (year-end, unconfirmed): NOT SCHEDULABLE
+PASS  National Gallery 2027-12-24 (year-end, unconfirmed): NOT SCHEDULABLE
+PASS  National Gallery 2027-12-31 (year-end, unconfirmed): NOT SCHEDULABLE
+PASS  National Gallery 2040-12-25 (year-end, unconfirmed): NOT SCHEDULABLE
+PASS  National Gallery 2026-11-23 (Monday): NOT SCHEDULABLE
+PASS  National Gallery 2026-12-28 (Monday): NOT SCHEDULABLE
+PASS  National Gallery 2027-01-04 (Monday): NOT SCHEDULABLE
+PASS  House of Music: first Tuesday closed, second Tuesday and the Wednesday after open, every month 2026-2075: all 600 months
+PASS  House of Music 2026-11-23 (Monday): NOT SCHEDULABLE
+PASS  House of Music: no stored first-Tuesday list (only year-end planning exclusions): 30 entries, 0 other
+PASS  House of Music trip 30 Nov - 2 Dec 2026 (Tue 1 Dec = first Tuesday): NOT SCHEDULABLE
+PASS  Cruise departures 2026-01-02: 15:40 16:20 16:40 17:00 17:20 17:40 18:00 18:20 18:40 19:00 19:20 19:40 20:00 20:20 20:40 21:00
+PASS  Cruise departures 2026-01-05: 16:20 16:40 17:00 17:20 17:40 18:00 18:20 18:40 19:00 19:20 19:40 20:00 20:20 20:40 21:00
+PASS  Cruise departures 2026-02-11: 16:20 16:40 17:00 17:20 17:40 18:00 18:20 18:40 19:00 19:20 19:40 20:00 20:20 20:40 21:00
+PASS  Cruise departures 2026-02-12: 16:40 17:00 17:20 17:40 18:00 18:20 18:40 19:00 19:20 19:40 20:00 20:20 20:40 21:00
+PASS  Cruise departures 2026-02-25: 17:00 17:20 17:40 18:00 18:20 18:40 19:00 19:20 19:40 20:00 20:20 20:40 21:00
+PASS  Cruise departures 2026-03-10: 17:40 18:00 18:20 18:40 19:00 19:20 19:40 20:00 20:20 20:40 21:00
+PASS  Cruise departures 2026-03-29: 19:00 19:20 19:40 20:00 20:20 20:40 21:00 21:20 21:40 22:00
+PASS  Cruise departures 2026-05-21: 19:20 19:40 20:00 20:20 20:40 21:00 21:20 21:40 22:00
+PASS  Cruise departures 2026-05-22: 19:30 20:15 20:20 20:30 20:45 21:30 21:40 21:45 22:00
+PASS  Cruise departures 2026-07-23: 19:30 20:15 20:20 20:30 20:45 21:30 21:40 21:45 22:00
+PASS  Cruise departures 2026-07-24: 19:20 19:40 20:00 20:20 20:40 21:00 21:20 21:40 22:00
+PASS  Cruise departures 2026-08-19: 19:20 19:40 20:00 20:20 20:40 21:00 21:20 21:40 22:00
+PASS  Cruise departures 2026-09-04: 19:00 19:20 19:40 20:00 20:20 20:40 21:00 21:20 21:40 22:00
+PASS  Cruise departures 2026-09-14: 18:40 19:00 19:20 19:40 20:00 20:20 20:40 21:00 21:20 21:40 22:00
+PASS  Cruise departures 2026-09-23: 18:20 18:40 19:00 19:20 19:40 20:00 20:20 20:40 21:00 21:20 21:40 22:00
+PASS  Cruise departures 2026-10-03: 17:40 18:00 18:20 18:40 19:00 19:20 19:40 20:00 20:20 20:40 21:00 21:20 21:40 22:00
+PASS  Cruise departures 2026-10-25: 16:20 16:40 17:00 17:20 17:40 18:00 18:20 18:40 19:00 19:20 19:40 20:00 20:20 20:40 21:00
+PASS  Cruise departures 2026-11-22: 16:20 16:40 17:00 17:20 17:40 18:00 18:20 18:40 19:00 19:20 19:40 20:00 20:20 20:40 21:00
+PASS  Cruise departures 2026-11-23: 15:40 16:20 16:40 17:00 17:20 17:40 18:00 18:20 18:40 19:00 19:20 19:40 20:00 20:20 20:40 21:00
+PASS  Cruise departures 2026-12-31: 15:40 16:20 16:40 17:00 17:20 17:40 18:00 18:20 18:40 19:00 19:20 19:40 20:00 20:20 20:40 21:00
+PASS  Cruise 2026-12-24 (published: daytime cruises only): NOT SCHEDULABLE
+PASS  Cruise 2026-08-20 ('might change': planning exclusion): NOT SCHEDULABLE
+PASS  Cruise 2027-01-02 (no timetable published: planning exclusion): NOT SCHEDULABLE
+PASS  Cruise 2027-07-17 (no timetable published: planning exclusion): NOT SCHEDULABLE
+PASS  Cruise 2028-11-20 (no timetable published: planning exclusion): NOT SCHEDULABLE
+PASS  Cruise exclusions are labelled as planning exclusions, not closures: 2
+PASS  Cruise trip 21-24 Nov 2026, Monday = 23 Nov only: 15:40-16:40
+PASS  Cruise trip 16-23 Nov 2026, Mondays 16 + 23 (two periods): common departures only: 16:20 16:40 17:00 17:20 17:40 18:00 18:20 18:40 19:00 19:20 19:40 20:00 20:20 20:40 21:00
+PASS  Cruise trip 16-23 Nov 2026: every Monday interval is a full 60-minute departure: all 60 min
+PASS  Cruise without dates: no departure: NOT SCHEDULABLE
+PASS  Cruise start, day start 16:05 (Thu 19 Nov 2026): 16:20
+PASS  Cruise start, day start 16:25 (Thu 19 Nov 2026): 16:40
+PASS  Cruise start, day start 16:40 (Thu 19 Nov 2026): 16:40
+PASS  Cruise start, day start 16:41 (Thu 19 Nov 2026): 17:00
+PASS  Cruise start, day start 20:45 (Thu 19 Nov 2026): 21:00
+PASS  Cruise after the last departure (21:00) is flagged: closed
+PASS  checkWindow cruise 16:20 on Thu 19 Nov 2026: accepted
+PASS  checkWindow cruise 16:40 on Thu 19 Nov 2026: accepted
+PASS  checkWindow cruise 21:00 on Thu 19 Nov 2026: accepted
+PASS  checkWindow cruise 16:30 on Thu 19 Nov 2026: closed
+PASS  checkWindow cruise 16:45 on Thu 19 Nov 2026: closed
+PASS  checkWindow cruise 17:00 on Thu 19 Nov 2026: accepted
+PASS  checkWindow cruise 21:20 on Thu 19 Nov 2026: closed
+PASS  checkWindow cruise 15:40 on Thu 19 Nov 2026: closed
+PASS  checkWindow cruise 15:40 on Thu 26 Nov 2026 (period with 15:40): accepted
+PASS  create: cruise start 2026-11-19 day 1: 16:20
+PASS  edit: 13 offered starts keep a published departure (2026-11-19 day 1): none off-timetable
+PASS  edit/add: forged 16:30 departure rejected (2026-11-19 day 1): stop:danube-legend-cruise
+PASS  create: cruise start 2026-11-22 day 3: 15:40
+PASS  edit: 19 offered starts keep a published departure (2026-11-22 day 3): none off-timetable
+PASS  edit/add: forged 16:30 departure rejected (2026-11-22 day 3): stop:danube-legend-cruise
+PASS  create: cruise start 2026-11-19 day 3: 16:20
+PASS  edit: 17 offered starts keep a published departure (2026-11-19 day 3): none off-timetable
+PASS  edit/add: forged 16:30 departure rejected (2026-11-19 day 3): stop:danube-legend-cruise
+PASS  plans with the cruise on the clock (create/edit tests ran): 3
+PASS  add: cruise appended 2026-11-19 day 1 (thursday) at 17:40: on a departure, offered=true: on a departure+offered
+PASS  add: cruise appended 2026-11-19 day 2 (friday) at 17:20: on a departure, offered=true: on a departure+offered
+PASS  add: cruise appended 2026-11-19 day 3 (saturday) at 18:20: on a departure, offered=false: on a departure
+PASS  add: cruise appended 2026-12-26 day 1 (saturday) at 15:40: on a departure, offered=true: on a departure+offered
+PASS  add: cruise appended 2026-12-26 day 2 (sunday) at 17:00: on a departure, offered=true: on a departure+offered
+PASS  add: cruise appended 2026-12-26 day 3 (monday) at 16:40: on a departure, offered=false: on a departure
+PASS  add-path cases ran: 6
+PASS  21 Restaurant -> Chain Bridge (checked): 18-22 | وقت المواصلات من مخطط Google Maps بهالاتجاه، لانطلاق الجمعة 20/11/2026 الساعة 14:45 (توقيت بودابست)، من الباب للباب؛ بموعد تاني بيتغير حسب الخط والانتظار.
+PASS  Chain Bridge -> 21 Restaurant (checked separately): 11-14 | وقت المواصلات من مخطط Google Maps بهالاتجاه، لانطلاق الأحد 22/11/2026 الساعة 13:00 (توقيت بودابست)، من الباب للباب؛ بموعد تاني بيتغير حسب الخط والانتظار.
+PASS  St Stephen -> Matthias (only the reverse was checked): 18-26 | تقدير حسب المسافة، مش من تطبيق خرائط. تأكد من الطريق بالتطبيق قبل ما تتحرك.
+PASS  Gerbeaud -> Citadella (only the reverse was checked): 17-25 | تقدير حسب المسافة، مش من تطبيق خرائط. تأكد من الطريق بالتطبيق قبل ما تتحرك.
+
+ALL PASS

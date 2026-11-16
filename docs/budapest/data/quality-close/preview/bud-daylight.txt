@@ -1,0 +1,21 @@
+budapest-zoo month 1: closes 16:00, estimate 16:20
+budapest-zoo month 2: closes 16:00, estimate 17:05
+budapest-zoo month 3: closes 17:30, estimate 17:45
+budapest-zoo month 4: closes 18:00, estimate 19:50
+budapest-zoo month 5: closes 19:00, estimate 20:25
+budapest-zoo month 6: closes 19:00, estimate 20:45
+budapest-zoo month 7: closes 19:00, estimate 20:40
+budapest-zoo month 8: closes 19:00, estimate 20:00
+budapest-zoo month 9: closes 18:00, estimate 19:00
+budapest-zoo month 10: closes 17:30, estimate 18:00
+budapest-zoo month 11: closes 16:00, estimate 16:15
+budapest-zoo month 12: closes 16:00, estimate 15:55 (after the estimate by 5 min)
+generated plans, prefers-daylight stops: {"margaret-island":{"after":0,"noted":0,"total":28},"citadella":{"after":0,"noted":0,"total":56},"vajdahunyad-castle":{"after":0,"noted":0,"total":34}}
+add: day 3 order heroes-square > house-of-music > opera-house-tour > vajdahunyad-castle; vajdahunyad 16:45-17:05 (estimate 16:15), note true
+  positions tried: at 0: 09:00-09:20, problems 0, latest shift of another visit +90, fixed session moved | at 1: 10:00-10:20, problems 0, latest shift of another visit +90, fixed session moved | at 2: 12:45-13:05, problems 0, latest shift of another visit +90, fixed session moved | at 3: 16:45-17:05, problems 0, latest shift of another visit +0
+start 10:00: vajdahunyad-castle 18:15-18:35, note true
+nightlife 2026-11-22 day 3 add vajdahunyad-castle: position 3 (end), 17:15-17:35, house-of-music 14:45 (before 14:45)
+nightlife 2026-12-01 day 3 add vajdahunyad-castle: position 3 (end), 17:15-17:35, house-of-music 14:45 (before 14:45)
+food 2026-10-20 day 1 add margaret-island: position 5 (end), 19:30-21:00, danube-legend-cruise 17:40 (before 17:40)
+nightlife 2026-10-20 day 1 add vajdahunyad-castle: position 5 (end), 19:30-19:50, danube-legend-cruise 17:40 (before 17:40)
+failures 0

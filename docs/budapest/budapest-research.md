@@ -1818,3 +1818,48 @@ Outputs: `data/quality-close/`.
     - a valid 3-day culture plan and a 10-day Prague plan: accepted.
   - A card with no photo (Hungarikum) and its details: no empty image box, no broken image, no overflow.
 - **Environment note:** during the run the shared `node_modules` (in the Windows temp folder, last installed 9 Nov) lost files: a cleanup outside this work, cause not confirmed. It was reinstalled from the unchanged lockfile (`npm ci`), and the tests that had stopped on "module not found" were re-run.
+
+### 25.5 Before the Preview push (owner's approval message, 2026-11-16)
+**Texts:**
+- the one-day limit no longer says "or fewer": «اختار يوم واحد أو ضيف اهتمام تاني»; with dates: «خلّي الوصول والمغادرة بنفس اليوم، أو ضيف اهتمام تاني»;
+- the "nature" group reads «طبيعة وإطلالات» / "Nature & views" in Budapest (label only; internal keys and selection unchanged, as for Prague).
+
+**Booking, no contradiction left:**
+- **Opera card line:** «الدخول بجولة فقط، حسب المواعيد وتوفّر التذاكر.» / "Entry by guided tour only, subject to tour times and ticket availability."
+- **No booking condition in the warnings:**
+  - the Opera and cruise warnings lose «مشروطة بالحجز»;
+  - the House of Music warning loses «محجوزة».
+- Tour times, slots and durations unchanged.
+
+**Holiday evidence, checked place by place (16 Nov):**
+
+| Place | What exists | Decision |
+|---|---|---|
+| National Museum | official table read by us on `mnm.hu/nyitvatartas` (2026) | 2026/27 as the table; from Dec 2027 unconfirmed |
+| National Gallery | no kept copy: the research files hold only the reviewer's relayed reading (sections 12.1, 13.1). Today: `en.mng.hu` 520 again; the newest Wayback copy (4 Nov) is the same error page | year-end dates unconfirmed from Dec 2026: the reviewer's dates are not used as confirmed hours (no Monday 28 Dec opening either) |
+| Opera tour | `opera.hu` OperaTour page and FAQ: no holiday tour hours (only "not available during performances") | year-end dates unconfirmed from Dec 2026 |
+| House of Music | `zenehaza.hu/en/opening-hours` and `/nyitvatartas`: no holiday hours | year-end dates unconfirmed from Dec 2026 |
+
+**How the unconfirmed dates are handled:**
+- **Dates:** 24–26 Dec, 31 Dec and 1 Jan.
+- **Rule:** never on the clock; a conditional suggestion when relevant, never called closed («اختياري: مواعيد العطلة لهاليوم مش مؤكدة. تأكّد من الموقع الرسمي قبل ما تروح.»).
+- **Other trip days are not blocked:** a Budapest trip is at most 4 days, so no weekday repeats inside it.
+- **House of Music:** now `variable` (its card is a text, not a weekly table that would say "open" on such a date). Planning hours unchanged, with the 16:15 last entry kept in its season.
+- **Opera:** stays `fixed`. Its card lists only the tour times, with no "open that day" claim.
+
+**Checks** (outputs: `data/quality-close/preview/`):
+- **Budapest schedules against `f909f51`:**
+  - unchanged except trips with year-end dates: 8 of 53 sample plans (all the 24–26 Dec 2026 window) and 5 of 7 mixed trips;
+  - the 12 prototypes unchanged;
+  - elsewhere only the hours records and the warning texts differ.
+  - In those trips the four places are never on the clock on 24–26 / 31 Dec / 1 Jan and appear as the conditional suggestion when relevant. A culture-only day on 25 Dec 2026 has two places.
+- **Tests (all pass):**
+  - `bud-closeout`, 215 checks: the rule for the four places on 13 generated trips, planning hours on 30 dates, the cards, the texts;
+  - `bud-boundary` (gallery section rewritten for the unconfirmed dates; House of Music: no first-Tuesday list);
+  - `bud-mixed-dates` 311 / 0 (per-date checks moved to the National Museum's official hours);
+  - `bud-cruise-suggest`;
+  - `bud-i18n`: 158 data texts, 1,365 plans, 0 untranslated;
+  - `bud-day-text`: 282 days / 0; `bud-daylight` 0; `bud-transport-links`: 1,309 legs / 0.
+- **Independent check:** 0 problems (159 + 54 + 30 days).
+- **Build:** `tsc`, lint and `next build --webpack` pass.
+- **Not re-run:** Prague / Barcelona. The changes touch no shared engine code: a Budapest-only label, a card line shown only where tour times are listed (the Opera), and questionnaire texts used only under a Budapest limit.
