@@ -1,6 +1,6 @@
 "use client";
 
-import { PlanDisplayProvider } from "../smart-planner/planDisplay";
+import { PlanDisplayProvider, TimesText } from "../smart-planner/planDisplay";
 import { tripDateMessages } from "../../lib/planner/tripLengthLimits";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -270,7 +270,8 @@ export default function SmartPlannerV2Result({
         // A plan without dates does not check holiday closures; destinations with a temporary date scope say so (Budapest only today).
         const undated = !plan.days.some((day) => day.actualDate);
         const note = undated ? tripDateMessages(plan.destination, language)?.undatedNote : undefined;
-        return note ? <p className="mt-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-medium leading-5 text-slate-600">{note}</p> : null;
+        // TimesText: the date range «24–26» keeps its left-to-right order, as in Budapest's other plan texts.
+        return note ? <p className="mt-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-medium leading-5 text-slate-600"><TimesText text={note} /></p> : null;
       })()}
 
       {(onEditSelections || onRegenerate) && (

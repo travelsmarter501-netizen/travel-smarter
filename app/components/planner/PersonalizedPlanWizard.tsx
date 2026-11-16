@@ -18,6 +18,7 @@ import type { V2PlannerInterest } from "../../lib/planner/v2PlannerTypes";
 import { PLANNER_DESTINATIONS, DEFAULT_PLANNER_DESTINATION_ID, interestGroupLabelForDestination, isAvailablePlannerDestinationId, isPreviewPlannerDestinationId, plannerDestinationName } from "../../lib/planner/plannerDestinations";
 import { MAX_ACCOMMODATION_TEXT_LENGTH, MAX_PERSONALIZED_PLAN_DAYS } from "../../lib/planner/personalizedPlanAnswers";
 import { tripDateMessages, tripLengthLimit, unavailableTripDates } from "../../lib/planner/tripLengthLimits";
+import { PlanDisplayProvider, TimesText } from "../smart-planner/planDisplay";
 
 type DateMode = "flexible" | "specific";
 
@@ -321,7 +322,14 @@ export default function PersonalizedPlanWizard({
               </div>
               {lengthLimit && !overLimit && <p className="mt-2 text-xs text-slate-500">{lengthLimitText}</p>}
               {lengthLimitBlock}
-              {dateMessages && <p className="mt-2 text-xs leading-5 text-slate-500">{dateMessages.undatedNote}</p>}
+              {dateMessages && (
+                <p className="mt-2 text-xs leading-5 text-slate-500">
+                  {/* The destination's plan display options: the date range «24–26» keeps its left-to-right order, as in its plans. */}
+                  <PlanDisplayProvider destination={destinationId}>
+                    <TimesText text={dateMessages.undatedNote} />
+                  </PlanDisplayProvider>
+                </p>
+              )}
             </div>
           ) : (
             <div className="mt-3 space-y-2.5">
