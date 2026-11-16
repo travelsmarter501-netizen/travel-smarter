@@ -63,6 +63,11 @@ function previewPlannerDestinationIds(): string[] {
   // other Vercel environment) on the server, which is what decides: the server refuses the city there even if the
   // variable were set by mistake. Set the variable for the Preview environment only.
   if (typeof window === "undefined" && process.env.VERCEL && process.env.VERCEL_ENV !== "preview") return [];
+  // Browser too (2026-11-16): a build whose Vercel environment is known and is not a Preview (Production) lists no preview city, even
+  // if the variable were set there by mistake, so the questionnaire matches the server. NEXT_PUBLIC_VERCEL_ENV is set by Vercel when its
+  // system variables are exposed (the default); local builds and tests have none and keep the local preview.
+  const vercelEnv = process.env.NEXT_PUBLIC_VERCEL_ENV;
+  if (vercelEnv && vercelEnv !== "preview") return [];
   const raw = process.env.NEXT_PUBLIC_PLANNER_PREVIEW_DESTINATIONS ?? "";
   return raw
     .split(",")
