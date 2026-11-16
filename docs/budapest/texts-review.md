@@ -180,3 +180,33 @@ plan view, so both rows below now read correctly in Arabic and Hebrew (measured 
 | Tickets counter, 1 / 2 / 3–10 / 11+ | + سعر واحد غير متوفر / + سعرين غير متوفرين / + N أسعار غير متوفرة / + N سعر غير متوفر | + 1 price not available / + N prices not available | + מחיר אחד לא זמין / + N מחירים לא זמינים |
 | Photo credit under a place photo (Budapest; existing label) | 📷 حقوق الصورة: author · licence | 📷 Photo credit: … | 📷 קרדיט לתמונה: … |
 | Credits page, under Budapest | كل صورة نسخة مصغّرة (960 بكسل) من الملف الأصلي على Wikimedia Commons، بدون أي تعديل تاني. | Each photo is a resized copy (960 px) of the original file on Wikimedia Commons, with no other change. | (page is Arabic + English) |
+
+## 7. Close-out round (2026-11-16)
+
+**Status:** the owner's wording (House of Music, the two English titles) is an AI language review, not a person's review, and not a new fact check. Everything else below is new and NOT reviewed by a person.
+
+**Changed as the owner asked:**
+
+| Where | Arabic | English | Hebrew (follows; not reviewed) |
+|---|---|---|---|
+| House of Music, slot note (`showWindow.missNoteAr`) | مواعيد الدخول كل نص ساعة، عند الدقيقة 15 و45. احجز الموعد اللي بناسب خطتك. | Timed entry every 30 minutes, at :15 and :45 past the hour. Book the entry time that fits your plan. | כניסה בזמנים קבועים כל 30 דקות, ב־:15 וב־:45 בכל שעה. הזמינו את שעת הכניסה שמתאימה לתוכנית שלכם. |
+| Day title, 3+ parts (English only; two parts keep «&») | حديقة المدينة و Andrássy والأوبرا | City Park, Andrássy Avenue and the Opera | unchanged |
+| Day title, 3+ parts | البرلمان والكاتدرائية وجزيرة Margaret | Parliament, St Stephen’s Basilica and Margaret Island | unchanged |
+
+- **Not changed: "Depends on booking" → "Advance booking required"** (Opera warning, cruise warning). Advance booking is not a documented condition for either:
+  - Opera: opera.hu (OperaTour page, read 2026-11-16) says «Tickets are available one week in advance at the box offices or online»; our data says «يفضل مسبقًا»;
+  - cruise: the operator says reservations are "not required" but recommended (data `conflict`).
+- **Unchanged on purpose:** the House of Music warning «⚠️ الدخول بفترة محجوزة كل نص ساعة (:15 و:45)، وتذاكر الويكند بتخلص بسرعة. خزانة الملابس إلزامية.» (not part of the owner's wording).
+
+**New texts:**
+
+| Where | Arabic | English | Hebrew |
+|---|---|---|---|
+| Questionnaire, limit by city | خطط {city} حاليًا لحد {days}. | {city} plans are currently up to {days}. | התוכניות ל{city} הן כרגע עד {days}. |
+| Questionnaire, limit by interests | إذا اخترت «{interests}» بس، خطة {city} حاليًا لحد {days}. | With only “{interests}”, a {city} plan is currently up to {days}. | עם „{interests}” בלבד, תוכנית ל{city} היא כרגע עד {days}. |
+| Options, flexible dates | اختار {days} أو أقل. / اختار {days} أو أقل، أو ضيف اهتمام تاني. | Choose {days} or fewer. / Choose {days} or fewer, or add another interest. | בחרו {days} או פחות. / בחרו {days} או פחות, או הוסיפו תחום עניין נוסף. |
+| Options, specific dates | قصّر التواريخ لحد {days}. / قصّر التواريخ لحد {days}، أو ضيف اهتمام تاني. | Shorten your dates to {days} or fewer. / … or add another interest. | קצרו את התאריכים עד {days}. / … או הוסיפו תחום עניין נוסף. |
+| Buttons | خلّيها {days} · غيّر التواريخ | Make it {days} · Change dates | לקבוע {days} · שינוי תאריכים |
+| Day counts | يوم واحد · يومين · {n} أيام | 1 day · 2 days · {n} days | יום אחד · יומיים · {n} ימים |
+| National Museum hours (card) | مواعيد العطلة: 24–26 ديسمبر 2026 مسكّر · 31 ديسمبر 2026 10:00–14:00 · 1 يناير 2027 مسكّر · عطلة آخر السنة بالسنين الجاية: المواعيد مش منشورة لسا — المواعيد العادية: الثلاثاء–الأحد 10:00–18:00، الشباك بيسكّر 17:00، والقاعات بتبلش تسكّر 17:30 · الإثنين مسكّر | Holiday hours: closed 24–26 December 2026 · 31 December 2026 10:00–14:00 · closed 1 January 2027 · year-end holidays in later years: hours not published yet — Regular hours: Tuesday–Sunday 10:00–18:00, the ticket office closes at 17:00, and the halls start closing at 17:30 · closed on Mondays | (catalog) |
+| Suggestion reason, holiday hours not published (National Museum / National Gallery, Dec 2027 onwards) | اختياري: مواعيد العطلة لهاليوم مش منشورة لسا. تأكّد من موقع المتحف قبل ما تروح. | Optional: the holiday opening hours for this day are not published yet. Check the museum's website before you go. | אופציונלי: שעות הפתיחה בחג ליום הזה עדיין לא פורסמו. בדקו באתר המוזיאון לפני שאתם יוצאים. |

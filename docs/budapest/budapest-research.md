@@ -1747,3 +1747,74 @@ B1 fixed, areas by date off, no threshold or distribution change, no publish.
   - Hebrew through the new Preview switch in `next dev`;
   - screenshots: day 3 times and the counter (ar, he), the Opera card (ar, en, he), place details with credit and badge (ar, en), the credits page at the Opera's entry.
   - Not a real phone, not Safari.
+
+## 25. Close-out round (2026-11-16; owner's instructions after the Preview run)
+
+No engine tuning, no merge, no deploy. Budapest stays unavailable in Production; Hebrew stays off there.
+
+### 25.1 Trip length (owner decision, from the launch table in 21.7)
+- **Rule** (`app/lib/planner/tripLengthLimits.ts`, one function for the questionnaire and the server):
+  - Budapest at most 4 days;
+  - culture only, or popular only: at most 3;
+  - nature / relaxation only (the "nature" group): 1 day.
+  - An interest rule applies only when every chosen interest is inside it. "Surprise me" has none.
+  - Prague, Barcelona: no entry, so only the general 10-day limit.
+- **Server:** `normalizePersonalizedAnswers` refuses longer answers, on the day count it derives itself (flexible or dated). Every way to create a plan passes through it: owner creation, plan edit, checkout, complimentary, stored drafts. `generateBarcelonaPlanV2` is not a server action; its only caller passes normalized answers.
+- **Questionnaire** (`PersonalizedPlanWizard.tsx`):
+  - day buttons over the limit are disabled, with the reason under them («خطط بودابست حاليًا لحد 4 أيام.»);
+  - an answer that stops fitting (other dates, a city change, interests changed after the days) blocks "next" with the reason and the options:
+    - «اختار 3 أيام أو أقل، أو ضيف اهتمام تاني» with a «خلّيها 3 أيام» button (flexible dates);
+    - «قصّر التواريخ لحد يوم واحد، أو ضيف اهتمام تاني» with «غيّر التواريخ» (specific dates).
+  - Nothing is shortened and no interest is changed without the visitor's click.
+
+### 25.2 Holiday hours: the two museums, each on its own source
+| | National Museum (`hungarian-national-museum`, Múzeum krt., Pest) | National Gallery (`hungarian-national-gallery`, Buda Castle) |
+|---|---|---|
+| Source | `https://mnm.hu/nyitvatartas` (Hungarian page), table «Magyar Nemzeti Múzeum ünnepi nyitvatartása 2026-ban», read by us 2026-11-16. The English opening-hours page has no holiday table (its «HOLIDAY OPENING HOURS … HERE» links lead to the regular hours and to "Getting here"). | `en.mng.hu/opening-hours-during-holidays/`: still HTTP 520 (Cloudflare) on 16 Nov, as on 13 and 14 Nov; `mng.hu` and `szepmuveszeti.hu` (the same institution) also 520. Searches found no official 2026 table. The 2026/27 dates stay the reviewer's reading (14 Nov), relayed by the owner. |
+| 2026/27 | 24, 25, 26 Dec closed · 27 open · 28 closed (Monday) · 29, 30 open · 31 Dec 10:00–14:00 · 1 Jan 2027 closed. Other 2026 holidays (15 Mar, Easter, 1 May, Whitsun, 20 Aug, 23 Oct, 1 Nov) open or a Monday. | unchanged: 24–25 Dec closed; 26–30 Dec 10:00–18:00 (Monday 28 included); 31 Dec 10:00–16:00; 1 Jan 12:00–18:00 |
+| Code before | `fixed` regular hours: it could be planned on 24–26 Dec and 1 Jan (the mixed trip M7 put it on Thu 24 Dec 2026) | as above for 2026/27; regular hours for later years |
+| Code now | `variable`: the card shows the holiday text (no weekly table that calls it "open" on a holiday); planning keeps the same regular hours (Tue–Sun 10:00–18:00, last entry 17:00); 2026/27 dates as the table (31 Dec: last entry 13:00 assumed, one hour before closing, as the regular ticket office) | unchanged for 2026/27 |
+| Later years | 24–26 Dec, 31 Dec, 1 Jan from Dec 2027 to 2040 (the dates that changed in 2026): **planning exclusions, not closures**. Never on the clock on those dates. When the museum matches the request (the cruise's relevance rule) and is not on another trip day, it is a **conditional suggestion** on one of those days: «اختياري: مواعيد العطلة لهاليوم مش منشورة لسا. تأكّد من موقع المتحف قبل ما تروح.» Nothing calls it closed. | the same rule |
+
+- **Plan size:** a plan that includes either museum grows by about 11.5 KB (the 28 dated entries of each museum are stored with its details). Largest in the 53 sample: 176 → 188 KB.
+- **Not modelled, reported only:** other places' holiday hours (the Opera tour, the House of Music, Fine Arts after 1 Jan 2027, the Zoo's public holidays). A culture trip on 24–25 Dec 2026 still schedules the Opera tour and the House of Music with their regular hours.
+
+### 25.3 Texts (an AI language review, not a person's review, not a new fact check)
+- **House of Music** slot note: the owner's Arabic and English (Hebrew follows). Durations and slots unchanged.
+- **English titles of three or more parts read as a list:**
+  - «City Park, Andrássy Avenue and the Opera»;
+  - «Parliament, St Stephen’s Basilica and Margaret Island».
+  - Two-part titles keep «&». Hebrew unchanged.
+- **"Depends on booking" not replaced:** advance booking is not a documented condition (the Opera: «Tickets are available one week in advance at the box offices or online»; the cruise: reservations "not required"). See `texts-review.md` section 7.
+
+### 25.4 Checks
+Outputs: `data/quality-close/`.
+- **Budapest schedules against `1e2d278`** (53 sample, 12 prototypes, 7 mixed-date trips):
+  - identical except the hours records of the two museums;
+  - the mixed trip from 23 Dec 2026 now visits the National Museum on Tue 29 Dec instead of the closed Thu 24 Dec, and its days are rearranged.
+- **Independent schedule check:** 0 problems (159 + 54 + 26 days).
+- **`bud-closeout.mts`, new, 91 checks, all pass:**
+  - the limit matrix;
+  - 22 server cases (Budapest flexible and dated, Prague and Barcelona to 10 days);
+  - the National Museum's hours on 15 dates;
+  - generated holiday trips 2026 / 2027 / 2029;
+  - the relevance rule of the suggestion;
+  - titles, House of Music.
+- **Existing tests, all pass:**
+  - `bud-boundary`, `bud-cruise-suggest`, `bud-fixed-session-search`;
+  - `bud-mixed-dates` 307 / 0; `bud-action-save` 15 / 0; `bud-photos` 0;
+  - `bud-i18n`: 157 data texts, 1,355 plans, 0 untranslated;
+  - `bud-day-text`: 278 days / 0;
+  - `bud-daylight` 0; `bud-transport-links`: 1,343 legs / 0.
+- **Prague / Barcelona against `925512d`:** generation (5 sets: 82 + 31 + 20 long Prague, 104 + 378 Barcelona), edits (82 + 104) and translation (en, he) byte-identical.
+- **Build:** `tsc`, `npm run lint`, `next build --webpack` pass.
+- **UI** (`next dev`, local Supabase test double, phone viewport 375×812 emulated, not a real phone):
+  - Budapest dates step: 1–4 selectable, 5–10 disabled, the note;
+  - culture only after 4 days: the block, "next" disabled, «خلّيها 3 أيام» fixes it; adding food lifts it;
+  - nature only: «لحد يوم واحد»;
+  - specific dates 1–5 Dec refused, 1–4 accepted; nature only on those dates: «غيّر التواريخ» back to the dates step.
+  - Direct server-action calls:
+    - over the limit: refused (`invalid_answers` / `invalid_planner_answers`, nothing generated);
+    - a valid 3-day culture plan and a 10-day Prague plan: accepted.
+  - A card with no photo (Hungarikum) and its details: no empty image box, no broken image, no overflow.
+- **Environment note:** during the run the shared `node_modules` (in the Windows temp folder, last installed 9 Nov) lost files: a cleanup outside this work, cause not confirmed. It was reinstalled from the unchanged lockfile (`npm ci`), and the tests that had stopped on "module not found" were re-run.

@@ -3,6 +3,21 @@
 Code: `feature/budapest` at `ece9b36` (Preview). Budapest stays unavailable in Production. No new optimisation round was run for this
 list: every number comes from results already in `docs/budapest/data/`.
 
+## Status after the close-out round (2026-11-16, research section 25)
+- **1. Day range: done.**
+  - Budapest at most 4 days; culture only or popular only 3; nature only 1.
+  - Same rule in the questionnaire and on the server; the reason and options are shown, never applied silently.
+- **2. Holiday hours:**
+  - **National Museum:** done, from its official 2026 table (`mnm.hu/nyitvatartas`). From Dec 2027 a conditional suggestion on 24–26 Dec, 31 Dec and 1 Jan, never on the clock.
+  - **National Gallery:** official site still unreachable (520); 2026/27 stays the reviewer's reading; from Dec 2027 the same conditional rule.
+  - **Other places' holiday hours:** not modelled (e.g. the Opera tour and the House of Music on 24–25 Dec).
+- **3. Added places:** unchanged; not required before launch.
+- **4. Texts:**
+  - House of Music and the two English titles changed as asked (an AI language review, not a person's review);
+  - "Depends on booking" kept: booking is not a documented requirement;
+  - new texts to review: `texts-review.md` section 7.
+- **5. Photos:** a card and details without a photo checked in the UI (Hungarikum): they display correctly. Deferred improvement.
+
 ## 1. Day range per interest
 **Source:** `data/quality-r5/launch/table-B1.csv`.
 - The 108-plan launch sample on the B1 default: 9 interest sets × 1–4 days × 3 date cases (flexible, Thu 19 Nov 2026, Sat 17 Jul 2027).
@@ -106,7 +121,7 @@ Hebrew is off in Production (`releaseScope.ts`), so the Hebrew texts are not nee
 ## 5. Photos (deferred improvement, not a blocker)
 - **5 places have no photo:** the Legenda cruise, Hungarikum, Menza, Frici Papa and Városliget Café.
 - **How the cards handle it:** they leave out the image block when there is no photo. These are the shared components Prague and Barcelona use (`FoodPlaceCard`, `SmartPlannerStopCardBody`).
-- **Not seen yet:** one of these five cards on the Preview. A look during the next phone test is enough.
+- **Seen (2026-11-16, local UI check):** the Hungarikum stop card and its details: no empty image box, no broken image, no overflow.
 
 ## 6. Other open items
 - **Payments:** the Allpay button click on the Preview (expected message, no move to Allpay).

@@ -1,0 +1,3 @@
+holiday.json: 26 days, 146 visits and meals, 72 checked against opening hours (0 timetabled departures checked exactly), 120 transfers checked (0 without data), 0 problems
+without data: []
+

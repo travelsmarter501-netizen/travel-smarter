@@ -1,0 +1,309 @@
+PASS  A M1-culture-2026-12-26 2026-12-26 saturday: visits and meals inside that date's hours: none
+PASS  B M1-culture-2026-12-26 2026-12-26 saturday: stop hours and details = that date's hours: same
+PASS  C M1-culture-2026-12-26 2026-12-26 saturday: 13 offered starts all valid by that date's hours: all valid
+PASS  C M1-culture-2026-12-26 2026-12-26 saturday: first visit +30 min, warnings = real problems: warned []
+PASS  A M1-culture-2026-12-26 2026-12-27 sunday: visits and meals inside that date's hours: none
+PASS  B M1-culture-2026-12-26 2026-12-27 sunday: stop hours and details = that date's hours: same
+PASS  C M1-culture-2026-12-26 2026-12-27 sunday: 16 offered starts all valid by that date's hours: all valid
+PASS  C M1-culture-2026-12-26 2026-12-27 sunday: first visit +30 min, warnings = real problems: warned []
+PASS  A M1-culture-2026-12-26 2026-12-28 monday: visits and meals inside that date's hours: none
+PASS  B M1-culture-2026-12-26 2026-12-28 monday: stop hours and details = that date's hours: same
+PASS  C M1-culture-2026-12-26 2026-12-28 monday: 25 offered starts all valid by that date's hours: all valid
+PASS  C M1-culture-2026-12-26 2026-12-28 monday: reversed order, warnings = real problems: warned []
+PASS  C M1-culture-2026-12-26 2026-12-28 monday: first visit +30 min, warnings = real problems: warned []
+PASS  A M1-culture-2026-12-26 2026-12-29 tuesday: visits and meals inside that date's hours: none
+PASS  B M1-culture-2026-12-26 2026-12-29 tuesday: stop hours and details = that date's hours: same
+PASS  C M1-culture-2026-12-26 2026-12-29 tuesday: 16 offered starts all valid by that date's hours: all valid
+PASS  C M1-culture-2026-12-26 2026-12-29 tuesday: reversed order, warnings = real problems: warned []
+PASS  C M1-culture-2026-12-26 2026-12-29 tuesday: first visit +30 min, warnings = real problems: warned []
+PASS  A M1-culture-2026-12-26 2026-12-30 wednesday: visits and meals inside that date's hours: none
+PASS  B M1-culture-2026-12-26 2026-12-30 wednesday: stop hours and details = that date's hours: same
+PASS  C M1-culture-2026-12-26 2026-12-30 wednesday: 23 offered starts all valid by that date's hours: all valid
+PASS  C M1-culture-2026-12-26 2026-12-30 wednesday: reversed order, warnings = real problems: warned [great-market-hall]
+PASS  C M1-culture-2026-12-26 2026-12-30 wednesday: first visit +30 min, warnings = real problems: warned []
+PASS  A M1-culture-2026-12-26 2026-12-31 thursday: visits and meals inside that date's hours: none
+PASS  B M1-culture-2026-12-26 2026-12-31 thursday: stop hours and details = that date's hours: same
+PASS  C M1-culture-2026-12-26 2026-12-31 thursday: 14 offered starts all valid by that date's hours: all valid
+PASS  C M1-culture-2026-12-26 2026-12-31 thursday: first visit +30 min, warnings = real problems: warned []
+PASS  A M1-culture-2026-12-26 2027-01-01 friday: visits and meals inside that date's hours: none
+PASS  B M1-culture-2026-12-26 2027-01-01 friday: stop hours and details = that date's hours: same
+PASS  C M1-culture-2026-12-26 2027-01-01 friday: 16 offered starts all valid by that date's hours: all valid
+PASS  C M1-culture-2026-12-26 2027-01-01 friday: reversed order, warnings = real problems: warned []
+PASS  C M1-culture-2026-12-26 2027-01-01 friday: first visit +30 min, warnings = real problems: warned []
+PASS  A M1-culture-2026-12-26 2027-01-02 saturday: visits and meals inside that date's hours: none
+PASS  B M1-culture-2026-12-26 2027-01-02 saturday: stop hours and details = that date's hours: same
+PASS  C M1-culture-2026-12-26 2027-01-02 saturday: 16 offered starts all valid by that date's hours: all valid
+PASS  C M1-culture-2026-12-26 2027-01-02 saturday: reversed order, warnings = real problems: warned []
+PASS  C M1-culture-2026-12-26 2027-01-02 saturday: first visit +30 min, warnings = real problems: warned []
+PASS  A M1-culture-2026-12-26 2027-01-03 sunday: visits and meals inside that date's hours: none
+PASS  B M1-culture-2026-12-26 2027-01-03 sunday: stop hours and details = that date's hours: same
+PASS  C M1-culture-2026-12-26 2027-01-03 sunday: 29 offered starts all valid by that date's hours: all valid
+PASS  C M1-culture-2026-12-26 2027-01-03 sunday: first visit +30 min, warnings = real problems: warned []
+PASS  A M1-culture-2026-12-26 2027-01-04 monday: visits and meals inside that date's hours: none
+PASS  B M1-culture-2026-12-26 2027-01-04 monday: stop hours and details = that date's hours: same
+PASS  C M1-culture-2026-12-26 2027-01-04 monday: 28 offered starts all valid by that date's hours: all valid
+PASS  C M1-culture-2026-12-26 2027-01-04 monday: first visit +30 min, warnings = real problems: warned []
+PASS  E M1-culture-2026-12-26: no edits = the original: original
+PASS  E M1-culture-2026-12-26: reset day 1 restores the original day: restored
+PASS  E M1-culture-2026-12-26: data serialization round trip (JSON, not the site's save / reopen) gives the same edited plan: same
+PASS  A M2-A-2026-12-29 2026-12-29 tuesday: visits and meals inside that date's hours: none
+PASS  B M2-A-2026-12-29 2026-12-29 tuesday: stop hours and details = that date's hours: same
+PASS  C M2-A-2026-12-29 2026-12-29 tuesday: 6 offered starts all valid by that date's hours: all valid
+PASS  C M2-A-2026-12-29 2026-12-29 tuesday: reversed order, warnings = real problems: warned [st-stephens-basilica]
+PASS  C M2-A-2026-12-29 2026-12-29 tuesday: first visit +30 min, warnings = real problems: warned [opera-house-tour]
+PASS  A M2-A-2026-12-29 2026-12-30 wednesday: visits and meals inside that date's hours: none
+PASS  B M2-A-2026-12-29 2026-12-30 wednesday: stop hours and details = that date's hours: same
+PASS  C M2-A-2026-12-29 2026-12-30 wednesday: 12 offered starts all valid by that date's hours: all valid
+PASS  C M2-A-2026-12-29 2026-12-30 wednesday: reversed order, warnings = real problems: warned []
+PASS  C M2-A-2026-12-29 2026-12-30 wednesday: first visit +30 min, warnings = real problems: warned []
+PASS  A M2-A-2026-12-29 2026-12-31 thursday: visits and meals inside that date's hours: none
+PASS  B M2-A-2026-12-29 2026-12-31 thursday: stop hours and details = that date's hours: same
+PASS  C M2-A-2026-12-29 2026-12-31 thursday: 19 offered starts all valid by that date's hours: all valid
+PASS  C M2-A-2026-12-29 2026-12-31 thursday: reversed order, warnings = real problems: warned [great-market-hall]
+PASS  C M2-A-2026-12-29 2026-12-31 thursday: first visit +30 min, warnings = real problems: warned []
+PASS  A M2-A-2026-12-29 2027-01-01 friday: visits and meals inside that date's hours: none
+PASS  B M2-A-2026-12-29 2027-01-01 friday: stop hours and details = that date's hours: same
+PASS  C M2-A-2026-12-29 2027-01-01 friday: 10 offered starts all valid by that date's hours: all valid
+PASS  C M2-A-2026-12-29 2027-01-01 friday: reversed order, warnings = real problems: warned []
+PASS  C M2-A-2026-12-29 2027-01-01 friday: first visit +30 min, warnings = real problems: warned []
+PASS  E M2-A-2026-12-29: no edits = the original: original
+PASS  E M2-A-2026-12-29: reset day 1 restores the original day: restored
+PASS  E M2-A-2026-12-29: data serialization round trip (JSON, not the site's save / reopen) gives the same edited plan: same
+PASS  A M3-culture-2026-12-01 2026-12-01 tuesday: visits and meals inside that date's hours: none
+PASS  B M3-culture-2026-12-01 2026-12-01 tuesday: stop hours and details = that date's hours: same
+PASS  C M3-culture-2026-12-01 2026-12-01 tuesday: 16 offered starts all valid by that date's hours: all valid
+PASS  C M3-culture-2026-12-01 2026-12-01 tuesday: reversed order, warnings = real problems: warned []
+PASS  C M3-culture-2026-12-01 2026-12-01 tuesday: first visit +30 min, warnings = real problems: warned []
+PASS  A M3-culture-2026-12-01 2026-12-02 wednesday: visits and meals inside that date's hours: none
+PASS  B M3-culture-2026-12-01 2026-12-02 wednesday: stop hours and details = that date's hours: same
+PASS  C M3-culture-2026-12-01 2026-12-02 wednesday: 16 offered starts all valid by that date's hours: all valid
+PASS  C M3-culture-2026-12-01 2026-12-02 wednesday: first visit +30 min, warnings = real problems: warned []
+PASS  A M3-culture-2026-12-01 2026-12-03 thursday: visits and meals inside that date's hours: none
+PASS  B M3-culture-2026-12-01 2026-12-03 thursday: stop hours and details = that date's hours: same
+PASS  C M3-culture-2026-12-01 2026-12-03 thursday: 9 offered starts all valid by that date's hours: all valid
+PASS  C M3-culture-2026-12-01 2026-12-03 thursday: reversed order, warnings = real problems: warned []
+PASS  C M3-culture-2026-12-01 2026-12-03 thursday: first visit +30 min, warnings = real problems: warned []
+PASS  A M3-culture-2026-12-01 2026-12-04 friday: visits and meals inside that date's hours: none
+PASS  B M3-culture-2026-12-01 2026-12-04 friday: stop hours and details = that date's hours: same
+PASS  C M3-culture-2026-12-01 2026-12-04 friday: 23 offered starts all valid by that date's hours: all valid
+PASS  C M3-culture-2026-12-01 2026-12-04 friday: reversed order, warnings = real problems: warned [great-market-hall]
+PASS  C M3-culture-2026-12-01 2026-12-04 friday: first visit +30 min, warnings = real problems: warned []
+PASS  A M3-culture-2026-12-01 2026-12-05 saturday: visits and meals inside that date's hours: none
+PASS  B M3-culture-2026-12-01 2026-12-05 saturday: stop hours and details = that date's hours: same
+PASS  C M3-culture-2026-12-01 2026-12-05 saturday: 22 offered starts all valid by that date's hours: all valid
+PASS  C M3-culture-2026-12-01 2026-12-05 saturday: reversed order, warnings = real problems: warned []
+PASS  C M3-culture-2026-12-01 2026-12-05 saturday: first visit +30 min, warnings = real problems: warned []
+PASS  A M3-culture-2026-12-01 2026-12-06 sunday: visits and meals inside that date's hours: none
+PASS  B M3-culture-2026-12-01 2026-12-06 sunday: stop hours and details = that date's hours: same
+PASS  C M3-culture-2026-12-01 2026-12-06 sunday: 28 offered starts all valid by that date's hours: all valid
+PASS  C M3-culture-2026-12-01 2026-12-06 sunday: first visit +30 min, warnings = real problems: warned []
+PASS  A M3-culture-2026-12-01 2026-12-07 monday: visits and meals inside that date's hours: none
+PASS  B M3-culture-2026-12-01 2026-12-07 monday: stop hours and details = that date's hours: same
+PASS  C M3-culture-2026-12-01 2026-12-07 monday: 20 offered starts all valid by that date's hours: all valid
+PASS  C M3-culture-2026-12-01 2026-12-07 monday: reversed order, warnings = real problems: warned []
+PASS  C M3-culture-2026-12-01 2026-12-07 monday: first visit +30 min, warnings = real problems: warned []
+PASS  A M3-culture-2026-12-01 2026-12-08 tuesday: visits and meals inside that date's hours: none
+PASS  B M3-culture-2026-12-01 2026-12-08 tuesday: stop hours and details = that date's hours: same
+PASS  C M3-culture-2026-12-01 2026-12-08 tuesday: 18 offered starts all valid by that date's hours: all valid
+PASS  C M3-culture-2026-12-01 2026-12-08 tuesday: first visit +30 min, warnings = real problems: warned []
+PASS  E M3-culture-2026-12-01: no edits = the original: original
+PASS  E M3-culture-2026-12-01: reset day 1 restores the original day: restored
+PASS  E M3-culture-2026-12-01: data serialization round trip (JSON, not the site's save / reopen) gives the same edited plan: same
+PASS  A M4-C-2026-12-23 2026-12-23 wednesday: visits and meals inside that date's hours: none
+PASS  B M4-C-2026-12-23 2026-12-23 wednesday: stop hours and details = that date's hours: same
+PASS  C M4-C-2026-12-23 2026-12-23 wednesday: 14 offered starts all valid by that date's hours: all valid
+PASS  C M4-C-2026-12-23 2026-12-23 wednesday: reversed order, warnings = real problems: warned [great-market-hall]
+PASS  C M4-C-2026-12-23 2026-12-23 wednesday: first visit +30 min, warnings = real problems: warned []
+PASS  A M4-C-2026-12-23 2026-12-24 thursday: visits and meals inside that date's hours: none
+PASS  B M4-C-2026-12-23 2026-12-24 thursday: stop hours and details = that date's hours: same
+PASS  C M4-C-2026-12-23 2026-12-24 thursday: 10 offered starts all valid by that date's hours: all valid
+PASS  C M4-C-2026-12-23 2026-12-24 thursday: reversed order, warnings = real problems: warned []
+PASS  C M4-C-2026-12-23 2026-12-24 thursday: first visit +30 min, warnings = real problems: warned []
+PASS  A M4-C-2026-12-23 2026-12-25 friday: visits and meals inside that date's hours: none
+PASS  B M4-C-2026-12-23 2026-12-25 friday: stop hours and details = that date's hours: same
+PASS  C M4-C-2026-12-23 2026-12-25 friday: 21 offered starts all valid by that date's hours: all valid
+PASS  C M4-C-2026-12-23 2026-12-25 friday: reversed order, warnings = real problems: warned []
+PASS  C M4-C-2026-12-23 2026-12-25 friday: first visit +30 min, warnings = real problems: warned []
+PASS  A M4-C-2026-12-23 2026-12-26 saturday: visits and meals inside that date's hours: none
+PASS  B M4-C-2026-12-23 2026-12-26 saturday: stop hours and details = that date's hours: same
+PASS  C M4-C-2026-12-23 2026-12-26 saturday: 25 offered starts all valid by that date's hours: all valid
+PASS  C M4-C-2026-12-23 2026-12-26 saturday: first visit +30 min, warnings = real problems: warned []
+PASS  A M4-C-2026-12-23 2026-12-27 sunday: visits and meals inside that date's hours: none
+PASS  B M4-C-2026-12-23 2026-12-27 sunday: stop hours and details = that date's hours: same
+PASS  C M4-C-2026-12-23 2026-12-27 sunday: 13 offered starts all valid by that date's hours: all valid
+PASS  C M4-C-2026-12-23 2026-12-27 sunday: first visit +30 min, warnings = real problems: warned []
+PASS  A M4-C-2026-12-23 2026-12-28 monday: visits and meals inside that date's hours: none
+PASS  B M4-C-2026-12-23 2026-12-28 monday: stop hours and details = that date's hours: same
+PASS  C M4-C-2026-12-23 2026-12-28 monday: 22 offered starts all valid by that date's hours: all valid
+PASS  C M4-C-2026-12-23 2026-12-28 monday: first visit +30 min, warnings = real problems: warned []
+PASS  A M4-C-2026-12-23 2026-12-29 tuesday: visits and meals inside that date's hours: none
+PASS  B M4-C-2026-12-23 2026-12-29 tuesday: stop hours and details = that date's hours: same
+PASS  C M4-C-2026-12-23 2026-12-29 tuesday: 10 offered starts all valid by that date's hours: all valid
+PASS  C M4-C-2026-12-23 2026-12-29 tuesday: reversed order, warnings = real problems: warned []
+PASS  C M4-C-2026-12-23 2026-12-29 tuesday: first visit +30 min, warnings = real problems: warned []
+PASS  A M4-C-2026-12-23 2026-12-30 wednesday: visits and meals inside that date's hours: none
+PASS  B M4-C-2026-12-23 2026-12-30 wednesday: stop hours and details = that date's hours: same
+PASS  C M4-C-2026-12-23 2026-12-30 wednesday: 13 offered starts all valid by that date's hours: all valid
+PASS  C M4-C-2026-12-23 2026-12-30 wednesday: reversed order, warnings = real problems: warned []
+PASS  C M4-C-2026-12-23 2026-12-30 wednesday: first visit +30 min, warnings = real problems: warned []
+PASS  A M4-C-2026-12-23 2026-12-31 thursday: visits and meals inside that date's hours: none
+PASS  B M4-C-2026-12-23 2026-12-31 thursday: stop hours and details = that date's hours: same
+PASS  C M4-C-2026-12-23 2026-12-31 thursday: 10 offered starts all valid by that date's hours: all valid
+PASS  C M4-C-2026-12-23 2026-12-31 thursday: reversed order, warnings = real problems: warned []
+PASS  C M4-C-2026-12-23 2026-12-31 thursday: first visit +30 min, warnings = real problems: warned []
+PASS  A M4-C-2026-12-23 2027-01-01 friday: visits and meals inside that date's hours: none
+PASS  B M4-C-2026-12-23 2027-01-01 friday: stop hours and details = that date's hours: same
+PASS  C M4-C-2026-12-23 2027-01-01 friday: 16 offered starts all valid by that date's hours: all valid
+PASS  C M4-C-2026-12-23 2027-01-01 friday: reversed order, warnings = real problems: warned []
+PASS  C M4-C-2026-12-23 2027-01-01 friday: first visit +30 min, warnings = real problems: warned []
+PASS  E M4-C-2026-12-23: no edits = the original: original
+PASS  E M4-C-2026-12-23: reset day 1 restores the original day: restored
+PASS  E M4-C-2026-12-23: data serialization round trip (JSON, not the site's save / reopen) gives the same edited plan: same
+PASS  A M5-C-2026-11-16 2026-11-16 monday: visits and meals inside that date's hours: none
+PASS  B M5-C-2026-11-16 2026-11-16 monday: stop hours and details = that date's hours: same
+PASS  C M5-C-2026-11-16 2026-11-16 monday: 14 offered starts all valid by that date's hours: all valid
+PASS  C M5-C-2026-11-16 2026-11-16 monday: reversed order, warnings = real problems: warned [great-market-hall]
+PASS  C M5-C-2026-11-16 2026-11-16 monday: first visit +30 min, warnings = real problems: warned []
+PASS  A M5-C-2026-11-16 2026-11-17 tuesday: visits and meals inside that date's hours: none
+PASS  B M5-C-2026-11-16 2026-11-17 tuesday: stop hours and details = that date's hours: same
+PASS  C M5-C-2026-11-16 2026-11-17 tuesday: 10 offered starts all valid by that date's hours: all valid
+PASS  C M5-C-2026-11-16 2026-11-17 tuesday: reversed order, warnings = real problems: warned [budapest-zoo]
+PASS  C M5-C-2026-11-16 2026-11-17 tuesday: first visit +30 min, warnings = real problems: warned []
+PASS  A M5-C-2026-11-16 2026-11-18 wednesday: visits and meals inside that date's hours: none
+PASS  B M5-C-2026-11-16 2026-11-18 wednesday: stop hours and details = that date's hours: same
+PASS  C M5-C-2026-11-16 2026-11-18 wednesday: 12 offered starts all valid by that date's hours: all valid
+PASS  C M5-C-2026-11-16 2026-11-18 wednesday: reversed order, warnings = real problems: warned []
+PASS  C M5-C-2026-11-16 2026-11-18 wednesday: first visit +30 min, warnings = real problems: warned []
+PASS  A M5-C-2026-11-16 2026-11-19 thursday: visits and meals inside that date's hours: none
+PASS  B M5-C-2026-11-16 2026-11-19 thursday: stop hours and details = that date's hours: same
+PASS  C M5-C-2026-11-16 2026-11-19 thursday: 25 offered starts all valid by that date's hours: all valid
+PASS  C M5-C-2026-11-16 2026-11-19 thursday: first visit +30 min, warnings = real problems: warned []
+PASS  A M5-C-2026-11-16 2026-11-20 friday: visits and meals inside that date's hours: none
+PASS  B M5-C-2026-11-16 2026-11-20 friday: stop hours and details = that date's hours: same
+PASS  C M5-C-2026-11-16 2026-11-20 friday: 20 offered starts all valid by that date's hours: all valid
+PASS  C M5-C-2026-11-16 2026-11-20 friday: reversed order, warnings = real problems: warned []
+PASS  C M5-C-2026-11-16 2026-11-20 friday: first visit +30 min, warnings = real problems: warned []
+PASS  A M5-C-2026-11-16 2026-11-21 saturday: visits and meals inside that date's hours: none
+PASS  B M5-C-2026-11-16 2026-11-21 saturday: stop hours and details = that date's hours: same
+PASS  C M5-C-2026-11-16 2026-11-21 saturday: 10 offered starts all valid by that date's hours: all valid
+PASS  C M5-C-2026-11-16 2026-11-21 saturday: reversed order, warnings = real problems: warned []
+PASS  C M5-C-2026-11-16 2026-11-21 saturday: first visit +30 min, warnings = real problems: warned []
+PASS  A M5-C-2026-11-16 2026-11-22 sunday: visits and meals inside that date's hours: none
+PASS  B M5-C-2026-11-16 2026-11-22 sunday: stop hours and details = that date's hours: same
+PASS  C M5-C-2026-11-16 2026-11-22 sunday: 15 offered starts all valid by that date's hours: all valid
+PASS  C M5-C-2026-11-16 2026-11-22 sunday: reversed order, warnings = real problems: warned []
+PASS  C M5-C-2026-11-16 2026-11-22 sunday: first visit +30 min, warnings = real problems: warned []
+PASS  A M5-C-2026-11-16 2026-11-23 monday: visits and meals inside that date's hours: none
+PASS  B M5-C-2026-11-16 2026-11-23 monday: stop hours and details = that date's hours: same
+PASS  C M5-C-2026-11-16 2026-11-23 monday: 16 offered starts all valid by that date's hours: all valid
+PASS  C M5-C-2026-11-16 2026-11-23 monday: reversed order, warnings = real problems: warned []
+PASS  C M5-C-2026-11-16 2026-11-23 monday: first visit +30 min, warnings = real problems: warned []
+PASS  E M5-C-2026-11-16: no edits = the original: original
+PASS  E M5-C-2026-11-16: reset day 1 restores the original day: restored
+PASS  E M5-C-2026-11-16: data serialization round trip (JSON, not the site's save / reopen) gives the same edited plan: same
+PASS  A M6-C-2026-12-30 2026-12-30 wednesday: visits and meals inside that date's hours: none
+PASS  B M6-C-2026-12-30 2026-12-30 wednesday: stop hours and details = that date's hours: same
+PASS  C M6-C-2026-12-30 2026-12-30 wednesday: 9 offered starts all valid by that date's hours: all valid
+PASS  C M6-C-2026-12-30 2026-12-30 wednesday: reversed order, warnings = real problems: warned [great-market-hall,hungarian-national-gallery]
+PASS  C M6-C-2026-12-30 2026-12-30 wednesday: first visit +30 min, warnings = real problems: warned []
+PASS  A M6-C-2026-12-30 2026-12-31 thursday: visits and meals inside that date's hours: none
+PASS  B M6-C-2026-12-30 2026-12-31 thursday: stop hours and details = that date's hours: same
+PASS  C M6-C-2026-12-30 2026-12-31 thursday: 12 offered starts all valid by that date's hours: all valid
+PASS  C M6-C-2026-12-30 2026-12-31 thursday: reversed order, warnings = real problems: warned []
+PASS  C M6-C-2026-12-30 2026-12-31 thursday: first visit +30 min, warnings = real problems: warned []
+PASS  A M6-C-2026-12-30 2027-01-01 friday: visits and meals inside that date's hours: none
+PASS  B M6-C-2026-12-30 2027-01-01 friday: stop hours and details = that date's hours: same
+PASS  C M6-C-2026-12-30 2027-01-01 friday: 12 offered starts all valid by that date's hours: all valid
+PASS  C M6-C-2026-12-30 2027-01-01 friday: reversed order, warnings = real problems: warned []
+PASS  C M6-C-2026-12-30 2027-01-01 friday: first visit +30 min, warnings = real problems: warned []
+PASS  A M6-C-2026-12-30 2027-01-02 saturday: visits and meals inside that date's hours: none
+PASS  B M6-C-2026-12-30 2027-01-02 saturday: stop hours and details = that date's hours: same
+PASS  C M6-C-2026-12-30 2027-01-02 saturday: 8 offered starts all valid by that date's hours: all valid
+PASS  C M6-C-2026-12-30 2027-01-02 saturday: reversed order, warnings = real problems: warned [budapest-zoo]
+PASS  C M6-C-2026-12-30 2027-01-02 saturday: first visit +30 min, warnings = real problems: warned []
+PASS  E M6-C-2026-12-30: no edits = the original: original
+PASS  E M6-C-2026-12-30: reset day 1 restores the original day: restored
+PASS  E M6-C-2026-12-30: data serialization round trip (JSON, not the site's save / reopen) gives the same edited plan: same
+PASS  A M7-A-2026-12-23 2026-12-23 wednesday: visits and meals inside that date's hours: none
+PASS  B M7-A-2026-12-23 2026-12-23 wednesday: stop hours and details = that date's hours: same
+PASS  C M7-A-2026-12-23 2026-12-23 wednesday: 13 offered starts all valid by that date's hours: all valid
+PASS  C M7-A-2026-12-23 2026-12-23 wednesday: reversed order, warnings = real problems: warned []
+PASS  C M7-A-2026-12-23 2026-12-23 wednesday: first visit +30 min, warnings = real problems: warned []
+PASS  A M7-A-2026-12-23 2026-12-24 thursday: visits and meals inside that date's hours: none
+PASS  B M7-A-2026-12-23 2026-12-24 thursday: stop hours and details = that date's hours: same
+PASS  C M7-A-2026-12-23 2026-12-24 thursday: 27 offered starts all valid by that date's hours: all valid
+PASS  C M7-A-2026-12-23 2026-12-24 thursday: reversed order, warnings = real problems: warned []
+PASS  C M7-A-2026-12-23 2026-12-24 thursday: first visit +30 min, warnings = real problems: warned []
+PASS  A M7-A-2026-12-23 2026-12-25 friday: visits and meals inside that date's hours: none
+PASS  B M7-A-2026-12-23 2026-12-25 friday: stop hours and details = that date's hours: same
+PASS  C M7-A-2026-12-23 2026-12-25 friday: 16 offered starts all valid by that date's hours: all valid
+PASS  C M7-A-2026-12-23 2026-12-25 friday: reversed order, warnings = real problems: warned []
+PASS  C M7-A-2026-12-23 2026-12-25 friday: first visit +30 min, warnings = real problems: warned []
+PASS  A M7-A-2026-12-23 2026-12-26 saturday: visits and meals inside that date's hours: none
+PASS  B M7-A-2026-12-23 2026-12-26 saturday: stop hours and details = that date's hours: same
+PASS  C M7-A-2026-12-23 2026-12-26 saturday: 16 offered starts all valid by that date's hours: all valid
+PASS  C M7-A-2026-12-23 2026-12-26 saturday: first visit +30 min, warnings = real problems: warned []
+PASS  A M7-A-2026-12-23 2026-12-27 sunday: visits and meals inside that date's hours: none
+PASS  B M7-A-2026-12-23 2026-12-27 sunday: stop hours and details = that date's hours: same
+PASS  C M7-A-2026-12-23 2026-12-27 sunday: 9 offered starts all valid by that date's hours: all valid
+PASS  C M7-A-2026-12-23 2026-12-27 sunday: reversed order, warnings = real problems: warned [budapest-zoo]
+PASS  C M7-A-2026-12-23 2026-12-27 sunday: first visit +30 min, warnings = real problems: warned []
+PASS  A M7-A-2026-12-23 2026-12-28 monday: visits and meals inside that date's hours: none
+PASS  B M7-A-2026-12-23 2026-12-28 monday: stop hours and details = that date's hours: same
+PASS  C M7-A-2026-12-23 2026-12-28 monday: 16 offered starts all valid by that date's hours: all valid
+PASS  C M7-A-2026-12-23 2026-12-28 monday: reversed order, warnings = real problems: warned []
+PASS  C M7-A-2026-12-23 2026-12-28 monday: first visit +30 min, warnings = real problems: warned []
+PASS  A M7-A-2026-12-23 2026-12-29 tuesday: visits and meals inside that date's hours: none
+PASS  B M7-A-2026-12-23 2026-12-29 tuesday: stop hours and details = that date's hours: same
+PASS  C M7-A-2026-12-23 2026-12-29 tuesday: 18 offered starts all valid by that date's hours: all valid
+PASS  C M7-A-2026-12-23 2026-12-29 tuesday: first visit +30 min, warnings = real problems: warned []
+PASS  A M7-A-2026-12-23 2026-12-30 wednesday: visits and meals inside that date's hours: none
+PASS  B M7-A-2026-12-23 2026-12-30 wednesday: stop hours and details = that date's hours: same
+PASS  C M7-A-2026-12-23 2026-12-30 wednesday: 25 offered starts all valid by that date's hours: all valid
+PASS  C M7-A-2026-12-23 2026-12-30 wednesday: reversed order, warnings = real problems: warned []
+PASS  C M7-A-2026-12-23 2026-12-30 wednesday: first visit +30 min, warnings = real problems: warned []
+PASS  A M7-A-2026-12-23 2026-12-31 thursday: visits and meals inside that date's hours: none
+PASS  B M7-A-2026-12-23 2026-12-31 thursday: stop hours and details = that date's hours: same
+PASS  C M7-A-2026-12-23 2026-12-31 thursday: 23 offered starts all valid by that date's hours: all valid
+PASS  C M7-A-2026-12-23 2026-12-31 thursday: reversed order, warnings = real problems: warned []
+PASS  C M7-A-2026-12-23 2026-12-31 thursday: first visit +30 min, warnings = real problems: warned []
+PASS  A M7-A-2026-12-23 2027-01-01 friday: visits and meals inside that date's hours: none
+PASS  B M7-A-2026-12-23 2027-01-01 friday: stop hours and details = that date's hours: same
+PASS  C M7-A-2026-12-23 2027-01-01 friday: 29 offered starts all valid by that date's hours: all valid
+PASS  C M7-A-2026-12-23 2027-01-01 friday: first visit +30 min, warnings = real problems: warned []
+PASS  E M7-A-2026-12-23: no edits = the original: original
+PASS  E M7-A-2026-12-23: reset day 1 restores the original day: restored
+PASS  E M7-A-2026-12-23: data serialization round trip (JSON, not the site's save / reopen) gives the same edited plan: same
+PASS  D1 gallery Wed 30 Dec 2026 (trip 29 Dec-1 Jan has 31 Dec): 10:00-17:30 last 17:00
+PASS  D2 gallery Fri 1 Jan 2027 (same trip): 12:00-17:30 last 17:00
+PASS  D3 gallery Wed 30 Dec: a 15:15-17:15 visit is accepted: accepted
+PASS  D4 gallery Mon 28 Dec 2026 (trip also has Mon 4 Jan): 10:00-17:30 last 17:00
+PASS  D4b gallery Mon 4 Jan 2027 (same trip, ordinary Monday): CLOSED
+PASS  D4c gallery Thu 31 Dec 2026 (trip 23 Dec-1 Jan): 10:00-16:00 last 15:00
+PASS  D4d gallery Thu 24 Dec 2026 (same trip): CLOSED
+PASS  D5 House of Music Tue 8 Dec 2026 (trip also has Tue 1 Dec): 10:15-17:50 last 16:15
+PASS  D5b House of Music Tue 1 Dec 2026 (first Tuesday): CLOSED
+PASS  D6 cruise Thu 31 Dec 2026 (trip also has Thu 24 Dec): 15:40-16:40
+PASS  D6b cruise Thu 24 Dec 2026 (no evening cruise): CLOSED
+PASS  D7 cruise Mon 16 Nov 2026 (period from 16:20): 16:20-17:20
+PASS  D7b cruise Mon 23 Nov 2026 (next period, 15:40): 15:40-16:40
+PASS  D7c cruise Thu 31 Dec 2026 (year end, published): 15:40-16:40
+PASS  D7d cruise Sat 2 Jan 2027 (no timetable published): CLOSED
+PASS  F gallery 2026-12-28 (added): stop / details / visit 10:00-12:00: 10:00-17:30 last 17:00 / 10:00-17:30 last 17:00 / inside
+PASS  F gallery 2026-12-31 (added): stop / details / visit 10:00-12:00: 10:00-16:00 last 15:00 / 10:00-16:00 last 15:00 / inside
+PASS  F gallery 2027-01-01 (added): stop / details / visit 12:00-14:00: 12:00-17:30 last 17:00 / 12:00-17:30 last 17:00 / inside
+PASS  G1 M1-culture-2026-12-26: details opened from each day = that date (38 places checked): all match
+PASS  G1 M2-A-2026-12-29: details opened from each day = that date (30 places checked): all match
+PASS  G1 M3-culture-2026-12-01: details opened from each day = that date (36 places checked): all match
+PASS  G1 M4-C-2026-12-23: details opened from each day = that date (42 places checked): all match
+PASS  G1 M5-C-2026-11-16: details opened from each day = that date (38 places checked): all match
+PASS  G1 M6-C-2026-12-30: details opened from each day = that date (31 places checked): all match
+PASS  G1 M7-A-2026-12-23: details opened from each day = that date (34 places checked): all match
+PASS  G2 gallery offered on Wed 30 Dec after removal: details = 30 Dec: 10:00-17:30 last 17:00
+PASS  G2 gallery added on Thu 31 Dec: details opened from 31 Dec: 10:00-16:00 last 15:00
+PASS  G2 whole plan after both edits: details opened from each day = that date (30 checked): all match
+PASS  G3 M2-A-2026-12-29 budapest-zoo added on 2026-12-31: details = that date: 09:00-13:00 last 12:00
+PASS  G3 M2-A-2026-12-29 budapest-zoo suggested on 2027-01-01: details = that date: 09:00-16:00 last 15:00
+PASS  G3 whole plan: details opened from each day = that date (33 checked): all match
+
+307 pass, 0 fail

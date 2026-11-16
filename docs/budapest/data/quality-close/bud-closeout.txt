@@ -1,0 +1,93 @@
+PASS limit budapest surprise — got 4, want 4
+PASS limit budapest popular+cultureHistory — got 4, want 4
+PASS limit budapest cultureHistory — got 3, want 3
+PASS limit budapest popular — got 3, want 3
+PASS limit budapest natureViews+beachRelax — got 1, want 1
+PASS limit budapest natureViews — got 1, want 1
+PASS limit budapest beachRelax — got 1, want 1
+PASS limit budapest natureViews+beachRelax+food — got 4, want 4
+PASS limit budapest food — got 4, want 4
+PASS limit budapest shopping — got 4, want 4
+PASS limit budapest footballExperiences+nightlife — got 4, want 4
+PASS limit prague cultureHistory — got none, want none
+PASS limit prague natureViews+beachRelax — got none, want none
+PASS limit barcelona popular — got none, want none
+PASS limit barcelona surprise — got none, want none
+PASS server budapest flexible 4 days, mixed — ok=true, want true
+PASS server budapest flexible 5 days, mixed — ok=false, want false
+PASS server budapest flexible 10 days, food — ok=false, want false
+PASS server budapest surprise 4 — ok=true, want true
+PASS server budapest surprise 5 — ok=false, want false
+PASS server budapest culture only 3 — ok=true, want true
+PASS server budapest culture only 4 — ok=false, want false
+PASS server budapest popular only 3 — ok=true, want true
+PASS server budapest popular only 4 — ok=false, want false
+PASS server budapest nature only 1 — ok=true, want true
+PASS server budapest nature only 2 — ok=false, want false
+PASS server budapest nature + food 4 — ok=true, want true
+PASS server budapest dated 4 days (1-4 Dec) — ok=true, want true
+PASS server budapest dated 5 days (1-5 Dec) — ok=false, want false
+PASS server budapest dated culture only 3 days — ok=true, want true
+PASS server budapest dated culture only 4 days — ok=false, want false
+PASS server budapest dated nature only 1 day — ok=true, want true
+PASS server budapest dated nature only 2 days — ok=false, want false
+PASS server prague flexible 10, culture only — ok=true, want true
+PASS server prague dated 10 days, nature only — ok=true, want true
+PASS server barcelona flexible 10, popular only — ok=true, want true
+PASS server barcelona flexible 11 (general limit) — ok=false, want false
+PASS culture 24-26 Dec 2026: generated
+PASS culture 24-26 Dec 2026: no "not published" suggestion in 2026/27 (official hours known)
+PASS culture 25-27 Dec 2026: generated
+PASS culture 25-27 Dec 2026: no "not published" suggestion in 2026/27 (official hours known)
+PASS culture 30 Dec 2026-1 Jan 2027: generated
+PASS culture 30 Dec 2026-1 Jan 2027: no "not published" suggestion in 2026/27 (official hours known)
+PASS culture 31 Dec 2026: generated
+PASS culture 31 Dec 2026: no "not published" suggestion in 2026/27 (official hours known)
+PASS museum planning hours 2026-12-23 — 10:00-18:00 last 17:00
+PASS museum planning hours 2026-12-24 — none last 17:00
+PASS museum planning hours 2026-12-25 — none last 17:00
+PASS museum planning hours 2026-12-26 — none last 17:00
+PASS museum planning hours 2026-12-27 — 10:00-18:00 last 17:00
+PASS museum planning hours 2026-12-28 — none last 17:00
+PASS museum planning hours 2026-12-29 — 10:00-18:00 last 17:00
+PASS museum planning hours 2026-12-30 — 10:00-18:00 last 17:00
+PASS museum planning hours 2026-12-31 — 10:00-14:00 last 13:00
+PASS museum planning hours 2027-01-01 — none last 17:00
+PASS museum planning hours 2027-01-02 — 10:00-18:00 last 17:00
+PASS museum planning hours 2027-12-24 — none last 17:00
+PASS museum planning hours 2027-12-27 — none last 17:00
+PASS museum planning hours 2027-12-28 — 10:00-18:00 last 17:00
+PASS museum planning hours 2027-12-31 — none last 17:00
+PASS museum card shows the holiday text, not a weekly table
+PASS 27 Dec 2026: generated
+PASS culture 24-26 Dec 2027: generated
+PASS culture 24-26 Dec 2027: hungarian-national-museum not on the clock — []
+PASS culture 24-26 Dec 2027: hungarian-national-museum offered as a conditional suggestion with the reason — [{"day":3,"reason":"اختياري: مواعيد العطلة لهاليوم مش منشورة لسا. تأكّد من موقع المتحف قبل ما تروح."}]
+PASS culture 24-26 Dec 2027: hungarian-national-gallery not on the clock — []
+PASS culture 24-26 Dec 2027: hungarian-national-gallery offered as a conditional suggestion with the reason — [{"day":1,"reason":"اختياري: مواعيد العطلة لهاليوم مش منشورة لسا. تأكّد من موقع المتحف قبل ما تروح."}]
+PASS culture 31 Dec 2027-1 Jan 2028: generated
+PASS culture 31 Dec 2027-1 Jan 2028: hungarian-national-museum not on the clock — []
+PASS culture 31 Dec 2027-1 Jan 2028: hungarian-national-museum offered as a conditional suggestion with the reason — [{"day":2,"reason":"اختياري: مواعيد العطلة لهاليوم مش منشورة لسا. تأكّد من موقع المتحف قبل ما تروح."}]
+PASS culture 31 Dec 2027-1 Jan 2028: hungarian-national-gallery not on the clock — []
+PASS culture 31 Dec 2027-1 Jan 2028: hungarian-national-gallery offered as a conditional suggestion with the reason — [{"day":1,"reason":"اختياري: مواعيد العطلة لهاليوم مش منشورة لسا. تأكّد من موقع المتحف قبل ما تروح."}]
+PASS culture 25 Dec 2029: generated
+PASS culture 25 Dec 2029: hungarian-national-museum not on the clock — []
+PASS culture 25 Dec 2029: hungarian-national-museum offered as a conditional suggestion with the reason — [{"day":1,"reason":"اختياري: مواعيد العطلة لهاليوم مش منشورة لسا. تأكّد من موقع المتحف قبل ما تروح."}]
+PASS culture 25 Dec 2029: hungarian-national-gallery not on the clock — []
+PASS culture 25 Dec 2029: hungarian-national-gallery offered as a conditional suggestion with the reason — [{"day":1,"reason":"اختياري: مواعيد العطلة لهاليوم مش منشورة لسا. تأكّد من موقع المتحف قبل ما تروح."}]
+PASS 21-23 Dec 2027: generated
+PASS 21-23 Dec 2027: no holiday suggestion
+PASS 21-23 Dec 2027: the museum is scheduled as usual
+PASS shopping 24-26 Dec 2027: hungarian-national-museum suggested only if relevant (relevance 5, threshold 5) — suggested 1
+PASS shopping 24-26 Dec 2027: hungarian-national-gallery suggested only if relevant (relevance 6, threshold 5) — suggested 1
+PASS nature 25 Dec 2027: hungarian-national-museum suggested only if relevant (relevance 0, threshold 5) — suggested 0
+PASS nature 25 Dec 2027: hungarian-national-gallery suggested only if relevant (relevance 4, threshold 5) — suggested 0
+PASS food 31 Dec 2027-1 Jan 2028: hungarian-national-museum suggested only if relevant (relevance 5, threshold 5) — suggested 1
+PASS food 31 Dec 2027-1 Jan 2028: hungarian-national-gallery suggested only if relevant (relevance 6, threshold 5) — suggested 1
+PASS title: City Park + Andrássy and the Opera — City Park, Andrássy Avenue and the Opera
+PASS title: Parliament and St Stephen's + Margaret Island — Parliament, St Stephen’s Basilica and Margaret Island
+PASS title: two parts keep & — Castle Hill & Danube bank
+PASS title: Hebrew unchanged — פארק העיר ו־Andrássy והאופרה
+PASS House of Music text translated (en) — {"destination":"budapest","days":[{"dayNumber":1,"title":"Castle Hill","summary":"","stops":[],"legs":[],"optionalNearby":[{"id":"x","name":"x","reason":"Timed entry every 30 minutes, at :15 and :45 p
+
+ALL PASS (91 checks)
