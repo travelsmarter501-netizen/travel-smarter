@@ -1,4 +1,4 @@
-# Budapest on a Vercel Preview: setup order (revised 2026-11-16; nothing pushed, created or deployed)
+# Budapest on a Vercel Preview: setup order (revised 2026-11-16; results of the Preview run in section 7)
 
 **Goal:** the owner tries the product on a phone with real sign-in, saves and permissions, on a TEST database, with Budapest and Hebrew,
 and with no real payment. Production stays untouched. Code under test: `4c39288` (docs after it: `76b9bcd`, no code).
@@ -80,3 +80,55 @@ Add each with Environment = **Preview** and Branch = **`feature/budapest`**. Nev
    - account B: A's plan is not in B's list, A's plan address shows not found, an edit sent with A's plan id is refused and A's stored plan is unchanged;
    - the checkout never reaches Allpay.
 4. **The owner tries it on an iPhone.**
+
+## 7. Results on the Preview (2026-11-16)
+No secret, key value or customer data was read into the chat or written here. Nothing was changed in Production.
+
+**What ran:**
+- **Branch:** `feature/budapest` pushed at `ece9b36` (no force, no merge). Production still deploys `main` = `925512d`.
+- **Deployment:** the Preview of `ece9b36`, READY, at `travel-smarter-git-feature-budapest-travelsmarter501-4558.vercel.app`.
+- **After it:** one local docs commit (`5e8c737`, `supabase/preview-setup/README.md` only), not pushed; no code differs from what was tested.
+- **Variables (Preview + `feature/budapest` only):**
+  - Supabase: the TEST project `qcznrojhnshmwrtrrqux` (added by the owner). The Preview's public scripts contain only the test project's host.
+  - `ALLPAY_MODE`, `ALLPAY_API_LOGIN`, `ALLPAY_API_KEY` = `disabled`.
+  - `NEXT_PUBLIC_PLANNER_PREVIEW_DESTINATIONS=budapest`, `NEXT_PUBLIC_PREVIEW_LANGUAGES=he`.
+- **System environment exposure is on:** the menu offers العربية / EN / עברית, which needs `NEXT_PUBLIC_VERCEL_ENV=preview` in the browser.
+
+**Two-account isolation (passed).** Account A owns two Budapest plans. Before the test, A's `updated_at` and a hash of each `generated_plan_json` were recorded. Then, signed in as B:
+
+| B tried, on each of A's plans | Result |
+|---|---|
+| Open A's plan address | page «ما لقينا هاي الخطة، ممكن تكون انحذفت.» |
+| REST read by id | 200, 0 rows. B's own list: 0 rows, none of A's |
+| REST update (`destination_slug`) | 403 `42501` permission denied (the table has no update grant) |
+| REST delete by id | 200, 0 rows deleted |
+| REST insert with A's `user_id` | 403 `42501`, row-level security policy |
+| RPC `replace_owned_plan_content`, `delete_saved_plan`, `set_saved_plan_archived` with A's user id | 403 `42501` permission denied, each |
+| The site's server action `customizeSavedPlan` with A's plan id (a valid `reset` change) | `{ ok: false, code: "not_found" }`, nothing saved |
+
+Signed in as A afterwards: both plans have the same `updated_at` and the same hash as before.
+
+**Payments (by code and variables, not by a click):**
+- `getAllpayMode()` accepts only `test` / `live` (`live` only on Production). With `disabled` it throws before any request to Allpay, and checkout returns «تعذّر تجهيز الدفع حاليًا…».
+- B (no entitlement) reached the checkout page (₪39 from the test database).
+- The click on «الدفع عبر Allpay» was refused by the session's permission check and was not tried another way. Not run: that click. Expected: the message above, no move to Allpay, one pending order in the test database.
+
+**Prague and Barcelona on the Preview (account A, one 3-day «فاجئني» plan each):**
+- **Budapest-only display absent:** no photo-credit link under photos, no time isolation in texts. The only `<bdi dir="ltr">` runs are the day start and the distance, as in Production.
+- **Layout:** RTL, no horizontal overflow, no broken images, no new console error. Prague also checked in English.
+- **Visible shared changes (round 8, intended):**
+  - the badge reads «لا تفوّته» (Production: «Must See»);
+  - the price-not-available counter wording;
+  - anchors on `/photo-credits`.
+- **`/photo-credits`:** RTL, no overflow, sections Prague, Barcelona, Budapest.
+
+**The owner's test on a real phone:** the owner created a plan, edited it, saved it and reopened it on Safari on an iPhone, and it worked. One case only; the city, the edits, the iPhone model and the iOS version were not recorded.
+
+**Not checked:**
+- the Allpay button click (above);
+- e-mails (confirmation is off in the test project);
+- other phones, Android, other cases on Safari.
+
+**Test data left in the test database:**
+- A's two Budapest plans and the Prague and Barcelona plans made in this run.
+- The two test accounts.
