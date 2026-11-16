@@ -1863,3 +1863,43 @@ Outputs: `data/quality-close/`.
 - **Independent check:** 0 problems (159 + 54 + 30 days).
 - **Build:** `tsc`, lint and `next build --webpack` pass.
 - **Not re-run:** Prague / Barcelona. The changes touch no shared engine code: a Budapest-only label, a card line shown only where tour times are listed (the Opera), and questionnaire texts used only under a Budapest limit.
+
+### 25.6 Temporary launch scope by date (owner decision, 2026-11-16)
+**Why:** two 25 Dec cases were not acceptable as a full paid plan:
+- the culture trip 25–27 Dec: 4 visits, 80 min, last visit 11:45;
+- 25 Dec in the Preview plan 24–26 Dec: 2 visits, 95 min, last visit 11:15.
+
+No padding, no shorter visits, no engine work.
+
+**The scope:**
+- **Refused:** Budapest requests with **specific dates** that touch 24–26 Dec 2026, 31 Dec 2026 or 1 Jan 2027.
+- **What it means:** a limit on our product's readiness for these holidays, not a claim that the city or every place is closed.
+- **Only these dates:** not generalised to other years, and no claim that every other date was checked.
+
+**How it works:**
+- **One function:** `unavailableTripDates` in `tripLengthLimits.ts`.
+- **Server:** used in `normalizePersonalizedAnswers`. That check runs before any order (checkout, complimentary) and before any plan generation (owner creation, plan edit).
+- **Questionnaire:**
+  - shows «خطط بودابست مش متاحة حاليًا لهالتواريخ بسبب تغيّر مواعيد الأماكن بالأعياد. اختار تواريخ ثانية أو مدينة ثانية.» and blocks "next";
+  - the dates are never changed for the visitor;
+  - after the dates step (an edited plan) a «غيّر التواريخ» button leads back.
+- **Plans without dates:** a short note in the questionnaire (flexible dates) and in the plan view:
+  - the plan does not check holiday closures;
+  - the scope above is not supported.
+- **Unchanged:**
+  - saved plans keep opening (nothing deleted or blocked);
+  - Prague, Barcelona and payment settings;
+  - the engine's holiday rules from 25.2 and 25.5, still used for every dated plan, e.g. Dec 2027.
+
+**Checks:**
+- **`bud-closeout`: 246 checks.** 14 date cases on the function and on the server:
+  - the day before / the day after;
+  - a trip from 21 Dec into 24 Dec;
+  - 27–30 Dec between the windows (allowed);
+  - 28–31 Dec, 30 Dec–1 Jan and 1–2 Jan;
+  - 24–26 Dec 2027 and 2025 (allowed);
+  - Prague and Barcelona on the same dates (allowed);
+  - Budapest flexible (allowed).
+- **Refusal before any order:** the checkout action called directly as a visitor on the local server with the Supabase test double (which records every database call):
+  - dates 21–24 Dec 2026 → `invalid_planner_answers` and no database call at all;
+  - the control 27–30 Dec 2026 → `create_personalized_plan_order` recorded, then `payment_setup_failed` because Allpay is `disabled`; nothing external contacted.

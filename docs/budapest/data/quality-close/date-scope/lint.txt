@@ -1,0 +1,5 @@
+
+> travel-planner@0.1.0 lint
+> eslint
+
+lint exit=0

@@ -232,3 +232,11 @@ plan view, so both rows below now read correctly in Arabic and Hebrew (measured 
 - «احجز الموعد اللي بيناسب خطتك» (Opera) and «احجز الموعد اللي بناسب خطتك» (House of Music, the owner's wording): advice, not a condition.
 - The Parliament interior tip (a tour outside the plan, booked through the visitor centre).
 - Prague's «مشروطة بالحجز» warnings (a published city, out of scope).
+
+## 9. Temporary launch scope by date (2026-11-16)
+
+| Where | Arabic | English (AI, not reviewed) | Hebrew (AI, not reviewed) |
+|---|---|---|---|
+| Questionnaire, dates touching 24–26 Dec 2026, 31 Dec 2026, 1 Jan 2027 (Arabic: the owner's wording) | خطط بودابست مش متاحة حاليًا لهالتواريخ بسبب تغيّر مواعيد الأماكن بالأعياد. اختار تواريخ ثانية أو مدينة ثانية. | Budapest plans aren’t available for these dates right now, because places change their opening hours over the holidays. Choose other dates or another city. | תוכניות לבודפשט לא זמינות כרגע לתאריכים האלה, כי שעות הפתיחה של המקומות משתנות בחגים. בחרו תאריכים אחרים או עיר אחרת. |
+| Note, plans without dates (questionnaire and plan view; not reviewed) | الخطة بدون تواريخ ما بتفحص إغلاقات الأعياد. خطط بودابست حاليًا مش متاحة لـ24–26 ديسمبر 2026 و31 ديسمبر 2026 و1 يناير 2027. | A plan without dates does not check holiday closures. Budapest plans are not available for 24–26 December 2026, 31 December 2026 or 1 January 2027 at the moment. | תוכנית בלי תאריכים לא בודקת סגירות בחגים. כרגע אין תוכניות לבודפשט ל־24–26 בדצמבר 2026, ל־31 בדצמבר 2026 ול־1 בינואר 2027. |
+| House of Music warning, English only (owner's wording, commit 76fa699) | (unchanged) | ⚠️ Timed entry every 30 minutes, at :15 and :45 past the hour, and weekend tickets sell out fast. The cloakroom is mandatory. | (unchanged) |

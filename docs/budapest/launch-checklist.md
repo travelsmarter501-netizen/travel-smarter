@@ -3,6 +3,11 @@
 Code: `feature/budapest` at `ece9b36` (Preview). Budapest stays unavailable in Production. No new optimisation round was run for this
 list: every number comes from results already in `docs/budapest/data/`.
 
+## Temporary launch scope (owner, 2026-11-16, research 25.6)
+- Budapest dated requests touching **24–26 Dec 2026, 31 Dec 2026 or 1 Jan 2027** are not offered: a limit on our readiness for these holidays (the plans for those days were too thin), not a claim that places are closed. Refused in the questionnaire and on the server before any order or plan; dates are never changed for the visitor.
+- Plans without dates show a note: they do not check holiday closures, and the scope above is not supported.
+- Only these dates; not generalised to other years; other dates are not claimed to be checked.
+
 ## Status after the close-out round (2026-11-16, research section 25)
 - **1. Day range: done.**
   - Budapest at most 4 days; culture only or popular only 3; nature only 1.
