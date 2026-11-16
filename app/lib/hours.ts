@@ -75,6 +75,11 @@ type HoursMeta = {
    * quarter-hour rounding) and lasts the interval. Used for timetabled departures (a river cruise).
    */
   startsAtOpening?: true;
+  /**
+   * Display only (opt-in): the place is visited only in sessions starting at these times ("HH:MM"), e.g. a guided tour. The place card
+   * lists them instead of showing the schedule as continuous opening hours. The schedule itself stays what the planner uses.
+   */
+  sessionStarts?: string[];
 };
 
 export type HoursInfo =

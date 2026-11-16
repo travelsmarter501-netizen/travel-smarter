@@ -8,6 +8,7 @@ import RatingBadge from "./RatingBadge";
 import type { ShoppingArea } from "../../lib/guideTypes";
 import type { Weekday } from "../../lib/hours";
 import { PLACE_CARD_TEXT, type PlanLanguage } from "../../lib/i18n/planText";
+import { PhotoCreditLink, TimesText } from "../smart-planner/planDisplay";
 
 /**
  * Single-place detail card for a `ShoppingArea` — same visual/data pattern as AttractionCard,
@@ -65,6 +66,7 @@ export default function ShoppingAreaCard({
         </button>
       </ExternalLink>
       )}
+      {area.image && <PhotoCreditLink placeId={area.id} author={area.imageAuthor} license={area.imageLicense} lang={lang} />}
 
       <div className={`relative flex flex-1 flex-col p-4 ${area.image ? "" : "pl-14"}`}>
         {!area.image && <CardFavoriteButton isFavorite={isFavorite} onToggle={onToggleFavorite} addLabel={ui.favoriteAdd} removeLabel={ui.favoriteRemove} />}
@@ -81,7 +83,7 @@ export default function ShoppingAreaCard({
           ratingUrl={area.ratingUrl ?? (area.ratingSource === "Google" ? area.mapsUrl : undefined)}
           className="mt-1"
         />
-        <p className="mt-1 text-sm leading-6 text-slate-600">{area.description}</p>
+        <p className="mt-1 text-sm leading-6 text-slate-600"><TimesText text={area.description} /></p>
 
         <div className="mt-3">
           <OpeningHours lang={lang} hours={area.hours} plannedWeekday={plannedWeekday} />

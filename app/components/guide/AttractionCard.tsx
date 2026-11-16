@@ -8,6 +8,7 @@ import RatingBadge from "./RatingBadge";
 import type { Attraction } from "../../lib/guideTypes";
 import type { Weekday } from "../../lib/hours";
 import { PLACE_CARD_TEXT, bookingStatusText, type PlanLanguage } from "../../lib/i18n/planText";
+import { PhotoCreditLink, TimesText } from "../smart-planner/planDisplay";
 
 const bookingNeeded = new Set(["ضروري مسبقًا", "يفضل مسبقًا"]);
 
@@ -71,11 +72,12 @@ export default function AttractionCard({
         {attraction.mustSee && (
           <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-amber-500 px-2.5 py-1 text-xs font-bold text-white shadow-sm">
             <IconStar filled className="h-3 w-3" />
-            Must See
+            {ui.mustSee}
           </span>
         )}
       </ExternalLink>
       )}
+      {attraction.image && <PhotoCreditLink placeId={attraction.id} author={attraction.imageAuthor} license={attraction.imageLicense} lang={lang} />}
 
       <div className={`relative flex flex-1 flex-col p-4 ${attraction.image ? "" : "pl-14"}`}>
         {!attraction.image && <CardFavoriteButton isFavorite={isFavorite} onToggle={onToggleFavorite} addLabel={ui.favoriteAdd} removeLabel={ui.favoriteRemove} />}
@@ -89,7 +91,7 @@ export default function AttractionCard({
           ratingUrl={attraction.ratingUrl ?? (attraction.ratingSource === "Google" ? attraction.mapsUrl : undefined)}
           className="mt-1"
         />
-        <p className="mt-1 text-sm leading-6 text-slate-600">{attraction.description}</p>
+        <p className="mt-1 text-sm leading-6 text-slate-600"><TimesText text={attraction.description} /></p>
 
         <div className="mt-3">
           <LocationInfo lang={lang}
@@ -112,7 +114,7 @@ export default function AttractionCard({
             <span>🎟️</span>
             <span>
               {attraction.outsideView && attraction.priceType === "paid" ? `${ui.insideLabel} ` : ""}
-              {attraction.priceText}
+              <TimesText text={attraction.priceText} />
             </span>
           </p>
           {bookingNeeded.has(attraction.bookingStatus) && (
@@ -130,7 +132,7 @@ export default function AttractionCard({
         {attraction.tip && (
           <div className="mt-3 rounded-xl bg-teal-50 p-3">
             <p className="text-xs font-bold text-teal-800">{ui.tip}</p>
-            <p className="mt-1 text-xs leading-5 text-teal-700">{attraction.tip}</p>
+            <p className="mt-1 text-xs leading-5 text-teal-700"><TimesText text={attraction.tip} /></p>
           </div>
         )}
 

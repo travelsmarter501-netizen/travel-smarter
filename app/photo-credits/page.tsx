@@ -16,10 +16,17 @@ export const metadata: Metadata = {
 type Credited = ImageCredit & { id: string; name: string; image: string };
 
 /** `onlyWhenSelectable`: listed only while the city can be chosen (public, or the local / Preview switch), so an unreleased city is not shown. */
-const CITIES: { id: string; titleAr: string; titleEn: string; onlyWhenSelectable?: boolean }[] = [
+const CITIES: { id: string; titleAr: string; titleEn: string; onlyWhenSelectable?: boolean; noteAr?: string; noteEn?: string }[] = [
   { id: "prague", titleAr: "براغ", titleEn: "Prague" },
   { id: "barcelona", titleAr: "برشلونة", titleEn: "Barcelona" },
-  { id: "budapest", titleAr: "بودابست", titleEn: "Budapest", onlyWhenSelectable: true },
+  {
+    id: "budapest",
+    titleAr: "بودابست",
+    titleEn: "Budapest",
+    onlyWhenSelectable: true,
+    noteAr: "كل صورة نسخة مصغّرة (960 بكسل) من الملف الأصلي على Wikimedia Commons، بدون أي تعديل تاني.",
+    noteEn: "Each photo is a resized copy (960 px) of the original file on Wikimedia Commons, with no other change.",
+  },
 ];
 
 function creditedPlaces(cityId: string): Credited[] {
@@ -50,9 +57,11 @@ export default function PhotoCreditsPage() {
             <h2 className="text-lg font-bold text-slate-900">
               {c.titleAr} <span dir="ltr" className="text-sm font-normal text-slate-500">· {c.titleEn}</span>
             </h2>
+            {c.noteAr && <p className="mt-1 text-xs leading-5 text-slate-500">{c.noteAr}</p>}
+            {c.noteEn && <p dir="ltr" className="text-start text-xs leading-5 text-slate-500">{c.noteEn}</p>}
             <ul className="mt-3 space-y-2 text-[13px] leading-5 text-slate-600">
               {places.map((x) => (
-                <li key={x.image}>
+                <li key={x.image} id={`photo-${x.id}`} className="scroll-mt-24">
                   <span dir="auto" className="font-semibold text-slate-800">{x.name}</span>
                   <span dir="ltr" className="block text-start">
                     {x.imageSourceUrl ? <a href={x.imageSourceUrl} target="_blank" rel="noopener noreferrer" className={LINK}>{x.imageAuthor}</a> : x.imageAuthor}

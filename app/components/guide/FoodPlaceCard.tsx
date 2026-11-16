@@ -8,6 +8,7 @@ import RatingBadge from "./RatingBadge";
 import type { DietaryTag, FoodBadge, FoodPlace } from "../../lib/guideTypes";
 import type { Weekday } from "../../lib/hours";
 import { PLACE_CARD_TEXT, foodBadgeText, type PlanLanguage } from "../../lib/i18n/planText";
+import { PhotoCreditLink, TimesText } from "../smart-planner/planDisplay";
 
 const dietaryIcons: Record<DietaryTag, string> = {
   "pork-maybe": "🐷",
@@ -86,6 +87,7 @@ export default function FoodPlaceCard({
         </button>
       </ExternalLink>
       )}
+      {place.image && <PhotoCreditLink placeId={place.id} author={place.imageAuthor} license={place.imageLicense} lang={lang} />}
 
       <div className={`relative flex flex-1 flex-col p-4 ${place.image ? "" : "pl-14"}`}>
         {!place.image && <CardFavoriteButton isFavorite={isFavorite} onToggle={onToggleFavorite} addLabel={ui.favoriteAdd} removeLabel={ui.favoriteRemove} />}
@@ -114,7 +116,7 @@ export default function FoodPlaceCard({
           className="mt-1"
         />
 
-        <p className="mt-2 text-sm leading-6 text-slate-600">{place.why}</p>
+        <p className="mt-2 text-sm leading-6 text-slate-600"><TimesText text={place.why} /></p>
 
         {place.dietaryTags.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-1">

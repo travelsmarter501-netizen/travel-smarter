@@ -50,7 +50,7 @@ export type PlannerPlaceMetadata = {
    * Optional: the place has something to see only during the first `minutes` of every `everyMinutes` (a moving statue). The
    * timeline waits for the next window when that costs at most `maxWaitMinutes`; otherwise the stop carries `missNoteAr`.
    */
-  showWindow?: { everyMinutes: number; minutes: number; maxWaitMinutes: number; missNoteAr: string; offsetMinutes?: number };
+  showWindow?: { everyMinutes: number; minutes: number; maxWaitMinutes: number; missNoteAr: string; offsetMinutes?: number; listSessions?: true };
 };
 
 /**

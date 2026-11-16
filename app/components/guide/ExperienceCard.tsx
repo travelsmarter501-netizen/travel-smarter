@@ -8,6 +8,7 @@ import RatingBadge from "./RatingBadge";
 import type { Experience } from "../../lib/guideTypes";
 import type { Weekday } from "../../lib/hours";
 import { PLACE_CARD_TEXT, type PlanLanguage } from "../../lib/i18n/planText";
+import { PhotoCreditLink, TimesText } from "../smart-planner/planDisplay";
 
 export default function ExperienceCard({
   experience,
@@ -67,6 +68,7 @@ export default function ExperienceCard({
           </button>
         </ExternalLink>
       ) : null}
+      {imageLinkHref && experience.image && <PhotoCreditLink placeId={experience.id} author={experience.imageAuthor} license={experience.imageLicense} lang={lang} />}
       <div className={`relative flex flex-1 flex-col p-4 ${imageLinkHref && experience.image ? "" : "pl-14"}`}>
         {!(imageLinkHref && experience.image) && <CardFavoriteButton isFavorite={isFavorite} onToggle={onToggleFavorite} addLabel={ui.favoriteAdd} removeLabel={ui.favoriteRemove} />}
         <div className="flex flex-wrap items-start justify-between gap-x-2 gap-y-1">
@@ -74,7 +76,7 @@ export default function ExperienceCard({
             {experience.name}
           </p>
           <span className="text-sm font-semibold text-teal-700">
-            {experience.priceVaries ? `${experience.priceText}` : experience.priceText}
+            <TimesText text={experience.priceText} />
           </span>
         </div>
 
@@ -86,7 +88,7 @@ export default function ExperienceCard({
           className="mt-1"
         />
 
-        <p className="mt-2 text-sm leading-6 text-slate-600">{experience.description}</p>
+        <p className="mt-2 text-sm leading-6 text-slate-600"><TimesText text={experience.description} /></p>
 
         <div className="mt-2 flex flex-wrap gap-1.5">
           {experience.tags.map((tag) => (

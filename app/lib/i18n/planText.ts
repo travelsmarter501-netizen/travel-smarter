@@ -150,7 +150,7 @@ export const PLAN_TEXT = {
     freeDayTitle: (time: string) => `🕒 وقت حر من ${time}`,
     freeDayNote: "ما في أماكن مجدولة بعد هالساعة. كمّل بمشي أو قهوة أو واحد من الاقتراحات تحت.",
     ticketsDay: (amount: string) => `🎟️ تذاكر ${amount}`,
-    ticketsUnknown: (n: number) => `+ ${n} سعر غير متوفر`,
+    ticketsUnknown: (n: number) => (n === 1 ? "+ سعر واحد غير متوفر" : n === 2 ? "+ سعرين غير متوفرين" : n <= 10 ? `+ ${n} أسعار غير متوفرة` : `+ ${n} سعر غير متوفر`),
     ticketsOptional: (amount: string) => `الاختياري +${amount}`,
     ticketsPlan: (amount: string) => `🎟️ تذاكر الدخول التقديرية للخطة: ${amount} للشخص`,
     ticketsNote: "تقدير من أسعار الأماكن للكبار، مش ضمن سعر الخطة. الوقفات من برا ببلاش، والدخول الاختياري محسوب لحاله.",
@@ -223,7 +223,7 @@ export const PLAN_TEXT = {
     freeDayTitle: (time: string) => `🕒 Free time from ${time}`,
     freeDayNote: "Nothing is scheduled after this time. Walk, have a coffee, or pick one of the ideas below.",
     ticketsDay: (amount: string) => `🎟️ Tickets ${amount}`,
-    ticketsUnknown: (n: number) => `+ ${n} price not available`,
+    ticketsUnknown: (n: number) => (n === 1 ? "+ 1 price not available" : `+ ${n} prices not available`),
     ticketsOptional: (amount: string) => `optional +${amount}`,
     ticketsPlan: (amount: string) => `🎟️ Estimated entry tickets for the plan: ${amount} per person`,
     ticketsNote: "Estimated from the places' adult prices; not included in the plan price. Outside stops are free, and optional entries are counted separately.",
@@ -296,7 +296,7 @@ export const PLAN_TEXT = {
     freeDayTitle: (time: string) => `🕒 זמן חופשי מ־${time}`,
     freeDayNote: "אין דבר מתוכנן אחרי השעה הזאת. טיילו, שתו קפה, או בחרו אחד הרעיונות למטה.",
     ticketsDay: (amount: string) => `🎟️ כרטיסים ${amount}`,
-    ticketsUnknown: (n: number) => `+ ${n} מחיר לא זמין`,
+    ticketsUnknown: (n: number) => (n === 1 ? "+ מחיר אחד לא זמין" : `+ ${n} מחירים לא זמינים`),
     ticketsOptional: (amount: string) => `אופציונלי +${amount}`,
     ticketsPlan: (amount: string) => `🎟️ כרטיסי כניסה משוערים לתוכנית: ${amount} לאדם`,
     ticketsNote: "הערכה לפי מחירי המקומות למבוגרים; לא כלול במחיר התוכנית. עצירות מבחוץ בחינם, וכניסה אופציונלית מחושבת בנפרד.",
@@ -386,6 +386,7 @@ export const PLACE_CARD_TEXT = {
     entryBookingRecommended: "الحجز المسبق مستحسن",
     photoCredits: "حقوق الصور",
     tip: "Travel Smarter Tip",
+    mustSee: "لا تفوّته",
     dressCode: "👕 Dress code",
     hours: {
       open24: "مفتوح 24 ساعة",
@@ -402,6 +403,8 @@ export const PLACE_CARD_TEXT = {
       today: "🕒 اليوم: ",
       yourTripDay: "يوم رحلتك",
       todayBadge: "اليوم",
+      sessionsTitle: "🕒 مواعيد الجولات: ",
+      sessionsBooking: "الدخول بجولة بس، بموعد محجوز مسبقًا",
     },
   },
   en: {
@@ -444,6 +447,7 @@ export const PLACE_CARD_TEXT = {
     entryBookingRecommended: "Booking in advance is recommended",
     photoCredits: "Photo credits",
     tip: "Travel Smarter Tip",
+    mustSee: "Must see",
     dressCode: "👕 Dress code",
     hours: {
       open24: "Open 24 hours",
@@ -460,6 +464,8 @@ export const PLACE_CARD_TEXT = {
       today: "🕒 Today: ",
       yourTripDay: "Your trip day",
       todayBadge: "Today",
+      sessionsTitle: "🕒 Tour times: ",
+      sessionsBooking: "Entry by tour only, booked in advance",
     },
   },
   he: {
@@ -502,6 +508,7 @@ export const PLACE_CARD_TEXT = {
     entryBookingRecommended: "מומלץ להזמין מראש",
     photoCredits: "קרדיטים לתמונות",
     tip: "Travel Smarter Tip",
+    mustSee: "חובה לראות",
     dressCode: "👕 קוד לבוש",
     hours: {
       open24: "פתוח 24 שעות",
@@ -518,6 +525,8 @@ export const PLACE_CARD_TEXT = {
       today: "🕒 היום: ",
       yourTripDay: "יום הטיול שלכם",
       todayBadge: "היום",
+      sessionsTitle: "🕒 שעות הסיורים: ",
+      sessionsBooking: "כניסה בסיור בלבד, בהזמנה מראש",
     },
   },
 } as const;

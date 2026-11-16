@@ -1,5 +1,6 @@
 "use client";
 
+import { PlanDisplayProvider } from "../smart-planner/planDisplay";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { customizeSavedPlan } from "../../smart-planner/barcelona-v2/saved/[id]/actions";
@@ -215,6 +216,7 @@ export default function SmartPlannerV2Result({
   if (language !== "ar" && !localize) return <p aria-busy="true" className="py-16 text-center text-sm text-slate-400">…</p>;
 
   return (
+    <PlanDisplayProvider destination={plan.destination}>
     <div>
       <h1 className="text-xl font-bold text-slate-900">{ui.title(cityName)}</h1>
 
@@ -328,5 +330,6 @@ export default function SmartPlannerV2Result({
       </div>
 
     </div>
+    </PlanDisplayProvider>
   );
 }

@@ -6,15 +6,15 @@ generated image. Each photo was matched to its place (Wikidata item near the pla
 and then looked at.
 
 **Files:** `public/images-budapest/<place id>.jpg` = Commons' own 960px thumbnail of the file, not edited. Credits in
-`app/lib/planner/budapest/budapestPhotos.ts`; the plan cards show no credit next to the photo, so the credits are on `/photo-credits`, linked from the footer (the same arrangement as Prague) (Budapest is listed there only
+`app/lib/planner/budapest/budapestPhotos.ts`; each place's details show the credit under the photo, linked to its entry on `/photo-credits` (Budapest is listed there only
 while the city can be chosen: public, or the local / Preview switch).
 
 **Coverage:** 28 of the 33 places a plan can show (the 9 area entries have no photo in any city).
 
 | Place | File (source) | Author (as credited) | License | Terms | Matched by |
 |---|---|---|---|---|---|
-| st-stephens-basilica | [HUN-2015-Budapest-St. Stephen's Basilica.jpg](https://commons.wikimedia.org/wiki/File:HUN-2015-Budapest-St._Stephen%27s_Basilica.jpg) | Godot13 | [Attribution](https://commons.wikimedia.org/wiki/Template:Attribution) | Any use, including commercial, if the author is credited. | Wikidata Q338665 (43 m from the place point), its image |
-| parliament-exterior | [Budapest-Parliament-0001.jpg](https://commons.wikimedia.org/wiki/File:Budapest-Parliament-0001.jpg) | Godot13 (derivative work: MathKnight) | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0) | Attribution (author, link to the file, link to the license) and share-alike for adapted versions; commercial use allowed. Used unedited. | Wikidata Q11819 (143 m), its image |
+| st-stephens-basilica | [HUN-2015-Budapest-St. Stephen's Basilica.jpg](https://commons.wikimedia.org/wiki/File:HUN-2015-Budapest-St._Stephen%27s_Basilica.jpg) | Andrew Shiva / Wikipedia | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0) (the file's credit line; licence template "Attribution") | The file page: use outside Wikipedia **must credit the original photographer (Andrew Shiva)**; its credit line is «Andrew Shiva / Wikipedia / CC-BY-SA-4.0», used as given. A message to the uploader is appreciated, not required (not sent: no contact without the owner's permission). | Wikidata Q338665 (43 m from the place point), its image |
+| parliament-exterior | [Budapest-Parliament-0001.jpg](https://commons.wikimedia.org/wiki/File:Budapest-Parliament-0001.jpg) | Andrew Shiva / Wikipedia (derivative work: MathKnight) | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0) | CC BY-SA 4.0, and the ORIGINAL photo's page (Godot13 = Andrew Shiva) requires crediting «Andrew Shiva / Wikipedia»; this file is MathKnight's derivative, so both are named. Used unedited. | Wikidata Q11819 (143 m), its image |
 | shoes-on-the-danube | [Shoes Danube Promenade IMGP1297.jpg](https://commons.wikimedia.org/wiki/File:Shoes_Danube_Promenade_IMGP1297.jpg) | Nikodem Nijaki | [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0) | Attribution (author, link to the file, link to the license) and share-alike for adapted versions; commercial use allowed. Used unedited. | Wikidata Q473811 (8 m), its image |
 | chain-bridge | [Budapest - Chain Bridge - panoramio.jpg](https://commons.wikimedia.org/wiki/File:Budapest_-_Chain_Bridge_-_panoramio.jpg) | Alireza Javaheri | [CC BY 3.0](https://creativecommons.org/licenses/by/3.0) | Attribution (author, link to the file, link to the license); commercial use allowed. | Wikidata Q465534 (name search), its image |
 | fishermans-bastion | [Halászbástya épülete díszlépcsővel (103. számú műemlék) 28.jpg](https://commons.wikimedia.org/wiki/File:Hal%C3%A1szb%C3%A1stya_%C3%A9p%C3%BClete_d%C3%ADszl%C3%A9pcs%C5%91vel_(103._sz%C3%A1m%C3%BA_m%C5%B1eml%C3%A9k)_28.jpg) | TUX | [CC BY-SA 2.5 hu](https://creativecommons.org/licenses/by-sa/2.5/hu/deed.en) | Attribution (author, link to the file, link to the license) and share-alike for adapted versions; commercial use allowed. Used unedited. | Wikidata Q493117 (10 m), its image |
@@ -42,11 +42,21 @@ while the city can be chosen: public, or the local / Preview switch).
 | gozsdu-udvar | [Gozsdu-yard. Between D and E yard. Passageway of Bldg -5. Monument ID 840 - Budapest 7th district. Király St. 13 & Dob St. 16.JPG](https://commons.wikimedia.org/wiki/File:Gozsdu-yard._Between_D_and_E_yard._Passageway_of_Bldg_-5._Monument_ID_840_-_Budapest_7th_district._Kir%C3%A1ly_St._13_%26_Dob_St._16.JPG) | Globetrotter19 | [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0) | Attribution (author, link to the file, link to the license) and share-alike for adapted versions; commercial use allowed. Used unedited. | Wikidata Q1027774 (100 m), its image |
 | arena-mall | [Arena Mall from Keleti railway station, 2019 Budapest.jpg](https://commons.wikimedia.org/wiki/File:Arena_Mall_from_Keleti_railway_station,_2019_Budapest.jpg) | Globetrotter19 | [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0) | Attribution (author, link to the file, link to the license) and share-alike for adapted versions; commercial use allowed. Used unedited. | Commons file named after the mall (2019, the «Aréna» sign); the Wikidata image (Q579809) shows the old name «arena plaza» from far away and was not used |
 
+**Changes to disclose:** none beyond size. Every file is Commons' own 960px thumbnail of the original, not cropped or edited; the
+credits page says so under Budapest.
+
+**Checked on 2026-11-16 on each file page (wikitext):** licence templates, "credit line" fields and any "please credit as" request. Two
+credits were corrected from round 7 (St Stephen's Basilica and the Parliament named the uploader «Godot13» instead of the credit the
+photographer asks for). The owner's approval does not replace any licence term.
+
+**Where the credit is shown:** in each place's details, under the photo, «📷 Photo credit: author · licence», linked to that photo's
+entry on `/photo-credits` (anchor `#photo-<place id>`); and the full list on `/photo-credits`.
+
 **Notes on credits:**
 - Heroes' Square: the file page asks for «Petr Šmerkl, Wikipedia» outside Wikimedia projects; that is the credit used.
-- Parliament: the file is a derivative (Godot13's photo, edited by MathKnight); both are named.
+- Parliament: the file is a derivative (Andrew Shiva's photo, uploaded as Godot13, edited by MathKnight); both are named, with the photographer's credit line.
 - Váci utca: the Artist field is empty; the file page says it is the uploader's own work ({{GFDL-self|migration=relicense}}, now CC BY-SA 3.0); the uploader «Csörföly D» is credited.
-- St Stephen's Basilica: Commons license template "Attribution" (any use with credit); the license link is that template's page.
+- St Stephen's Basilica: licence template "Attribution" with the requirement to credit Andrew Shiva; credited with the file's own credit line (CC BY-SA 4.0).
 
 ## Places without a photo (recorded as missing, no substitute)
 

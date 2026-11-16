@@ -36,7 +36,7 @@ export const BUDAPEST_PLANNER_METADATA: PlannerPlaceMetadata[] = [
   place("citadella", "gellert-hill", [7, 5, 9, 2, 1, 0], 7, "afternoon", 45),
   // Terézváros (Andrássy)
   // OperaTour: guided only at 13:30, 15:00, 16:30 = every 90 minutes from midnight; the start is held to a tour slot (wait up to 89 min).
-  { ...place("opera-house-tour", "terezvaros", [7, 8, 0, 0, 6, 0], 7, "afternoon", 60), showWindow: { everyMinutes: 90, minutes: 1, maxWaitMinutes: 89, missNoteAr: "الجولات بس 13:30 و15:00 و16:30: احجز الموعد اللي بيناسب خطتك." } },
+  { ...place("opera-house-tour", "terezvaros", [7, 8, 0, 0, 6, 0], 7, "afternoon", 60), showWindow: { everyMinutes: 90, minutes: 1, maxWaitMinutes: 89, missNoteAr: "الجولات بس 13:30 و15:00 و16:30: احجز الموعد اللي بيناسب خطتك.", listSessions: true } },
   place("andrassy-avenue", "terezvaros", [6, 4, 1, 0, 0, 8], 5, "anytime", 45),
   // Belváros (Pest centre)
   place("great-market-hall", "belvaros", [7, 4, 0, 0, 2, 9], 7, "morning", 60),

@@ -3,9 +3,10 @@ import type { ImageCredit } from "../../guideTypes";
 /**
  * Photos of Budapest places (2026-11-15). Each file is a Wikimedia Commons image (Commons' own 960px thumbnail, not edited). Every one
  * was checked on its Commons file page: a free license that allows commercial use (CC0 / public domain / "Attribution" / CC BY /
- * CC BY-SA) and its author. CC BY, CC BY-SA and "Attribution" require the author, a link to the file and a link to the license; the plan
- * cards show no credit, so these fields are listed on the photo-credits page linked from the footer (the same arrangement as Prague).
- * Where the file page asks for a specific credit (Heroes' Square) that credit is used.
+ * CC BY-SA) and its author. CC BY, CC BY-SA and "Attribution" require the author, a link to the file and a link to the license: each place's
+ * details show the credit under the photo (PhotoCreditLink, plan view), linked to its entry on the photo-credits page (anchor #photo-<id>).
+ * Where the file page asks for a specific credit, that credit is used: Heroes' Square («Petr Šmerkl, Wikipedia»); St Stephen's Basilica and the Parliament
+ * (the photographer's credit line «Andrew Shiva / Wikipedia / CC-BY-SA-4.0»; the Parliament file is MathKnight's derivative of his photo).
  * Each photo was matched to its place through the place's Wikidata item near the place's own point (or a Commons file named after the
  * place and its address) and then looked at, so it shows that place. Full record: docs/budapest/photo-rights.md.
  * No photo (not found, or the only photos do not show the place): danube-legend-cruise, hungarikum-bisztro, menza, frici-papa,
@@ -14,8 +15,8 @@ import type { ImageCredit } from "../../guideTypes";
 export type PlacePhoto = ImageCredit & { image: string };
 
 export const BUDAPEST_PHOTOS: Record<string, PlacePhoto> = {
-  "st-stephens-basilica": {"image":"/images-budapest/st-stephens-basilica.jpg","imageSource":"Wikimedia Commons","imageSourceUrl":"https://commons.wikimedia.org/wiki/File:HUN-2015-Budapest-St._Stephen%27s_Basilica.jpg","imageAuthor":"Godot13","imageLicense":"Attribution","imageLicenseUrl":"https://commons.wikimedia.org/wiki/Template:Attribution"},
-  "parliament-exterior": {"image":"/images-budapest/parliament-exterior.jpg","imageSource":"Wikimedia Commons","imageSourceUrl":"https://commons.wikimedia.org/wiki/File:Budapest-Parliament-0001.jpg","imageAuthor":"Godot13 (derivative work: MathKnight)","imageLicense":"CC BY-SA 4.0","imageLicenseUrl":"https://creativecommons.org/licenses/by-sa/4.0"},
+  "st-stephens-basilica": {"image":"/images-budapest/st-stephens-basilica.jpg","imageSource":"Wikimedia Commons","imageSourceUrl":"https://commons.wikimedia.org/wiki/File:HUN-2015-Budapest-St._Stephen%27s_Basilica.jpg","imageAuthor":"Andrew Shiva / Wikipedia","imageLicense":"CC BY-SA 4.0","imageLicenseUrl":"https://creativecommons.org/licenses/by-sa/4.0"},
+  "parliament-exterior": {"image":"/images-budapest/parliament-exterior.jpg","imageSource":"Wikimedia Commons","imageSourceUrl":"https://commons.wikimedia.org/wiki/File:Budapest-Parliament-0001.jpg","imageAuthor":"Andrew Shiva / Wikipedia (derivative work: MathKnight)","imageLicense":"CC BY-SA 4.0","imageLicenseUrl":"https://creativecommons.org/licenses/by-sa/4.0"},
   "shoes-on-the-danube": {"image":"/images-budapest/shoes-on-the-danube.jpg","imageSource":"Wikimedia Commons","imageSourceUrl":"https://commons.wikimedia.org/wiki/File:Shoes_Danube_Promenade_IMGP1297.jpg","imageAuthor":"Nikodem Nijaki","imageLicense":"CC BY-SA 3.0","imageLicenseUrl":"https://creativecommons.org/licenses/by-sa/3.0"},
   "chain-bridge": {"image":"/images-budapest/chain-bridge.jpg","imageSource":"Wikimedia Commons","imageSourceUrl":"https://commons.wikimedia.org/wiki/File:Budapest_-_Chain_Bridge_-_panoramio.jpg","imageAuthor":"Alireza Javaheri","imageLicense":"CC BY 3.0","imageLicenseUrl":"https://creativecommons.org/licenses/by/3.0"},
   "fishermans-bastion": {"image":"/images-budapest/fishermans-bastion.jpg","imageSource":"Wikimedia Commons","imageSourceUrl":"https://commons.wikimedia.org/wiki/File:Hal%C3%A1szb%C3%A1stya_%C3%A9p%C3%BClete_d%C3%ADszl%C3%A9pcs%C5%91vel_(103._sz%C3%A1m%C3%BA_m%C5%B1eml%C3%A9k)_28.jpg","imageAuthor":"TUX","imageLicense":"CC BY-SA 2.5 hu","imageLicenseUrl":"https://creativecommons.org/licenses/by-sa/2.5/hu/deed.en"},

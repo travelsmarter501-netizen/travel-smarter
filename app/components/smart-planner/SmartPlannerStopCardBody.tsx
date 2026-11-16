@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { IconArrowRight, IconClock } from "../icons";
 import { formatMinutes, PLAN_TEXT, type PlanLanguage } from "../../lib/i18n/planText";
+import { TimesText } from "./planDisplay";
 import type { ResolvedPlaceSummary } from "../../lib/readyPlan";
 import type { PlannerOperationalWarning } from "../../lib/planner/barcelonaPlannerOperationalWarnings";
 
@@ -138,13 +139,13 @@ export default function SmartPlannerStopCardBody({
         <IconArrowRight className="h-4 w-4 flex-shrink-0 text-slate-300 rtl:rotate-180" aria-label={PLAN_TEXT[lang].placeDetails} />
       </div>
 
-      {description && <p className="line-clamp-2 text-xs leading-5 text-slate-500">{description}</p>}
+      {description && <p className="line-clamp-2 text-xs leading-5 text-slate-500"><TimesText text={description} /></p>}
 
       {warnings && warnings.length > 0 && (
         <div className="flex flex-col gap-1">
           {warnings.map((warning, index) => (
             <p key={index} dir="auto" className="rounded-lg bg-amber-50 px-2.5 py-1.5 text-[11px] font-semibold leading-5 text-amber-800">
-              {warning.textAr}
+              <TimesText text={warning.textAr} />
             </p>
           ))}
         </div>

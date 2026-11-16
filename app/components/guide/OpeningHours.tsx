@@ -6,6 +6,7 @@ import { getNowInTimeZone, isOpenNow, ORDERED_WEEKDAYS } from "../../lib/hours";
 import { PLACE_CARD_TEXT, weekdayLabel, type PlanLanguage } from "../../lib/i18n/planText";
 import type { TimeRange } from "../../lib/hours";
 import type { HoursInfo, Weekday } from "../../lib/hours";
+import { TimesText } from "../smart-planner/planDisplay";
 
 /**
  * Reusable opening-hours block for any real physical place, in any destination guide:
@@ -55,7 +56,7 @@ export default function OpeningHours({ hours, timeZone = "Europe/Madrid", planne
       return (
         <p className="flex items-center gap-1.5 text-sm text-slate-700">
           <span>🕒</span>
-          <span>{hours.display}</span>
+          <span><TimesText text={hours.display} /></span>
         </p>
       );
     }
@@ -70,7 +71,7 @@ export default function OpeningHours({ hours, timeZone = "Europe/Madrid", planne
         >
           <span className="flex items-center gap-1.5 text-sm text-slate-700">
             <span>🕒</span>
-            <span>{hours.display}</span>
+            <span><TimesText text={hours.display} /></span>
           </span>
           <IconChevronDown className={`h-4 w-4 shrink-0 text-slate-400 transition-transform ${expanded ? "rotate-180" : ""}`} />
         </button>
@@ -97,6 +98,31 @@ export default function OpeningHours({ hours, timeZone = "Europe/Madrid", planne
   }
   // type === "fixed"
   const isPlanned = plannedWeekday !== undefined;
+  // A place visited only in sessions (a guided tour at set times): the session starts, never the schedule as continuous hours.
+  if (hours.sessionStarts && hours.sessionStarts.length > 0) {
+    const day = plannedWeekday ?? getNowInTimeZone(timeZone).weekday;
+    const openThatDay = (hours.schedule[day]?.length ?? 0) > 0;
+    return (
+      <div className="rounded-lg bg-slate-50 px-2.5 py-2 text-sm">
+        <p className="text-slate-700">
+          <span className="text-slate-500">{ui.sessionsTitle}</span>
+          {isPlanned && !openThatDay ? (
+            <span className="font-semibold text-slate-900">{ui.closedThisDay}</span>
+          ) : (
+            <span className="font-semibold text-slate-900">
+              {hours.sessionStarts.map((t, i) => (
+                <span key={t}>
+                  {i > 0 && " · "}
+                  <bdi dir="ltr">{t}</bdi>
+                </span>
+              ))}
+            </span>
+          )}
+        </p>
+        <p className="mt-0.5 text-xs font-semibold text-amber-800">{ui.sessionsBooking}</p>
+      </div>
+    );
+  }
   const displayDay = plannedWeekday ?? getNowInTimeZone(timeZone).weekday;
   const displayText = formatIntervals(hours.schedule[displayDay]);
   // For a planned itinerary day, "open/closed" is a fact about that day's own schedule (does it
