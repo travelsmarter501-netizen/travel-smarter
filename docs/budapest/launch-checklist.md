@@ -6,7 +6,7 @@ list: every number comes from results already in `docs/budapest/data/`.
 ## Launch commit (2026-11-16, research 25.7; branch only, not merged or deployed)
 - Budapest `available: true` in `plannerDestinations.ts`, with the trip-length and date scope below.
 - Site copy names Barcelona, Prague and Budapest (Arabic, English). Hebrew stays off in Production; no Preview variable or key moved to Production.
-- Go-live = merging this branch into `main` (Vercel deploys Production). Rollback: see research 25.8. A revert of the launch commit (`available: false`) is safe only while no Budapest purchase exists (check with the read-only count there); after that it blocks building a paid Budapest plan and editing the answers of existing Budapest plans.
+- Go-live = merging this branch into `main` (Vercel deploys Production). Rollback: set `closedToNewRequests: true` on Budapest (research 25.9): no new requests, while paid requests are still built and existing plans still open, edit and regenerate. Do NOT use `available: false` or a revert of the launch commit once anyone has bought (research 25.8).
 
 ## Temporary launch scope (owner, 2026-11-16, research 25.6)
 - Budapest dated requests touching **24–26 Dec 2026, 31 Dec 2026 or 1 Jan 2027** are not offered: a limit on our readiness for these holidays (the plans for those days were too thin), not a claim that places are closed. Refused in the questionnaire and on the server before any order or plan; dates are never changed for the visitor.

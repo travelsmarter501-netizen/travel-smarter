@@ -1954,3 +1954,50 @@ select
 - All three must be 0 for the plain revert to be safe.
 - Otherwise a safe rollback needs a code change, NOT made here, because it touches purchase / generation gating: a "closed to new requests" state where the questionnaire and new requests refuse Budapest, while a paid Budapest request and the regeneration of an existing Budapest plan still pass.
 - That needs its own approved task, ideally before the merge.
+
+### 25.9 Closing a city to new requests without hurting buyers (2026-11-16; owner-approved task)
+**Why:** 25.8 showed that `available: false` blocks building a paid request and regenerating an existing plan.
+
+**Change:**
+- **The field:** a published city can be **closed to new requests** with one optional field in `plannerDestinations.ts`: `closedToNewRequests: true`.
+- **Two functions:**
+  - `isAvailablePlannerDestinationId`: open to NEW requests (published or preview, and not closed). Used by the questionnaire, the server check for new orders (checkout, complimentary) and new owner plans.
+  - `isServedPlannerDestinationId` (new): published or preview, closed or not. Used where something that already exists is served: building a paid / complimentary request (its city read from the request record), the plan engine entry, the photo-credits page.
+- **Regenerating an existing plan of a closed city** is accepted only when the server reads, with the service role scoped to the signed-in user, that this user owns that plan and that its stored city is the requested city. The browser's plan id alone proves nothing. The edit page pre-fills only from the user's own plan (their session, RLS).
+- **Kept:** every other rule still applies when serving: trip length, dates, the general limit.
+- **Unchanged:** payment, prices, Allpay, the webhook, permissions (the database functions still decide ownership), the database, Prague and Barcelona.
+- **The questionnaire:** a closed city is not offered and not shown as "coming soon". In "edit plan" mode the plan's own city stays visible (display only; the server re-checks).
+
+**How to close Budapest:**
+1. Add `closedToNewRequests: true` to Budapest's entry.
+2. If wanted, update the availability lines that name the three cities (meta descriptions, the questionnaire note, the price / FAQ lines).
+3. Commit to `main`; Vercel deploys.
+
+**How to reopen:** remove the field (and restore the lines).
+
+**Never use `available: false` for a city that has buyers.**
+
+**Limits:**
+- **Pending orders:**
+  - an order created before the closure (customer redirected to Allpay) and paid after it is still built: the webhook does not look at the city, and building uses the "served" gate;
+  - a visitor who answered the questionnaire before the closure but presses "pay" after it is refused before any order is created: no payment, no order.
+- **The closure takes effect only when the new deployment is live.** A request that reached the old deployment before the switch follows the old rules (a race of seconds).
+- **A count of zero (25.8) is no guarantee by itself:** a payment can be in progress at Allpay while the count is read. This mechanism does not depend on such a count.
+- **Not covered:**
+  - real Allpay or webhook calls (payments disabled locally);
+  - a guest who paid and claims later (same build path, so expected to work, but not exercised separately);
+  - Production.
+
+**Checks:**
+- **`bud-new-requests-gate.mts` (new, 23 checks):**
+  - open and closed states of the two functions;
+  - new request refused while closed;
+  - serving accepted while closed, with trip length and dates still enforced;
+  - Prague and Barcelona unchanged; Vienna neither offered nor served.
+- **Local end-to-end with the dev server and a stricter Supabase test double** (`data/quality-close/new-requests-gate/integration.txt`), Budapest closed only in the working copy:
+  - a new owner plan and a visitor checkout were refused, the checkout with no database call;
+  - the owner's paid request was built; another user's paid request was refused;
+  - the owner regenerated his own Budapest plan; another user's plan id and his own Prague plan id were refused for Budapest;
+  - the edit page opened pre-filled, the saved plan opened, day edits were saved;
+  - new Prague and Barcelona plans worked; photo credits still list Budapest.
+- **Other tests:** `bud-closeout` 246, `bud-preview-gates` 0 failures, `bud-action-save` 15 / 0; `tsc`, lint and the build pass.

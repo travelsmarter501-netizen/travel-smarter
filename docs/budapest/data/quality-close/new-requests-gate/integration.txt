@@ -1,0 +1,25 @@
+Local end-to-end check (2026-11-16): next dev on the branch (port 3410) and the Supabase test double review/mock-gate.mjs, a copy of
+mock-bud.mjs with the real RPCs' ownership checks (an order's user_id must equal p_user_id; a regenerated plan must belong to
+p_user_id) and eq filters on saved plans. Test values only; ALLPAY_MODE=disabled; nothing external contacted.
+Budapest was closed TEMPORARILY in the working copy (closedToNewRequests: true) and restored before the commit (0 occurrences after).
+
+Seeded while open: the owner's Budapest plan and Prague plan (created through the owner action), a paid Budapest request of the owner,
+a paid Budapest request of ANOTHER user, and a Budapest plan owned by ANOTHER user.
+
+PASS questionnaire: Budapest neither offered nor listed as coming soon (no Budapest flag in the city choices; Prague present)
+PASS new owner plan, Budapest: refused -- {"ok":false,"code":"invalid_answers"}
+PASS visitor checkout, Budapest: refused before any database call -- {"code":"invalid_planner_answers"}, database calls: []
+PASS owner's paid Budapest request: built -- {"ok":true}
+PASS another user's paid Budapest request: refused -- {"ok":false,"code":"not_found"}
+PASS owner regenerates own Budapest plan: ok, same plan id
+PASS Budapest regeneration with ANOTHER user's plan id: refused -- {"ok":false,"code":"invalid_answers"}
+PASS Budapest request using the owner's PRAGUE plan id: refused -- {"ok":false,"code":"invalid_answers"}
+PASS edit page of the Budapest plan opens pre-filled (update button)
+PASS saved Budapest plan opens -- 200
+PASS day edits of the Budapest plan: reset day 1 -> ok; remove the last stop of day 1 -> ok, stored as the day's new order
+     (a first attempt "start 10:00" returned start_infeasible: the edit ran; that start does not fit that day)
+PASS new Prague plan (10 days): ok
+PASS new Barcelona plan: ok
+PASS photo credits still list Budapest (its photos appear in existing plans)
+
+After restoring the committed state (Budapest open): the questionnaire offers Budapest again and a new Budapest plan is created (ok).

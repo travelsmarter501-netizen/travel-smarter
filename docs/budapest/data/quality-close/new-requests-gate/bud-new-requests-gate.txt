@@ -1,0 +1,25 @@
+PASS committed state: Budapest is not closed
+PASS open: Budapest offered and served
+PASS open: Budapest new request accepted
+PASS open: prague offered and served
+PASS open: prague new request accepted
+PASS open: barcelona offered and served
+PASS open: barcelona new request accepted
+PASS open: vienna neither offered nor served
+PASS closed: Budapest not offered
+PASS closed: Budapest still served
+PASS closed: new request refused (server check)
+PASS closed: serving an existing plan accepted
+PASS closed + serving: over 4 days still refused
+PASS closed + serving: culture only 4 days still refused
+PASS closed + serving: 21-24 Dec 2026 still refused
+PASS closed + serving: 27-30 Dec 2026 accepted
+PASS closed + serving: an unknown city still refused
+PASS closed + serving: vienna (not served) still refused
+PASS closed: prague offered and served
+PASS closed: prague new request accepted
+PASS closed: barcelona offered and served
+PASS closed: barcelona new request accepted
+PASS closed: vienna neither offered nor served
+
+ALL PASS (23 checks)

@@ -1,0 +1,40 @@
+┌ ○ /
+├ ○ /_not-found
+├ ƒ /account
+├ ƒ /account/custom-plans/[requestId]
+├ ○ /admin/custom-plans
+├ ƒ /admin/custom-plans/[requestId]
+├ ƒ /admin/custom-plans/[requestId]/preview
+├ ƒ /api/allpay/webhook
+├ ƒ /auth/callback
+├ ƒ /checkout
+├ ƒ /checkout/cancelled
+├ ƒ /checkout/success
+├ ƒ /claim-purchase
+├ ○ /custom-plan/barcelona
+├ ○ /forgot-password
+├ ● /guides/[slug]
+├ ƒ /guides/barcelona
+├ ○ /login
+├ ● /packages/[slug]
+├ ○ /photo-credits
+├ ƒ /planner
+├ ○ /privacy-policy
+├ ƒ /ready-plans/barcelona
+├ ƒ /ready-plans/barcelona/1-day
+├ ƒ /ready-plans/barcelona/3-days
+├ ƒ /reset-password
+├ ○ /signup
+├ ○ /smart-planner/barcelona
+├ ○ /smart-planner/barcelona-v2
+├ ƒ /smart-planner/barcelona-v2/saved/[id]
+├ ƒ /smart-planner/barcelona/saved/[id]
+└ ○ /terms-of-service
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+●  (SSG)      prerendered as static HTML (uses generateStaticParams)
+ƒ  (Dynamic)  server-rendered on demand
+
