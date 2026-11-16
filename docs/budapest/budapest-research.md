@@ -1655,3 +1655,95 @@ Run on 512e19f (clean tree); 46793fc after it changes comments and documents onl
 7. **Compact stored hours:** deferred; not a blocker by itself.
 
 **Budapest stays `available: false`.**
+
+## 24. Round 8: display fixes, photo credits, Preview preparation (2026-11-16; code 709278c on `feature/budapest`)
+
+B1 fixed, areas by date off, no threshold or distribution change, no publish.
+
+### 24.1 The Opera card
+- **Before:** the card showed the planning window «13:30–17:30» as the day's opening hours.
+- **Now:**
+  - The card lists «مواعيد الجولات: 13:30 · 15:00 · 16:30» with «الدخول بجولة بس، بموعد محجوز مسبقًا» (en / he the same).
+  - The times are computed at load from the existing structured data: the tour slots of its `showWindow` (every 90 min), now marked `listSessions`, that fit a 60-min visit inside the stored window.
+  - Display only (`hours.sessionStarts`). The window and the planner are unchanged.
+- **Other places with fixed sessions** (checked for the same display error, nothing changed):
+
+| Place | Shows | Same error? |
+|---|---|---|
+| House of Music | 10:15–17:50, its real opening hours (entry in slots, explained by its warning and tip) | no |
+| Legenda cruise | its departures as text | no |
+| Prague Vltava cruise | the season range «10:00–18:00» although departures are on the hour | **same class; another city, reported only** |
+| Prague Kafka head | 09:00–23:00, when it can be seen | no |
+
+### 24.2 Times in texts, the price counter, the badge
+- **Times inside texts:** "13:30", ":15", "9–16", "24–25", "8:00–22:00" are shown as isolated left-to-right runs (`<bdi dir="ltr">`) in the plan view: stop notes, descriptions, tips, prices, hours texts.
+  - The stored texts are not changed.
+  - Opt-in per destination (`planDisplay.tsx`, Budapest only), so Prague / Barcelona and the guide pages render as before.
+  - Measured in the browser: with isolation «:15» and «:45» show the colon before the digits, without it «15:» / «45:»; all isolated runs read left to right in Arabic and Hebrew.
+  - The pattern has no lookbehind (older iPhone Safari lacks it).
+- **«+ 2 price not available»:** now by number:
+  - Arabic: «سعر واحد / سعرين غير متوفرين / N أسعار غير متوفرة»;
+  - English: «1 price / N prices not available»;
+  - Hebrew: «מחיר אחד / N מחירים לא זמינים».
+  - Shared text, all cities.
+- **Must See badge** by language: «لا تفوّته» / «Must see» / «חובה לראות». Selection rules unchanged.
+  - Shared card: the Arabic guide pages show the Arabic badge too.
+  - The guide's "Must See" filter button was left as it is.
+- **New texts awaiting review:** the two tour-time lines, the badge, the counters.
+
+### 24.3 Photo credits
+- **Each place's details** show «📷 حقوق الصورة: author · licence» under the photo, linked to that photo's entry on `/photo-credits` (`#photo-<id>`).
+  - Budapest only (display option); the general credits page stays.
+  - The page says under Budapest that each photo is a resized copy with no other change.
+- **Every file page re-read** (licence templates, credit lines, "please credit as"). Two credits corrected:
+  - St Stephen's Basilica and the Parliament named the uploader «Godot13». The photographer's pages require «Andrew Shiva / Wikipedia / CC-BY-SA-4.0»; the Parliament file is MathKnight's derivative of his photo (CC BY-SA 4.0), both named.
+  - Heroes' Square already used its requested credit.
+  - Full record: `photo-rights.md`.
+- **The 5 places without a photo** stay without one.
+
+### 24.4 Saved plans: added places
+- Design only: `added-place-snapshot-design.md`.
+- **The idea:** snapshot of the added place's stop and details (hours used for that date) with the city data version, inside the day's edit.
+- **Change size:** no storage or RLS change, no migration. Old plans keep today's behaviour until that day is next edited.
+- **Not implemented.** The Preview can run with the documented current behaviour.
+
+### 24.5 Preview
+- Steps in `preview-setup.md`, built on the Prague release's `supabase/preview-setup/` (empty test database, guard, entitlement for test users).
+- **Checked from here:**
+  - payments fail closed off Production;
+  - sign-in redirects stay on the Preview address;
+  - the saved-plan RLS policies were REVIEWED (`user_id = auth.uid()`). Isolation is not proven by that: the two-account test (B reads and edits A's plan directly) is still required on the test environment;
+  - Budapest's preview switch is honoured on a Preview;
+  - the new Hebrew switch is Preview-only and fails closed.
+- **The Vercel connector has no access to the team (403)**, so no setting was read or changed.
+- **Unknown:** whether today's Preview values point to the production or a test database. The last known Preview build (2026-11-07) returned 500, consistent with no Supabase values on Preview then; that proves nothing about today. Isolate the Preview before any push (`preview-env-vars.md`).
+- **Budapest switch in the browser, fixed in 4c39288:**
+  - **Before:** in the browser it was not tied to the Vercel environment. If it were set for Production, the questionnaire would list Budapest while the server refused it.
+  - **Now:** a build whose Vercel environment is known and is not a Preview lists no preview city.
+  - **Unchanged:** Preview deployments, local builds and tests keep the preview; published cities are not affected.
+  - **Test** (`bud-preview-gates.mts`, browser and server, Hebrew and Budapest, with the Preview values set on Production): 0 failures on 4c39288; 709278c fails the browser case.
+  - **Limit:** it relies on Vercel exposing `NEXT_PUBLIC_VERCEL_ENV` (its default). Keep the variable Preview-only.
+  - **Browser check on 4c39288** (`next dev`, phone viewport):
+    - **Local preview** (variable `budapest`, no Vercel environment): the questionnaire lists Budapest «(معاينة)», with Prague and Barcelona.
+    - **Simulated Production** (`VERCEL_ENV` and `NEXT_PUBLIC_VERCEL_ENV` = production, the Preview variables `budapest` / `he` set): only Barcelona and Prague selectable, even with `?destination=budapest`; Budapest only under «قريبًا»; the language menu offers Arabic and English, no Hebrew. Screenshots 09, 10.
+
+### 24.6 Checks
+- **Budapest schedules (161 plans, both samples) against round 7:** every timeline, order, meal, leg, title and note identical. Plans differ only in the display field `sessionStarts` and the two corrected credits.
+- **Validity:** independent check 0 problems (159 + 270 days).
+- **Budapest tests:** `bud-i18n` 0 untranslated (2,221 plans); `bud-photos` 0; `bud-daylight` 0; `bud-action-save` 15 / 0.
+- **Build of 709278c itself** (clean worktree at that commit, after the shell came back):
+  - `npm run lint` passes; `next build --webpack` passes.
+  - `tsc --noEmit` run FIRST in that fresh worktree failed with 8 errors, all `Cannot find name 'PageProps'`: a type Next.js generates during the build in `.next/types`, which a fresh worktree does not have yet. Run after the build, tsc passes (exit 0).
+- **Final code 4c39288:** results in `quality-r8/tests-4c39288/` (build, tsc after the build, lint, gating test, Budapest tests, Prague / Barcelona).
+- **Prague / Barcelona against 925512d:** generation (5 sets), edits (82 + 104) and translation (en, he) byte-identical. This compares plan DATA only; it is no proof that their screens are unchanged.
+- **Shared interface changes in every city:**
+  - the tickets counter wording;
+  - the badge «لا تفوّته» / «Must see» / «חובה לראות» (also on the Arabic guide pages);
+  - anchors on every entry of `/photo-credits`.
+
+  The time isolation and the credit line under photos are Budapest-only.
+- **UI, phone viewport (emulated):**
+  - a food plan created and opened in Arabic, English and Hebrew;
+  - Hebrew through the new Preview switch in `next dev`;
+  - screenshots: day 3 times and the counter (ar, he), the Opera card (ar, en, he), place details with credit and badge (ar, en), the credits page at the Opera's entry.
+  - Not a real phone, not Safari.

@@ -1,0 +1,9 @@
+app/guides/[slug]/page.tsx(33,47): error TS2304: Cannot find name 'PageProps'.
+app/guides/[slug]/page.tsx(43,48): error TS2304: Cannot find name 'PageProps'.
+app/guides/barcelona/page.tsx(154,57): error TS2304: Cannot find name 'PageProps'.
+app/layout.tsx(58,50): error TS2304: Cannot find name 'LayoutProps'.
+app/packages/[slug]/page.tsx(32,47): error TS2304: Cannot find name 'PageProps'.
+app/packages/[slug]/page.tsx(42,50): error TS2304: Cannot find name 'PageProps'.
+app/smart-planner/barcelona-v2/saved/[id]/page.tsx(49,59): error TS2304: Cannot find name 'PageProps'.
+app/smart-planner/barcelona/saved/[id]/page.tsx(15,57): error TS2304: Cannot find name 'PageProps'.
+exit 2

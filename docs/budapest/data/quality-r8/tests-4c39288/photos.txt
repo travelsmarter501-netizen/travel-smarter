@@ -1,0 +1,2 @@
+photos 28; places 33, with photo 28, documented missing 5; in a food plan 18 place details with photo; failures 0
+exit 0

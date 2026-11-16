@@ -1,0 +1,18 @@
+PASS  seeded row is a valid saved plan: true
+PASS  1 refuse: cruise on 2027-01-01 (no published timetable) [cruise also on the clock elsewhere]: add_unavailable / rpc calls +0 / row unchanged
+PASS  1 refuse: a place already in the trip (shoes-on-the-danube, day 1) added to day 2: add_unavailable / rpc calls +0 / row unchanged
+PASS  1 refuse: an unknown place id: add_unavailable / rpc calls +0 / row unchanged
+PASS  2 add citadella to day 1: ok / rpc calls +1
+PASS  2 re-read: the place is on that day, without a timing warning: on the day
+PASS  2 re-read: same stops and times as the action returned: same
+PASS  2 the original plan is kept beside the edits: original kept
+PASS  3 add citadella again on another day: add_unavailable / rpc calls +0 / row unchanged
+PASS  1b 2027 trip: cruise only as a suggestion: suggested on day 3
+PASS  1b refuse: cruise on 2027-01-01: add_unavailable / rpc calls +0 / row unchanged
+PASS  1b refuse: cruise on 2027-01-02: add_unavailable / rpc calls +0 / row unchanged
+PASS  1b refuse: cruise on 2027-01-03: add_unavailable / rpc calls +0 / row unchanged
+PASS  another user's plan: not_found
+PASS  signed out: not_signed_in
+
+15 pass, 0 fail; calls: select smart_planner_saved_plans, select smart_planner_saved_plans, select smart_planner_saved_plans, select smart_planner_saved_plans, rpc replace_owned_plan_content, select smart_planner_saved_plans, select smart_planner_saved_plans, select smart_planner_saved_plans, select smart_planner_saved_plans, select smart_planner_saved_plans, select smart_planner_saved_plans
+exit 0

@@ -1,0 +1,11 @@
+server, Vercel Production, Preview values set              hebrew false  budapest false
+client, Vercel Production build, Preview values set        hebrew false  budapest false
+client, production build, environment unknown (reported)   hebrew false  budapest true
+server, Vercel Preview                                     hebrew true  budapest true
+client, Vercel Preview build                               hebrew true  budapest true
+server, Vercel Production, no Preview values               hebrew false  budapest false
+local next dev                                             hebrew true  budapest true
+NOTE: the browser closes the switch only when Vercel exposes NEXT_PUBLIC_VERCEL_ENV (its default). With system variables
+      not exposed, a Production browser would list a city the server still refuses; keep the variable Preview-only.
+failures 0
+exit 0

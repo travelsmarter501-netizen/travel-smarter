@@ -1,0 +1,2 @@
+plans 161: days whose timeline / order / meals / legs / titles / notes differ: 0; plans differing beyond the allowed display fields: 0
+fields that differ (count of differing leaves): {"sessionStarts":246,"imageAuthor":316,"imageLicense":158,"imageLicenseUrl":158}

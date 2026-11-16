@@ -160,9 +160,23 @@ time and number identical), still not reviewed by a native reader.
 | shoppingAreas/gozsdu-udvar/description | ممر بين Király utca وDob utca بالحي اليهودي. | A passage between Király utca and Dob utca in the Jewish Quarter. | מעבר בין Király utca ל־Dob utca ברובע היהודי. |
 | shoppingAreas/arena-mall/description | مركز تسوق كبير جنب محطة Keleti. | A large shopping centre next to Keleti station. | מרכז קניות גדול ליד תחנת Keleti. |
 
-## 5. Display issues seen in the UI check (not changed)
+## 5. Display issues seen in the UI check
 
-| Text | Issue |
+**Fixed in round 8 (709278c), display only:** times and number ranges inside texts are isolated left-to-right runs in the Budapest
+plan view, so both rows below now read correctly in Arabic and Hebrew (measured in the browser). The stored texts are unchanged.
+
+| Text | Issue (before round 8) |
 |---|---|
 | «⚠️ مشروطة بالحجز: الجولات بس 13:30 و15:00 و16:30 …», «الجولات بس 13:30 و15:00 و16:30: …» | «و» glued to a time renders out of order in RTL («15:00و»). A space after «و» (as in titles) would fix the display; it changes the Arabic source, so the English / Hebrew entries would move with it. |
 | «⚠️ الدخول بفترة محجوزة كل نص ساعة (:15 و:45) …», «الدخول بفترات كل نص ساعة (:15 و:45): …» | A time written as «:15» renders «15:» in RTL. |
+
+## 6. New interface texts, round 8 (all cities' place cards unless noted; NOT reviewed by a person)
+
+| Where | Arabic | English | Hebrew |
+|---|---|---|---|
+| Tour times (cards of places with listed sessions: today the Opera) | 🕒 مواعيد الجولات: | 🕒 Tour times: | 🕒 שעות הסיורים: |
+| Under the tour times | الدخول بجولة بس، بموعد محجوز مسبقًا | Entry by tour only, booked in advance | כניסה בסיור בלבד, בהזמנה מראש |
+| Badge on «must see» places (was English «Must See» in every language) | لا تفوّته | Must see | חובה לראות |
+| Tickets counter, 1 / 2 / 3–10 / 11+ | + سعر واحد غير متوفر / + سعرين غير متوفرين / + N أسعار غير متوفرة / + N سعر غير متوفر | + 1 price not available / + N prices not available | + מחיר אחד לא זמין / + N מחירים לא זמינים |
+| Photo credit under a place photo (Budapest; existing label) | 📷 حقوق الصورة: author · licence | 📷 Photo credit: … | 📷 קרדיט לתמונה: … |
+| Credits page, under Budapest | كل صورة نسخة مصغّرة (960 بكسل) من الملف الأصلي على Wikimedia Commons، بدون أي تعديل تاني. | Each photo is a resized copy (960 px) of the original file on Wikimedia Commons, with no other change. | (page is Arabic + English) |
