@@ -1,0 +1,37 @@
+Guest order created BEFORE Budapest was closed, paid after, claimed and built by its owner AFTER the closure (2026-11-16, local).
+
+Setup: next dev on the branch (code 528d2d7, no code change for this test), the Supabase test double review/mock-claim.mjs:
+mock-gate.mjs plus
+  - a second confirmed user picked by the session token;
+  - claim_guest_order as its SQL (20260910120000_guest_checkout_and_claim.sql): links only a paid, unlinked order with that token hash;
+    "already_yours" for the same user; "not_paid_yet" while pending; otherwise "invalid";
+  - order reads filtered by claim_token_hash and user_id;
+  - RLS emulation on saved-plan reads (a user session sees only its own rows; the service role sees all).
+Test values only. ALLPAY_MODE=disabled. No Allpay call, no webhook call: "paid" was set in the test double (the webhook's outcome).
+The guest order was seeded as the checkout stores it (pending, token hash, checkout email = the owner's confirmed email, a Budapest
+request), because the real checkout gives the raw token only to Allpay's success link. Budapest was closed TEMPORARILY in the working
+copy (closedToNewRequests: true) after the order existed, and restored afterwards (0 occurrences).
+
+A first run reported "another user opening the plan address: shown" -- the test double had no RLS (the page reads with the user's
+session and relies on RLS; on the real test database account B got "not found" for account A's plan, Preview check of 2026-11-16).
+RLS emulation was added to the test double and the whole scenario was run again from the start:
+
+PASS order is paid and not linked to anyone
+PASS Budapest closed: a new visitor checkout is refused -- invalid_planner_answers
+PASS another user claims with the token: refused (email does not match the order) -- email_mismatch
+PASS order still not linked after that attempt
+PASS owner claims after the closure: claimed -- {"status":"claimed","hasPersonalizedPlan":true,"next":"/planner"}
+PASS order now linked to the owner
+PASS another user claims after the owner: refused (invalid)
+PASS another user builds the owner's request: refused -- not_found
+PASS owner builds the Budapest plan after the closure: ok
+PASS request now points to the built plan
+PASS owner opens the built plan -- 200
+PASS another user opening the plan address: not shown ("ما لقينا هاي الخطة")
+PASS owner claims again: already yours
+ALL PASS
+
+Why it works without a change: the claim does not look at the city (token + confirmed matching email + the SQL function), and building
+uses the "served" gate (isGeneratableDestination -> isServedPlannerDestinationId), which a city closed to new requests still passes.
+Not covered: a real payment, the real webhook, Production; a buyer whose account email differs from the checkout email is refused by
+design (email_mismatch) whether or not the city is closed.

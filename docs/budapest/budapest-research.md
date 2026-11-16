@@ -1985,7 +1985,6 @@ select
 - **A count of zero (25.8) is no guarantee by itself:** a payment can be in progress at Allpay while the count is read. This mechanism does not depend on such a count.
 - **Not covered:**
   - real Allpay or webhook calls (payments disabled locally);
-  - a guest who paid and claims later (same build path, so expected to work, but not exercised separately);
   - Production.
 
 **Checks:**
@@ -2001,3 +2000,18 @@ select
   - the edit page opened pre-filled, the saved plan opened, day edits were saved;
   - new Prague and Barcelona plans worked; photo credits still list Budapest.
 - **Other tests:** `bud-closeout` 246, `bud-preview-gates` 0 failures, `bud-action-save` 15 / 0; `tsc`, lint and the build pass.
+
+**Guest order across a closure (checked 2026-11-16, local; no code change):**
+- **The case:** a guest order for Budapest created before the closure, paid after it, then claimed and built by its owner after it.
+- **The owner:**
+  - claims (confirmed email = checkout email, token, the claim SQL);
+  - builds the plan through the "served" gate;
+  - opens it.
+- **Another user:**
+  - cannot claim it, before the owner (`email_mismatch`) or after (`invalid`);
+  - cannot build its request (`not_found`);
+  - cannot open the plan (not found).
+- **Test double:** `review/mock-claim.mjs`, with the claim SQL, a second user and RLS on saved plans.
+  - A first run without RLS emulation showed the plan to the other user. That came from the double, not the app; the real database returned "not found" in the Preview isolation test.
+- **Details:** `data/quality-close/new-requests-gate/guest-claim.txt`.
+- **Not covered:** a real payment, the real webhook, Production.
