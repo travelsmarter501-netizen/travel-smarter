@@ -31,6 +31,14 @@ and with no real payment. Production stays untouched. Code under test: `4c39288`
   - Supabase's free plan allows a limited number of active free projects (2, as I know it; check the pricing page before creating). If production already uses one and another free project exists, a new one could need a paid plan or pausing another; decide before creating.
   - The owner creates it. Then steps 1–3 of `supabase/preview-setup/README.md` (Confirm email off, run the setup file on the EMPTY project, check products).
 
+**Read on 2026-11-16 (Vercel API, names and scopes only, no value decrypted):**
+- Project `travel-smarter` (`prj_Hsfwy0c58a9JdunG5rM3nQjBYckY`), team `travelsmarter501-4558`.
+- Production deploys from `main` (latest production deployment: `925512d`, READY). Deployment protection (password / SSO) is off.
+- Every Supabase / Postgres variable (`NEXT_PUBLIC_SUPABASE_*`, `SUPABASE_*`, `POSTGRES_*`) is scoped to **Production only**, through the Supabase integration.
+- The only **Preview** variable is `ALLPAY_MODE` (all Preview branches; its value was not decrypted).
+- **So today a Preview build has NO database at all** (it cannot reach production's), and no Allpay credentials.
+- **Vercel accepts a branch-scoped variable only for a branch that exists in the connected repository:** adding them for `feature/budapest` was refused with 400, nothing created. The branch must be on GitHub first.
+
 ## 3. Vercel → Environment Variables: Preview only, Git branch `feature/budapest`
 Add each with Environment = **Preview** and Branch = **`feature/budapest`**. Never Production, never "All environments". Names, scopes and reasons: `preview-env-vars.md`.
 
