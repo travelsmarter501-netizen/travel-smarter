@@ -1,64 +1,74 @@
-# Budapest on a Vercel Preview (prepared 2026-11-16; nothing pushed, created or deployed)
+# Budapest on a Vercel Preview: setup order (revised 2026-11-16; nothing pushed, created or deployed)
 
-**Goal:** the owner tries the product on a phone with real sign-in, saves and permissions, on a test database, with Budapest and Hebrew,
-and with no real payment. Production stays untouched.
+**Goal:** the owner tries the product on a phone with real sign-in, saves and permissions, on a TEST database, with Budapest and Hebrew,
+and with no real payment. Production stays untouched. Code under test: `4c39288` (docs after it: `76b9bcd`, no code).
 
-**Reused:** the Preview recipe of the Prague release, `supabase/preview-setup/`.
-- `travel-smarter-preview-setup.sql` builds an EMPTY test Supabase project from all 22 migrations (one duplicate left out on purpose, see its README).
-- A guard refuses any database that already has this app's tables or any user, so it cannot touch production.
-- Checked today: every current migration file is in it.
+**Rules for every step:**
+- No push before steps 1–4 are done and the owner approves.
+- No secret is ever pasted into the chat (keys are copied directly from the Supabase dashboard into the Vercel dashboard).
+- No customer data is copied.
+- Nothing is changed in Production or with the "All environments" scope.
+- No paid service is created.
 
-## What was checked before asking for anything
-- **Vercel connector:** it has no access to the project's team (`travelsmarter501-4558`) in this session: 403. No Vercel CLI and no Supabase CLI are installed. So nothing can be read or set from here without the owner.
-- **Payments:**
-  - `getAllpayMode()` accepts only `test` or `live`; anything else (e.g. `disabled`) makes every payment attempt fail closed.
-  - `live` throws unless `VERCEL_ENV === "production"`. A Preview can never charge.
-- **Free access for test users:** the existing ways are a manual entitlement row in the TEST database (step 6 of the recipe) or `COMPLIMENTARY_USER_IDS`. Set either only in the test project / for the Preview environment; production's values are not touched.
-- **Sign-in redirects** use the page's own origin (`window.location.origin`), so sign-up, Google and password reset return to the Preview address, not production.
-- **Plan permissions (policies reviewed, NOT proven):** `smart_planner_saved_plans` has RLS with `user_id = auth.uid()` for select / insert / update / delete, and edits go through the owner-only `replace_owned_plan_content`. Reading the policies does not prove isolation. The two-account test on the test environment is still required: account B tries to read AND to edit account A's plan directly (its address, and an edit request with A's plan id).
-- **Budapest:** `NEXT_PUBLIC_PLANNER_PREVIEW_DESTINATIONS` is honoured on a Vercel Preview and ignored by the server on Production (`plannerDestinations.ts`).
-- **Hebrew** (new in 709278c):
-  - `NEXT_PUBLIC_PREVIEW_LANGUAGES=he` is honoured only when `NEXT_PUBLIC_VERCEL_ENV === "preview"` (or in `next dev`).
-  - It is ignored on Production and when the environment is unknown (fails closed).
-  - Requires Vercel's "Automatically expose System Environment Variables" (on by default).
+## 1. Identify the real Vercel project and its Production branch
+- **From the repository:** GitHub `travelsmarter501-netizen/travel-smarter`. Production deploys from `main`; `feature/budapest` has no remote copy yet.
+- **Vercel team scope:** `travelsmarter501-4558`. The connector has no access to it (403). The owner opens the single-use approval link the connector produces (team access for this connection; it grants nothing until approved).
+- **Then read-only from here:** project name and id, Production branch, the Preview variables' NAMES and scopes (no values), and whether "Automatically expose System Environment Variables" is on.
+- **Without the link,** the owner can instead send screenshots of:
+  - Project → Settings → Git (Production Branch);
+  - Settings → Environment Variables, list view with the environment column, values hidden;
+  - the "Automatically expose System Environment Variables" checkbox.
 
-## What is ready locally
-- **Branch `feature/budapest`:** 37 commits on top of `main` (`git log main..feature/budapest`). Budapest stays `available: false`.
-- **What a Preview build would take:** the whole branch: the Budapest work, plus the shared changes listed in research sections 22–24 (plan view, add rule for daylight cities, translations, display options, photo credits, Hebrew switch).
-- **Production:** `main` is not changed by pushing this branch.
+## 2. Identify the TEST Supabase project (by name and project id)
+- **Where to look:** in the Supabase dashboard's project list, the Prague release's test project (README in this folder) if it exists, by its name and project ID (the id is the part of its URL before `.supabase.co`; not a secret).
+  - It must be a DIFFERENT project from production: compare the two ids in that list.
+  - The SQL guard of the setup file is no substitute for checking the identity.
+- **If it exists:** do NOT run the full setup file and delete nothing.
+  - Run `check-existing-test-project.sql` (read-only: objects present / missing, RLS on, row COUNTS only) in THAT project and paste the result table.
+  - Missing objects are compared with `supabase/migrations/` first; only the missing migrations would be applied, after review.
+  - Non-zero counts of orders or plans must be test rows only. If the project ever held real customer data, it is not used.
+- **If none exists:** a new project is needed. Say so before creating it.
+  - Supabase's free plan allows a limited number of active free projects (2, as I know it; check the pricing page before creating). If production already uses one and another free project exists, a new one could need a paid plan or pausing another; decide before creating.
+  - The owner creates it. Then steps 1–3 of `supabase/preview-setup/README.md` (Confirm email off, run the setup file on the EMPTY project, check products).
 
-## Steps (owner)
-0. **First, isolate the Preview** (`preview-env-vars.md`): pushing makes Vercel build the branch at once with whatever Preview values exist today. Those values are unknown here (403). Set or check the Preview-only values (test Supabase, payments disabled) BEFORE the push.
-1. **Approve the push:** "push `feature/budapest`".
-   - **Target:** GitHub `travelsmarter501-netizen/travel-smarter` (the remote of this repository; the branch has no remote copy yet).
-   - **Vercel:** team scope `travelsmarter501-4558`; the project name `travel-smarter` is read from earlier Preview addresses and not confirmed from here.
-   - The branch goes to GitHub and Vercel builds a Preview from it automatically.
-   - Expected address: `travel-smarter-git-feature-budapest-travelsmarter501-4558.vercel.app` (Vercel's pattern; the dashboard shows the exact one).
-   - Not merged, not Production.
-   - *Or* approve the Vercel team-access link if you want me to check settings and deployments from here.
-2. **Test Supabase project:**
-   - Use the existing Preview test project from the Prague release if it still exists and holds no customer data; otherwise create a new free project.
-   - Then steps 1–4 of `supabase/preview-setup/README.md`: Confirm email off, run the setup SQL, Site URL + Redirect URLs = the Preview address above with `/**`.
-3. **Vercel → Settings → Environment Variables, Preview only** (Git branch `feature/budapest` where offered), then Redeploy:
+## 3. Vercel → Environment Variables: Preview only, Git branch `feature/budapest`
+Add each with Environment = **Preview** and Branch = **`feature/budapest`**. Never Production, never "All environments". Names, scopes and reasons: `preview-env-vars.md`.
 
-   | Variable | Value |
-   |---|---|
-   | `NEXT_PUBLIC_SUPABASE_URL` | the TEST project's URL |
-   | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | the TEST project's publishable key |
-   | `SUPABASE_SERVICE_ROLE_KEY` | the TEST project's service-role key |
-   | `ALLPAY_MODE` | `disabled` |
-   | `ALLPAY_API_LOGIN` / `ALLPAY_API_KEY` | `disabled` |
-   | `NEXT_PUBLIC_PLANNER_PREVIEW_DESTINATIONS` | `budapest` (or `prague,budapest`) |
-   | `NEXT_PUBLIC_PREVIEW_LANGUAGES` | `he` |
+| Variable | Value |
+|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY` | from the TEST project of step 2 (copied dashboard to dashboard) |
+| `ALLPAY_MODE` | `disabled` |
+| `ALLPAY_API_LOGIN`, `ALLPAY_API_KEY` | `disabled` (no real credentials) |
+| `NEXT_PUBLIC_PLANNER_PREVIEW_DESTINATIONS` | `budapest` |
+| `NEXT_PUBLIC_PREVIEW_LANGUAGES` | `he` |
 
-   - Never production keys or customer data. Production keeps its own values.
-   - **Do not set any of these for Production.**
-4. **Two test accounts** (sign up on the Preview), and in the TEST project's SQL Editor give both the planner entitlement (step 6 of the README, with each test email).
+- **Check:** "Automatically expose System Environment Variables" is ON. The Hebrew switch and the browser side of the Budapest switch read `NEXT_PUBLIC_VERCEL_ENV`.
+- **If a variable already exists for Preview / All environments with PRODUCTION values,** a branch-specific Preview value overrides it for `feature/budapest`. Confirm that in the list view before the push.
 
-## Checks to run on the Preview (once it exists)
-- **Sign-up and sign-in** with test account A; create a Budapest plan; edit (remove, add); reopen; switch Arabic / English / Hebrew.
-- **Permissions (required):** account B signs in; A's plan is not in B's "My plans"; opening A's plan address as B shows not found; an edit sent as B with A's plan id is refused and A's stored plan is unchanged.
-- **Payment:** the checkout never reaches Allpay (fails closed).
-- **On a real phone** (iPhone Safari and Android Chrome): the plan, the place details, the photo credits.
+## 4. Verification table (no secrets), filled before the push
 
-**Not done here:** no push, no deployment, no Vercel or Supabase setting changed, no account or service created.
+| Item | Value |
+|---|---|
+| Vercel project (name / id) | |
+| Production branch | `main` (to confirm) |
+| Preview branch | `feature/budapest` |
+| Test Supabase project (name / id) | |
+| Test id differs from production id | yes / no |
+| Supabase variables: scope | Preview, branch `feature/budapest` |
+| Payments on Preview | `ALLPAY_MODE=disabled`, credentials `disabled` |
+| Budapest switch | `budapest`, Preview branch only; Production: not set |
+| Hebrew switch | `he`, Preview branch only; Production: not set |
+| System env exposure | on / off |
+
+## 5. Push (only after the owner approves)
+- Push `feature/budapest` only. No merge into `main`.
+- Vercel builds the Preview from it. The Preview URL comes from the deployment (the dashboard shows it).
+
+## 6. After the URL exists
+1. **Test Supabase → Authentication → URL Configuration:** add the exact Preview URL to Redirect URLs (`<preview-url>/**`); the Site URL as the owner decides. Confirm email off (step 2).
+2. **Two test accounts** (sign up on the Preview); planner entitlement for both in the TEST project (step 6 of `supabase/preview-setup/README.md`).
+3. **Checks:**
+   - account A: create a Budapest plan, edit (remove / add), save, reopen, switch ar / en / he;
+   - account B: A's plan is not in B's list, A's plan address shows not found, an edit sent with A's plan id is refused and A's stored plan is unchanged;
+   - the checkout never reaches Allpay.
+4. **The owner tries it on an iPhone.**
