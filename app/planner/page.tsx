@@ -21,7 +21,7 @@ import { createClient } from "../../utils/supabase/server";
  */
 export const metadata: Metadata = {
   title: "خطة مخصصة إلك ✨ | Travel Smarter",
-  description: "جاوب على 4 أسئلة قصيرة وبنبني لك خطة مرتّبة يوم بيوم. برشلونة وبراغ متاحتين الآن.",
+  description: "جاوب على 4 أسئلة قصيرة وبنبني لك خطة مرتّبة يوم بيوم. برشلونة وبراغ وبودابست متاحين الآن.",
 };
 
 export default async function PlannerPage({

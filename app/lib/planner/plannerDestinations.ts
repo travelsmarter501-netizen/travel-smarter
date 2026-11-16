@@ -34,7 +34,9 @@ export const PLANNER_DESTINATIONS: PlannerDestinationOption[] = [
   { id: "rome", name: "روما", nameEn: "Rome", nameHe: "רומא", flag: "🇮🇹", available: false },
   // Prague: public since 2026-11-08 (owner decision; data and checks in docs/PROJECT_PLAN.md).
   { id: "prague", name: "براغ", nameEn: "Prague", nameHe: "פראג", flag: "🇨🇿", available: true },
-  { id: "budapest", name: "بودابست", nameEn: "Budapest", nameHe: "בודפשט", flag: "🇭🇺", available: false },
+  // Budapest: public with a limited launch scope (owner decision 2026-11-16; docs/budapest/launch-checklist.md): at most 4 days (culture only /
+  // popular only 3, nature only 1) and no dated trips touching 24-26 Dec 2026, 31 Dec 2026, 1 Jan 2027 (tripLengthLimits.ts).
+  { id: "budapest", name: "بودابست", nameEn: "Budapest", nameHe: "בודפשט", flag: "🇭🇺", available: true },
   { id: "dubai", name: "دبي", nameEn: "Dubai", nameHe: "דובאי", flag: "🇦🇪", available: false },
   { id: "batumi", name: "باتومي", nameEn: "Batumi", nameHe: "בטומי", flag: "🇬🇪", available: false },
   { id: "istanbul", name: "إسطنبول", nameEn: "Istanbul", nameHe: "איסטנבול", flag: "🇹🇷", available: false },

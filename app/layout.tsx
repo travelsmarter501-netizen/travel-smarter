@@ -52,7 +52,7 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://travelsmarters.com"),
   alternates: { canonical: "./" },
   title: "Travel Smarter | خطة رحلة مخصصة، يوم بيوم",
-  description: "جاوب على أسئلة قصيرة واحصل على خطة رحلة مخصصة حسب أيامك واهتماماتك ومكان سكنك، مع الأماكن والمطاعم وأوقات التنقل. متاح لبرشلونة وبراغ.",
+  description: "جاوب على أسئلة قصيرة واحصل على خطة رحلة مخصصة حسب أيامك واهتماماتك ومكان سكنك، مع الأماكن والمطاعم وأوقات التنقل. متاح لبرشلونة وبراغ وبودابست.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
