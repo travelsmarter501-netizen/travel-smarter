@@ -53,7 +53,8 @@ export default async function PlannerPage({
   if (user && owner && editPlanId) {
     const plan = await loadEditablePlan(editPlanId);
     const booked = (plan?.rawAnswers.accommodation as { booked?: unknown } | undefined)?.booked === true;
-    const draft = plan ? parsePlannerDraft(JSON.stringify({ destinationId: plan.destinationId, answers: plan.rawAnswers, accommodationStatus: booked ? "hotel" : "not_booked" })) : null;
+    // The plan and its city come from the database (the owner's own session): its city is served even if closed to new requests.
+    const draft = plan ? parsePlannerDraft(JSON.stringify({ destinationId: plan.destinationId, answers: plan.rawAnswers, accommodationStatus: booked ? "hotel" : "not_booked" }), { servingExisting: true }) : null;
     if (plan && draft) editPlan = { id: plan.id, draft };
   }
 

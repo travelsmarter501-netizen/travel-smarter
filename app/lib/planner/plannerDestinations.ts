@@ -23,6 +23,13 @@ export type PlannerDestinationOption = {
   flag: string;
   /** PUBLIC purchase availability. Only a city whose generation, saving, display, editing and quality checks all pass gets true. */
   available: boolean;
+  /**
+   * Optional (2026-11-16): a published city CLOSED TO NEW REQUESTS. It is not offered in the questionnaire and the server refuses new
+   * requests for it (checkout, complimentary, a new owner plan), but it keeps SERVING what customers already have: a paid request is
+   * still built, and an existing plan still opens, edits its days and can be regenerated in place (ownership and the plan's city read
+   * from the database, never from the browser). Use this, not `available: false`, to stop a city that has buyers. Reopen: remove it.
+   */
+  closedToNewRequests?: true;
 };
 
 /** Barcelona is the only real, generation-capable destination right now (see
@@ -77,10 +84,19 @@ function previewPlannerDestinationIds(): string[] {
     .filter((id) => !isReleaseExcludedDestination(id) && PLANNER_DESTINATIONS.some((d) => d.id === id && !d.available));
 }
 
-/** Selectable in the questionnaire and accepted by the server: publicly available, or a local preview city (see above). */
-export function isAvailablePlannerDestinationId(value: string | null | undefined): boolean {
+/**
+ * Served: the city's existing purchases and plans are still served (a paid request built, an existing plan regenerated): publicly
+ * available (open or closed to new requests), or a local preview city (see above).
+ */
+export function isServedPlannerDestinationId(value: string | null | undefined): boolean {
   if (!value) return false;
   return PLANNER_DESTINATIONS.some((d) => d.id === value && d.available) || previewPlannerDestinationIds().includes(value);
+}
+
+/** Open to NEW requests: selectable in the questionnaire and accepted by the server for a new order or plan. Served and not closed. */
+export function isAvailablePlannerDestinationId(value: string | null | undefined): boolean {
+  if (!value || !isServedPlannerDestinationId(value)) return false;
+  return !PLANNER_DESTINATIONS.some((d) => d.id === value && d.closedToNewRequests);
 }
 
 /** True only for a city enabled through the local preview switch (shown with a "local preview" label, never public). */

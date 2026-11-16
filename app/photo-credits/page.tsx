@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getCityPlannerModule } from "../lib/planner/cityPlannerRegistry";
 import type { ImageCredit } from "../lib/guideTypes";
-import { isAvailablePlannerDestinationId } from "../lib/planner/plannerDestinations";
+import { isServedPlannerDestinationId } from "../lib/planner/plannerDestinations";
 
 /**
  * Photo credits for the place photos shown in the plans (Wikimedia Commons, free licences). CC BY, CC BY-SA and the Free Art
@@ -49,7 +49,8 @@ export default function PhotoCreditsPage() {
       <p dir="ltr" className="mt-1 text-sm text-slate-500">Photo credits</p>
       <p className="mt-3 text-sm leading-6 text-slate-600">صور الأماكن بالخطط من Wikimedia Commons، كل صورة برخصتها واسم مصوّرها.</p>
       {CITIES.map((c) => {
-        if (c.onlyWhenSelectable && !isAvailablePlannerDestinationId(c.id)) return null;
+        // Shown while the city is served (its photos still appear in existing plans), even when closed to new requests.
+        if (c.onlyWhenSelectable && !isServedPlannerDestinationId(c.id)) return null;
         const places = creditedPlaces(c.id);
         if (places.length === 0) return null;
         return (

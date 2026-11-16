@@ -1,7 +1,7 @@
 import { V2_PLANNER_INTERESTS } from "./v2PlannerTypes";
 import type { V2PlannerInterest } from "./v2PlannerTypes";
 import { parseIsoDate, inclusiveDayCount } from "./dateOnly";
-import { isAvailablePlannerDestinationId } from "./plannerDestinations";
+import { isAvailablePlannerDestinationId, isServedPlannerDestinationId } from "./plannerDestinations";
 import { tripLengthLimit, unavailableTripDates } from "./tripLengthLimits";
 import { PRODUCT_SLUGS } from "../commerce/catalog";
 
@@ -64,10 +64,16 @@ function cleanAccommodationText(value: unknown): string {
   return value.replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s+/g, " ").trim().slice(0, MAX_ACCOMMODATION_TEXT_LENGTH);
 }
 
-export function normalizePersonalizedAnswers(rawAnswers: unknown, rawDestinationId: unknown): NormalizePersonalizedAnswersResult {
+/**
+ * `servingExisting` (server callers only, 2026-11-16): the answers serve something the customer already has -- an existing plan of THAT
+ * city regenerated in place, found by the caller in the database for the signed-in user. Then a city closed to new requests is accepted
+ * (plannerDestinations.ts `closedToNewRequests`). Never set it from anything the browser sends. Every other check is the same.
+ */
+export function normalizePersonalizedAnswers(rawAnswers: unknown, rawDestinationId: unknown, options: { servingExisting?: boolean } = {}): NormalizePersonalizedAnswersResult {
   const fail = { ok: false } as const;
 
-  if (typeof rawDestinationId !== "string" || !isAvailablePlannerDestinationId(rawDestinationId)) return fail;
+  const destinationAccepted = options.servingExisting ? isServedPlannerDestinationId : isAvailablePlannerDestinationId;
+  if (typeof rawDestinationId !== "string" || !destinationAccepted(rawDestinationId)) return fail;
   if (!isPlainObject(rawAnswers)) return fail;
 
   const dateMode = rawAnswers.dateMode;

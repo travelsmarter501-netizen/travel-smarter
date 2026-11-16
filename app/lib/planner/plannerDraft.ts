@@ -35,14 +35,14 @@ export type PlannerDraft = {
 const STATUSES: readonly string[] = ["hotel", "apartment", "not_booked"];
 
 /** Pure: turns a stored string into a draft, or null if it is missing, malformed or fails the answer validation. */
-export function parsePlannerDraft(raw: string | null): PlannerDraft | null {
+export function parsePlannerDraft(raw: string | null, options: { servingExisting?: boolean } = {}): PlannerDraft | null {
   if (!raw) return null;
   try {
     const parsed: unknown = JSON.parse(raw);
     if (!parsed || typeof parsed !== "object") return null;
     const { destinationId, answers, accommodationStatus } = parsed as Record<string, unknown>;
     if (typeof destinationId !== "string" || !answers || typeof answers !== "object" || Array.isArray(answers)) return null;
-    const normalized = normalizePersonalizedAnswers(answers, destinationId);
+    const normalized = normalizePersonalizedAnswers(answers, destinationId, options);
     if (!normalized.ok) return null;
     const status = typeof accommodationStatus === "string" && STATUSES.includes(accommodationStatus) ? (accommodationStatus as PlannerAccommodationStatus) : null;
     return {

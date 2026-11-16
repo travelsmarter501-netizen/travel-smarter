@@ -11,13 +11,14 @@ import { inclusiveDayCount } from "../planner/dateOnly";
 import { isComplimentaryUser } from "./complimentary";
 import { randomUUID } from "crypto";
 import { normalizePersonalizedAnswers } from "../planner/personalizedPlanAnswers";
-import { isAvailablePlannerDestinationId } from "../planner/plannerDestinations";
+import { isServedPlannerDestinationId } from "../planner/plannerDestinations";
 import { getCityPlannerModule } from "../planner/cityPlannerRegistry";
 
-/** Multi-city foundation: the planner can build this city (it has an engine module) AND customers may choose it
- * (publicly available, or the local-only preview switch -- see plannerDestinations.ts). Barcelona: always true. */
+/** Multi-city foundation: the planner can build this city (it has an engine module) AND it is served (publicly available, open or
+ * closed to new requests, or the local-only preview switch -- see plannerDestinations.ts). Barcelona: always true. New requests for a
+ * closed city are refused earlier, by normalizePersonalizedAnswers; this gate only serves requests and plans that already exist. */
 function isGeneratableDestination(destinationId: string): boolean {
-  return isAvailablePlannerDestinationId(destinationId) && getCityPlannerModule(destinationId) !== null;
+  return isServedPlannerDestinationId(destinationId) && getCityPlannerModule(destinationId) !== null;
 }
 import type { TripDetailsInput } from "../planner/personalizedSummary";
 
@@ -301,9 +302,6 @@ export async function generateOwnerPersonalizedPlan(input: { destinationId?: unk
   } = await supabase.auth.getUser();
   if (!user) return { ok: false, code: "login_required" };
 
-  const normalized = normalizePersonalizedAnswers(input.answers, input.destinationId);
-  if (!normalized.ok) return { ok: false, code: "invalid_answers" };
-
   let replaceId: string | null = null;
   if (input.replacePlanId !== undefined && input.replacePlanId !== null) {
     if (typeof input.replacePlanId !== "string" || !UUID_PATTERN.test(input.replacePlanId)) return { ok: false, code: "not_found" };
@@ -311,6 +309,23 @@ export async function generateOwnerPersonalizedPlan(input: { destinationId?: unk
   }
 
   const serviceRole = createServiceRoleClient();
+  // Regenerating an EXISTING plan serves what the customer has: its city is accepted even if closed to new requests, but only when the
+  // database shows this user owns that plan and it is a plan of that same city (the browser's plan id alone proves nothing).
+  let servingExisting = false;
+  if (replaceId) {
+    const { data: owned } = await serviceRole
+      .from("smart_planner_saved_plans")
+      .select("destination_slug")
+      .eq("id", replaceId)
+      .eq("user_id", user.id)
+      .eq("product_slug", V2_SAVED_PLAN_PRODUCT_SLUG)
+      .maybeSingle<{ destination_slug: string }>();
+    servingExisting = !!owned && owned.destination_slug === input.destinationId;
+  }
+
+  const normalized = normalizePersonalizedAnswers(input.answers, input.destinationId, { servingExisting });
+  if (!normalized.ok) return { ok: false, code: "invalid_answers" };
+
   const { data: gate, error: gateError } = await serviceRole.rpc("begin_owner_plan_generation", { p_user_id: user.id, p_replace_plan_id: replaceId });
   if (gateError || typeof gate !== "string") {
     console.error("[planner] begin_owner_plan_generation failed:", gateError?.code ?? "no-code");

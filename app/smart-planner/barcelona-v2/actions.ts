@@ -2,7 +2,7 @@ import "server-only";
 
 import { generateCityPlanV2, type GenerateCityPlanV2Input, type GenerateCityPlanV2Result } from "../../lib/planner/v2CityPipeline";
 import { getCityPlannerModule } from "../../lib/planner/cityPlannerRegistry";
-import { isAvailablePlannerDestinationId } from "../../lib/planner/plannerDestinations";
+import { isServedPlannerDestinationId } from "../../lib/planner/plannerDestinations";
 
 /**
  * Smart Planner V2 -- the ONLY server-side entry point for V2 plan generation (name kept from the Barcelona-only era so
@@ -23,7 +23,9 @@ export type GenerateBarcelonaPlanV2Result = GenerateCityPlanV2Result;
 
 export async function generateBarcelonaPlanV2(input: GenerateBarcelonaPlanV2Input): Promise<GenerateBarcelonaPlanV2Result> {
   const destinationId = input && typeof input === "object" && typeof input.destinationId === "string" ? input.destinationId : "";
-  const city = destinationId && isAvailablePlannerDestinationId(destinationId) ? getCityPlannerModule(destinationId) : null;
+  // Served cities (open or closed to new requests): callers have already decided the request is allowed (new requests are refused for a
+  // closed city by normalizePersonalizedAnswers; existing paid requests and plans are served).
+  const city = destinationId && isServedPlannerDestinationId(destinationId) ? getCityPlannerModule(destinationId) : null;
   if (!city) {
     if (!input || typeof input !== "object") return { ok: false, error: "طلب غير صالح." };
     return { ok: false, error: "الوجهة غير مدعومة في هذا الإصدار التجريبي." };

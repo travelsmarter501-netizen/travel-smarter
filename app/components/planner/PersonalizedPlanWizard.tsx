@@ -15,7 +15,7 @@ import TextWithPrice from "../home/TextWithPrice";
 import { QUIZ_CHOICE_BASE, QUIZ_PRESS, quizChoiceClass, quizHaptic } from "./quizFeedback";
 import { PLAN_PRICE_ILS } from "../home/homeOffer";
 import type { V2PlannerInterest } from "../../lib/planner/v2PlannerTypes";
-import { PLANNER_DESTINATIONS, DEFAULT_PLANNER_DESTINATION_ID, interestGroupLabelForDestination, isAvailablePlannerDestinationId, isPreviewPlannerDestinationId, plannerDestinationName } from "../../lib/planner/plannerDestinations";
+import { PLANNER_DESTINATIONS, DEFAULT_PLANNER_DESTINATION_ID, interestGroupLabelForDestination, isAvailablePlannerDestinationId, isPreviewPlannerDestinationId, isServedPlannerDestinationId, plannerDestinationName } from "../../lib/planner/plannerDestinations";
 import { MAX_ACCOMMODATION_TEXT_LENGTH, MAX_PERSONALIZED_PLAN_DAYS } from "../../lib/planner/personalizedPlanAnswers";
 import { tripDateMessages, tripLengthLimit, unavailableTripDates } from "../../lib/planner/tripLengthLimits";
 import { PlanDisplayProvider, TimesText } from "../smart-planner/planDisplay";
@@ -236,7 +236,8 @@ export default function PersonalizedPlanWizard({
           <h2 className="text-base font-bold text-slate-900">{wizard.destinationTitle}</h2>
           <div className="mt-2 grid grid-cols-1 gap-2.5">
             {/* Selectable: publicly available cities (+ a local-preview city when that switch is on). Editing a plan keeps its city. */}
-            {PLANNER_DESTINATIONS.filter((destination) => isAvailablePlannerDestinationId(destination.id) && (!editPlanId || destination.id === destinationId)).map((destination) => {
+            {/* Editing an existing plan keeps its city even when that city is closed to new requests (the server re-checks the plan). */}
+            {PLANNER_DESTINATIONS.filter((destination) => (isAvailablePlannerDestinationId(destination.id) || (!!editPlanId && isServedPlannerDestinationId(destination.id))) && (!editPlanId || destination.id === destinationId)).map((destination) => {
               const name = wizard.destinationNames[destination.id] ?? destination.name;
               const selected = destination.id === destinationId;
               return (
@@ -264,7 +265,8 @@ export default function PersonalizedPlanWizard({
           <div aria-disabled="true" className="mt-4">
             <p className="text-xs font-semibold text-slate-500">{wizard.comingSoon}</p>
             <ul className="mt-2 flex flex-wrap gap-1.5">
-              {PLANNER_DESTINATIONS.filter((destination) => !isAvailablePlannerDestinationId(destination.id)).map((destination) => (
+              {/* A served city closed to new requests is not "coming soon": it is simply not offered. */}
+              {PLANNER_DESTINATIONS.filter((destination) => !isServedPlannerDestinationId(destination.id)).map((destination) => (
                 <li key={destination.id} className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-500">
                   {destination.flag} {wizard.destinationNames[destination.id] ?? destination.name}
                 </li>
