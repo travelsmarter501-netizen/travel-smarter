@@ -1927,3 +1927,30 @@ No padding, no shorter visits, no engine work.
   - 27–30 Dec 2026 accepted;
   - Prague 10 days and Barcelona 24–26 Dec 2026 accepted;
   - a visitor checkout for Budapest 21–24 Dec refused with no database call.
+
+### 25.8 Rollback review (from the code, 2026-11-16; nothing changed)
+**What a revert of the launch commit (`84a5e79`, Budapest `available: false`) does to people who bought a Budapest plan.** Ownership itself is product-level, so they stay owners and keep every other city.
+
+| Path | Gate in the code | After the revert | After a Vercel Instant Rollback to `925512d` (no Budapest module) |
+|---|---|---|---|
+| Open a saved Budapest plan | saved page: `cityForSavedPlan` = engine module only | opens | opens, read-only |
+| Edit the days of a saved plan (start, length, order, remove / add) | `customizeSavedPlan`: owner check + `cityForSavedPlan` | works | not offered (no module) |
+| "Edit answers" (regenerate the plan in place) | `parsePlannerDraft` → `normalizePersonalizedAnswers` → `isAvailablePlannerDestinationId`; server `isGeneratableDestination` | **blocked**: the draft is rejected and the server answers `unsupported_destination` / `invalid_answers` | **blocked** |
+| Build a PAID Budapest request not yet built (e.g. a guest who pays, then claims and builds) | `generatePersonalizedPlanAction` → `generatePersonalizedPlanForRequest` → `isGeneratableDestination` (available AND module) | **blocked**: `unsupported_destination`, the paid plan cannot be built | **blocked** |
+| New Budapest plans | questionnaire + server | refused (intended) | refused |
+
+**Result:** the revert is **not a safe rollback** once a Budapest purchase exists.
+- Opening and day edits survive.
+- A buyer whose paid request is not built yet gets nothing, and the answers of existing Budapest plans can no longer be edited.
+- An Instant Rollback to `925512d` is worse: no day edits either.
+
+**When the revert is safe:** only while no Budapest purchase exists. The owner can check this in production with a read-only query (counts only, no customer data):
+```sql
+select
+  (select count(*) from public.personalized_plan_requests where destination_id = 'budapest') as budapest_requests,
+  (select count(*) from public.personalized_plan_requests where destination_id = 'budapest' and saved_plan_id is null) as budapest_requests_not_built,
+  (select count(*) from public.smart_planner_saved_plans where destination_slug = 'budapest') as budapest_saved_plans;
+```
+- All three must be 0 for the plain revert to be safe.
+- Otherwise a safe rollback needs a code change, NOT made here, because it touches purchase / generation gating: a "closed to new requests" state where the questionnaire and new requests refuse Budapest, while a paid Budapest request and the regeneration of an existing Budapest plan still pass.
+- That needs its own approved task, ideally before the merge.

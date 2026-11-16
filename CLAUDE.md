@@ -12,7 +12,7 @@ Arabic-first (RTL, English supported) travel-planning website. Next.js 16 (App R
 
 ## Product in one paragraph
 
-The public presentation sells ONE product: a personalized travel itinerary (₪39, one-time). Barcelona and Prague are the supported destinations (Prague since 2026-11-08); the Barcelona guide comes only with a purchase for a Barcelona plan. Do not promise other cities, PDF, sharing, trip-total cost, or lifetime/future-destination access: none of that is decided or built. Details and the open questions are in `docs/PRODUCT_SPEC.md`.
+The public presentation sells ONE product: a personalized travel itinerary (₪39, one-time). Supported destinations: Barcelona and Prague are live (Prague since 2026-11-08). Budapest is launch-ready on branch `feature/budapest` (`available: true` there) with a limited scope (at most 4 days; culture only / popular only 3, nature only 1; no dated trips touching 24-26 Dec 2026, 31 Dec 2026 or 1 Jan 2027), but it is NOT deployed to production yet: `main` and travelsmarters.com still offer Barcelona and Prague only. The Barcelona guide comes only with a purchase for a Barcelona plan. Do not promise other cities, PDF, sharing, trip-total cost, or lifetime/future-destination access: none of that is decided or built. Details and the open questions are in `docs/PRODUCT_SPEC.md`.
 
 ## Working rules
 
