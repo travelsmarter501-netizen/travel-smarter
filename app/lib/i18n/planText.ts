@@ -146,6 +146,15 @@ export const PLAN_TEXT = {
     freeTime: "🕒 وقت حر",
     freeTimeNote: "استراحة",
     optionalTag: "اختياري",
+    programLabel: "البرنامج",
+    programEnd: "نهاية برنامج اليوم",
+    programEndNote: "بعدها وقت حر",
+    optionalHeading: "اقتراحات اختيارية",
+    optionalHeadingNote: "مش ضمن البرنامج، اختار اللي بيناسبك.",
+    suggestedFrom: (time: string) => `مقترح من ${time}`,
+    noPhoto: "بدون صورة",
+    dayTabsLabel: "أيام الرحلة",
+    photoUnavailable: "الصورة غير متوفرة",
     freeAfter: (time: string) => `🕒 وقت حر من ${time}`,
     freeDayTitle: (time: string) => `🕒 وقت حر من ${time}`,
     freeDayNote: "ما في أماكن مجدولة بعد هالساعة. كمّل بمشي أو قهوة أو واحد من الاقتراحات تحت.",
@@ -219,6 +228,15 @@ export const PLAN_TEXT = {
     freeTime: "🕒 Free time",
     freeTimeNote: "Break",
     optionalTag: "optional",
+    programLabel: "Program",
+    programEnd: "End of the day's program",
+    programEndNote: "free time after this",
+    optionalHeading: "Optional suggestions",
+    optionalHeadingNote: "Not part of the program; pick what suits you.",
+    suggestedFrom: (time: string) => `Suggested from ${time}`,
+    noPhoto: "No photo",
+    dayTabsLabel: "Trip days",
+    photoUnavailable: "Photo unavailable",
     freeAfter: (time: string) => `🕒 Free time from ${time}`,
     freeDayTitle: (time: string) => `🕒 Free time from ${time}`,
     freeDayNote: "Nothing is scheduled after this time. Walk, have a coffee, or pick one of the ideas below.",
@@ -292,6 +310,15 @@ export const PLAN_TEXT = {
     freeTime: "🕒 זמן חופשי",
     freeTimeNote: "הפסקה",
     optionalTag: "אופציונלי",
+    programLabel: "התוכנית",
+    programEnd: "סוף תוכנית היום",
+    programEndNote: "אחר כך זמן חופשי",
+    optionalHeading: "הצעות אופציונליות",
+    optionalHeadingNote: "לא חלק מהתוכנית; בחרו מה שמתאים לכם.",
+    suggestedFrom: (time: string) => `מוצע החל מ-${time}`,
+    noPhoto: "אין תמונה",
+    dayTabsLabel: "ימי הטיול",
+    photoUnavailable: "התמונה לא זמינה",
     freeAfter: (time: string) => `🕒 זמן חופשי מ־${time}`,
     freeDayTitle: (time: string) => `🕒 זמן חופשי מ־${time}`,
     freeDayNote: "אין דבר מתוכנן אחרי השעה הזאת. טיילו, שתו קפה, או בחרו אחד הרעיונות למטה.",
@@ -543,6 +570,16 @@ const FOOD_BADGE_HE: Record<string, string> = {
 };
 export function foodBadgeText(badge: string, english: string, lang: PlanLanguage): string {
   return lang === "he" ? (FOOD_BADGE_HE[badge] ?? english) : english;
+}
+
+/**
+ * Base direction of a name from its first strong letter (Arabic / Hebrew = rtl, Latin = ltr; none = the page's). The day screen sets it on
+ * each place name, so a long Latin name in an Arabic page is clamped at its own end (2026-11-22: "…raditional" lost its first letter).
+ */
+export function nameDir(text: string | undefined, lang: PlanLanguage): "rtl" | "ltr" {
+  const strong = text?.match(/[A-Za-zÀ-ɏ֐-׿؀-ۿݐ-ݿࢠ-ࣿ]/)?.[0];
+  if (!strong) return lang === "en" ? "ltr" : "rtl";
+  return /[֐-ࣿ]/.test(strong) ? "rtl" : "ltr";
 }
 
 /**

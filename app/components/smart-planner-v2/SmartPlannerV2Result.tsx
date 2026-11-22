@@ -189,6 +189,47 @@ export default function SmartPlannerV2Result({
   }, [liveAddOptions, livePlan, language, localize, plan.placeDetails]); // eslint-disable-line react-hooks/exhaustive-deps
   const [activeDayIndex, setActiveDayIndex] = useState(0);
   const activeDay = plan.days[activeDayIndex];
+  const tabsBarRef = useRef<HTMLDivElement>(null);
+  const tabsRowRef = useRef<HTMLDivElement>(null);
+  const dayTopRef = useRef<HTMLDivElement>(null);
+  // Another day: when the page is scrolled past the start of the day (the tabs are stuck), the new day starts at its top, under the tabs.
+  const selectDay = (index: number) => {
+    setActiveDayIndex(index);
+    const bar = tabsBarRef.current;
+    const top = dayTopRef.current;
+    if (bar && top && top.getBoundingClientRect().top < bar.getBoundingClientRect().bottom) {
+      const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+      window.scrollTo({ top: window.scrollY + top.getBoundingClientRect().top - bar.getBoundingClientRect().bottom - 8, behavior: reduce ? "auto" : "smooth" });
+    }
+  };
+  // Keyboard (WAI-ARIA tabs, automatic activation): the arrow keys follow the screen, so in Arabic / Hebrew (RTL) ArrowLeft goes to the
+  // next day and ArrowRight to the previous one; Home / End go to the first / last day; it wraps around. Focus moves with the selection
+  // (one tab stop for the whole row: roving tabIndex) without moving the page.
+  const onTabsKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    const count = plan.days.length;
+    if (count === 0) return;
+    const rtl = getComputedStyle(event.currentTarget).direction === "rtl";
+    let next: number | null = null;
+    if (event.key === "ArrowRight") next = activeDayIndex + (rtl ? -1 : 1);
+    else if (event.key === "ArrowLeft") next = activeDayIndex + (rtl ? 1 : -1);
+    else if (event.key === "Home") next = 0;
+    else if (event.key === "End") next = count - 1;
+    if (next === null) return;
+    event.preventDefault();
+    next = (next + count) % count;
+    selectDay(next);
+    tabsRowRef.current?.querySelector<HTMLElement>(`[data-day-tab="${next}"]`)?.focus({ preventScroll: true });
+  };
+  // The selected tab stays visible in the tab row (horizontal scroll only; the page itself does not move).
+  useEffect(() => {
+    const row = tabsRowRef.current;
+    const tab = row?.querySelector<HTMLElement>(`[data-day-tab="${activeDayIndex}"]`);
+    if (!row || !tab) return;
+    const r = row.getBoundingClientRect();
+    const t = tab.getBoundingClientRect();
+    if (t.left < r.left) row.scrollBy({ left: t.left - r.left - 12 });
+    else if (t.right > r.right) row.scrollBy({ left: t.right - r.right + 12 });
+  }, [activeDayIndex]);
   // Cities with per-day hours: opened from this day, a place's details carry THIS day's hours (its add candidates, then the plan's own
   // per-day records). Other cities have neither, so the map is the same as before.
   const activeDayKey = activeDay ? String(activeDay.dayNumber) : "";
@@ -300,19 +341,32 @@ export default function SmartPlannerV2Result({
 
       {saveAction}
 
-      <div className="mt-4 flex gap-2 overflow-x-auto">
-        {plan.days.map((day, index) => (
-          <button
-            key={day.dayNumber}
-            type="button"
-            onClick={() => setActiveDayIndex(index)}
-            className={`shrink-0 rounded-full px-4 py-2 text-sm font-bold transition-colors ${
-              index === activeDayIndex ? "bg-teal-700 text-white" : "border border-slate-200 bg-white text-slate-700 hover:border-slate-300"
-            }`}
-          >
-            {ui.dayTab(day.dayNumber)}
-          </button>
-        ))}
+      {/* Day tabs (2026-11-22 day screen): stay under the site header while the day scrolls; the selected day is filled and marked
+          (aria-selected), a hovered day only gets a light background; the selected tab is kept in view when days change. */}
+      <div ref={tabsBarRef} className="sticky top-16 z-30 -mx-1 mt-4 border-b border-slate-100 bg-white/95 px-1 py-2 backdrop-blur md:top-20">
+        <div ref={tabsRowRef} role="tablist" aria-label={ui.dayTabsLabel} onKeyDown={onTabsKeyDown} className="flex gap-2 overflow-x-auto p-1 [scrollbar-width:none]">
+          {plan.days.map((day, index) => {
+            const selected = index === activeDayIndex;
+            return (
+              <button
+                key={day.dayNumber}
+                type="button"
+                role="tab"
+                id={`day-tab-${day.dayNumber}`}
+                aria-selected={selected}
+                aria-controls="day-panel"
+                tabIndex={selected ? 0 : -1}
+                data-day-tab={index}
+                onClick={() => selectDay(index)}
+                className={`shrink-0 rounded-full border px-4 py-2 text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand ${
+                  selected ? "border-teal-700 bg-teal-700 text-white shadow-[0_2px_0_rgba(15,23,42,0.25)]" : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-100"
+                }`}
+              >
+                {ui.dayTab(day.dayNumber)}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {addUnavailable && (
@@ -326,7 +380,15 @@ export default function SmartPlannerV2Result({
         </p>
       )}
 
-      <div className="mt-4">
+      {/* The day's content is the tab panel of the selected day tab. */}
+      <div
+        ref={dayTopRef}
+        id="day-panel"
+        role="tabpanel"
+        aria-labelledby={activeDay ? `day-tab-${activeDay.dayNumber}` : undefined}
+        tabIndex={-1}
+        className="mt-4 scroll-mt-36 focus:outline-none md:scroll-mt-40"
+      >
         {activeDay && (
           <SmartPlannerV2Day
             day={activeDay}

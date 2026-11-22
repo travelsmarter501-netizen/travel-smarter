@@ -18,13 +18,21 @@ export default function SmartPlannerNearbyCard({
   typeLabel,
   reason,
   onClick,
+  photoUnavailableLabel,
 }: {
   summary: ResolvedPlaceSummary;
   typeLabel: string;
   reason?: string;
   onClick: () => void;
+  /** Read out when the photo fails to load (2026-11-22). Callers that omit it get the same neutral tile without a label. */
+  photoUnavailableLabel?: string;
 }) {
-  const [loaded, setLoaded] = useState(false);
+  // Per URL; a failed photo is never retried and never replaced by another place's photo (2026-11-22 review): a neutral tile instead.
+  const [loadedSrc, setLoadedSrc] = useState<string | null>(null);
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
+  const image = summary.image || undefined;
+  const loaded = !!image && loadedSrc === image;
+  const failed = !!image && failedSrc === image;
 
   return (
     <button
@@ -32,21 +40,29 @@ export default function SmartPlannerNearbyCard({
       onClick={onClick}
       className="flex w-36 shrink-0 flex-col gap-1.5 rounded-2xl border border-slate-200 bg-white p-2.5 text-start transition-colors hover:border-teal-300"
     >
-      {summary.image && (
+      {failed && (
+        <div role="img" aria-label={photoUnavailableLabel} aria-hidden={photoUnavailableLabel ? undefined : true} title={photoUnavailableLabel} className="flex h-20 w-full items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50 text-2xl">
+          <span aria-hidden="true">🖼️</span>
+        </div>
+      )}
+      {image && !failed && (
       <div className="relative h-20 w-full overflow-hidden rounded-xl bg-slate-100">
-        {summary.image ? (
+        {image ? (
           <>
             {!loaded && <div className="absolute inset-0 animate-pulse bg-slate-200" aria-hidden="true" />}
             <Image
-              src={summary.image}
+              src={image}
               alt={summary.name}
               width={144}
               height={80}
-              onLoad={() => setLoaded(true)}
-              // See SmartPlannerPlaceCard.tsx's identical comment: catches an image that was
-              // already complete (e.g. served from cache) before onLoad could ever fire.
+              onLoad={() => setLoadedSrc(image)}
+              onError={() => setFailedSrc(image)}
+              // See SmartPlannerPlaceCard.tsx's identical comment: catches an image that was already complete (e.g. served from cache)
+              // before onLoad / onError could fire; naturalWidth 0 = it failed.
               ref={(img) => {
-                if (img?.complete) setLoaded(true);
+                if (!img?.complete) return;
+                if (img.naturalWidth > 0) setLoadedSrc(image);
+                else setFailedSrc(image);
               }}
               style={summary.imagePosition ? { objectPosition: summary.imagePosition } : undefined}
               className={`h-full w-full object-cover transition-opacity duration-300 ${loaded ? "opacity-100" : "opacity-0"}`}

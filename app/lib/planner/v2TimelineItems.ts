@@ -62,8 +62,11 @@ export function buildUnifiedTimelineEntries(day: V2Day): UnifiedTimelineEntry[] 
 
   function pushMeal(meal: V2MealStop) {
     const w = mealWindow(day, meal);
-    number++;
-    entries.push({ kind: "meal", number, meal, timeRange: timeRangeFor(w?.startMinutes, w?.endMinutes), approximate: w?.approximate });
+    // An OPTIONAL meal (the optional dinner, an optional lunch break after the program) is a suggestion, not a stop of the day: it gets
+    // no number (0) and the day screen shows it apart, after the program's end (2026-11-22 day screen). Data and order are unchanged.
+    const unnumbered = !!meal.optional;
+    if (!unnumbered) number++;
+    entries.push({ kind: "meal", number: unnumbered ? 0 : number, meal, timeRange: timeRangeFor(w?.startMinutes, w?.endMinutes), approximate: w?.approximate });
   }
 
   function pushFreeTime(block: FreeTimeBlock) {
@@ -101,6 +104,19 @@ export function buildUnifiedTimelineEntries(day: V2Day): UnifiedTimelineEntry[] 
   // times and a normal transport connector between them -- the customer can read the gap
   // directly off the two times shown, exactly as this task's own examples describe.
   return entries.filter((entry) => entry.kind !== "freeTime");
+}
+
+/**
+ * The day's SCHEDULED program on the clock: from the first scheduled item to the end of the last one, visits and scheduled meals
+ * (a scheduled lunch break included). Optional suggestions (optional dinner, optional lunch after the program) are left out. null when
+ * the day has no timeline (an old saved plan) or nothing scheduled.
+ */
+export function programWindow(day: Pick<V2Day, "timeline">): { startMinutes: number; endMinutes: number } | null {
+  const timeline = day.timeline;
+  if (!timeline) return null;
+  const items = [...timeline.stops, ...timeline.meals.filter((meal) => !meal.optional)];
+  if (items.length === 0) return null;
+  return { startMinutes: Math.min(...items.map((i) => i.startMinutes)), endMinutes: Math.max(...items.map((i) => i.endMinutes)) };
 }
 
 /** Arabic count grammar for the day-summary meal line -- avoids the literal-but-awkward "X

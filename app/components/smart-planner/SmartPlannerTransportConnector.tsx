@@ -31,12 +31,18 @@ export default function SmartPlannerTransportConnector({
   to,
   railWidth,
   lang = "ar",
+  bare,
+  compact,
 }: {
   leg: PlannerRouteLeg;
   from: ResolvedPlaceSummary;
   to: ResolvedPlaceSummary;
   railWidth?: string;
   lang?: PlanLanguage;
+  /** Day screen (2026-11-22): no rail (used inside the optional suggestions, which are not on the program's line). */
+  bare?: boolean;
+  /** Day screen (2026-11-22): a shorter row (the button keeps a 36 px tap height). */
+  compact?: boolean;
 }) {
   const ui = PLAN_TEXT[lang];
   const [selectedMode, setSelectedMode] = useState<TransportMode | null>(leg.recommendedMode);
@@ -55,14 +61,16 @@ export default function SmartPlannerTransportConnector({
 
   return (
     <div className="flex items-stretch gap-2">
-      <div className={`flex ${railWidth ?? "w-8 sm:w-9"} flex-shrink-0 flex-col items-center`}>
-        <span className="w-px flex-1 border-r border-dashed border-slate-300" aria-hidden="true" />
-      </div>
+      {!bare && (
+        <div className={`flex ${railWidth ?? "w-8 sm:w-9"} flex-shrink-0 flex-col items-center`}>
+          <span className="w-px flex-1 border-r border-dashed border-slate-300" aria-hidden="true" />
+        </div>
+      )}
 
       <button
         type="button"
         onClick={() => setSheetOpen(true)}
-        className="flex min-h-11 flex-1 items-center gap-1 py-1.5 text-start text-xs text-slate-500 transition-colors hover:text-slate-700"
+        className={`flex flex-1 items-center gap-1 text-start text-xs text-slate-500 transition-colors hover:text-slate-700 ${compact ? "min-h-9 py-1" : "min-h-11 py-1.5"}`}
       >
         {selectedMode && option ? (
           <span className="flex items-center gap-1 font-semibold text-slate-500">

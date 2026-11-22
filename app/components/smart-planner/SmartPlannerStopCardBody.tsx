@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { IconArrowRight, IconClock } from "../icons";
-import { formatMinutes, PLAN_TEXT, type PlanLanguage } from "../../lib/i18n/planText";
+import { formatMinutes, nameDir, PLAN_TEXT, type PlanLanguage } from "../../lib/i18n/planText";
 import { TimesText } from "./planDisplay";
 import type { ResolvedPlaceSummary } from "../../lib/readyPlan";
 import type { PlannerOperationalWarning } from "../../lib/planner/barcelonaPlannerOperationalWarnings";
@@ -44,6 +44,8 @@ export default function SmartPlannerStopCardBody({
   foodMeta,
   outsideOnly,
   lang = "ar",
+  compact,
+  placeholderIcon,
 }: {
   summary: ResolvedPlaceSummary;
   areaName?: string;
@@ -57,31 +59,57 @@ export default function SmartPlannerStopCardBody({
   outsideOnly?: boolean;
   /** Display language (plan view). V1 and other callers omit it = Arabic. */
   lang?: PlanLanguage;
+  /**
+   * Day screen (2026-11-22): a tighter card (smaller photo and padding) and, when the place has no photo, a neutral placeholder with
+   * this icon instead of no picture at all, so the cards line up. Other callers omit both and render as before.
+   */
+  compact?: boolean;
+  placeholderIcon?: string;
 }) {
-  const [loaded, setLoaded] = useState(false);
+  // Photo state per URL (a new place in the same card starts again). A photo that FAILS (missing file, the image service refusing it)
+  // is never retried and never replaced by another place's photo: the card shows the neutral tile instead (2026-11-22 review).
+  const [loadedSrc, setLoadedSrc] = useState<string | null>(null);
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
+  const image = summary.image || undefined;
+  const loaded = !!image && loadedSrc === image;
+  const failed = !!image && failedSrc === image;
+  const ui = PLAN_TEXT[lang];
+  const pageRtl = lang !== "en";
+  // Two neutral tiles: no photo for this place (its type's icon), and a photo that could not load (🖼️ with a dashed border).
+  const tileClass = `flex flex-shrink-0 items-center justify-center rounded-xl text-2xl ${compact ? "h-14 w-14" : "h-16 w-16"} ${failed ? "border border-dashed border-slate-300 bg-slate-50" : "bg-teal-50"}`;
   return (
     <button
       type="button"
       onClick={onClick}
-      className="flex w-full flex-1 flex-col gap-2.5 rounded-2xl border border-slate-200 bg-white p-3 text-start shadow-sm transition-shadow hover:shadow-md active:scale-[0.99]"
+      className={`flex w-full flex-1 flex-col rounded-2xl border border-slate-200 bg-white text-start shadow-sm transition-shadow hover:shadow-md active:scale-[0.99] ${compact ? "gap-2 p-2" : "gap-2.5 p-3"}`}
     >
-      <div className="flex items-center gap-3">
-        {summary.image && (
-        <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-xl bg-slate-100">
-          {summary.image ? (
+      <div className={`flex items-center ${compact ? "gap-2.5" : "gap-3"}`}>
+        {(!image || failed) && (placeholderIcon || failed) && (
+          // No photo, or the photo failed to load: a neutral tile with the place type's icon (never a photo of somewhere else).
+          <div role="img" aria-label={failed ? ui.photoUnavailable : ui.noPhoto} title={failed ? ui.photoUnavailable : undefined} className={tileClass}>
+            <span aria-hidden="true">{failed ? "🖼️" : placeholderIcon}</span>
+          </div>
+        )}
+        {image && !failed && (
+        <div className={`relative flex-shrink-0 overflow-hidden rounded-xl bg-slate-100 ${compact ? "h-14 w-14" : "h-16 w-16"}`}>
+          {image ? (
             <>
               {!loaded && <div className="absolute inset-0 animate-pulse bg-slate-200" aria-hidden="true" />}
               <Image
-                src={summary.image}
+                src={image}
                 alt={summary.name}
                 width={64}
                 height={64}
                 priority={priority}
-                onLoad={() => setLoaded(true)}
+                onLoad={() => setLoadedSrc(image)}
+                onError={() => setFailedSrc(image)}
                 // See this file's own history (SmartPlannerPlaceCard.tsx before extraction) for
-                // why this exact width/height + callback-ref combination is required.
+                // why this exact width/height + callback-ref combination is required. An image that finished BEFORE hydration fired its
+                // load / error event unseen: naturalWidth tells which (0 = failed).
                 ref={(img) => {
-                  if (img?.complete) setLoaded(true);
+                  if (!img?.complete) return;
+                  if (img.naturalWidth > 0) setLoadedSrc(image);
+                  else setFailedSrc(image);
                 }}
                 style={summary.imagePosition ? { objectPosition: summary.imagePosition } : undefined}
                 className={`h-full w-full object-cover transition-opacity duration-300 ${loaded ? "opacity-100" : "opacity-0"}`}
@@ -94,7 +122,9 @@ export default function SmartPlannerStopCardBody({
         )}
 
         <div className="min-w-0 flex-1">
-          <p dir="auto" className="line-clamp-2 text-sm font-bold leading-snug text-slate-900">
+          {/* The name in its OWN direction (a long Latin name in an Arabic page is clamped at its own end, not cut at its start), aligned
+              with the page so every card lines up. */}
+          <p dir={nameDir(summary.name, lang)} style={{ textAlign: pageRtl ? "right" : "left" }} className="line-clamp-2 text-sm font-bold leading-snug text-slate-900">
             {summary.name}
           </p>
           {areaName && (
