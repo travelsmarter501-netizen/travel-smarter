@@ -20,6 +20,9 @@ import type { PlannerRouteLeg } from "./plannerTransportTypes";
  * that leaves a day because a place cannot fit its hours is the place that does not fit, and its reason is kept
  * (`optionalReasons`: "closing"); a stop that leaves because the day runs too long keeps the reason "full".
  */
+/** The owner's minimum (2026-11-22): 4 visits a day, 3 when the day holds a visit of 2 hours or more; added places within 25 minutes of the day's stops. */
+export const OWNER_MIN_VISITS = { count: 4, longCount: 3, longVisitMinutes: 120, maxAddMinutes: 25, thinDayMaxAddMinutes: 45, maxStops: 6 } as const;
+
 export type DayFit = { ok: true } | { ok: false; reason: "closing" | "late"; placeId?: string };
 export type DayBalanceOptions = {
   compatibility: ClusterCompatibilityMap;
@@ -54,6 +57,11 @@ export type DayBalanceOptions = {
    * nearest candidate as a SUGGESTION of the day it is closest to, when it is within `maxMinutes` of one of that day's stops (see step 8).
    */
   unmetGoalSuggestions?: { maxMinutes: number };
+  /**
+   * Optional (owner, 2026-11-22): every day has at least `count` visits, `longCount` when it holds a visit of `longVisitMinutes` or
+   * more; added places lie within `maxAddMinutes` of a stop of the day; a day never goes above `maxStops` (see step 6f).
+   */
+  minVisits?: { count: number; longCount: number; longVisitMinutes: number; maxAddMinutes: number; /** A day of 1-2 visits may reach this far (a second area one ride away) and take a lesser-known place (priority 4+). */ thinDayMaxAddMinutes?: number; maxStops: number; /** Without tryInDay: the day's visits + travel (+ meals) may not exceed this. */ maxDayMinutes?: number };
   /** Optional: ideas for a light day's free time (see step 7), with the lowest interest match they need. */
   freeTimeIdeas?: { minRelevance: number; /** Also a free, short place (walkByStop.isFreeShort) matching at least `nearFree.minRelevance` within `nearFree.maxMinutes` of a stop of the day, whatever its area. */ nearFree?: { minRelevance: number; maxMinutes: number } };
 };
@@ -432,6 +440,80 @@ export function balanceCityDays(context: DayGeographyRepairContext, options: Day
         changed = true;
         break;
       }
+    }
+  }
+
+  // 6f. Minimum visits per day (owner, 2026-11-22; cities that give `minVisits`): a day has at least `count` visits, or `longCount`
+  //     when it holds a long visit (a full visit of `longVisitMinutes` or more, e.g. the zoo, a museum of two hours, a guided cave).
+  //     A day that is short first takes unused places near its stops (within `maxAddMinutes` of one of them, so the day keeps its
+  //     area), open that day and fitting the day's real schedule (tryInDay), best match first: a place matching the request, then
+  //     one matching it a little (relevance 2+), then a well-known place (priority 6+); none gated behind an interest. When nothing
+  //     can be added, it takes a stop from another day that stays at or above its own minimum, when that stop is as near and fits.
+  //     The day is never taken above `maxStops`. What cannot be reached is left as it is (never an unrelated far place, never a
+  //     day that does not fit its hours).
+  const mv = options.minVisits;
+  if (mv) {
+    const isLong = (d: WorkDay) => d.ids.some((id) => !d.outside.has(id) && visit(id, d.outside) >= mv.longVisitMinutes);
+    const target = (d: WorkDay) => (isLong(d) ? mv.longCount : mv.count);
+    // The real schedule when the city gives one; otherwise the minimum's own day budget (never the heavyMinutes of the other steps).
+    const fitsDay = (ids: readonly string[], d: WorkDay) => (options.tryInDay ? fits(ids, d.outside, d.dayNumber) : heavyLoad(ids, d.outside) <= (mv.maxDayMinutes ?? options.heavyMinutes));
+    const nearest = (ids: readonly string[], id: string) => Math.min(...ids.map((x) => options.travelMinutes(x, id) ?? 999));
+    const added = (ids: readonly string[], id: string) => travel(insertCheapest(ids, id)) - travel(ids);
+    const thin = (d: WorkDay) => d.ids.length <= 2;
+    const reachOf = (d: WorkDay) => (thin(d) && mv.thinDayMaxAddMinutes ? mv.thinDayMaxAddMinutes : mv.maxAddMinutes);
+    const tierOf = (id: string): number | null => {
+      if (!relevance || !relevant) return priority(id) >= options.minPriorityToAdd ? 0 : priority(id) >= 6 ? 2 : null;
+      if (relevant(id)) return 0;
+      if (relevance(id) >= 2) return 1;
+      return priority(id) >= 6 ? 2 : null;
+    };
+    for (let guard = 0; guard < days.length * mv.count; guard++) {
+      const short = [...days].filter((d) => d.ids.length > 0 && d.ids.length < target(d) && d.ids.length < mv.maxStops).sort((a, b) => a.ids.length - b.ids.length || a.dayNumber - b.dayNumber);
+      let progressed = false;
+      for (const day of short) {
+        const used = new Set(days.flatMap((d) => [...d.ids, ...d.optional]));
+        // Its own optional places first (they belong to this day), then unused places of the city.
+        const pool = [...day.optional, ...config.plannerMetadata.map((m) => m.placeId).filter((id) => !used.has(id))];
+        const candidates = pool
+          .filter((id) => !options.gatedPlaceIds.has(id) && eligible(id, day.dayNumber) && nearest(day.ids, id) <= reachOf(day))
+          .map((id) => ({ id, tier: tierOf(id) ?? (thin(day) && priority(id) >= 4 ? 3 : null) }))
+          .filter((c): c is { id: string; tier: number } => c.tier !== null)
+          .sort((a, b) => a.tier - b.tier || added(day.ids, a.id) - added(day.ids, b.id) || priority(b.id) - priority(a.id) || a.id.localeCompare(b.id));
+        const pick = candidates.find((c) => fitsDay(insertCheapest(day.ids, c.id), day));
+        if (pick) {
+          day.ids = insertCheapest(day.ids, pick.id);
+          day.scores.set(pick.id, day.scores.get(pick.id) ?? 0);
+          if (day.optional.includes(pick.id)) {
+            day.optional = day.optional.filter((x) => x !== pick.id);
+            if (day.reasons) delete day.reasons[pick.id];
+          }
+          changed = progressed = true;
+          break;
+        }
+        // Nothing new fits: a stop of another day that keeps its own minimum.
+        let move: { from: WorkDay; id: string; cost: number } | null = null;
+        for (const from of days) {
+          if (from === day || from.ids.length <= 1) continue;
+          for (const id of from.ids) {
+            if (options.protectedPlaceIds.has(id) || from.outside.has(id) || !eligible(id, day.dayNumber) || nearest(day.ids, id) > reachOf(day)) continue;
+            const rest: WorkDay = { ...from, ids: from.ids.filter((x) => x !== id) };
+            if (rest.ids.length < target(rest)) continue;
+            const next = insertCheapest(day.ids, id);
+            if (!fitsDay(next, day)) continue;
+            const cost = added(day.ids, id);
+            if (!move || cost < move.cost) move = { from, id, cost };
+          }
+        }
+        if (move) {
+          const m = move;
+          day.ids = insertCheapest(day.ids, m.id);
+          day.scores.set(m.id, m.from.scores.get(m.id) ?? 0);
+          m.from.ids = m.from.ids.filter((x) => x !== m.id);
+          changed = progressed = true;
+          break;
+        }
+      }
+      if (!progressed) break;
     }
   }
 

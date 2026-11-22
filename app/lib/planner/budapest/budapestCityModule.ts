@@ -6,7 +6,7 @@ import { BUDAPEST_ROUTED_WALKS } from "./budapestRoutedWalks";
 import { checkedTransit, checkedTransitNoteAr, UNCHECKED_TRANSIT_FACTOR } from "./budapestCheckedTransit";
 import type { PlannerRouteLeg, TransportOption } from "../plannerTransportTypes";
 import { repairCityDayGeography } from "../cityGeographyRepair";
-import { balanceCityDays, type DayFit } from "../cityDayBalance";
+import { balanceCityDays, OWNER_MIN_VISITS, type DayFit } from "../cityDayBalance";
 import { buildBarcelonaDayTimeline, lunchPlacementFromTimeline, LUNCH_BREAK_ID, type TimelineMealInput, type TimelineStopInput } from "../barcelonaV2Timeline";
 import { checkWindow, scheduleProblems } from "../plannerTimingGuard";
 import { DAY_REFERENCE_START, DAYLIGHT_PLACES, finalDayQuality, SUNSET_ESTIMATE_BY_MONTH, type FinalDayQuality } from "./budapestDayQuality";
@@ -1013,6 +1013,10 @@ function reviewDayMoves(input: Reviewed, context: DayGeographyRepairContext, bui
       const newFrom = [...fromRest, ...(partner ? [partner] : [])];
       const newTo = [...to.stops.filter((s) => s !== partner), moving];
       if (newFrom.length < 2 || newTo.length < 2) continue;
+      // Never below the owner's minimum of visits (OWNER_MIN_VISITS; 2026-11-22): a day that the balance step filled stays filled.
+      const minOf = (stops: readonly { placeId: string; visitMode?: "outside" }[]) =>
+        stops.some((s) => s.visitMode !== "outside" && (getBudapestPlannerMetadataById(s.placeId)?.visitDurationMinutes ?? 0) >= OWNER_MIN_VISITS.longVisitMinutes) ? OWNER_MIN_VISITS.longCount : OWNER_MIN_VISITS.count;
+      if ((newFrom.length < minOf(newFrom) && newFrom.length < from.stops.length) || (newTo.length < minOf(newTo) && newTo.length < to.stops.length)) continue;
       const fromDay = { ...from, stops: newFrom };
       const toDay = { ...to, stops: newTo };
       const orderFrom = clockOrderProposals(fromDay, context, onClock, newFrom.map((s) => s.placeId), -Infinity, 1)[0];
@@ -1256,6 +1260,7 @@ export function budapestRepairDayGeography(context: DayGeographyRepairContext, o
       tryInDay: budapestTryInDay(context, options.lunchAfterLastStop),
       unmetGoalSuggestions: { maxMinutes: NEARBY_SHOPPING_MAX_MINUTES },
       lightMinutes: 170,
+      minVisits: OWNER_MIN_VISITS,
       minPriorityToAdd: 5,
       keepInsideRelevance: 9,
       regroup: { splitPenalty: 45, lightWeight: 6, emptyPenalty: 300, comfortStops: 5, crowdPenalty: 25, maxStops: 6, hopPenalty: 60, restoreBonus: 20 },

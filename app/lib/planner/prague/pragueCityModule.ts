@@ -78,7 +78,7 @@ function pragueLegBase(fromPlaceId: string, toPlaceId: string): PlannerRouteLeg 
   return { fromPlaceId, toPlaceId, recommendedMode: "transit", options, sourceStatus: "estimated", routeUrl };
 }
 import { repairCityDayGeography } from "../cityGeographyRepair";
-import { balanceCityDays, type DayFit } from "../cityDayBalance";
+import { balanceCityDays, OWNER_MIN_VISITS, type DayFit } from "../cityDayBalance";
 import { buildBarcelonaDayTimeline, lunchPlacementFromTimeline, LUNCH_BREAK_ID, type TimelineMealInput, type TimelineStopInput } from "../barcelonaV2Timeline";
 import { checkWindow } from "../plannerTimingGuard";
 import type { DayGeographyRepairContext } from "../cityPlannerModule";
@@ -658,6 +658,7 @@ export const PRAGUE_CITY_MODULE: CityPlannerModule = {
         tryInDay: pragueTryInDay(context),
         unmetGoalSuggestions: { maxMinutes: NEARBY_SHOPPING_MAX_MINUTES },
         lightMinutes: 170,
+        minVisits: OWNER_MIN_VISITS,
         minPriorityToAdd: 5,
         keepInsideRelevance: 9,
         regroup: { splitPenalty: 45, lightWeight: 6, emptyPenalty: 300, comfortStops: 5, crowdPenalty: 25, maxStops: 6, hopPenalty: 60, restoreBonus: 20 },

@@ -11,6 +11,7 @@ import { useFavorites } from "../../lib/useFavorites";
 import type { ResolvedPlace } from "../../lib/readyPlan";
 import type { Weekday } from "../../lib/hours";
 import { PLACE_CARD_TEXT, type PlanLanguage } from "../../lib/i18n/planText";
+import { TimesText } from "../smart-planner/planDisplay";
 
 /**
  * Opens the SAME place-card component already used throughout the Barcelona Guide
@@ -34,6 +35,7 @@ export default function PlaceDetailsSheet({
   onClose,
   plannedWeekday,
   lang = "ar",
+  notes,
 }: {
   guideSlug: string;
   resolved: ResolvedPlace | undefined;
@@ -42,11 +44,22 @@ export default function PlaceDetailsSheet({
   plannedWeekday?: Weekday;
   /** Display language (plan view). Omitted by the guide = Arabic. */
   lang?: PlanLanguage;
+  /** The plan's notes for this place on that day (hours, closures, timing), shown first. The day view no longer prints them on the card (2026-11-22). */
+  notes?: readonly string[];
 }) {
   const { isFavorite, toggleFavorite } = useFavorites(guideSlug);
 
   return (
     <BottomSheet open={open && !!resolved} onClose={onClose} title={resolved?.place.name} closeLabel={PLACE_CARD_TEXT[lang].close}>
+      {notes && notes.length > 0 && (
+        <div className="mb-3 flex flex-col gap-1.5">
+          {notes.map((note, index) => (
+            <p key={index} dir="auto" className="rounded-xl bg-amber-50 px-3 py-2 text-xs font-semibold leading-5 text-amber-800">
+              <TimesText text={note} />
+            </p>
+          ))}
+        </div>
+      )}
       {resolved?.type === "attraction" && (
         <AttractionCard
           attraction={resolved.place}

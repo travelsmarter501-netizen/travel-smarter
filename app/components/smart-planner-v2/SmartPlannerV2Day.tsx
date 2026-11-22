@@ -1,16 +1,16 @@
 "use client";
 
 import { Fragment, useRef, useState } from "react";
-import SmartPlannerStopCardBody from "../smart-planner/SmartPlannerStopCardBody";
 import SmartPlannerTransportConnector from "../smart-planner/SmartPlannerTransportConnector";
 import SmartPlannerNearbyCard from "../smart-planner/SmartPlannerNearbyCard";
 import PlaceDetailsSheet from "../guide/PlaceDetailsSheet";
 import BottomSheet from "../guide/BottomSheet";
-import { buildUnifiedTimelineEntries, programWindow, type UnifiedTimelineEntry } from "../../lib/planner/v2TimelineItems";
-import { PLAN_TEXT, formatDayHeader, formatDistance, formatMinutes, formatPlaceCount, storedTextDir, type PlanLanguage } from "../../lib/i18n/planText";
+import { buildUnifiedTimelineEntries, type UnifiedTimelineEntry } from "../../lib/planner/v2TimelineItems";
+import { PLAN_TEXT, formatDayHeader, formatMinutes, formatMinutesShort, storedTextDir, type PlanLanguage } from "../../lib/i18n/planText";
+import { DAY_RAIL_WIDTH, DayRail, DayStopCard, type DayChip } from "./DayStop";
 import type { PlanChange } from "../../lib/planner/planCustomizations";
 import { formatTimelineClock } from "../../lib/planner/barcelonaV2Timeline";
-import { dayDistanceKm, stripFreeTimePrefix } from "../../lib/planner/planDistance";
+import { stripFreeTimePrefix } from "../../lib/planner/planDistance";
 import { nearestValidStart } from "../../lib/planner/startChoices";
 import type { ResolvedPlace, ResolvedPlaceSummary } from "../../lib/readyPlan";
 import type { V2Day } from "../../lib/planner/barcelonaV2Resolve";
@@ -38,11 +38,6 @@ import type { PlannerOptionalSuggestion } from "../../lib/planner/plannerPresent
  * second details UI.
  */
 
-// Restore Previous Place Card Layout, Keep Side Timeline Time: kept as narrow as the time label
-// can fit (two stacked lines, e.g. "08:00" / "08:45") so the card next to it keeps as much width
-// as possible on a 375px screen -- was "w-16 sm:w-20" (a single-line "08:00–08:45" label), which
-// squeezed the card enough to truncate long place names.
-const RAIL_WIDTH = "w-11 sm:w-12";
 
 // Labels for the optional-suggestion types and meal types come from PLAN_TEXT[lang] (lib/i18n/planText.ts).
 const MEAL_TYPE_ICON: Record<V2MealStop["mealType"], string> = {
@@ -56,27 +51,6 @@ type SuggestionType = PlannerOptionalSuggestion["type"];
 /** Day start choices: 06:00-20:00, every 30 minutes (the server accepts any 15 minutes in that range). */
 const START_TIMES = Array.from({ length: 29 }, (_, i) => 6 * 60 + i * 30);
 type FoodMeal = V2FoodSuggestion["mealType"];
-
-/** A numbered stop's own rail segment: time label + numbered dot + connecting line stub. The
- * line is a `flex-1` element so it stretches to fill this row's full height, matching the
- * card's height beside it -- same proven pattern as the transport connector's own rail. */
-function TimelineRail({ number, timeRange }: { number: number; timeRange?: string }) {
-  // Stacked start/end (rather than one "08:00–08:45" line) so the column stays narrow -- both
-  // halves of a timeRange are always 5 characters ("HH:MM"), easily fitting RAIL_WIDTH two-line.
-  const [startLabel, endLabel] = timeRange ? timeRange.split("–") : [undefined, undefined];
-  return (
-    <div className={`flex ${RAIL_WIDTH} flex-shrink-0 flex-col items-center`}>
-      {timeRange && (
-        <div dir="ltr" className="flex flex-col items-center text-center text-[10px] font-bold leading-tight text-slate-500">
-          <span>{startLabel}</span>
-          <span>{endLabel}</span>
-        </div>
-      )}
-      <span className="mt-1 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-teal-700 text-xs font-bold text-white">{number}</span>
-      <span className="mt-1 w-px flex-1 border-r border-dashed border-slate-300" aria-hidden="true" />
-    </div>
-  );
-}
 
 export default function SmartPlannerV2Day({
   day,
@@ -185,21 +159,30 @@ export default function SmartPlannerV2Day({
   const isOptionalMeal = (entry: UnifiedTimelineEntry): entry is Extract<UnifiedTimelineEntry, { kind: "meal" }> => entry.kind === "meal" && !!entry.meal.optional;
   const entries: UnifiedTimelineEntry[] = allEntries.filter((entry) => !(entry.kind === "meal" && entry.meal.optional));
   const optionalMeals = allEntries.filter(isOptionalMeal);
-  const program = programWindow(day);
   const hasOptional = optionalMeals.length > 0 || day.foodSuggestions.length > 0 || day.shoppingSuggestions.length > 0 || day.nightlifeSuggestions.length > 0 || day.optionalNearby.length > 0;
-  const distanceKm = dayDistanceKm(day);
   const idOf = (entry: UnifiedTimelineEntry): string | null => (entry.kind === "place" ? entry.place.id : entry.kind === "meal" ? entry.meal.id : null);
+
+  // Rhyme-style cards (owner, 2026-11-22): short chips instead of lines of text; the plan's notes on a place open with its details.
+  const placeChips = (place: { visitDurationMinutes: number; visitMode?: "outside" }): DayChip[] => [
+    { icon: "⏱", label: formatMinutesShort(lang, place.visitDurationMinutes), tone: "time" },
+    ...(place.visitMode === "outside" ? [{ label: ui.outsideOnly, tone: "warn" as const }] : []),
+  ];
+  const mealChips = (meal: V2MealStop): DayChip[] => [
+    { icon: MEAL_TYPE_ICON[meal.mealType], label: ui.mealType[meal.mealType], tone: "food" },
+    ...(meal.optional ? [{ label: ui.optionalTag, tone: "muted" as const }] : []),
+  ];
+  const activeNotes = activePlaceId ? (day.stops.find((s) => s.id === activePlaceId)?.warnings ?? []).map((w) => w.textAr) : [];
 
   return (
     <div>
-      {/* Short, Rhyme-style header: day, date, title; no sentences. */}
+      {/* Short header: day, date, title; no sentences. */}
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h2 className="text-lg font-bold text-slate-900">
             {ui.dayTab(day.dayNumber)}
             {day.actualDate && day.weekday && <span className="text-sm font-semibold text-slate-500"> · {formatDayHeader(lang, day.actualDate, day.weekday)}</span>}
           </h2>
-          <p dir={storedTextDir(day.title, lang)} className="mt-0.5 text-sm font-semibold text-slate-700">{day.title}</p>
+          <p dir={storedTextDir(day.title, lang)} className="mt-0.5 truncate text-sm font-semibold text-slate-600">{day.title}</p>
         </div>
         {/* Editing (saved plans): the existing edit mode, behind a visible button instead of a "⋯" menu (2026-11-22 day screen). */}
         {editing && (
@@ -222,36 +205,34 @@ export default function SmartPlannerV2Day({
           </div>
         )}
       </div>
-      {day.highlight && <span dir={storedTextDir(day.highlight, lang)} className="mt-2 inline-block rounded-full bg-teal-50 px-2.5 py-1 text-[11px] font-semibold text-teal-700">{day.highlight}</span>}
       {busy && <p className="mt-2 text-xs font-semibold text-slate-400">{ui.saving}</p>}
+      {editing && editMode && day.stops.length > 1 && <p className="mt-2 text-xs text-slate-500">{ui.dragHint}</p>}
 
-      {/* Day summary: the scheduled program's hours (optional suggestions left out), places and the day's distance. The distance is shown
-          only when every leg of the program's route has one (dayDistanceKm): never a partial sum. Editing: the start can be changed. */}
+      {/* "Day starts" row (Rhyme-style): the start time in a pill; on a saved plan it opens the start choices. */}
       {day.timeline && day.stops.length > 0 && (
-        <div className="mt-3 flex flex-wrap items-center gap-1.5 text-xs font-semibold text-slate-600">
-          {editing && (
-            <button type="button" onClick={() => setStartSheetOpen(true)} className="flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-slate-700 hover:border-slate-300 disabled:opacity-50">
-              ⏰ {ui.dayStart} <bdi dir="ltr" className="font-bold text-slate-900">{formatTimelineClock(day.timeline.dayStartMinutes)}</bdi> <span aria-hidden="true">▾</span>
-            </button>
-          )}
-          {program && (
-            <span className="rounded-full bg-slate-100 px-2.5 py-1">
-              {ui.programLabel}{" "}
-              <bdi dir="ltr" className="font-bold text-slate-900">
-                {formatTimelineClock(program.startMinutes)} – {formatTimelineClock(program.endMinutes)}
-              </bdi>
-            </span>
-          )}
-          <span className="rounded-full bg-slate-100 px-2.5 py-1">
-            📍 {formatPlaceCount(lang, day.stops.length)}
-            {distanceKm !== null && <> · <bdi dir="ltr">{distanceKm.estimated ? "≈ " : ""}{formatDistance(lang, distanceKm.km)}</bdi></>}
-          </span>
+        <div className="mt-3 flex items-center gap-2">
+          <div className={`flex ${DAY_RAIL_WIDTH} shrink-0 items-center justify-center`} aria-hidden="true">
+            <span className="h-px w-5 bg-slate-300" />
+          </div>
+          <div className="flex flex-1 items-center justify-between gap-2">
+            <span className="text-[15px] font-semibold text-slate-500">{ui.chooseStart}</span>
+            {editing ? (
+              <button type="button" onClick={() => setStartSheetOpen(true)} className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-slate-100 px-3 text-sm font-bold text-slate-900 hover:bg-slate-200">
+                <span aria-hidden="true">☀️</span>
+                <bdi dir="ltr">{formatTimelineClock(day.timeline.dayStartMinutes)}</bdi>
+                <span aria-hidden="true" className="text-slate-400">▾</span>
+              </button>
+            ) : (
+              <span className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-slate-100 px-3 text-sm font-bold text-slate-900">
+                <span aria-hidden="true">☀️</span>
+                <bdi dir="ltr">{formatTimelineClock(day.timeline.dayStartMinutes)}</bdi>
+              </span>
+            )}
+          </div>
         </div>
       )}
 
-      {editing && editMode && day.stops.length > 1 && <p className="mt-3 text-xs text-slate-500">{ui.dragHint}</p>}
-
-      <div className="mt-4" data-day-stops>
+      <div className="mt-1" data-day-stops>
         {entries.map((entry, i) => {
           const next = entries[i + 1];
           const needsConnector = !!next && entry.kind !== "freeTime" && next.kind !== "freeTime" && !(next.kind === "meal" && next.meal.flexible);
@@ -283,7 +264,7 @@ export default function SmartPlannerV2Day({
               <div className="flex items-stretch gap-2">
                 {entry.kind === "freeTime" ? (
                   <>
-                    <div className={`flex ${RAIL_WIDTH} flex-shrink-0 flex-col items-center`}>
+                    <div className={`flex ${DAY_RAIL_WIDTH} flex-shrink-0 flex-col items-center`}>
                       <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center text-base" aria-hidden="true">
                         🕒
                       </span>
@@ -299,9 +280,9 @@ export default function SmartPlannerV2Day({
                   </>
                 ) : (
                   <>
-                    <TimelineRail number={entry.number} timeRange={entry.timeRange} />
+                    <DayRail time={entry.timeRange?.split("–")[0]} />
                     <div
-                      className={`mb-1 min-w-0 flex-1 ${entry.kind === "place" && editing && editMode ? "relative touch-pan-y select-none [-webkit-touch-callout:none] [&_img]:pointer-events-none" : ""} ${entry.kind === "place" && dropLine(entry.stopIndex) === "above" ? "border-t-4 border-teal-500 pt-1" : ""} ${entry.kind === "place" && dropLine(entry.stopIndex) === "below" ? "border-b-4 border-teal-500 pb-1" : ""}`}
+                      className={`min-w-0 flex-1 py-1 ${entry.kind === "place" && editing && editMode ? "relative touch-pan-y select-none [-webkit-touch-callout:none] [&_img]:pointer-events-none" : ""} ${entry.kind === "place" && dropLine(entry.stopIndex) === "above" ? "border-t-4 border-teal-500 pt-1" : ""} ${entry.kind === "place" && dropLine(entry.stopIndex) === "below" ? "border-b-4 border-teal-500 pb-1" : ""}`}
                       {...(entry.kind === "place" && editing && editMode
                         ? {
                             "data-stop-index": entry.stopIndex,
@@ -312,11 +293,10 @@ export default function SmartPlannerV2Day({
                         : {})}
                     >
                       {entry.kind === "place" ? (
-                        <SmartPlannerStopCardBody
+                        <DayStopCard
                           summary={entry.place}
-                          visitDurationMinutes={entry.place.visitDurationMinutes}
-                          outsideOnly={entry.place.visitMode === "outside"}
-                          warnings={entry.place.warnings}
+                          number={entry.number}
+                          chips={placeChips(entry.place)}
                           onClick={() => {
                             if (suppressClick.current) {
                               suppressClick.current = false;
@@ -326,34 +306,17 @@ export default function SmartPlannerV2Day({
                           }}
                           priority={entry.number <= 2}
                           lang={lang}
-                          compact
                           placeholderIcon="📍"
                         />
-                      ) : entry.meal.flexible ? (
-                        // A lunch break with no set restaurant: nothing to open, just the time and the note.
-                        <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-3 py-2.5">
-                          <p dir={storedTextDir(entry.meal.name, lang)} className="text-sm font-bold text-slate-800">
-                            {MEAL_TYPE_ICON.lunch} {entry.meal.name}
-                          </p>
-                          <p dir={storedTextDir(entry.meal.reason, lang)} className="mt-1 text-xs leading-5 text-slate-500">
-                            {entry.meal.reason}
-                          </p>
-                        </div>
                       ) : (
-                        <SmartPlannerStopCardBody
+                        // A lunch break has no place: a card with the meal chip and nothing to open.
+                        <DayStopCard
                           summary={entry.meal}
-                          onClick={() => setActivePlaceId(entry.meal.id)}
+                          number={entry.number}
+                          chips={mealChips(entry.meal)}
+                          onClick={entry.meal.flexible ? undefined : () => setActivePlaceId(entry.meal.id)}
                           lang={lang}
-                          compact
                           placeholderIcon={MEAL_TYPE_ICON[entry.meal.mealType]}
-                          foodMeta={{
-                            mealTypeIcon: MEAL_TYPE_ICON[entry.meal.mealType],
-                            mealTypeLabel: entry.meal.optional ? `${ui.mealType[entry.meal.mealType]} · ${ui.optionalTag}` : ui.mealType[entry.meal.mealType],
-                            // Not repeated when the category says the same as the meal (e.g. "فطور" twice).
-                            cuisineLabel: entry.meal.categoryLabel === ui.mealType[entry.meal.mealType] ? "" : `${entry.meal.categoryIcon} ${entry.meal.categoryLabel}`,
-                            priceLevel: entry.meal.priceLevel,
-                            rating: entry.meal.rating,
-                          }}
                         />
                       )}
                       {editing && editMode && entry.kind === "place" && (
@@ -378,28 +341,11 @@ export default function SmartPlannerV2Day({
                   </>
                 )}
               </div>
-              {needsConnector && leg && fromSummary && toSummary && <SmartPlannerTransportConnector leg={leg} from={fromSummary} to={toSummary} railWidth={RAIL_WIDTH} lang={lang} compact />}
+              {needsConnector && leg && fromSummary && toSummary && <SmartPlannerTransportConnector leg={leg} from={fromSummary} to={toSummary} railWidth={DAY_RAIL_WIDTH} lang={lang} variant="pill" />}
             </Fragment>
           );
         })}
       </div>
-
-      {/* End of the scheduled program: the end of the last visit or scheduled meal (programWindow); optional suggestions are not in it. */}
-      {program && (
-        <div data-program-end className="flex items-center gap-2">
-          <div className={`flex ${RAIL_WIDTH} flex-shrink-0 justify-center`}>
-            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-900 text-xs" aria-hidden="true">
-              🏁
-            </span>
-          </div>
-          <p className="flex flex-1 flex-wrap items-baseline gap-x-2.5 rounded-xl bg-slate-900 px-3 py-2 text-sm font-bold text-white">
-            <span>
-              {ui.programEnd} <bdi dir="ltr">{formatTimelineClock(program.endMinutes)}</bdi>
-            </span>
-            <span className="text-xs font-medium text-slate-300">{ui.programEndNote}</span>
-          </p>
-        </div>
-      )}
 
       {editing && editMode && (
         <div className="mt-4">
@@ -424,9 +370,8 @@ export default function SmartPlannerV2Day({
       {/* Optional suggestions, apart from the program: no number, no place on the program's line, and their time reads "suggested from"
           (a scheduled item carries its time on the line). */}
       {hasOptional && (
-        <section data-optional-section aria-label={ui.optionalHeading} className="mt-5 rounded-2xl border-[1.5px] border-dashed border-slate-300 bg-slate-50/70 p-3">
-          <h3 className="text-sm font-bold text-slate-800">{ui.optionalHeading}</h3>
-          <p className="mt-0.5 text-[11px] text-slate-500">{ui.optionalHeadingNote}</p>
+        <section data-optional-section aria-label={ui.optionalHeading} className="mt-6">
+          <h3 className="text-sm font-bold text-slate-500">{ui.optionalHeading}</h3>
           {optionalMeals.map((entry) => {
             const window = day.timeline?.meals.find((m) => m.placeId === entry.meal.id && m.afterStopIndex === entry.meal.afterStopIndex);
             // The walk to it: the meal leg from the item before it in the day (a lunch break has no point: from the place before it).
@@ -436,42 +381,25 @@ export default function SmartPlannerV2Day({
             const beforeId = before ? idOf(before) : null;
             const leg = !entry.meal.flexible && beforeId ? day.mealLegs?.[`${beforeId}::${entry.meal.id}`] : undefined;
             const fromSummary = beforePlace?.kind === "place" ? beforePlace.place : beforePlace?.kind === "meal" ? beforePlace.meal : null;
-            const label = `${MEAL_TYPE_ICON[entry.meal.mealType]} ${ui.mealType[entry.meal.mealType]} · ${ui.optionalTag}`;
+            // Same row as the program, lighter: a dashed time pill (a suggested time, not a scheduled one) and the "optional" chip.
             return (
-              <div key={`opt-${entry.meal.id}-${entry.meal.afterStopIndex}`} className="mt-3">
-                {window && (
-                  <p className="mb-1 inline-flex items-center gap-1 rounded-full border border-dashed border-slate-300 bg-white px-2 py-0.5 text-[11px] font-semibold text-slate-600">
-                    🕒 <span>{ui.suggestedFrom(formatTimelineClock(window.startMinutes))}</span>
-                  </p>
-                )}
-                {entry.meal.flexible ? (
-                  <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-3 py-2.5">
-                    <p className="text-sm font-bold text-slate-800">
-                      <bdi>{entry.meal.name}</bdi>
-                      <span className="ms-1.5 rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-bold text-slate-600">{label}</span>
-                    </p>
-                    <p dir={storedTextDir(entry.meal.reason, lang)} className="mt-1 text-xs leading-5 text-slate-500">
-                      {entry.meal.reason}
-                    </p>
+              <Fragment key={`opt-${entry.meal.id}-${entry.meal.afterStopIndex}`}>
+                {leg && fromSummary && <SmartPlannerTransportConnector leg={leg} from={fromSummary} to={entry.meal} railWidth={DAY_RAIL_WIDTH} lang={lang} variant="pill" />}
+                <div className="flex items-stretch gap-2">
+                  <DayRail time={window ? formatTimelineClock(window.startMinutes) : undefined} muted />
+                  <div className="min-w-0 flex-1 py-1">
+                    <DayStopCard
+                      summary={entry.meal}
+                      number={0}
+                      chips={mealChips(entry.meal)}
+                      onClick={entry.meal.flexible ? undefined : () => setActivePlaceId(entry.meal.id)}
+                      lang={lang}
+                      placeholderIcon={MEAL_TYPE_ICON[entry.meal.mealType]}
+                      muted
+                    />
                   </div>
-                ) : (
-                  <SmartPlannerStopCardBody
-                    summary={entry.meal}
-                    onClick={() => setActivePlaceId(entry.meal.id)}
-                    lang={lang}
-                    compact
-                    placeholderIcon={MEAL_TYPE_ICON[entry.meal.mealType]}
-                    foodMeta={{
-                      mealTypeIcon: MEAL_TYPE_ICON[entry.meal.mealType],
-                      mealTypeLabel: `${ui.mealType[entry.meal.mealType]} · ${ui.optionalTag}`,
-                      cuisineLabel: entry.meal.categoryLabel === ui.mealType[entry.meal.mealType] ? "" : `${entry.meal.categoryIcon} ${entry.meal.categoryLabel}`,
-                      priceLevel: entry.meal.priceLevel,
-                      rating: entry.meal.rating,
-                    }}
-                  />
-                )}
-                {leg && fromSummary && <SmartPlannerTransportConnector leg={leg} from={fromSummary} to={entry.meal} lang={lang} bare compact />}
-              </div>
+                </div>
+              </Fragment>
             );
           })}
 
@@ -592,7 +520,7 @@ export default function SmartPlannerV2Day({
         </BottomSheet>
       )}
 
-      <PlaceDetailsSheet guideSlug={guideSlug} resolved={activeResolved} open={!!activePlaceId} onClose={() => setActivePlaceId(null)} plannedWeekday={day.weekday} lang={lang} />
+      <PlaceDetailsSheet guideSlug={guideSlug} resolved={activeResolved} open={!!activePlaceId} onClose={() => setActivePlaceId(null)} plannedWeekday={day.weekday} lang={lang} notes={activeNotes} />
     </div>
   );
 }

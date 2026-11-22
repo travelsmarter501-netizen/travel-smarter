@@ -63,6 +63,17 @@ export function formatMinutes(lang: PlanLanguage, rawMinutes: number): string {
   return minutes === 1 ? "1 minute" : `${minutes} minutes`;
 }
 
+/** A short duration for chips (Rhyme-style day screen): "45 د", "1 س 15 د" / "45m", "1h 15m" / "45 ד׳", "1 ש׳ 15 ד׳". */
+export function formatMinutesShort(lang: PlanLanguage, rawMinutes: number): string {
+  const minutes = Math.max(0, Math.round(rawMinutes));
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  const [uh, um] = lang === "ar" ? ["س", "د"] : lang === "he" ? ["ש׳", "ד׳"] : ["h", "m"];
+  const sep = lang === "en" ? "" : " ";
+  if (h === 0) return `${m}${sep}${um}`;
+  return m === 0 ? `${h}${sep}${uh}` : `${h}${sep}${uh} ${m}${sep}${um}`;
+}
+
 /** A range of whole minutes ("14–17 دقيقة"); display-only rounding as in formatMinutes. */
 export function formatMinutesRange(lang: PlanLanguage, rawMin: number, rawMax: number): string {
   const min = Math.round(rawMin);
