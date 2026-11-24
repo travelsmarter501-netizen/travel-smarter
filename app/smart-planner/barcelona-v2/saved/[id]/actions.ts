@@ -3,7 +3,7 @@
 import { createClient } from "../../../../../utils/supabase/server";
 import { createServiceRoleClient } from "../../../../../utils/supabase/service-role";
 import { isValidSmartPlannerV2SavedPlanRow } from "../../../../lib/planner/smartPlannerV2SavedPlans";
-import { applyPlanCustomizations, decidePlanChange, parsePlanChange, planAddOptions, sanitizeCustomizations, type PlanAddOptions } from "../../../../lib/planner/planCustomizations";
+import { addRequestFromPreferences, applyPlanCustomizations, decidePlanChange, parsePlanChange, planAddOptions, sanitizeCustomizations, type PlanAddOptions } from "../../../../lib/planner/planCustomizations";
 import { cityForSavedPlan } from "../../../../lib/planner/savedPlanCity";
 import { withCurrentPlacePhotos } from "../../../../lib/planner/planPhotos";
 import type { V2Day } from "../../../../lib/planner/barcelonaV2Resolve";
@@ -13,6 +13,8 @@ import type { ResolvedPlace } from "../../../../lib/readyPlan";
 export type CustomizeSavedPlanResult = { ok: true; dayNumber: number; day: V2Day | null; placeDetails: Record<string, ResolvedPlace>; /** Cities with per-day hours: this day's own records (V2Plan.dayPlaceDetails of the day). */ dayDetails?: Record<string, ResolvedPlace>; addOptions: PlanAddOptions } | { ok: false; code: "invalid" | "not_signed_in" | "not_found" | "save_failed" }
   /** An "add" the day cannot take (not offered: already in the trip, unknown, or no valid time that day). Nothing is saved. */
   | { ok: false; code: "add_unavailable" }
+  /** A move / drag / duration change that would make a place of the day miss its opening hours (cities that refuse it). Nothing is saved. */
+  | { ok: false; code: "edit_infeasible" }
   /** The day cannot hold that start (a visit would run past closing or out of order); suggestion is the nearest start it can hold. */
   | { ok: false; code: "start_infeasible"; suggestion: number | null };
 
@@ -43,7 +45,9 @@ export async function customizeSavedPlan(planId: unknown, rawChange: unknown): P
   if (!city) return { ok: false, code: "not_found" };
   const current = sanitizeCustomizations((row.generated_plan_json as { customizations?: unknown }).customizations);
   // Decided before any write: a rejected change never reaches the save below.
-  const decision = decidePlanChange(city, base, current, change);
+  // The traveller's interests as saved with the plan rank the places offered for adding (see AddRequest).
+  const request = addRequestFromPreferences(row.preferences_json);
+  const decision = decidePlanChange(city, base, current, change, request);
   if (!decision.ok) return decision;
   const next = decision.next;
 
@@ -65,5 +69,5 @@ export async function customizeSavedPlan(planId: unknown, rawChange: unknown): P
   if (day) for (const x of [...day.stops, ...(day.mealStops ?? []), ...day.optionalNearby, ...(day.foodSuggestions ?? []), ...(day.shoppingSuggestions ?? []), ...(day.nightlifeSuggestions ?? [])]) ids.add(x.id);
   const placeDetails = Object.fromEntries(Object.entries(effective.placeDetails ?? {}).filter(([id]) => ids.has(id)));
   const dayDetails = effective.dayPlaceDetails ? (effective.dayPlaceDetails[String(change.dayNumber)] ?? {}) : undefined;
-  return { ok: true, dayNumber: change.dayNumber, day, placeDetails, ...(dayDetails ? { dayDetails } : {}), addOptions: planAddOptions(city, base, next) };
+  return { ok: true, dayNumber: change.dayNumber, day, placeDetails, ...(dayDetails ? { dayDetails } : {}), addOptions: planAddOptions(city, base, next, request) };
 }

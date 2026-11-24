@@ -78,7 +78,9 @@ export const PRAGUE_PLANNER_METADATA: PlannerPlaceMetadata[] = [
   place("vysehrad", "vysehrad", [6, 7, 9, 3, 0, 0], 7, "afternoon", 90),
   // Žižkov / Vinohrady
   place("zizkov-tower", "zizkov", [5, 2, 9, 0, 5, 0], 6, "evening", 60),
-  place("vitkov-memorial", "zizkov", [3, 6, 7, 0, 0, 0], 4, "afternoon", 60),
+  // "daytime" since 2026-11-24 (was "afternoon"): open 10:00-18:00 with nothing afternoon-specific; as "afternoon" it made every day with it
+  // start at 12:00 (the day start is the earliest preferred time of its places), a lost morning on 20-28 sample days.
+  place("vitkov-memorial", "zizkov", [3, 6, 7, 0, 0, 0], 4, "daytime", 60),
   place("riegrovy-sady", "zizkov", [3, 2, 7, 5, 0, 0], 4, "afternoon", 45),
   place("havlicek-gardens", "zizkov", [2, 2, 6, 6, 0, 0], 3, "afternoon", 45),
   // Letná / Holešovice
@@ -92,6 +94,27 @@ export const PRAGUE_PLANNER_METADATA: PlannerPlaceMetadata[] = [
   place("prague-zoo", "troja", [6, 0, 6, 1, 6, 0], 5, "morning", 180),
   place("troja-chateau", "troja", [2, 6, 3, 0, 0, 0], 3, "daytime", 60),
   place("botanical-garden", "troja", [4, 1, 8, 4, 3, 0], 5, "daytime", 90),
+  // ── Added 2026-11-24 (sources in praguePlaces.ts). Visit lengths: Lobkowicz = the palace's own "tour lasts 1 h 30 min"; Hvězda =
+  // the 4.5 km loop (Google Maps walk 29 + 31 min) plus a short stop at the summer palace; the rest are planning estimates.
+  // Weighted like its peers (Loreta, Museum Kampa: popular 4, priority 5; the national / Mucha museums: culture 8). A first run at
+  // popular 5 / culture 9 / priority 6 took it into 171 of 300 sample trips and pushed out the Lennon Wall on 2-day "popular" trips.
+  // Closure pass: culture 8 -> 7 (a private family collection, like Museum Kampa, the Kafka Museum and St Agnes, not a national museum).
+  // At 8 it took the February castle day with Chotek Gardens and pushed out St Nicholas and the Lennon Wall (all / mixed / surprise trips).
+  place("lobkowicz-palace-museum", "hradcany", [4, 7, 2, 0, 1, 0], 5, "daytime", 90),
+  place("novy-svet", "hradcany", [2, 4, 2, 1, 0, 0], 3, "anytime", 20),
+  place("vojanovy-sady", "mala-strana", [3, 2, 5, 6, 0, 0], 4, "daytime", 30),
+  place("parukarka", "zizkov", [2, 1, 7, 5, 0, 0], 4, "daytime", 45),
+  place("museum-of-communism", "republiky", [4, 7, 0, 0, 3, 0], 5, "daytime", 75),
+  place("heydrich-memorial", "riverside", [3, 8, 0, 0, 1, 0], 5, "daytime", 45),
+  // Liboc / Hvězda (west): its own cluster, reached by tram (Google Maps transit, Thu 26 Nov 2026 13:00: 19 min to Loreta, 26 min to
+  // the castle), so it only links weakly to the castle area.
+  place("obora-hvezda", "hvezda", [2, 2, 7, 7, 0, 0], 5, "daytime", 75),
+  // Quality pass (2026-11-24). Weighted like the nearby gardens they sit next to (Petřín Gardens 4/2/8/5, Franciscan Garden 3/2/5/5).
+  place("kinsky-garden", "petrin", [3, 3, 7, 6, 0, 0], 4, "afternoon", 45),
+  place("chotek-gardens", "hradcany", [2, 3, 4, 4, 0, 0], 3, "daytime", 30),
+  // Castle gardens: first weighted popular 5 / priority 5 (like Kampa Island); in the sample they then entered 140 of 300 trips and pushed
+  // the Lennon Wall out of 2-day "popular" trips. Now like Petřín Gardens (popular 4, priority 4).
+  place("prague-castle-gardens", "hradcany", [4, 3, 7, 4, 0, 0], 4, "daytime", 45),
 ];
 
 const BY_ID = new Map(PRAGUE_PLANNER_METADATA.map((entry) => [entry.placeId, entry]));

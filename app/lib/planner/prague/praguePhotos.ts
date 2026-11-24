@@ -81,6 +81,25 @@ export const PRAGUE_PHOTOS_2026_11_10: Record<string, PlacePhoto> = {
 };
 Object.assign(PRAGUE_PHOTOS, PRAGUE_PHOTOS_2026_11_10);
 
+/**
+ * Added 2026-11-24 (Prague closure pass): the ten places added that day. Each file was found through the place's Wikidata image or a
+ * Commons search, its author and licence read on its Commons file page (API extmetadata) the same day, and the image looked at: the
+ * comment says what it shows. Commons' own 960px thumbnail, not edited.
+ */
+export const PRAGUE_PHOTOS_2026_11_24: Record<string, PlacePhoto> = {
+  "lobkowicz-palace-museum": {"image":"/images-prague/lobkowicz-palace-museum.jpg","imageSource":"Wikimedia Commons","imageSourceUrl":"https://commons.wikimedia.org/wiki/File:Lobkovick%C3%BD_pal%C3%A1c_(Pra%C5%BEsk%C3%BD_hrad)_03.JPG","imageAuthor":"VitVit","imageLicense":"CC BY-SA 3.0","imageLicenseUrl":"https://creativecommons.org/licenses/by-sa/3.0/"}, // the palace front on Jiřská with the museum banner
+  "novy-svet": {"image":"/images-prague/novy-svet.jpg","imageSource":"Wikimedia Commons","imageSourceUrl":"https://commons.wikimedia.org/wiki/File:Praha,_Hradcany_-_Novy_svet_(od_cp_11_k_hradbam).jpg","imageAuthor":"Matěj Baťha","imageLicense":"CC BY-SA 2.0","imageLicenseUrl":"https://creativecommons.org/licenses/by-sa/2.0/"}, // the Nový Svět lane
+  "vojanovy-sady": {"image":"/images-prague/vojanovy-sady.jpg","imageSource":"Wikimedia Commons","imageSourceUrl":"https://commons.wikimedia.org/wiki/File:Vojanovy_sady2.jpg","imageAuthor":"Chmee2","imageLicense":"CC BY-SA 3.0","imageLicenseUrl":"https://creativecommons.org/licenses/by-sa/3.0/"}, // the garden path
+  "parukarka": {"image":"/images-prague/parukarka.jpg","imageSource":"Wikimedia Commons","imageSourceUrl":"https://commons.wikimedia.org/wiki/File:Park_Paruk%C3%A1%C5%99ka_a_%C5%BEi%C5%BEkovsk%C3%A1_v%C4%9B%C5%BE.jpg","imageAuthor":"ŠJů (cs:ŠJů)","imageLicense":"CC BY-SA 3.0","imageLicenseUrl":"https://creativecommons.org/licenses/by-sa/3.0/"}, // the park with the Žižkov tower behind
+  "obora-hvezda": {"image":"/images-prague/obora-hvezda.jpg","imageSource":"Wikimedia Commons","imageSourceUrl":"https://commons.wikimedia.org/wiki/File:LetohradekHvezda2.jpg","imageAuthor":"Adam Zivner","imageLicense":"CC BY-SA 3.0","imageLicenseUrl":"https://creativecommons.org/licenses/by-sa/3.0/"}, // the star-shaped summer palace in the reserve
+  "museum-of-communism": {"image":"/images-prague/museum-of-communism.jpg","imageSource":"Wikimedia Commons","imageSourceUrl":"https://commons.wikimedia.org/wiki/File:Praha_Nove_Mesto_V_celnici_4_Muzeum_komunismu.jpg","imageAuthor":"JiriMatejicek","imageLicense":"CC BY-SA 3.0","imageLicenseUrl":"https://creativecommons.org/licenses/by-sa/3.0/"}, // the museum entrance and sign
+  "heydrich-memorial": {"image":"/images-prague/heydrich-memorial.jpg","imageSource":"Wikimedia Commons","imageSourceUrl":"https://commons.wikimedia.org/wiki/File:Pomn%C3%ADk_vlastenc%C5%AFm,_chr%C3%A1m_sv._Cyrila_a_Metod%C4%9Bje,_Praha.jpg","imageAuthor":"Ondřej Žváček","imageLicense":"CC BY 2.5","imageLicenseUrl":"https://creativecommons.org/licenses/by/2.5/"}, // the memorial plaque and the bullet-marked crypt window on the church
+  "kinsky-garden": {"image":"/images-prague/kinsky-garden.jpg","imageSource":"Wikimedia Commons","imageSourceUrl":"https://commons.wikimedia.org/wiki/File:Praha,_Sm%C3%ADchov,_Kinsk%C3%A9ho_zahrada,_podzim.jpg","imageAuthor":"Aktron","imageLicense":"CC BY 3.0","imageLicenseUrl":"https://creativecommons.org/licenses/by/3.0/"}, // the garden in autumn
+  "chotek-gardens": {"image":"/images-prague/chotek-gardens.jpg","imageSource":"Wikimedia Commons","imageSourceUrl":"https://commons.wikimedia.org/wiki/File:Praha,_Hrad%C4%8Dany,_Chotkovy_sady_04.jpg","imageAuthor":"Daniel Baránek","imageLicense":"CC BY-SA 3.0","imageLicenseUrl":"https://creativecommons.org/licenses/by-sa/3.0/"}, // the park
+  "prague-castle-gardens": {"image":"/images-prague/prague-castle-gardens.jpg","imageSource":"Wikimedia Commons","imageSourceUrl":"https://commons.wikimedia.org/wiki/File:Praha,_Zahrada_Na_Valech_01.jpg","imageAuthor":"Francesco Gasparetti","imageLicense":"CC BY 2.0","imageLicenseUrl":"https://creativecommons.org/licenses/by/2.0/"}, // the Garden on the Ramparts (South Gardens) below the Old Royal Palace
+};
+Object.assign(PRAGUE_PHOTOS, PRAGUE_PHOTOS_2026_11_24);
+
 /** Adds the photo and its credit to a place that has one (the place's own fields win only where no photo exists). */
 export function withPhoto<T extends { id: string; image?: string }>(place: T): T {
   const photo = PRAGUE_PHOTOS[place.id];

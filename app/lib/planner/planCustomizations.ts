@@ -9,6 +9,20 @@ import { nearestValidStart } from "./startChoices";
 import { resolvePlacesForTrip } from "./tripHours";
 import type { PlannerRouteLeg } from "./plannerTransportTypes";
 import { resolvePlannerPlace, summarizeResolvedPlace, type ResolvedPlace, type ResolvedPlaceSummary } from "../readyPlan";
+import type { V2PlannerInterest } from "./v2PlannerTypes";
+
+/**
+ * The traveller's request as saved with the plan (preferences_json: interests, surprise me). Used to rank the places offered for adding
+ * (cities with addAtBestPosition and placeRelevance). Absent (a plan saved without interests): the offer is ranked as before.
+ */
+export type AddRequest = { interests: readonly V2PlannerInterest[]; surpriseMe: boolean };
+
+/** The request saved with a plan, or undefined when it holds no interests and is not "surprise me". */
+export function addRequestFromPreferences(preferences: { interests?: readonly V2PlannerInterest[]; surpriseMe?: boolean } | null | undefined): AddRequest | undefined {
+  const interests = preferences?.interests ?? [];
+  const surpriseMe = !!preferences?.surpriseMe;
+  return interests.length > 0 || surpriseMe ? { interests, surpriseMe } : undefined;
+}
 
 /**
  * Customer edits to a saved plan, made with buttons on the plan page (no free text): the day's start time, a stop's
@@ -103,6 +117,8 @@ export function sanitizeCustomizations(raw: unknown): PlanCustomizations {
 }
 
 const MAX_ADD_OPTIONS = 4;
+/** With the traveller's interests (AddRequest): the lowest match (0-10) a place needs to be offered; Prague uses the same floor for free-time ideas. */
+const ADD_MIN_RELEVANCE = 3;
 
 function dayOrder(baseDay: V2Day, edit: DayCustomization | undefined): string[] {
   return edit?.order ?? baseDay.stops.map((s) => s.id);
@@ -119,7 +135,7 @@ function usedPlaceIds(base: V2Plan, customizations: PlanCustomizations): Set<str
  * main-stop places of the city (planner metadata + place data), never a place gated behind an interest, never one already in
  * the trip, and only one that still fits the day: appended at the end, it must not break its opening hours.
  */
-export function addCandidates(city: CityPlannerModule, base: V2Plan, customizations: PlanCustomizations, dayNumber: number): string[] {
+export function addCandidates(city: CityPlannerModule, base: V2Plan, customizations: PlanCustomizations, dayNumber: number, request?: AddRequest): string[] {
   const baseDay = base.days.find((d) => d.dayNumber === dayNumber);
   if (!baseDay) return [];
   const edit = customizations[String(dayNumber)] ?? {};
@@ -143,7 +159,13 @@ export function addCandidates(city: CityPlannerModule, base: V2Plan, customizati
     const rank = closeness(meta.cluster);
     if (rank !== null) ranked.push({ id: meta.placeId, rank, tie: -meta.priority });
   }
-  ranked.sort((a, b) => a.rank - b.rank || a.tie - b.tie || a.id.localeCompare(b.id));
+  // Cities with addAtBestPosition and placeRelevance, when the plan carries the traveller's interests: places that match the request
+  // (relevance at least the city's threshold) come first, then the rest; inside each, the order above (nearness, then priority), and the
+  // stronger match first among equals. Nearness and a valid time stay required for every place offered (below).
+  const relevance = request && city.addAtBestPosition && city.placeRelevance ? city.placeRelevance(request.interests, request.surpriseMe) : null;
+  const threshold = city.relevanceThreshold ?? 5;
+  const matches = (id: string) => (relevance && relevance(id) >= threshold ? 1 : 0);
+  ranked.sort((a, b) => matches(b.id) - matches(a.id) || a.rank - b.rank || (relevance ? relevance(b.id) - relevance(a.id) : 0) || a.tie - b.tie || a.id.localeCompare(b.id));
 
   const out: string[] = [];
   const seen = new Set<string>();
@@ -152,6 +174,14 @@ export function addCandidates(city: CityPlannerModule, base: V2Plan, customizati
     if (seen.has(id)) continue;
     seen.add(id);
     if (used.has(id) || city.experiencesGatedPlaceIds.has(id) || !city.metadataById(id) || !resolvePlannerPlace(id, city.places)) continue;
+    if (city.exclusiveGroups?.some((group) => group.includes(id) && group.some((other) => other !== id && used.has(other)))) continue;
+    // With the traveller's interests: a place that hardly matches the request (below ADD_MIN_RELEVANCE, e.g. a mall on a nature trip) is not
+    // offered at all, even when it is near and fits; an empty offer is better than an unrelated one.
+    if (relevance && relevance(id) < ADD_MIN_RELEVANCE) continue;
+    if (city.addAtBestPosition) {
+      if (bestAddOrder(city, base, baseDay, edit, order, id)) out.push(id);
+      continue;
+    }
     const trial = effectiveDay(city, baseDay, { ...edit, order: [...order, id] }, { ...(base.placeDetails ?? {}) });
     const added = trial.stops.find((s) => s.id === id);
     if (added && !added.warnings.some((w) => w.textAr === TIMING_WARNING_AR)) out.push(id);
@@ -172,14 +202,14 @@ export type PlanAddOptions = {
 };
 
 /** The add candidates of every day, ready for the page (card summaries + the details sheet data). */
-export function planAddOptions(city: CityPlannerModule, base: V2Plan, customizations: PlanCustomizations): PlanAddOptions {
+export function planAddOptions(city: CityPlannerModule, base: V2Plan, customizations: PlanCustomizations, request?: AddRequest): PlanAddOptions {
   const byDay: Record<string, ResolvedPlaceSummary[]> = {};
   const details: Record<string, ResolvedPlace> = {};
   const starts: Record<string, number[]> = {};
   const detailsByDay: Record<string, Record<string, ResolvedPlace>> = {};
   for (const day of base.days) {
     starts[String(day.dayNumber)] = dayValidStarts(city, base, customizations, day.dayNumber);
-    byDay[String(day.dayNumber)] = addCandidates(city, base, customizations, day.dayNumber).flatMap((id) => {
+    byDay[String(day.dayNumber)] = addCandidates(city, base, customizations, day.dayNumber, request).flatMap((id) => {
       // The details of a candidate show that day's hours (cities with tripHoursForAddedPlaces); others unchanged.
       const resolved = resolvePlannerPlace(id, cityForAddedPlaces(city, day).places);
       if (!resolved) return [];
@@ -201,18 +231,31 @@ export function planAddOptions(city: CityPlannerModule, base: V2Plan, customizat
 export type PlanChangeDecision =
   | { ok: true; next: PlanCustomizations }
   | { ok: false; code: "invalid" | "add_unavailable" }
+  /** Cities with rejectEditsThatBreakHours: the move / drag / duration change would make a place of the day miss its hours. */
+  | { ok: false; code: "edit_infeasible" }
   | { ok: false; code: "start_infeasible"; suggestion: number | null };
-export function decidePlanChange(city: CityPlannerModule, base: V2Plan, current: PlanCustomizations, change: PlanChange): PlanChangeDecision {
+export function decidePlanChange(city: CityPlannerModule, base: V2Plan, current: PlanCustomizations, change: PlanChange, request?: AddRequest): PlanChangeDecision {
   if (change.kind === "start" && !isDayStartValid(city, base, current, change.dayNumber, change.minutes)) {
     return { ok: false, code: "start_infeasible", suggestion: nearestValidStart(dayValidStarts(city, base, current, change.dayNumber), change.minutes) };
   }
-  const next = applyPlanChange(city, base, current, change);
+  const next = applyPlanChange(city, base, current, change, request);
   if (!next) return { ok: false, code: change.kind === "add" ? "add_unavailable" : "invalid" };
+  // Opt-in (city.rejectEditsThatBreakHours): a move, drag or duration change may not create a NEW schedule problem (a place missing its
+  // hours or last entry, an overlap). A problem the day already had does not block other edits.
+  if (city.rejectEditsThatBreakHours && (change.kind === "move" || change.kind === "reorder" || change.kind === "duration")) {
+    const baseDay = base.days.find((d) => d.dayNumber === change.dayNumber);
+    if (baseDay) {
+      const placeDetails = { ...(base.placeDetails ?? {}) };
+      const before = scheduleProblems(effectiveDay(city, baseDay, current[String(change.dayNumber)] ?? {}, placeDetails));
+      const after = scheduleProblems(effectiveDay(city, baseDay, next[String(change.dayNumber)] ?? {}, placeDetails));
+      if ([...after].some((problem) => !before.has(problem))) return { ok: false, code: "edit_infeasible" };
+    }
+  }
   return { ok: true, next };
 }
 
 /** Applies one change to the stored edits; null when it does not apply to this plan. */
-export function applyPlanChange(city: CityPlannerModule, base: V2Plan, current: PlanCustomizations, change: PlanChange): PlanCustomizations | null {
+export function applyPlanChange(city: CityPlannerModule, base: V2Plan, current: PlanCustomizations, change: PlanChange, request?: AddRequest): PlanCustomizations | null {
   const baseDay = base.days.find((d) => d.dayNumber === change.dayNumber);
   if (!baseDay) return null;
   const key = String(change.dayNumber);
@@ -256,7 +299,13 @@ export function applyPlanChange(city: CityPlannerModule, base: V2Plan, current: 
       break;
     }
     case "add": {
-      if (!addCandidates(city, base, current, change.dayNumber).includes(change.placeId)) return null;
+      if (!addCandidates(city, base, current, change.dayNumber, request).includes(change.placeId)) return null;
+      if (city.addAtBestPosition) {
+        const best = bestAddOrder(city, base, baseDay, day, order, change.placeId);
+        if (!best) return null;
+        day.order = best;
+        break;
+      }
       day.order = [...order, change.placeId];
       // Cities with a daylight policy: a "prefers daylight" place goes where it ends before the monthly sunset estimate, when the day
       // can hold it there (no schedule problem); otherwise it stays last, with the note. Never a ban.
@@ -307,6 +356,76 @@ function daylightAddOrder(city: CityPlannerModule, baseDay: V2Day, day: DayCusto
     if (!best || late < best.late) best = { order: trial, late };
   }
   return best ? best.order : atEnd;
+}
+
+/** An added place may add at most this much travel to the day (the same bound as a planner hop, Prague's maxHopMinutes). */
+const ADD_MAX_EXTRA_TRAVEL_MINUTES = 30;
+/** Daylight minutes count double in the position cost: a later end is better than a park walk in the dark. */
+const ADD_DAYLIGHT_WEIGHT = 2;
+
+/** Middle minutes of a leg's recommended option (0 without one). */
+function legMiddleMinutes(leg: PlannerRouteLeg | undefined): number {
+  const option = leg?.options?.find((o) => o.mode === leg.recommendedMode);
+  return option ? Math.round((option.durationMinutesMin + option.durationMinutesMax) / 2) : 0;
+}
+
+/**
+ * The day's travel as the customer follows it: every move between consecutive scheduled items (stops and non-optional meals), the stop
+ * leg between two consecutive stops and the meal leg around a meal; a lunch break is taken where the stop before it is (no leg).
+ * And the end of the day's last scheduled item.
+ */
+function dayTravelAndEnd(day: V2Day): { travel: number; end: number } {
+  const timeline = day.timeline;
+  if (!timeline) return { travel: 0, end: 0 };
+  const items = [
+    ...timeline.stops.map((s, index) => ({ stop: true, index, id: s.placeId, start: s.startMinutes, end: s.endMinutes })),
+    ...timeline.meals.filter((m) => !m.optional).map((m) => ({ stop: false, index: -1, id: m.placeId, start: m.startMinutes, end: m.endMinutes })),
+  ].sort((a, b) => a.start - b.start);
+  let travel = 0;
+  for (let i = 1; i < items.length; i++) {
+    const a = items[i - 1];
+    const b = items[i];
+    if (b.id === LUNCH_BREAK_PLACE_ID) continue;
+    travel += legMiddleMinutes(a.stop && b.stop && b.index === a.index + 1 ? day.legs[a.index] : day.mealLegs?.[`${a.id}::${b.id}`]);
+  }
+  return { travel, end: items.length ? Math.max(...items.map((x) => x.end)) : 0 };
+}
+const LUNCH_BREAK_PLACE_ID = "lunch-break";
+
+/**
+ * Opt-in (city.addAtBestPosition): where an added place goes. Every position of the day is tried, each as the WHOLE day rebuilt the way
+ * the customer will see it (effectiveDay: legs for the new order, opening hours and last entry, meals re-placed, the saved start).
+ * A position is allowed when the rebuilt day has no schedule problem, every visit held to a fixed session keeps its session, and the day
+ * gains at most ADD_MAX_EXTRA_TRAVEL_MINUTES of travel. Of those, the lowest cost wins: how much later the day ends beyond the added visit
+ * itself (= the travel and waiting it adds), plus minutes after the monthly sunset estimate of "prefers daylight" places (cities with a
+ * daylight policy), counted double. On a tie, the position that adds the least travel (lunch can absorb waiting, so several positions
+ * often end the day at the same time), then the later one (closest to "added at the end"). Null when no position works.
+ */
+function bestAddOrder(city: CityPlannerModule, base: V2Plan, baseDay: V2Day, edit: DayCustomization, order: string[], placeId: string): string[] | null {
+  const placeDetails = { ...(base.placeDetails ?? {}) };
+  const month = baseDay.actualDate ? Number(baseDay.actualDate.slice(5, 7)) : null;
+  const before = effectiveDay(city, baseDay, { ...edit, order }, placeDetails);
+  const beforeFacts = dayTravelAndEnd(before);
+  const startBefore = new Map(before.stops.map((s, i) => [s.id, before.timeline?.stops[i]?.startMinutes]));
+  const late = (day: V2Day) =>
+    city.daylight ? day.stops.reduce((sum, stop, i) => sum + city.daylight!.lateMinutes(stop.id, day.timeline?.stops[i]?.endMinutes ?? 0, month), 0) : 0;
+  const lateBefore = late(before);
+  let best: { order: string[]; cost: number; travel: number } | null = null;
+  for (let index = order.length; index >= 0; index--) {
+    const trial = [...order.slice(0, index), placeId, ...order.slice(index)];
+    const built = effectiveDay(city, baseDay, { ...edit, order: trial }, placeDetails);
+    if (built.stops.length !== trial.length || scheduleProblems(built).size > 0) continue;
+    if (built.stops.some((stop) => stop.warnings.some((w) => w.textAr === TIMING_WARNING_AR))) continue;
+    const sessionMoved = built.stops.some((stop, i) => stop.id !== placeId && hasFixedSession(city, stop) && built.timeline?.stops[i]?.startMinutes !== startBefore.get(stop.id));
+    if (sessionMoved) continue;
+    const facts = dayTravelAndEnd(built);
+    if (facts.travel - beforeFacts.travel > ADD_MAX_EXTRA_TRAVEL_MINUTES) continue;
+    const added = built.stops.find((s) => s.id === placeId)?.visitDurationMinutes ?? 0;
+    const cost = facts.end - beforeFacts.end - added + ADD_DAYLIGHT_WEIGHT * Math.max(0, late(built) - lateBefore);
+    const travel = facts.travel - beforeFacts.travel;
+    if (!best || cost < best.cost || (cost === best.cost && travel < best.travel)) best = { order: trial, cost, travel };
+  }
+  return best ? best.order : null;
 }
 
 /** A visit held to a fixed session: a tour / admission slot (metadata `showWindow`) or a timetabled departure (hours `startsAtOpening`). */

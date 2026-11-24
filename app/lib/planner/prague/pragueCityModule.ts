@@ -80,14 +80,16 @@ function pragueLegBase(fromPlaceId: string, toPlaceId: string): PlannerRouteLeg 
 import { repairCityDayGeography } from "../cityGeographyRepair";
 import { balanceCityDays, OWNER_MIN_VISITS, type DayFit } from "../cityDayBalance";
 import { buildBarcelonaDayTimeline, lunchPlacementFromTimeline, LUNCH_BREAK_ID, type TimelineMealInput, type TimelineStopInput } from "../barcelonaV2Timeline";
-import { checkWindow } from "../plannerTimingGuard";
+import { checkWindow, scheduleProblems } from "../plannerTimingGuard";
 import type { DayGeographyRepairContext } from "../cityPlannerModule";
 import { ENABLE_MUST_SEE_PRIORITY, FLAGSHIP_MUST_SEE_BOOST, FLAGSHIP_TIER_B_BOOST, FLAGSHIP_TIER_B_SURPRISE_ME_BOOST } from "../barcelonaMustSeePolicy";
 import { V2_PLANNER_INTERESTS, type V2PlannerInterest } from "../v2PlannerTypes";
 import { PRAGUE_PLACES, PRAGUE_PLACE_COORDINATES } from "./praguePlaces";
+import { pragueDaylightLateMinutes, pragueDaylightNoteAr } from "./pragueDaylight";
 import { PRAGUE_PLANNER_METADATA, getPraguePlannerMetadataById, praguePlannerMetadataForInterests, praguePlaceRelevance } from "./pragueMetadata";
 import type { CityPlannerModule } from "../cityPlannerModule";
-import type { ClusterCompatibilityMap, CoverageGoal, DayBuilderConfig, FlagshipCoverageGoal, GeneratedPlannerPlan, PlannerDay, SimilarityGroup } from "../plannerDayBuilder";
+import type { V2Plan } from "../barcelonaV2Resolve";
+import type { ClusterCompatibilityMap, CoverageGoal, DayBuilderConfig, FlagshipCoverageGoal, GeneratedPlannerPlan, SimilarityGroup } from "../plannerDayBuilder";
 import type { RouteConfig } from "../plannerRouteOptimizer";
 import type { DestinationConfig } from "../destinationConfig";
 import type { PlannerOperationalWarning } from "../barcelonaPlannerOperationalWarnings";
@@ -133,6 +135,8 @@ const LINKS: [string, string, "strong" | "medium" | "weak"][] = [
   ["holesovice", "josefov", "weak"],
   ["bubenec", "letna", "medium"],
   ["bubenec", "hradcany", "weak"],
+  // Added 2026-11-24: the Hvězda game reserve (tram 19 min to Loreta, 26 min to the castle; Google Maps transit).
+  ["hvezda", "hradcany", "weak"],
 ];
 
 function symmetric(links: typeof LINKS): ClusterCompatibilityMap {
@@ -156,7 +160,11 @@ const SIMILARITY_GROUPS: SimilarityGroup[] = [
   { id: "towers", placeIds: ["old-town-bridge-tower", "powder-tower", "petrin-tower", "zizkov-tower"], maxByDefault: 2, unlockedByInterest: "viewsNature", maxWithInterest: 3 },
   { id: "shopping", placeIds: ["na-prikope", "palladium", "havelske-market"], maxByDefault: 1, unlockedByInterest: "foodShoppingNightlife", maxWithInterest: 3 },
   { id: "big-museums", placeIds: ["national-museum", "national-technical-museum", "jewish-museum", "franz-kafka-museum"], maxByDefault: 2, unlockedByInterest: "cultureLocal", maxWithInterest: 4 },
-  { id: "art-galleries", placeIds: ["mucha-museum", "museum-kampa", "convent-st-agnes", "trade-fair-palace", "dox"], maxByDefault: 1, unlockedByInterest: "cultureLocal", maxWithInterest: 4 },
+  // Quality pass (2026-11-24): two gardens of the same hillside / of the castle are one kind of visit: one per trip. No interest unlocks a
+  // second (the questionnaire's "nature" always sends beachRelax too, so an unlock would always apply and put both on one day).
+  { id: "petrin-hill-gardens", placeIds: ["petrin-gardens", "kinsky-garden"], maxByDefault: 1 },
+  { id: "castle-gardens", placeIds: ["prague-castle-gardens", "chotek-gardens"], maxByDefault: 1 },
+  { id: "art-galleries", placeIds: ["mucha-museum", "museum-kampa", "convent-st-agnes", "trade-fair-palace", "dox", "lobkowicz-palace-museum"], maxByDefault: 1, unlockedByInterest: "cultureLocal", maxWithInterest: 4 },
 ];
 
 const COVERAGE_GOALS: CoverageGoal[] = [
@@ -169,6 +177,9 @@ const COVERAGE_GOALS: CoverageGoal[] = [
 ];
 
 const FLAGSHIP_MUST_SEE = ["prague-castle"];
+
+/** The same pairs as the similarity groups "petrin-hill-gardens" and "castle-gardens": one per trip, also in the balance and the add offer. */
+const PRAGUE_EXCLUSIVE_GROUPS: readonly (readonly string[])[] = [["petrin-gardens", "kinsky-garden"], ["prague-castle-gardens", "chotek-gardens"]];
 
 // ── Outside stops (PROPOSAL, owner review) ─────────────────────────────────────────────────────────
 // Paid places whose outside is on a public street or square (no closing time for the outside), and that are not flagships:
@@ -342,6 +353,95 @@ const travelMinutes = (fromPlaceId: string, toPlaceId: string): number | null =>
   return minutes === null ? null : Math.round(minutes);
 };
 
+// ── Daylight order of dated days (quality pass, 2026-11-24) ────────────────────────────────────────────────
+// On a DATED plan, a day whose "prefers daylight" place (pragueDaylight.ts: parks, gardens, the forest walk, viewpoints without hours)
+// ends after the month's sunset estimate tries the other orders of the SAME places on the clock (pragueDayOnClock: walks, lunch,
+// opening hours and last entry for that date). An order is taken only when nothing misses its hours, the daylight minutes go down, the
+// day's travel grows by at most DAYLIGHT_ORDER_MAX_EXTRA_TRAVEL and its program ends at most DAYLIGHT_ORDER_MAX_LATER later. The whole
+// plan is then rebuilt (restaurants, every transfer, the timing guard), and a changed day whose FINAL schedule has a problem, more
+// daylight minutes or more travel than allowed goes back to its original order. Places, lengths and days never change; undated plans
+// (no month) and an accommodation-anchored day 1 are left alone.
+const DAYLIGHT_ORDER_MAX_EXTRA_TRAVEL = 15;
+const DAYLIGHT_ORDER_MAX_LATER = 30;
+const DAYLIGHT_ORDER_MAX_STOPS = 7;
+
+function permutations<T>(items: readonly T[]): T[][] {
+  if (items.length <= 1) return [items.slice()];
+  return items.flatMap((item, i) => permutations([...items.slice(0, i), ...items.slice(i + 1)]).map((rest) => [item, ...rest]));
+}
+
+function orderTravel(ids: readonly string[]): number {
+  return ids.slice(0, -1).reduce((sum, id, i) => sum + (travelMinutes(id, ids[i + 1]) ?? 0), 0);
+}
+
+function resolvedDayFacts(day: V2Plan["days"][number], month: number): { late: number; travel: number; problems: number } {
+  const timeline = day.timeline;
+  const late = day.stops.reduce((sum, stop, i) => sum + pragueDaylightLateMinutes(stop.id, timeline?.stops[i]?.endMinutes ?? 0, month), 0);
+  const mid = (leg: PlannerRouteLeg | undefined) => {
+    const option = leg?.options?.find((o) => o.mode === leg.recommendedMode);
+    return option ? (option.durationMinutesMin + option.durationMinutesMax) / 2 : 0;
+  };
+  const travel = day.legs.reduce((sum, leg) => sum + mid(leg), 0) + Object.values(day.mealLegs ?? {}).reduce((sum, leg) => sum + mid(leg), 0);
+  return { late, travel, problems: scheduleProblems(day).size };
+}
+
+type PragueReviewInput = Parameters<NonNullable<CityPlannerModule["reviewResolvedPlan"]>>[0];
+function pragueDaylightReview(input: PragueReviewInput): ReturnType<NonNullable<CityPlannerModule["reviewResolvedPlan"]>> {
+  const { context, plan, legsByDay, data, build, accommodationAnchored } = input;
+  const unchanged = { plan, legsByDay, data };
+  if (!context.monthForDayNumber) return unchanged;
+  const onClock = pragueDayOnClock(context);
+  const months = plan.days.map((day) => context.monthForDayNumber?.(day.dayNumber) ?? null);
+  const proposed = plan.days.map((day, index) => {
+    const month = months[index];
+    const resolved = data.days[index];
+    if (!month || !resolved || (accommodationAnchored && index === 0) || day.stops.length < 2 || day.stops.length > DAYLIGHT_ORDER_MAX_STOPS) return null;
+    if (resolvedDayFacts(resolved, month).late === 0) return null;
+    const ids = day.stops.map((stop) => stop.placeId);
+    const outside = new Set(day.stops.filter((stop) => stop.visitMode === "outside").map((stop) => stop.placeId));
+    const lateOf = (r: DayOnClock) => r.windows.reduce((sum, w) => sum + pragueDaylightLateMinutes(w.placeId, w.end, month), 0);
+    const current = onClock(ids, day.dayNumber, outside);
+    const currentLate = lateOf(current);
+    const currentTravel = orderTravel(ids);
+    let best: { ids: string[]; late: number; travel: number; end: number } | null = null;
+    for (const order of permutations(ids)) {
+      const r = onClock(order, day.dayNumber, outside);
+      if (r.failing.length > 0) continue;
+      const late = lateOf(r);
+      const travel = orderTravel(order);
+      if (late >= currentLate || travel - currentTravel > DAYLIGHT_ORDER_MAX_EXTRA_TRAVEL || r.programEnd - current.programEnd > DAYLIGHT_ORDER_MAX_LATER) continue;
+      if (!best || late < best.late || (late === best.late && (travel < best.travel || (travel === best.travel && r.programEnd < best.end)))) best = { ids: order, late, travel, end: r.programEnd };
+    }
+    return best ? best.ids : null;
+  });
+  if (proposed.every((ids) => ids === null)) return unchanged;
+  const withOrders = (orders: (string[] | null)[]) => {
+    const days = plan.days.map((day, i) => (orders[i] ? { ...day, stops: orders[i]!.map((id) => day.stops.find((stop) => stop.placeId === id)!) } : day));
+    const legs = days.map((day, i) => (orders[i] ? day.stops.slice(0, -1).map((stop, j) => pragueLeg(stop.placeId, day.stops[j + 1].placeId)) : legsByDay[i]));
+    return { plan: { ...plan, days }, legsByDay: legs };
+  };
+  let orders = proposed;
+  let next = withOrders(orders);
+  let built = build(next.plan, next.legsByDay);
+  // A changed day is kept only when its final schedule is valid and better in daylight, within the travel bound.
+  const worse = orders.map((ids, i) => {
+    if (!ids) return false;
+    const month = months[i]!;
+    const before = resolvedDayFacts(data.days[i], month);
+    const after = resolvedDayFacts(built.days[i], month);
+    return after.problems > 0 || after.late >= before.late || after.travel - before.travel > DAYLIGHT_ORDER_MAX_EXTRA_TRAVEL;
+  });
+  if (worse.some(Boolean)) {
+    orders = orders.map((ids, i) => (worse[i] ? null : ids));
+    if (orders.every((ids) => ids === null)) return unchanged;
+    next = withOrders(orders);
+    built = build(next.plan, next.legsByDay);
+  }
+  // Never a plan with a new schedule problem: if the rebuilt plan has one anywhere the original did not, keep the original.
+  const newProblem = built.days.some((day, i) => scheduleProblems(day).size > scheduleProblems(data.days[i]).size);
+  return newProblem ? unchanged : { plan: next.plan, legsByDay: next.legsByDay, data: built };
+}
+
 const DAY_BUILDER_CONFIG: DayBuilderConfig = {
   clusterCompatibility: PRAGUE_CLUSTER_COMPATIBILITY,
   similarityGroups: SIMILARITY_GROUPS,
@@ -363,7 +463,7 @@ const DAY_BUILDER_CONFIG: DayBuilderConfig = {
 const ROUTE_CONFIG: RouteConfig = {
   clusterAdjacency: PRAGUE_CLUSTER_COMPATIBILITY,
   // A natural downhill / west-to-east flow: Troja & Letná (north), the castle hill, across the bridge, the centre, then east and south.
-  clusterDirectionalOrder: ["troja", "holesovice", "letna", "hradcany", "petrin", "mala-strana", "old-town", "josefov", "republiky", "new-town", "zizkov", "riverside", "vysehrad"],
+  clusterDirectionalOrder: ["troja", "holesovice", "letna", "hvezda", "hradcany", "petrin", "mala-strana", "old-town", "josefov", "republiky", "new-town", "zizkov", "riverside", "vysehrad"],
   sameClusterOrderHints: {
     hradcany: ["strahov-monastery", "loreta", "prague-castle"],
     "mala-strana": ["st-nicholas-mala-strana", "john-lennon-wall", "kampa-island", "franz-kafka-museum"],
@@ -387,33 +487,43 @@ const CLUSTER_LABEL_AR: Record<string, string> = {
   letna: "Letná",
   holesovice: "Holešovice",
   troja: "Troja",
+  hvezda: "Hvězda",
 };
 
 function placeName(placeId: string): string {
   return resolvePlannerPlace(placeId, PRAGUE_PLACES)?.place.name ?? placeId;
 }
 
-function dayClustersByWeight(day: PlannerDay): string[] {
+function clustersByWeight(placeIds: readonly string[]): string[] {
   const minutes = new Map<string, number>();
-  for (const stop of day.stops) {
-    const meta = getPraguePlannerMetadataById(stop.placeId);
+  for (const placeId of placeIds) {
+    const meta = getPraguePlannerMetadataById(placeId);
     if (!meta) continue;
     minutes.set(meta.cluster, (minutes.get(meta.cluster) ?? 0) + meta.visitDurationMinutes);
   }
   return [...minutes.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).map(([cluster]) => cluster);
 }
 
+/**
+ * The day title and summary for these places, in this order (the texts a new plan gets). Also used for a day the customer edited
+ * (CityPlannerModule.editedDayText), so an edited day never keeps a title naming an area it no longer visits.
+ */
+export function pragueDayText(placeIds: readonly string[], dayNumber: number, usedTitles: ReadonlySet<string>): { title: string; summary: string } {
+  const clusters = clustersByWeight(placeIds).map((cluster) => CLUSTER_LABEL_AR[cluster] ?? cluster);
+  const firstStop = placeIds[0] ? placeName(placeIds[0]) : "";
+  let title = clusters.length >= 2 ? `${clusters[0]} و${clusters[1]}` : clusters[0] ? `يوم ${clusters[0]}` : `اليوم ${dayNumber}`;
+  if (usedTitles.has(title) && firstStop) title = `${title}: ${firstStop}`;
+  const names = placeIds.map(placeName);
+  const summary =
+    names.length === 0 ? "" : names.length === 1 ? `محطة اليوم: ${names[0]}.` : `محطات اليوم: ${names.slice(0, -1).join("، ")} و${names[names.length - 1]}.`;
+  return { title, summary };
+}
+
 function presentPraguePlan(plan: GeneratedPlannerPlan): PresentedPlannerPlan {
   const usedTitles = new Set<string>();
   const byDay: PlannerDayPresentation[] = plan.days.map((day) => {
-    const clusters = dayClustersByWeight(day).map((cluster) => CLUSTER_LABEL_AR[cluster] ?? cluster);
-    const firstStop = day.stops[0] ? placeName(day.stops[0].placeId) : "";
-    let title = clusters.length >= 2 ? `${clusters[0]} و${clusters[1]}` : clusters[0] ? `يوم ${clusters[0]}` : `اليوم ${day.dayNumber}`;
-    if (usedTitles.has(title) && firstStop) title = `${title}: ${firstStop}`;
+    const { title, summary } = pragueDayText(day.stops.map((stop) => stop.placeId), day.dayNumber, usedTitles);
     usedTitles.add(title);
-    const names = day.stops.map((stop) => placeName(stop.placeId));
-    const summary =
-      names.length === 0 ? "" : names.length === 1 ? `محطة اليوم: ${names[0]}.` : `محطات اليوم: ${names.slice(0, -1).join("، ")} و${names[names.length - 1]}.`;
     // Day balance: places taken off a full day stay visible as optional suggestions of that day.
     const optionalNearby = [
       // The reason decided on the real schedule (day balance / timing guard): closing hours, or a day that runs too long.
@@ -518,6 +628,11 @@ const FOOD_PLACE_CLUSTER: Record<string, string> = {
   spravovna: "zizkov",
   "kolkovna-v-kolkovne": "josefov",
   "u-mecenase": "mala-strana",
+  "hanavsky-pavilon": "letna",
+  "the-eatery": "holesovice",
+  "host-restaurant": "hradcany",
+  "maly-buddha": "hradcany",
+  cukrkavalimonada: "mala-strana",
   // "lvi-dvur" is deliberately NOT mapped: it closes 19:00 every day, and flexible-date plans do not check meal hours, so it
   // could land on a dinner slot. It stays available as a supplementary food suggestion only.
 };
@@ -652,6 +767,7 @@ export const PRAGUE_CITY_MODULE: CityPlannerModule = {
         travelMinutes,
         protectedPlaceIds: BALANCE_PROTECTED,
         gatedPlaceIds: new Set(["vltava-one-hour-cruise"]),
+        exclusiveGroups: PRAGUE_EXCLUSIVE_GROUPS,
         outsideMinutes: (placeId) => OUTSIDE_STOP_MINUTES[placeId],
         heavyMinutes: 380,
         // Crowded / has room: decided on the day's real schedule (pragueTryInDay), not on the 380 minutes above.
@@ -685,5 +801,13 @@ export const PRAGUE_CITY_MODULE: CityPlannerModule = {
     return 3;
   },
   outsideVisit: (placeId) => (OUTSIDE_STOP_MINUTES[placeId] ? { visitDurationMinutes: OUTSIDE_STOP_MINUTES[placeId] } : undefined),
+  // 2026-11-24 (Prague quality pass): daylight notes and positions for added places, added places at their best position, and the
+  // title / summary of an edited day re-written for its places.
+  daylight: { lateMinutes: pragueDaylightLateMinutes, noteAr: pragueDaylightNoteAr },
+  addAtBestPosition: true,
+  rejectEditsThatBreakHours: true,
+  exclusiveGroups: PRAGUE_EXCLUSIVE_GROUPS,
+  reviewResolvedPlan: (input) => pragueDaylightReview(input),
+  editedDayText: pragueDayText,
   capacityWarning: (daysGenerated) => `قدرنا نبني خطة قوية لـ ${daysGenerated} أيام من البيانات المتاحة حاليًا لبراغ. عم نوسّع المحتوى للأيام الأطول.`,
 };

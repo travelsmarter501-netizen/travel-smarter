@@ -31,6 +31,12 @@ export type DayBalanceOptions = {
   travelMinutes: (fromPlaceId: string, toPlaceId: string) => number | null;
   protectedPlaceIds: ReadonlySet<string>;
   gatedPlaceIds: ReadonlySet<string>;
+  /**
+   * Optional (Prague, 2026-11-24): groups of places that are one kind of visit (two gardens of the same hillside). A place of a group is
+   * never ADDED by this balance (light days, minimum visits) while another member is already in the trip, as a stop or an optional
+   * place. The day builder already keeps one per trip (its similarity groups); without this, the balance could add the second one.
+   */
+  exclusiveGroups?: readonly (readonly string[])[];
   /** Minutes of the outside-only visit of a place, or undefined when the place has no useful free outside. */
   outsideMinutes?: (placeId: string) => number | undefined;
   heavyMinutes: number;
@@ -182,6 +188,7 @@ export function balanceCityDays(context: DayGeographyRepairContext, options: Day
   //    (cities with walkByStop) one short free place of an area the day already visits.
   const addNearbyToLightDays = () => {
     const used = new Set(days.flatMap((d) => [...d.ids, ...d.optional]));
+    const siblingInTrip = (id: string) => !!options.exclusiveGroups?.some((group) => group.includes(id) && group.some((other) => other !== id && used.has(other)));
     for (const day of plan.days.length > 1 ? days : []) {
       if (day.ids.length === 0 || dayLoad(day) >= options.lightMinutes) continue;
       const dayAreas = new Set(day.ids.flatMap((x) => [...areasOf(x)]));
@@ -189,7 +196,7 @@ export function balanceCityDays(context: DayGeographyRepairContext, options: Day
       const walkBy = (id: string) => !!options.walkByStop && options.walkByStop.isFreeShort(id) && nextDoor(clusterOf(id)) && (relevance?.(id) ?? 0) >= options.walkByStop.minRelevance;
       const strongMatch = (id: string) => (relevance?.(id) ?? 0) >= 7;
       const candidates = config.plannerMetadata
-        .filter((m) => !used.has(m.placeId) && !options.gatedPlaceIds.has(m.placeId) && eligible(m.placeId, day.dayNumber) && day.ids.some((x) => linked(x, m.placeId)))
+        .filter((m) => !used.has(m.placeId) && !options.gatedPlaceIds.has(m.placeId) && !siblingInTrip(m.placeId) && eligible(m.placeId, day.dayNumber) && day.ids.some((x) => linked(x, m.placeId)))
         .filter((m) => ((m.priority >= options.minPriorityToAdd || strongMatch(m.placeId)) && (!relevant || relevant(m.placeId))) || walkBy(m.placeId))
         .sort((a, b) => Number(!!relevant?.(b.placeId)) - Number(!!relevant?.(a.placeId)) || b.priority - a.priority || a.placeId.localeCompare(b.placeId));
       for (const c of candidates) {
@@ -475,7 +482,7 @@ export function balanceCityDays(context: DayGeographyRepairContext, options: Day
         // Its own optional places first (they belong to this day), then unused places of the city.
         const pool = [...day.optional, ...config.plannerMetadata.map((m) => m.placeId).filter((id) => !used.has(id))];
         const candidates = pool
-          .filter((id) => !options.gatedPlaceIds.has(id) && eligible(id, day.dayNumber) && nearest(day.ids, id) <= reachOf(day))
+          .filter((id) => !options.gatedPlaceIds.has(id) && !(options.exclusiveGroups?.some((group) => group.includes(id) && group.some((other) => other !== id && used.has(other))) ?? false) && eligible(id, day.dayNumber) && nearest(day.ids, id) <= reachOf(day))
           .map((id) => ({ id, tier: tierOf(id) ?? (thin(day) && priority(id) >= 4 ? 3 : null) }))
           .filter((c): c is { id: string; tier: number } => c.tier !== null)
           .sort((a, b) => a.tier - b.tier || added(day.ids, a.id) - added(day.ids, b.id) || priority(b.id) - priority(a.id) || a.id.localeCompare(b.id));

@@ -52,6 +52,20 @@ const UNAVAILABLE_DATES: Record<string, { dates: readonly string[]; unavailable:
       he: "תוכנית בלי תאריכים לא בודקת סגירות בחגים. כרגע אין תוכניות לבודפשט ל־24–26 בדצמבר 2026, ל־31 בדצמבר 2026 ול־1 בינואר 2027.",
     },
   },
+  // Prague (2026-11-24): no date is refused; only the note, so an undated plan never reads as date-checked. Not reviewed (proposal).
+  prague: {
+    dates: [],
+    unavailable: {
+      ar: "خطط براغ مش متاحة لهالتواريخ.",
+      en: "Prague plans aren’t available for these dates.",
+      he: "תוכניות לפראג לא זמינות לתאריכים האלה.",
+    },
+    undatedNote: {
+      ar: "الخطة بدون تواريخ ما بتعرف أيام رحلتك، فما بتفحص مواعيد كل يوم ولا إغلاقات الأعياد. لتفحص المواعيد على أيام رحلتك، اختار تواريخ محددة.",
+      en: "A plan without dates doesn’t know your trip days, so it doesn’t check each day’s opening hours or holiday closures. To check the hours for your trip days, choose specific dates.",
+      he: "תוכנית בלי תאריכים לא יודעת את ימי הטיול שלכם, ולכן לא בודקת את שעות הפתיחה של כל יום או סגירות בחגים. כדי לבדוק את השעות לימי הטיול, בחרו תאריכים מסוימים.",
+    },
+  },
 };
 
 /** The trip's dates (inclusive, "YYYY-MM-DD") touch a date this destination does not offer: the dates it touches, or null. */

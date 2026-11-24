@@ -118,7 +118,7 @@ function template(text: string, lang: "en" | "he"): string | null {
 
 /** Area labels used in day titles by the cities with the simple presenter (Prague, Vienna). */
 const PRAGUE_AREAS_AR = [
-  "منطقة القلعة", "القلعة وHradčany", "Malá Strana", "تلة Petřín", "البلدة القديمة", "ساحة Republiky", "Josefov", "المدينة الجديدة", "ضفة النهر", "Vyšehrad", "Žižkov وVinohrady", "Letná", "Holešovice", "Troja",
+  "منطقة القلعة", "القلعة وHradčany", "Malá Strana", "تلة Petřín", "البلدة القديمة", "ساحة Republiky", "Josefov", "المدينة الجديدة", "ضفة النهر", "Vyšehrad", "Žižkov وVinohrady", "Letná", "Holešovice", "Troja", "Hvězda",
   // Vienna
   "وسط المدينة", "قصر Hofburg", "حي المتاحف", "Karlsplatz", "Stadtpark", "Belvedere", "حي Hundertwasser", "Prater", "Augarten", "Mariahilf", "Schönbrunn", "الدانوب", "Alsergrund", "Kahlenberg",
 ];

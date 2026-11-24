@@ -230,6 +230,20 @@ export type CityPlannerModule = {
    */
   daylight?: { lateMinutes: (placeId: string, endMinutes: number, month: number | null) => number; noteAr: (month: number) => string };
   /**
+   * Optional (Prague): a place the customer adds is tried at EVERY position of the day, each trial being the whole day rebuilt (legs,
+   * opening hours, meals, fixed sessions, daylight); it is offered only when some position works, and it is added at the best one.
+   * Unset: a place is tried and added at the end of the day only (Barcelona; Budapest keeps its daylight positioning).
+   */
+  addAtBestPosition?: boolean;
+  /**
+   * Optional (Prague): a customer's move, drag or duration change that would make a place of the day miss its opening hours or last
+   * entry (a NEW schedule problem) is refused with "edit_infeasible" and not saved; the screen explains why. Unset: such an edit is
+   * saved and the stop shows the "time is tight" warning (Barcelona, Budapest).
+   */
+  rejectEditsThatBreakHours?: boolean;
+  /** Optional (Prague): groups of places that are one kind of visit; a place is not offered for adding while another member is in the trip. */
+  exclusiveGroups?: readonly (readonly string[])[];
+  /**
    * Optional (Budapest): the day title and summary for the places a day has NOW, the same texts a new plan gets for those places. Used
    * for every day whose places or order the customer changed, so the title and summary never name a removed place. `otherTitles` are
    * the titles of the plan's other days (a repeated title gets the first stop, as when the plan is created). Unset: an edited day keeps

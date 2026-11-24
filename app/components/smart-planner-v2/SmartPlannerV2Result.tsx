@@ -120,6 +120,8 @@ export default function SmartPlannerV2Result({
   const [saveFailed, setSaveFailed] = useState(false);
   // Shown only after the server refused an "add" for that day (add_unavailable); cleared by the next change.
   const [addUnavailable, setAddUnavailable] = useState(false);
+  // Shown after the server refused a move / drag / duration change that would make a place miss its hours (edit_infeasible).
+  const [editInfeasible, setEditInfeasible] = useState(false);
   const router = useRouter();
   // The translation catalog (every city's texts, ~88 KB) is loaded only when the plan is shown in English or Hebrew;
   // Arabic shows the stored plan as it is.
@@ -147,6 +149,7 @@ export default function SmartPlannerV2Result({
     if (!editablePlanId) return;
     setSaveFailed(false);
     setAddUnavailable(false);
+    setEditInfeasible(false);
     setLivePlan((current) => applyLocally(current, change));
     setEdited((current) => {
       const next = new Set(current);
@@ -163,8 +166,9 @@ export default function SmartPlannerV2Result({
       if (!result.ok) {
         // "invalid" can follow a change the screen already showed (e.g. two quick moves): reload the saved plan. "add_unavailable" (an
         // add the day cannot take; the button only offers places that fit) is handled the same way: nothing was saved.
-        setSaveFailed(result.code !== "invalid" && result.code !== "start_infeasible" && result.code !== "add_unavailable");
+        setSaveFailed(result.code !== "invalid" && result.code !== "start_infeasible" && result.code !== "add_unavailable" && result.code !== "edit_infeasible");
         setAddUnavailable(result.code === "add_unavailable");
+        setEditInfeasible(result.code === "edit_infeasible");
         router.refresh();
         return;
       }
@@ -343,6 +347,11 @@ export default function SmartPlannerV2Result({
         </div>
       </div>
 
+      {editInfeasible && (
+        <p role="alert" className="mt-3 rounded-xl bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800">
+          {ui.editInfeasible}
+        </p>
+      )}
       {addUnavailable && (
         <p role="alert" className="mt-3 rounded-xl bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800">
           {ui.addUnavailable}
