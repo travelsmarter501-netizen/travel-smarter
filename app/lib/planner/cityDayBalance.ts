@@ -50,6 +50,15 @@ export type DayBalanceOptions = {
   /** Optional: a place this strongly matching the request's interests (placeRelevance >= this) is never cut to an outside stop. */
   keepInsideRelevance?: number;
   /**
+   * Optional (Prague, 2026-11-25): in step 6b, an outside-only stop matching the request at least this much (placeRelevance) that can
+   * neither become a full visit on its day nor move as one, becomes a full visit by making room: ONE weaker stop of its day (lower
+   * relevance, not protected) moves to another open, linked day that has room for it, when the day then holds the full visit on its
+   * real schedule and keeps the owner's minimum visits. It runs after the light days were filled (steps 4-5), so it never takes a
+   * light day's slot from a place it would otherwise get. (10-day diagnosis: the culture trip's National Museum stayed 15 minutes
+   * outside while Wenceslas Square could go to a linked day with room.)
+   */
+  makeRoomRelevance?: number;
+  /**
    * Optional: regroup the trip after balancing (see step 6 for the cost and the limits).
    */
   regroup?: { splitPenalty: number; lightWeight: number; emptyPenalty: number; comfortStops: number; crowdPenalty: number; maxStops: number; hopPenalty: number; restoreBonus: number };
@@ -374,6 +383,39 @@ export function balanceCityDays(context: DayGeographyRepairContext, options: Day
       changed = true;
     }
 
+    // 6b+ (makeRoomRelevance): one weaker stop of the day moves to another open, linked day with room, so that `id` becomes a full visit.
+    const makeRoom = (di: number, id: string, inside: Set<string>) => {
+      const day = days[di];
+      const own = relevance?.(id) ?? 0;
+      const minimum = (ids: readonly string[], outside: ReadonlySet<string>) => {
+        const mv = options.minVisits;
+        if (!mv) return 0;
+        return ids.some((x) => !outside.has(x) && visit(x, outside) >= mv.longVisitMinutes) ? mv.longCount : mv.count;
+      };
+      let best: { x: string; ti: number; ids: string[]; rel: number; added: number } | null = null;
+      for (const x of day.ids) {
+        if (x === id || options.protectedPlaceIds.has(x) || day.outside.has(x) || (relevance?.(x) ?? 0) >= own) continue;
+        const rest = day.ids.filter((y) => y !== x);
+        if (rest.length < minimum(rest, inside) || !fits(rest, inside, day.dayNumber)) continue;
+        for (let ti = 0; ti < days.length; ti++) {
+          const d = days[ti];
+          if (ti === di || d.ids.length === 0 || !eligible(x, d.dayNumber) || !canJoin(d, x)) continue;
+          const ids = insertCheapest(d.ids, x);
+          if (ids.length > rg.maxStops || areaCount(ids) > Math.max(3, areaCount(d.ids)) || !fits(ids, d.outside, d.dayNumber)) continue;
+          const rel = relevance?.(x) ?? 0, added = travel(ids) - travel(d.ids);
+          if (!best || rel < best.rel || (rel === best.rel && added < best.added)) best = { x, ti, ids, rel, added };
+        }
+      }
+      if (!best) return false;
+      const b = best;
+      const target = days[b.ti];
+      days[b.ti] = { ...target, ids: b.ids, scores: new Map([...target.scores, [b.x, day.scores.get(b.x) ?? 0] as [string, number]]) };
+      days[di] = { ...day, ids: day.ids.filter((y) => y !== b.x), outside: inside };
+      touched.add(day.dayNumber);
+      touched.add(target.dayNumber);
+      changed = true;
+      return true;
+    };
     // 6b. An outside-only stop becomes a full visit again when its day has room for it (meals counted); a strong match
     //     (relevance 7+) may instead move, as a full visit, to another open, linked day that has room.
     for (let di = 0; di < days.length; di++) {
@@ -391,7 +433,10 @@ export function balanceCityDays(context: DayGeographyRepairContext, options: Day
           .map((d, i) => ({ d, i, ids: insertCheapest(d.ids, id) }))
           .filter(({ d, i, ids }) => i !== di && eligible(id, d.dayNumber) && canJoin(d, id) && ids.length <= rg.maxStops && fits(ids, d.outside, d.dayNumber) && areaCount(ids) <= Math.max(3, areaCount(d.ids)))
           .sort((x, y) => dayLoad(x.d) - dayLoad(y.d))[0];
-        if (!target) continue;
+        if (!target) {
+          if (options.makeRoomRelevance !== undefined && (relevance?.(id) ?? 0) >= options.makeRoomRelevance) makeRoom(di, id, inside);
+          continue;
+        }
         days[target.i] = { ...target.d, ids: target.ids, scores: new Map([...target.d.scores, [id, day.scores.get(id) ?? 0] as [string, number]]) };
         days[di] = { ...day, ids: day.ids.filter((x) => x !== id), outside: inside };
         touched.add(day.dayNumber);

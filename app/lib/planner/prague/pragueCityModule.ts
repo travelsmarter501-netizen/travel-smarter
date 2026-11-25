@@ -777,6 +777,9 @@ export const PRAGUE_CITY_MODULE: CityPlannerModule = {
         minVisits: OWNER_MIN_VISITS,
         minPriorityToAdd: 5,
         keepInsideRelevance: 9,
+        // 2026-11-25 (10-day diagnosis): a strong match (7+, the level step 6b already uses) cut to an outside stop becomes a full visit
+        // when one weaker stop of its day can move to a linked day with room.
+        makeRoomRelevance: 7,
         regroup: { splitPenalty: 45, lightWeight: 6, emptyPenalty: 300, comfortStops: 5, crowdPenalty: 25, maxStops: 6, hopPenalty: 60, restoreBonus: 20 },
         // A light day may take one free place of at most 45 minutes in an area it already visits (Kampa, the Lennon Wall, a garden).
         walkByStop: { isFreeShort: (placeId) => pragueTicketEstimate(placeId) === 0 && (getPraguePlannerMetadataById(placeId)?.visitDurationMinutes ?? 999) <= 45, minRelevance: 3 },
